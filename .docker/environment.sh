@@ -3,9 +3,11 @@
 # Prepare a development environment as a Docker container.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directly.
+# Usage: ./environment.sh developer repository
 
 # Docker image name and Docker container name.
-name=helios
+developer=$1
+repository=$2
 image=$name
 container=$name
 
