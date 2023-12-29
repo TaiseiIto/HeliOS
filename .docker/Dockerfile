@@ -5,10 +5,18 @@ FROM ubuntu
 # Don't ask stdin anithing to install software automatically.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install softwares.
+# Update apt.
 RUN apt update
 
-# VNC port
+# Install git.
+RUN apt install git -y
+
+# Clone this repository.
+WORKDIR /root/
+RUN git clone https://github.com/TaiseiIto/HeliOS.git
+WORKDIR /root/HeliOS/
+
+# Expose VNC port.
 ARG vnc_port
 EXPOSE $vnc_port
 
