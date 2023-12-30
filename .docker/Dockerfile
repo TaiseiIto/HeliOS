@@ -6,24 +6,20 @@ FROM ubuntu
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
-RUN apt install bison -y
 RUN apt install build-essential -y
 RUN apt install curl -y
+RUN apt install git -y
+RUN apt install gnupg -y
 RUN apt install iasl -y
 RUN apt install libglib2.0-dev -y
-RUN apt install libgmp-dev -y
-RUN apt install libmpfr-dev -y
 RUN apt install nasm -y
 RUN apt install ninja-build -y
 RUN apt install pkg-config -y
 RUN apt install python3 -y
 RUN apt install python3-venv -y
-RUN apt install texinfo -y
 RUN apt install tmux -y
 RUN apt install tzdata -y
 RUN apt install uuid-dev -y
-RUN apt install git -y
-RUN apt install gnupg -y
 RUN apt install vim -y
 
 WORKDIR /root
