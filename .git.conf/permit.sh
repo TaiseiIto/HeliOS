@@ -11,6 +11,10 @@ domain=$1
 developer=$2
 product=$3
 
+echo domain=$domain
+echo developer=$developer
+echo product=$product
+
 current_directory=$(pwd)
 work_directory=$(dirname $0)
 cd $work_directory
@@ -23,7 +27,7 @@ git config --global user.name $name
 git config --global user.signingkey $(head -n1 $HOME/.gnupg/signingkey.txt)
 git config --global commit.gpgsign true
 git remote set-url origin git@$domain:$developer/$product.git
-cat .gitconfig | sed 's/domain/$domain/g' | sed 's/home/$HOME/g' >> $HOME/.gitconfig
+cat .gitconfig | sed "s|domain|$domain|g" | sed "s|home|$HOME|g" >> $HOME/.gitconfig
 cat ../.ssh/config >> $HOME/.ssh/config
 chmod 600 $HOME/.github/key
 chmod -R 600 $HOME/.gnupg
