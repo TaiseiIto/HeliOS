@@ -13,7 +13,7 @@ product=$3
 
 current_directory=$(pwd)
 work_directory=$(dirname $0)
-cd $word_directory
+cd $work_directory
 
 read -p "Your GitHub user name:" name
 read -p "Your GitHub email address:" email
