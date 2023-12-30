@@ -24,7 +24,7 @@ delete:
 .PHONY: rebuild
 rebuild:
 	make delete
-	make environment
+	make build
 
 # Get development permission.
 # Only developers can execute it.
