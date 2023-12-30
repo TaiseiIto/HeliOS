@@ -15,7 +15,7 @@ sshkey=$5
 gpgkey=$6
 
 docker start $container
-home=$(docker exec -i -t helios env | grep HOME | awk -F '=' '{print $2}')
+home=$(docker exec helios env | grep HOME | awk -F '=' '{print $2}')
 docker cp $sshkey $container:$home/.github/key
 docker cp $gpgkey $container:$home/.gnupg
 docker exec -i -t $container $home/$product/.git.conf/permit.sh $domain $developer $product

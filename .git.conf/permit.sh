@@ -19,7 +19,7 @@ read -p "Your GitHub user name:" name
 read -p "Your GitHub email address:" email
 
 git config --global user.email $email
-git config --glocal user.name $name
+git config --global user.name $name
 git config --global user.signingkey $(head -n1 $HOME/.gnupg/signingkey.txt)
 git config --global commit.gpgsign true
 git remote set-url origin git@$domain:$developer/$product.git

@@ -9,7 +9,7 @@ image=$1
 container=$2
 
 # If there is a running container named $container, stop it.
-if [ -z "$(docker ps --format {{.Names}} | grep -x $container)" ]; then
+if [ -n "$(docker ps --format {{.Names}} | grep -x $container)" ]; then
 	docker stop $container
 fi
 
