@@ -8,17 +8,23 @@ PRODUCT=$(shell echo $(REPOSITORY) | awk -F '[./]' '{print $$(NF-1)}')
 IMAGE=$(shell echo $(PRODUCT) | awk '{print tolower($$0)}')
 CONTAINER=$(IMAGE)
 
-all:
-	echo $(DOMAIN)
-	echo $(DEVELOPER)
-	echo $(PRODUCT)
-	echo $(IMAGE)
-	echo $(CONTAINER)
-
 # Build and enter a development environment as a Docker container.
-# Usage: make
-environment:
-	./environment.sh
+# Usage: make build
+.PHONY: build
+build:
+	./build.sh $(DEVELOPER) $(REPOSITORY) $(IMAGE) $(CONTAINER)
+
+# Delete a development environment.
+# Usage: make delete
+.PHONY: delete
+delete:
+	./delete.sh $(IMAGE) $(CONTAINER)
+
+# Rebuild and enter a development environment.
+.PHONY: rebuild
+rebuild:
+	make delete
+	make environment
 
 # Get development permission.
 # Only developers can execute it.

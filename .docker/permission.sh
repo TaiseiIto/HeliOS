@@ -5,13 +5,13 @@
 # Users don:t have to do it.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directly.
-# Usage: $ ./permission.sh conateiner repository user /path/to/ssh/key /path/to/.gnupg
+# Usage: $ ./permission.sh <conateiner> <repository> </path/to/ssh/key> </path/to/.gnupg>
 
 container=$1
 repository=$2
-user=$3
-sshkey=$4
-gpgkey=$5
+sshkey=$3
+gpgkey=$4
+user=root
 
 docker cp $sshkey $container:/$user/.github/key
 docker cp $gpgkey $container:/$user/.gnupg
