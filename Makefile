@@ -1,7 +1,7 @@
 # Build and enter a development environment as a Docker container.
-# Usage: $ make build_environment
+# Usage: $ make environment
 .PHONY: build_environment
-build_environment:
+environment:
 	make build -C .docker
 
 # Delete a development environment.

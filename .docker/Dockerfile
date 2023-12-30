@@ -12,9 +12,9 @@ RUN apt update
 RUN apt install git -y
 
 # Clone this repository.
-WORKDIR /root/
+WORKDIR /root
 RUN git clone https://github.com/TaiseiIto/HeliOS.git
-WORKDIR /root/HeliOS/
+WORKDIR HeliOS
 
 # Expose VNC port.
 ARG vnc_port

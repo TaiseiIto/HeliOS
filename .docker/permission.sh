@@ -11,8 +11,10 @@ container=$1
 repository=$2
 sshkey=$3
 gpgkey=$4
-user=root
 
+docker start $container
+user=$(docker exec -i -t $container whoami)
+docker stop $container
 docker cp $sshkey $container:/$user/.github/key
 docker cp $gpgkey $container:/$user/.gnupg
 docker start $container
