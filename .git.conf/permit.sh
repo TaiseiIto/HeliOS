@@ -23,7 +23,7 @@ git config --global user.name $name
 git config --global user.signingkey $(head -n1 $HOME/.gnupg/signingkey.txt)
 git config --global commit.gpgsign true
 git remote set-url origin git@$domain:$developer/$product.git
-cat .gitconfig >> $HOME/.gitconfig
+cat .gitconfig | sed 's/domain/$domain/g' | sed 's/home/$HOME/g' >> $HOME/.gitconfig
 cat ../.ssh/config >> $HOME/.ssh/config
 chmod 600 $HOME/.github/key
 chmod -R 600 $HOME/.gnupg

@@ -28,6 +28,9 @@ RUN git checkout $branch
 # bash settings
 RUN cat .bash/.bashrc >> ../.bashrc
 
+# vim settings
+RUN cat .vim/.vimrc >> ../.vimrc
+
 # Expose VNC port.
 ARG vnc_port
 EXPOSE $vnc_port
