@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Delete a development environment built by build.sh.
+# Delete development environment built by build.sh.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directory.
 # Usage: ./delete.sh image container

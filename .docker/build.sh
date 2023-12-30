@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build a development environment as a Docker container.
+# Build development environment as a Docker container.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directly.
 # Usage: ./build.sh <developer> <repository> <image> <container>
@@ -10,15 +10,12 @@ repository=$2
 image=$3
 container=$4
 
-# A branch name clone into the development environment.
-branch=$(git rev-parse --abbrev-ref HEAD)
-
-# VNC port to interact with QEMU running on the development environment.
+# VNC port to interact with QEMU running on development environment.
 vnc_port=5900
 
 # If there is no image named $image, build it.
 if [ -z "$(docker images --format {{.Repository}} | grep -x $image)" ]; then
-	docker build --build-arg branch=$branch --build-arg vnc_port=$vnc_port --no-cache -t $image .
+	docker build --build-arg vnc_port=$vnc_port --no-cache -t $image .
 fi
 
 # If there is no container named $container, create it.

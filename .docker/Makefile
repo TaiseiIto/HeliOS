@@ -8,19 +8,19 @@ PRODUCT=$(shell echo $(REPOSITORY) | awk -F '[./]' '{print $$(NF-1)}')
 IMAGE=$(shell echo $(PRODUCT) | awk '{print tolower($$0)}')
 CONTAINER=$(IMAGE)
 
-# Build and enter a development environment as a Docker container.
+# Build and enter development environment as a Docker container.
 # Usage: make build
 .PHONY: build
 build:
 	./build.sh $(DEVELOPER) $(REPOSITORY) $(IMAGE) $(CONTAINER)
 
-# Delete a development environment.
+# Delete development environment.
 # Usage: make delete
 .PHONY: delete
 delete:
 	./delete.sh $(IMAGE) $(CONTAINER)
 
-# Rebuild and enter a development environment.
+# Rebuild and enter development environment.
 .PHONY: rebuild
 rebuild:
 	make delete
@@ -30,6 +30,7 @@ rebuild:
 # Only developers can execute it.
 # Users don:t have to do it.
 # Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
+.PHONY: permission
 permission:
-	./permission.sh $(SSHKEY) $(GPGKEY)
+	./permit.sh $(CONTAINER) $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(SSHKEY) $(GPGKEY)
 

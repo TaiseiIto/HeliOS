@@ -5,7 +5,7 @@ This is my original operating system running on x64 architecture.
 ## Development environment
 
 HeliOS is developed on a Docker container provided by [.docker](.docker) directory.
-You can build and enter a development environment like below.
+You can build and enter development environment like below.
 
 ```
 /somewhere $ git clone https://github.com/TaiseiIto/HeliOS.git
@@ -13,7 +13,7 @@ You can build and enter a development environment like below.
 /somewhere/HeliOS $ make environment
 ~/HeliOS #
 ```
-Now you are in the development environment!
+Now you are in development environment!
 
 ## Get development permission (for only developers, not users)
 
@@ -29,7 +29,6 @@ And `make permission` like below.
 /somewhere/Helios $ make permission GITHUB=/path/to/ssh/key GITGPG=/path/to/.gnupg
 Your GitHub user name: Someone
 Your Github email address: someone@example.com
-Password for someone@example.com: ********
 /somewhere/HeliOS $
 ```
 

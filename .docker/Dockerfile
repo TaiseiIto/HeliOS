@@ -1,4 +1,4 @@
-# This is a Dockerfile to prepare a development environment.
+# This is a Dockerfile to prepare development environment.
 
 FROM ubuntu
 
