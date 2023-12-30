@@ -5,14 +5,18 @@ FROM ubuntu
 # Don't ask stdin anithing to install software automatically.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update apt.
+WORKDIR /root
 RUN apt update
 
 # Install git.
 RUN apt install git -y
+RUN mkdir .ssh
+RUN mkdir .github
+
+# Install vim
+RUN apt install vim -y
 
 # Clone this repository.
-WORKDIR /root
 RUN git clone https://github.com/TaiseiIto/HeliOS.git
 WORKDIR HeliOS
 
