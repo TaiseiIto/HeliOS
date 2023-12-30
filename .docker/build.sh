@@ -3,19 +3,20 @@
 # Build development environment as a Docker container.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directly.
-# Usage: ./build.sh <developer> <repository> <image> <container>
+# Usage: ./build.sh <domain> <developer> <product> <image> <container>
 
-developer=$1
-repository=$2
-image=$3
-container=$4
+domain=$1
+developer=$2
+product=$3
+image=$4
+container=$5
 
 # VNC port to interact with QEMU running on development environment.
 vnc_port=5900
 
 # If there is no image named $image, build it.
 if [ -z "$(docker images --format {{.Repository}} | grep -x $image)" ]; then
-	docker build --build-arg vnc_port=$vnc_port --no-cache -t $image .
+	docker build --build-arg domain=$domain --build-arg developer=$developer --build-arg product=$product --build-arg vnc_port=$vnc_port --no-cache -t $image .
 fi
 
 # If there is no container named $container, create it.

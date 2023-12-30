@@ -17,8 +17,16 @@ RUN mkdir .github
 RUN apt install vim -y
 
 # Clone this repository.
-RUN git clone https://github.com/TaiseiIto/HeliOS.git
-WORKDIR HeliOS
+ARG domain
+ARG developer
+ARG product
+RUN git clone https://$domain/$developer/$product.git
+
+# bash settings
+RUN cat .bash/.bashrc >> ../.bashrc
+
+# Set initial directory.
+WORKDIR $product
 
 # Expose VNC port.
 ARG vnc_port

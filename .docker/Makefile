@@ -12,7 +12,7 @@ CONTAINER=$(IMAGE)
 # Usage: make build
 .PHONY: build
 build:
-	./build.sh $(DEVELOPER) $(REPOSITORY) $(IMAGE) $(CONTAINER)
+	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER)
 
 # Delete development environment.
 # Usage: make delete
