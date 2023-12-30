@@ -21,12 +21,12 @@ ARG domain
 ARG developer
 ARG product
 RUN git clone https://$domain/$developer/$product.git
+WORKDIR $product
+ARG branch
+RUN git checkout $branch
 
 # bash settings
 RUN cat .bash/.bashrc >> ../.bashrc
-
-# Set initial directory.
-WORKDIR $product
 
 # Expose VNC port.
 ARG vnc_port

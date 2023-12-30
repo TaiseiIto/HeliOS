@@ -1,8 +1,11 @@
+# VNC port to interact with QEMU running on development environment.
+VNC_PORT = 5900
+
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
 .PHONY: build_environment
 environment:
-	make build -C .docker
+	make build -C .docker VNC_PORT=$(VNC_PORT)
 
 # Delete development environment.
 # Usage: $ make delete_environment

@@ -9,10 +9,10 @@ IMAGE=$(shell echo $(PRODUCT) | awk '{print tolower($$0)}')
 CONTAINER=$(IMAGE)
 
 # Build and enter development environment as a Docker container.
-# Usage: make build
+# Usage: make build VNC_PORT=<vnc port>
 .PHONY: build
 build:
-	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER)
+	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT)
 
 # Delete development environment.
 # Usage: make delete
