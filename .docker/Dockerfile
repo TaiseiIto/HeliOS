@@ -10,6 +10,7 @@ RUN apt update
 
 # Install git.
 RUN apt install git -y
+RUN apt install gnupg -y
 RUN mkdir .ssh
 RUN mkdir .github
 
