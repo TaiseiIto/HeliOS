@@ -42,17 +42,38 @@ $(TARGET): $(shell git ls-files)
 run:
 	make run -C .tmux
 
-# Stop the OS on QEMU.
-# Usage: make stop
-.PHONY: stop
-stop:
-	make stop -C .tmux
+# Run the OS on QEMU.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: run_on_tmux
+run_on_tmux:
+	make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT)
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
 .PHONY: debug
 debug:
 	make debug -C .tmux
+
+# Run the OS on QEMU.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: debug_on_tmux
+debug_on_tmux:
+	make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT)
+
+# Stop the OS on QEMU.
+# Usage: make stop
+.PHONY: stop
+stop:
+	make stop -C .tmux
+
+# Stop the OS on QEMU.
+# This target is called from .tmux/Makefile
+# Don't execute this directly.
+.PHONY: stop_on_tmux
+stop_on_tmux:
+	make stop -C .qemu
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
@@ -80,7 +101,7 @@ rebuild_environment:
 permission:
 	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
 
-# Get an OS image file name
+# Get an OS image file name.
 # Usage: $ make target
 .PHONY: target
 target:
