@@ -72,6 +72,9 @@ RUN git checkout $branch
 # Put bash settings.
 RUN cat .bash/.bashrc >> ../.bashrc
 
+# Put tmux settings.
+RUN cat .tmux/global.conf >> ../.tmux.conf
+
 # Put vim settings.
 RUN cat .vim/.vimrc >> ../.vimrc
 

@@ -21,6 +21,7 @@ BOOTLOADER_SOURCE=$(shell make target -C boot -s)
 BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
 
 # Build an OS image.
+# Usage: $ make
 $(TARGET): $(shell git ls-files)
 	rm -f $@
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
@@ -31,6 +32,12 @@ $(TARGET): $(shell git ls-files)
 	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
+
+# Run the OS on QEMU.
+# Usage: make run
+.PHONY: run
+run:
+	make run -C .tmux
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
@@ -59,6 +66,7 @@ permission:
 	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
 
 # Get an OS image file name
+# Usage: $ make target
 .PHONY: target
 target:
 	@echo $(TARGET)
