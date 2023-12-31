@@ -29,12 +29,21 @@ RUN apt install tzdata -y
 RUN apt install uuid-dev -y
 RUN apt install vim -y
 
+# Set local time
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+# git settings
 WORKDIR /root
 RUN mkdir .ssh
 RUN mkdir .github
 
 # GDB
 RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://sourceware.org/git/binutils-gdb.git gdb
+WORKDIR gdb
+RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
+RUN make
+RUN make install
+WORKDIR ..
 
 # QEMU
 RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://gitlab.com/qemu-project/qemu.git
