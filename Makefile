@@ -15,7 +15,7 @@ MOUNT_DIRECTORY=$(PRODUCT)
 
 # A bootloader file path
 BOOT_DIRECTORY=boot
-BOOTLOADER_SOURCE=$(shell make target -C $(BOOT_DIRECTORY))
+BOOTLOADER_SOURCE=$(shell make target -C $(BOOT_DIRECTORY) -s)
 BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
 
 # VNC port to interact with QEMU running on development environment.
@@ -28,6 +28,7 @@ DEBUG_PORT=2159
 # Usage: $ make
 $(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
 	rm -f $@
+	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
@@ -44,27 +45,27 @@ $(BOOTLOADER_SOURCE): $(shell git ls-files $(BOOT_DIRECTORY))
 # Run the OS on QEMU.
 # Usage: make run
 .PHONY: run
-run:
+run: $(TARGET)
 	make run -C .tmux
 
 # Run the OS on QEMU.
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: run_on_tmux
-run_on_tmux: $(TARGET)
+run_on_tmux:
 	make run -C .qemu OS_PATH=$(realpath $<) OS_NAME=$(PRODUCT)
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
 .PHONY: debug
-debug:
+debug: $(TARGET)
 	make debug -C .tmux
 
 # Run the OS on QEMU.
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: debug_on_tmux
-debug_on_tmux: $(TARGET)
+debug_on_tmux:
 	make debug -C .qemu OS_PATH=$(realpath $<) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT)
 
 # Stop the OS on QEMU.
