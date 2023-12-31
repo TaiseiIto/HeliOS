@@ -33,6 +33,14 @@ RUN apt install vim -y
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 
+# Put git settings.
+WORKDIR /root
+RUN mkdir .ssh
+RUN mkdir .github
+
+# Set local time.
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
 # Install GDB.
 RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://sourceware.org/git/binutils-gdb.git gdb
 WORKDIR gdb
@@ -41,7 +49,7 @@ RUN make
 RUN make install
 WORKDIR ..
 
-# QEMU
+# Install QEMU.
 RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://gitlab.com/qemu-project/qemu.git
 WORKDIR qemu
 RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
@@ -59,14 +67,6 @@ RUN git clone https://$domain/$developer/$product.git
 WORKDIR $product
 ARG branch
 RUN git checkout $branch
-
-# Set local time.
-RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
-
-# Put git settings.
-WORKDIR /root
-RUN mkdir .ssh
-RUN mkdir .github
 
 # Put bash settings.
 RUN cat .bash/.bashrc >> ../.bashrc
