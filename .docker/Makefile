@@ -12,7 +12,7 @@ CONTAINER=$(IMAGE)
 # Usage: make build VNC_PORT=<vnc port>
 .PHONY: build
 build:
-	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT)
+	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT) $(DEBUG_PORT)
 
 # Delete development environment.
 # Usage: make delete

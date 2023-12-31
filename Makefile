@@ -1,6 +1,3 @@
-# VNC port to interact with QEMU running on development environment.
-VNC_PORT=5900
-
 # Product name
 PRODUCT=$(shell basename $$(pwd) | awk '{print tolower($$0)}')
 
@@ -19,6 +16,12 @@ MOUNT_DIRECTORY=$(PRODUCT)
 # A bootloader file path
 BOOTLOADER_SOURCE=$(shell make target -C boot -s)
 BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
+
+# VNC port to interact with QEMU running on development environment.
+VNC_PORT=5900
+
+# Debug port to debug the OS on QEMU by GDB.
+DEBUG_PORT=2159
 
 # Build an OS image.
 # Usage: $ make
@@ -55,7 +58,7 @@ debug:
 # Usage: $ make environment
 .PHONY: build_environment
 environment:
-	make build -C .docker VNC_PORT=$(VNC_PORT)
+	make build -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
 
 # Delete development environment.
 # Usage: $ make delete_environment

@@ -72,6 +72,12 @@ RUN git checkout $branch
 # Put bash settings.
 RUN cat .bash/.bashrc >> ../.bashrc
 
+# Put GDB settings.
+ARG debug_port
+RUN echo add-auto-load-safe-path $(pwd)/.gdb/.gdbinit >> ../.gdbinit
+RUN echo set print elements 0 >> ../.gdbinit
+RUN echo target remote localhost:$debug_port >> .gdb/.gdbinit
+
 # Put tmux settings.
 RUN cat .tmux/global.conf >> ../.tmux.conf
 
