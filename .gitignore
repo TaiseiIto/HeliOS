@@ -16,3 +16,6 @@
 # An OS image file
 *.img
 
+# log file
+*.log
+
