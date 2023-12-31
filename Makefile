@@ -39,6 +39,18 @@ $(TARGET): $(shell git ls-files)
 run:
 	make run -C .tmux
 
+# Stop the OS on QEMU.
+# Usage: make stop
+.PHONY: stop
+stop:
+	make stop -C .tmux
+
+# Debug the OS on QEMU by GDB.
+# Usage: make debug
+.PHONY: debug
+debug:
+	make debug -C .tmux
+
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
 .PHONY: build_environment
