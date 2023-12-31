@@ -11,6 +11,7 @@ RUN apt install bison -y
 RUN apt install build-essential -y
 RUN apt install curl -y
 RUN apt install dejagnu -y
+RUN apt install dosfstools -y
 RUN apt install flex -y
 RUN apt install git -y
 RUN apt install gnupg -y

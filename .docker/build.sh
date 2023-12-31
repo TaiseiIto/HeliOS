@@ -20,7 +20,7 @@ fi
 
 # If there is no container named $container, create it.
 if [ -z "$(docker ps -a --format {{.Names}} | grep -x $container)" ]; then
-	docker create -i -t --name $container $image /bin/bash
+	docker create -i -t --privileged --name $container $image /bin/bash
 fi
 
 # If there is no running container named $container, start it.
