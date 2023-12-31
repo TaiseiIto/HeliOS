@@ -58,3 +58,8 @@ rebuild_environment:
 permission:
 	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
 
+# Get an OS image file name
+.PHONY: target
+target:
+	@echo $(TARGET)
+
