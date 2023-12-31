@@ -46,8 +46,8 @@ run:
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: run_on_tmux
-run_on_tmux:
-	make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT)
+run_on_tmux: $(TARGET)
+	make run -C .qemu OS_PATH=$(realpath $<) OS_NAME=$(PRODUCT)
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
@@ -59,8 +59,8 @@ debug:
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: debug_on_tmux
-debug_on_tmux:
-	make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT)
+debug_on_tmux: $(TARGET)
+	make debug -C .qemu OS_PATH=$(realpath $<) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT)
 
 # Stop the OS on QEMU.
 # Usage: make stop
