@@ -1,7 +1,13 @@
 PRODUCT=$(shell basename $$(pwd))
-TARGET=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $$2}')
-OUTPUT=target/$(TARGET)/release/$(PRODUCT).efi
+FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $$2}')
+TARGET=target/$(FORMAT)/release/$(PRODUCT).efi
 
-$(OUTPUT): $(git ls-files)
-	cargo build --release --target $(TARGET)
+# Build a bootloader.
+$(TARGET): $(git ls-files)
+	cargo build --release --target $(FORMAT)
+
+# Get a bootloader file path.
+.PHONY: target
+target:
+	@echo $(realpath $(TARGET))
 

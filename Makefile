@@ -11,18 +11,24 @@ TARGET=$(PRODUCT:=.img)
 BLOCK_SIZE=4K
 
 # A number of blocks in the OS image
-BLOCK_COUNT=4K
+BLOCK_COUNT=1K
 
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT)
 
+# A bootloader file path
+BOOTLOADER_SOURCE=$(shell make target -C boot -s)
+BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
+
 # Build an OS image.
 $(TARGET): $(shell git ls-files)
+	rm -f $@
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
 	mount -o loop $@ $(MOUNT_DIRECTORY)
-	mkdir -p $(MOUNT_DIRECTORY)/EFI/BOOT
+	mkdir -p $(shell dirname $(BOOTLOADER_DESTINATION))
+	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
