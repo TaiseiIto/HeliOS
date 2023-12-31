@@ -9,5 +9,5 @@ $(TARGET): $(git ls-files)
 # Get a bootloader file path.
 .PHONY: target
 target:
-	@echo $(realpath $(TARGET))
+	@echo $(abspath $(TARGET))
 

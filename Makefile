@@ -2,7 +2,7 @@
 PRODUCT=$(shell basename $$(pwd) | awk '{print tolower($$0)}')
 
 # An OS image file name
-TARGET=$(PRODUCT:=.img)
+TARGET=$(PRODUCT).img
 
 # block size in the OS image
 BLOCK_SIZE=4K
@@ -14,7 +14,8 @@ BLOCK_COUNT=1K
 MOUNT_DIRECTORY=$(PRODUCT)
 
 # A bootloader file path
-BOOTLOADER_SOURCE=$(shell make target -C boot -s)
+BOOT_DIRECTORY=boot
+BOOTLOADER_SOURCE=$(shell make target -C $(BOOT_DIRECTORY))
 BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
 
 # VNC port to interact with QEMU running on development environment.
@@ -25,8 +26,9 @@ DEBUG_PORT=2159
 
 # Build an OS image.
 # Usage: $ make
-$(TARGET): $(shell git ls-files)
+$(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
 	rm -f $@
+	rm -rf $(MOUNT_DIRECTORY)
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
@@ -35,6 +37,9 @@ $(TARGET): $(shell git ls-files)
 	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
+
+$(BOOTLOADER_SOURCE): $(shell git ls-files $(BOOT_DIRECTORY))
+	make -C $(BOOT_DIRECTORY)
 
 # Run the OS on QEMU.
 # Usage: make run

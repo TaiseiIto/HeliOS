@@ -17,6 +17,6 @@ debug:
 # Usage: make stop
 .PHONY: stop
 stop:
-	make stop -C ..
+	make stop_on_tmux -C ..
 	for i in $$(ps ax | grep tmux | grep -v grep | grep -v make | awk '{print $$1}'); do kill $$i; done
 
