@@ -5,6 +5,7 @@ FROM ubuntu
 # Don't ask stdin anithing to install software automatically.
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install softwares.
 RUN apt update
 RUN apt install bison -y
 RUN apt install build-essential -y
@@ -29,15 +30,10 @@ RUN apt install tzdata -y
 RUN apt install uuid-dev -y
 RUN apt install vim -y
 
-# Set local time
-RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+# Install Rust.
+RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 
-# git settings
-WORKDIR /root
-RUN mkdir .ssh
-RUN mkdir .github
-
-# GDB
+# Install GDB.
 RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://sourceware.org/git/binutils-gdb.git gdb
 WORKDIR gdb
 RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
@@ -64,10 +60,18 @@ WORKDIR $product
 ARG branch
 RUN git checkout $branch
 
-# bash settings
+# Set local time.
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+# Put git settings.
+WORKDIR /root
+RUN mkdir .ssh
+RUN mkdir .github
+
+# Put bash settings.
 RUN cat .bash/.bashrc >> ../.bashrc
 
-# vim settings
+# Put vim settings.
 RUN cat .vim/.vimrc >> ../.vimrc
 
 # Expose VNC port.
