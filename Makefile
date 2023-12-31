@@ -28,7 +28,7 @@ DEBUG_PORT=2159
 # Usage: $ make
 $(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
 	rm -f $@
-	umount $(MOUNT_DIRECTORY)
+	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
