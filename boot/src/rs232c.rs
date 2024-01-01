@@ -18,6 +18,8 @@ pub fn com2() -> Com {
 
 // https://www.lookrs232.com/rs232/registers.htm
 impl Com {
+    const OFFSET_DIVISOR_LATCH_HIGH_BYTE: u16 = 0;
+    const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
     const OFFSET_INTERRUPT_ENABLE: u16 = 1;
     const OFFSET_LINE_CONTROL: u16 = 3;
 
@@ -39,6 +41,14 @@ impl Com {
         }
     }
 
+    fn port_divisor_latch_high_byte(&self) -> u16 {
+        self.port + Self::OFFSET_DIVISOR_LATCH_HIGH_BYTE
+    }
+
+    fn port_divisor_latch_low_byte(&self) -> u16 {
+        self.port + Self::OFFSET_DIVISOR_LATCH_LOW_BYTE
+    }
+
     fn port_interrupt_enable(&self) -> u16 {
         self.port + Self::OFFSET_INTERRUPT_ENABLE
     }
@@ -54,6 +64,19 @@ impl Com {
 
     fn read_line_control(&self) -> line_control::Register {
         asm::inb(self.port_line_control()).into()
+    }
+
+    fn write_baud_rate(&self, baud_rate: u32) {
+        let divisor_latch: u32 = 115200 / baud_rate;
+        let divisor_latch: u16 = divisor_latch as u16;
+        let divisor_latch_low: u16 = divisor_latch & 0x00ff;
+        let divisor_latch_low: u8 = divisor_latch_low as u8;
+        let divisor_latch_high: u16 = divisor_latch >> 8;
+        let divisor_latch_high: u8 = divisor_latch_high as u8;
+        self.enable_divisor_latch_access_bit();
+        asm::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
+        asm::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
+        self.disable_divisor_latch_access_bit();
     }
 
     fn write_interrupt_enable(&self, register: interrupt_enable::Register) {
