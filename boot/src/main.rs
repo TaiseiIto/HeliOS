@@ -6,9 +6,11 @@
 use core::panic::PanicInfo;
 
 mod asm;
+mod rs232c;
 
 #[no_mangle]
 fn efi_main() {
+    let com2 = rs232c::Com::new(0x02f8);
     panic!("Hello, World!");
 }
 

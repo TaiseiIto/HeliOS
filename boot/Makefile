@@ -3,7 +3,7 @@ FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $
 TARGET=target/$(FORMAT)/release/$(PRODUCT).efi
 
 # Build a bootloader.
-$(TARGET): $(git ls-files)
+$(TARGET): $(shell git ls-files)
 	cargo build --release --target $(FORMAT)
 
 # Get a bootloader file path.
