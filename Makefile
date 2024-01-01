@@ -24,6 +24,9 @@ VNC_PORT=5900
 # Debug port to debug the OS on QEMU by GDB.
 DEBUG_PORT=2159
 
+# Telnet port to stop QEMU.
+TELNET_PORT=23
+
 # Build an OS image.
 # Usage: $ make
 $(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
@@ -53,7 +56,7 @@ run: $(TARGET)
 # Don't execute this directly.
 .PHONY: run_on_tmux
 run_on_tmux:
-	make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) -s
+	make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
@@ -66,7 +69,7 @@ debug: $(TARGET)
 # Don't execute this directly.
 .PHONY: debug_on_tmux
 debug_on_tmux:
-	make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) -s
+	make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Stop the OS on QEMU.
 # Usage: make stop
@@ -79,7 +82,7 @@ stop:
 # Don't execute this directly.
 .PHONY: stop_on_tmux
 stop_on_tmux:
-	make stop -C .qemu
+	make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment

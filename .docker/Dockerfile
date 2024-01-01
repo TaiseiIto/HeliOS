@@ -22,6 +22,7 @@ RUN apt install libgmp-dev -y
 RUN apt install libmpfr-dev -y
 RUN apt install libpixman-1-dev -y
 RUN apt install nasm -y
+RUN apt install netcat -y
 RUN apt install ninja-build -y
 RUN apt install pkg-config -y
 RUN apt install python3 -y
