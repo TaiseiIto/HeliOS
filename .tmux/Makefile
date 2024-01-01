@@ -5,17 +5,17 @@
 # Usage: make run
 .PHONY: run
 run:
-	tmux new-session \; source-file run.conf
+	-tmux new-session \; source-file run.conf
 
 # Debug the OS on QEMU by GDB
 # Usage: make debug
 .PHONY: debug
 debug:
-	tmux new-session \; source-file debug.conf
+	-tmux new-session \; source-file debug.conf
 	
 # Stop the OS on QEMU.
 # Usage: make stop
 .PHONY: stop
 stop:
-	make stop_on_tmux -C ..
+	-make stop_on_tmux -C ..
 

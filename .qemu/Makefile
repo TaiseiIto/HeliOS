@@ -21,17 +21,18 @@ DEBUG=-S -gdb tcp::$(DEBUG_PORT)
 # Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
 .PHONY: run
 run:
-	$(QEMU) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(SERIAL_LOG) $(VNC) | tee $(SERIAL_LOG_PATH)
+	-$(QEMU) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(SERIAL_LOG) $(VNC) | tee $(SERIAL_LOG_PATH)
 
 # Debug the OS on QEMU by GDB.
 # Usage: $ make debug OS_PATH=<os image file path> OS_NAME=<os name> DEBUG_PORT=<debug port>
 .PHONY: debug
 debug:
-	$(QEMU) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(SERIAL_LOG) $(VNC) $(DEBUG) | tee $(SERIAL_LOG_PATH)
+	-$(QEMU) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(SERIAL_LOG) $(VNC) $(DEBUG) | tee $(SERIAL_LOG_PATH)
 
 # Stop the OS on QEMU.
 # Usage: $ make stop
 .PHONY: stop
 stop:
-	echo quit | nc localhost $(TELNET_PORT)
+	-echo quit | nc localhost $(TELNET_PORT)
+	-tmux kill-server
 

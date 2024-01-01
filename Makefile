@@ -49,40 +49,40 @@ $(BOOTLOADER_SOURCE): $(shell git ls-files $(BOOT_DIRECTORY))
 # Usage: make run
 .PHONY: run
 run: $(TARGET)
-	make run -C .tmux -s
+	-make run -C .tmux -s
 
 # Run the OS on QEMU.
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: run_on_tmux
 run_on_tmux:
-	make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+	-make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
 .PHONY: debug
 debug: $(TARGET)
-	make debug -C .tmux -s
+	-make debug -C .tmux -s
 
 # Run the OS on QEMU.
 # This target is called from .tmux/run.conf
 # Don't execute this directly.
 .PHONY: debug_on_tmux
 debug_on_tmux:
-	make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
+	-make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Stop the OS on QEMU.
 # Usage: make stop
 .PHONY: stop
 stop:
-	make stop -C .tmux
+	-make stop -C .tmux
 
 # Stop the OS on QEMU.
 # This target is called from .tmux/Makefile
 # Don't execute this directly.
 .PHONY: stop_on_tmux
 stop_on_tmux:
-	make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
+	-make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
