@@ -44,7 +44,7 @@ RUN mkdir .github
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 # Install GDB.
-RUN git clone --branch master --depth 1 --recursive --shallow-submodules --single-branch https://sourceware.org/git/binutils-gdb.git gdb
+RUN git clone --branch gdb-14.1-release --depth 1 --recursive --shallow-submodules --single-branch https://sourceware.org/git/binutils-gdb.git gdb
 WORKDIR gdb
 RUN ./configure --with-expat CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
