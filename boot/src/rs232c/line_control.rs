@@ -1,5 +1,6 @@
 use bitfield_struct::bitfield;
 
+// https://www.lookrs232.com/rs232/lcr.htm
 #[bitfield(u8)]
 pub struct Register {
     #[bits(2)]
