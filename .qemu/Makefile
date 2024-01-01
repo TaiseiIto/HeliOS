@@ -6,9 +6,9 @@ MEMORY_SIZE=-m 1G
 LOG_PATH=../qemu.log
 LOG=-d int,cpu_reset -D $(LOG_PATH)
 NO_REBOOT=--no-reboot
-OVMF_CODE_PATH=~/qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
+OVMF_CODE_PATH=../../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
 OVMF_CODE=-drive file=$(OVMF_CODE_PATH),format=raw,if=pflash,readonly=on
-OVMF_VARS_PATH=~/qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
+OVMF_VARS_PATH=../../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
 OVMF_VARS=-drive file=$(OVMF_VARS_PATH),format=raw,if=pflash,readonly=on
 OS=-drive file=$(OS_PATH),format=raw,id=$(OS_NAME),if=none -device ide-hd,drive=$(OS_NAME),bootindex=1
 SERIAL_LOG_PATH=../serial.log
