@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 # Product name
 PRODUCT=$(shell basename $$(pwd) | awk '{print tolower($$0)}')
 
@@ -29,7 +31,7 @@ TELNET_PORT=23
 
 # Build an OS image.
 # Usage: $ make
-$(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
+$(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -42,7 +44,7 @@ $(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(BOOTLOADER_SOURCE): $(shell git ls-files $(BOOT_DIRECTORY))
+$(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
 	make -C $(BOOT_DIRECTORY)
 
 # Run the OS on QEMU.
