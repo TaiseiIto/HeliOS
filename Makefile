@@ -97,7 +97,7 @@ delete_environment:
 # Usage: $ make rebuild_environment
 .PHONY: rebuild_environment
 rebuild_environment:
-	make rebuild -C .docker
+	make rebuild -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
 
 # Get development permission.
 # Only developers can execute it.
