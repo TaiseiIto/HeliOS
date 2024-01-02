@@ -3,6 +3,7 @@ use crate::asm;
 mod fifo_control;
 mod interrupt_enable;
 mod line_control;
+mod line_status;
 mod modem_control;
 
 pub struct Com {
@@ -10,10 +11,10 @@ pub struct Com {
 }
 
 const BAUD_RATE: u32 = 9600;
-const COM2: u16 = 0x02f8;
+const COM2_PORT: u16 = 0x02f8;
 
 pub fn com2() -> Option<Com> {
-    Com::new(COM2)
+    Com::new(COM2_PORT)
 }
 
 // https://www.lookrs232.com/rs232/registers.htm
@@ -27,6 +28,11 @@ impl Com {
     const OFFSET_FIFO_CONTROL: u16 = 2;
     const OFFSET_LINE_CONTROL: u16 = 3;
     const OFFSET_MODEM_CONTROL: u16 = 4;
+    const OFFSET_LINE_STATUS: u16 = 5;
+
+    fn can_send(&self) -> bool {
+        self.read_line_status().can_send()
+    }
 
     fn disable_all_interrupts(&self) {
         self.write_interrupt_enable(self.read_interrupt_enable().disable_all_interrupts());
@@ -139,6 +145,10 @@ impl Com {
         self.port + Self::OFFSET_LINE_CONTROL
     }
 
+    fn port_line_status(&self) -> u16 {
+        self.port + Self::OFFSET_LINE_STATUS
+    }
+
     fn port_modem_control(&self) -> u16 {
         self.port + Self::OFFSET_MODEM_CONTROL
     }
@@ -160,9 +170,18 @@ impl Com {
         asm::inb(self.port_line_control()).into()
     }
 
+    fn read_line_status(&self) -> line_status::Register {
+        asm::inb(self.port_line_status()).into()
+    }
+
     fn read_receiver_buffer(&self) -> u8 {
         self.disable_divisor_latch_access();
         asm::inb(self.port_receiver_buffer())
+    }
+
+    pub fn send(&self, data: u8) {
+        while !self.can_send() {}
+        self.write_transmitter_holding_buffer(data);
     }
 
     fn works(&self) -> bool {
