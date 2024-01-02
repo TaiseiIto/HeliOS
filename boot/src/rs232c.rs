@@ -1,4 +1,10 @@
-use crate::asm;
+use {
+    core::fmt::{
+        self,
+        Write,
+    },
+    crate::asm,
+};
 
 mod fifo_control;
 mod interrupt_enable;
@@ -6,16 +12,34 @@ mod line_control;
 mod line_status;
 mod modem_control;
 
+#[macro_export]
+macro_rules! com2_println {
+    ($fmt:expr) => (com2_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (com2_print!(concat!($fmt, "\n"), $($arg)*));
+}
+
+#[macro_export]
+macro_rules! com2_print {
+    ($($arg:tt)*) => ($crate::rs232c::com2_print(format_args!($($arg)*)));
+}
+
+static mut COM2: Option<Com> = None;
+const COM2_PORT: u16 = 0x02f8;
+
+pub fn com2_print(args: fmt::Arguments) {
+    unsafe {
+        if COM2.is_none() {
+            COM2 = Com::new(COM2_PORT);
+        }
+        COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
+    }
+}
+
 pub struct Com {
     port: u16,
 }
 
 const BAUD_RATE: u32 = 9600;
-const COM2_PORT: u16 = 0x02f8;
-
-pub fn com2() -> Option<Com> {
-    Com::new(COM2_PORT)
-}
 
 // https://www.lookrs232.com/rs232/registers.htm
 impl Com {
@@ -239,6 +263,13 @@ impl Com {
     fn write_transmitter_holding_buffer(&self, data: u8) {
         self.disable_divisor_latch_access();
         asm::outb(self.port_transmitter_holding_buffer(), data);
+    }
+}
+
+impl Write for Com {
+    fn write_str(&mut self, string: &str) -> fmt::Result {
+        string.bytes().for_each(|byte| self.send(byte));
+        Ok(())
     }
 }
 

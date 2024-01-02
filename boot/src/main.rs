@@ -10,15 +10,12 @@ mod rs232c;
 
 #[no_mangle]
 fn efi_main() {
-    let com2: Option<rs232c::Com> = rs232c::com2();
-    if let Some(com2) = com2 {
-        com2.send(0x41)
-    }
     panic!("Hello, World!");
 }
 
 #[panic_handler]
-fn panic(_panic: &PanicInfo) -> ! {
+fn panic(panic: &PanicInfo) -> ! {
+    com2_println!("{}", panic);
     loop {
         asm::hlt();
     }
