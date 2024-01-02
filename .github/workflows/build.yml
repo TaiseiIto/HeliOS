@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: build
-    run-on: ubunt-latest
+    runs-on: ubunt-latest
     steps:
       - name: Checkout the repository
         run: actions/checkout@main

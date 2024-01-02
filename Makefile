@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 # Product name
 PRODUCT=$(shell basename $$(pwd) | awk '{print tolower($$0)}')
 
@@ -11,7 +13,7 @@ BLOCK_SIZE=4K
 BLOCK_COUNT=1K
 
 # A mount directory to build the OS image
-MOUNT_DIRECTORY=$(PRODUCT)
+MOUNT_DIRECTORY=$(PRODUCT).mnt
 
 # A bootloader file path
 BOOT_DIRECTORY=boot
@@ -27,9 +29,9 @@ DEBUG_PORT=2159
 # Telnet port to stop QEMU.
 TELNET_PORT=23
 
-# Build an OS image.
+# Build an OS image runs on QEMU.
 # Usage: $ make
-$(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
+$(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -42,7 +44,14 @@ $(TARGET): $(BOOTLOADER_SOURCE) $(shell git ls-files)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(BOOTLOADER_SOURCE): $(shell git ls-files $(BOOT_DIRECTORY))
+$(MOUNT_DIRECTORY): $(BOOTLOADER_SOURCE) $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
+	if mountpoint -q $@; then umount -l $@; fi
+	rm -rf $@
+	mkdir $@
+	mkdir -p $(shell dirname $(BOOTLOADER_DESTINATION))
+	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
+
+$(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
 	make -C $(BOOT_DIRECTORY)
 
 # Run the OS on QEMU.
@@ -109,6 +118,11 @@ rebuild_environment:
 .PHONY: permission
 permission:
 	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
+
+# Build an OS directory to run on VirtualBox or VMware.
+# Usage: $ make tree
+.PHONY: tree
+tree: $(MOUNT_DIRECTORY)
 
 # Get an OS image file name.
 # Usage: $ make target

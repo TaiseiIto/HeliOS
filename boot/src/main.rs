@@ -6,6 +6,7 @@
 use core::panic::PanicInfo;
 
 mod asm;
+mod rs232c;
 
 #[no_mangle]
 fn efi_main() {
@@ -13,7 +14,8 @@ fn efi_main() {
 }
 
 #[panic_handler]
-fn panic(_panic: &PanicInfo) -> ! {
+fn panic(panic: &PanicInfo) -> ! {
+    com2_println!("{}", panic);
     loop {
         asm::hlt();
     }
