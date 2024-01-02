@@ -21,7 +21,7 @@ pub fn inb(port: u16) -> u8 {
 pub fn outb(port: u16, data: u8) {
     unsafe {
         asm!(
-            "out al, dx",
+            "out dx, al",
             in("dx") port,
             in("al") data,
         );

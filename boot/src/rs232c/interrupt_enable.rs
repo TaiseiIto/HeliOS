@@ -10,7 +10,7 @@ pub struct Register {
     enable_sleep_mode: bool,
     enable_low_power_mode: bool,
     #[bits(2)]
-    reserved: usize,
+    reserved: u8,
 }
 
 impl Register {
