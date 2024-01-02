@@ -4,7 +4,7 @@ FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $
 TARGET=target/$(FORMAT)/release/$(PRODUCT).efi
 
 # Build a bootloader.
-$(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
+$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --other))
 	cargo build --release --target $(FORMAT)
 
 # Get a bootloader file path.
