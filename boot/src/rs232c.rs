@@ -34,23 +34,22 @@ macro_rules! com2_print {
     ($($arg:tt)*) => ($crate::rs232c::com2_print(format_args!($($arg)*)));
 }
 
-static mut COM2: Option<Com> = None;
-const COM2_PORT: u16 = 0x02f8;
-
 pub fn com2_print(args: fmt::Arguments) {
     unsafe {
         if COM2.is_none() {
-            COM2 = Some(Com::new(COM2_PORT));
+            COM2 = Some(Com::new(COM2_PORT, COM2_BAUD_RATE));
         }
         COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
     }
 }
 
+static mut COM2: Option<Com> = None;
+const COM2_PORT: u16 = 0x02f8;
+const COM2_BAUD_RATE: u32 = 9600;
+
 pub struct Com {
     port: u16,
 }
-
-const BAUD_RATE: u32 = 9600;
 
 impl Com {
     const FREQUENCY: u32 = 115200;
@@ -85,12 +84,12 @@ impl Com {
         }
     }
 
-    fn new(port: u16) -> Self {
+    fn new(port: u16, baud_rate: u32) -> Self {
         let com = Self {
             port
         };
         com.disable_all_interrupts();
-        com.write_baud_rate(BAUD_RATE);
+        com.write_baud_rate(baud_rate);
         // 8 bits, no parity, one stop bit
         let word_length: u8 = 8;
         let length_of_stop = line_control::LengthOfStop::One;

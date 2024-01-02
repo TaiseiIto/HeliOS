@@ -10,9 +10,9 @@ In the host, clone and enter this repository.
 And `make environment` to build and enter the development environment.
 
 ```
-/somewhere $ git clone https://github.com/TaiseiIto/HeliOS.git
-/somewhere $ cd HeliOS
-/somewhere/HeliOS $ make environment
+/somewhere/in/the/host $ git clone https://github.com/TaiseiIto/HeliOS.git
+/somewhere/in/the/host $ cd HeliOS
+/somewhere/in/the/host/HeliOS $ make environment
 ~/HeliOS #
 ```
 Now you are in the development environment!
@@ -58,8 +58,23 @@ When you finish debugging HeliOS, move to right screen, `quit` GDB and `make sto
 
 ```
 (gdb) quit
-~/Helios # make stop
+~/HeliOS # make stop
 ```
+
+## Run HeliOS on a physical machine
+
+`exit` the development environment and `make tree` on the host to generate `helios.mnt`, the HeliOS directory tree.
+And copy the generated directory to your storage device.
+
+```
+~/HeliOS # exit
+/somewhere/in/the/host/HeliOS $ make tree
+/somewhere/in/the/host/HeliOS $ cp -r helios.mnt /your/storage/device/
+```
+
+Then, eject the storage device and connect it to a physical machine.
+Next, configure BIOS settings of the physical machine to boot up from the storage device according to UEFI.
+Finally, reboot the physical machine.
 
 ## Get development permission (for only developers, not users)
 
