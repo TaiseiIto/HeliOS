@@ -7,6 +7,7 @@ pub struct Register {
     clear_receive_fifo: bool,
     clear_transmit_fifo: bool,
     dma_mode_select: bool,
+    #[bits(default = false)]
     reserved: bool,
     enable_64byte_fifo: bool,
     #[bits(2)]
@@ -27,7 +28,6 @@ impl Register {
             .with_clear_receive_fifo(clear_receive_fifo)
             .with_clear_transmit_fifo(clear_transmit_fifo)
             .with_dma_mode_select(dma_mode_select)
-            .with_reserved(false)
             .with_enable_64byte_fifo(enable_64byte_fifo)
             .with_interrupt_trigger_level(match interrupt_trigger_level {
                 1 => 0b00,

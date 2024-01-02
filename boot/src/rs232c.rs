@@ -3,6 +3,7 @@ use crate::asm;
 mod fifo_control;
 mod interrupt_enable;
 mod line_control;
+mod modem_control;
 
 pub struct Com {
     port: u16,
@@ -23,6 +24,7 @@ impl Com {
     const OFFSET_INTERRUPT_ENABLE: u16 = 1;
     const OFFSET_FIFO_CONTROL: u16 = 2;
     const OFFSET_LINE_CONTROL: u16 = 3;
+    const OFFSET_MODEM_CONTROL: u16 = 4;
 
     fn disable_all_interrupts(&self) {
         self.write_interrupt_enable(self.read_interrupt_enable().disable_all_interrupts());
@@ -74,6 +76,20 @@ impl Com {
             enable_64byte_fifo,
             interrupt_trigger_level,
         ));
+        let force_data_terminal_ready: bool = true;
+        let force_request_to_send: bool = true;
+        let aux_output1: bool = false;
+        let aux_output2: bool = true;
+        let loopback_mode: bool = false;
+        let autoflow_control_enabled: bool = false;
+        com.write_modem_control(modem_control::Register::create(
+            force_data_terminal_ready,
+            force_request_to_send,
+            aux_output1,
+            aux_output2,
+            loopback_mode,
+            autoflow_control_enabled,
+        ));
         com
     }
 
@@ -95,6 +111,10 @@ impl Com {
 
     fn port_line_control(&self) -> u16 {
         self.port + Self::OFFSET_LINE_CONTROL
+    }
+
+    fn port_modem_control(&self) -> u16 {
+        self.port + Self::OFFSET_MODEM_CONTROL
     }
 
     fn read_interrupt_enable(&self) -> interrupt_enable::Register {
@@ -129,6 +149,10 @@ impl Com {
 
     fn write_line_control(&self, register: line_control::Register) {
         asm::outb(self.port_line_control(), register.into());
+    }
+
+    fn write_modem_control(&self, register: modem_control::Register) {
+        asm::outb(self.port_modem_control(), register.into());
     }
 }
 
