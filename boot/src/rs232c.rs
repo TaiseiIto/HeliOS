@@ -29,7 +29,7 @@ const COM2_PORT: u16 = 0x02f8;
 pub fn com2_print(args: fmt::Arguments) {
     unsafe {
         if COM2.is_none() {
-            COM2 = Com::new(COM2_PORT);
+            COM2 = Some(Com::new(COM2_PORT));
         }
         COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
     }
@@ -45,7 +45,6 @@ const BAUD_RATE: u32 = 9600;
 impl Com {
     const FREQUENCY: u32 = 115200;
     const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
-    const OFFSET_RECEIVER_BUFFER: u16 = 0;
     const OFFSET_TRANSMITTER_HOLDING_BUFFER: u16 = 0;
     const OFFSET_DIVISOR_LATCH_HIGH_BYTE: u16 = 1;
     const OFFSET_INTERRUPT_ENABLE: u16 = 1;
@@ -77,7 +76,7 @@ impl Com {
     }
 
     // https://wiki.osdev.org/Serial_Ports#:~:text=Example%20Code-,Initialization,-%23define%20PORT%200x3f8
-    fn new(port: u16) -> Option<Self> {
+    fn new(port: u16) -> Self {
         let com = Self {
             port
         };
@@ -126,27 +125,23 @@ impl Com {
             loopback_mode,
             autoflow_control_enabled,
         ));
-        if com.works() {
-            // If serial is not faulty set it in normal operation mode
-            // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
-            let force_data_terminal_ready: bool = true;
-            let force_request_to_send: bool = true;
-            let aux_output1: bool = true;
-            let aux_output2: bool = true;
-            let loopback_mode: bool = false;
-            let autoflow_control_enabled: bool = false;
-            com.write_modem_control(modem_control::Register::create(
-                force_data_terminal_ready,
-                force_request_to_send,
-                aux_output1,
-                aux_output2,
-                loopback_mode,
-                autoflow_control_enabled,
-            ));
-            Some(com)
-        } else {
-            None
-        }
+        // If serial is not faulty set it in normal operation mode
+        // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
+        let force_data_terminal_ready: bool = true;
+        let force_request_to_send: bool = true;
+        let aux_output1: bool = true;
+        let aux_output2: bool = true;
+        let loopback_mode: bool = false;
+        let autoflow_control_enabled: bool = false;
+        com.write_modem_control(modem_control::Register::create(
+            force_data_terminal_ready,
+            force_request_to_send,
+            aux_output1,
+            aux_output2,
+            loopback_mode,
+            autoflow_control_enabled,
+        ));
+        com
     }
 
     fn port_divisor_latch_high_byte(&self) -> u16 {
@@ -177,10 +172,6 @@ impl Com {
         self.port + Self::OFFSET_MODEM_CONTROL
     }
 
-    fn port_receiver_buffer(&self) -> u16 {
-        self.port + Self::OFFSET_RECEIVER_BUFFER
-    }
-
     fn port_transmitter_holding_buffer(&self) -> u16 {
         self.port + Self::OFFSET_TRANSMITTER_HOLDING_BUFFER
     }
@@ -198,37 +189,9 @@ impl Com {
         asm::inb(self.port_line_status()).into()
     }
 
-    fn read_receiver_buffer(&self) -> u8 {
-        self.disable_divisor_latch_access();
-        asm::inb(self.port_receiver_buffer())
-    }
-
     pub fn send(&self, data: u8) {
         while !self.can_send() {}
         self.write_transmitter_holding_buffer(data);
-    }
-
-    fn works(&self) -> bool {
-        // Set in loopback mode, test the serial chip
-        let force_data_terminal_ready: bool = false;
-        let force_request_to_send: bool = true;
-        let aux_output1: bool = true;
-        let aux_output2: bool = true;
-        let loopback_mode: bool = true;
-        let autoflow_control_enabled: bool = false;
-        self.write_modem_control(modem_control::Register::create(
-            force_data_terminal_ready,
-            force_request_to_send,
-            aux_output1,
-            aux_output2,
-            loopback_mode,
-            autoflow_control_enabled,
-        ));
-        // Test serial chip (send byte 0xAE and check if serial returns same byte)
-        let data: u8 = 0xae;
-        self.write_transmitter_holding_buffer(data);
-        // Check if serial is faulty (i.e: not same byte as sent)
-        self.read_receiver_buffer() == data
     }
 
     fn write_baud_rate(&self, baud_rate: u32) {
