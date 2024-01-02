@@ -1,7 +1,9 @@
-//! String writing function by RS232C COM2.
-//!
+//! # String writing function by RS232C COM2
 //! GPD MicroPC, a tester hardware of the OS, has a RS232C port as COM2.
 //! So we use COM2 to log boot progress.
+//! ## References
+//! * [Serial Ports - OSdev WiKi](https://wiki.osdev.org/Serial_Ports)
+//! * [Look RS232](https://www.lookrs232.com/rs232/registers.htm)
 
 use {
     core::fmt::{
@@ -17,12 +19,16 @@ mod line_control;
 mod line_status;
 mod modem_control;
 
+/// # Print with a line feed to COM2
+/// Usage is the same as [println](https://doc.rust-lang.org/std/macro.println.html)
 #[macro_export]
 macro_rules! com2_println {
     ($fmt:expr) => (com2_print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (com2_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
+/// # Print without a line feed to COM2
+/// Usage is the same as [print](https://doc.rust-lang.org/std/macro.print.html)
 #[macro_export]
 macro_rules! com2_print {
     ($($arg:tt)*) => ($crate::rs232c::com2_print(format_args!($($arg)*)));
@@ -46,7 +52,6 @@ pub struct Com {
 
 const BAUD_RATE: u32 = 9600;
 
-// https://www.lookrs232.com/rs232/registers.htm
 impl Com {
     const FREQUENCY: u32 = 115200;
     const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
@@ -80,7 +85,6 @@ impl Com {
         }
     }
 
-    // https://wiki.osdev.org/Serial_Ports#:~:text=Example%20Code-,Initialization,-%23define%20PORT%200x3f8
     fn new(port: u16) -> Self {
         let com = Self {
             port

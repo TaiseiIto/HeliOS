@@ -1,8 +1,9 @@
-//! RS232C FIFO control register
+//! # RS232C FIFO control register
+//! ## References
+//! * [Look RS232 FIFO Control Register](https://www.lookrs232.com/rs232/fcr.htm)
 
 use bitfield_struct::bitfield;
 
-// https://www.lookrs232.com/rs232/fcr.htm
 #[bitfield(u8)]
 pub struct Register {
     enable_fifo: bool,
