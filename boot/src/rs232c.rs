@@ -1,5 +1,6 @@
 use crate::asm;
 
+mod fifo_control;
 mod interrupt_enable;
 mod line_control;
 
@@ -20,6 +21,7 @@ impl Com {
     const OFFSET_DIVISOR_LATCH_HIGH_BYTE: u16 = 0;
     const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
     const OFFSET_INTERRUPT_ENABLE: u16 = 1;
+    const OFFSET_FIFO_CONTROL: u16 = 2;
     const OFFSET_LINE_CONTROL: u16 = 3;
 
     fn disable_all_interrupts(&self) {
@@ -58,6 +60,20 @@ impl Com {
             set_break_enable,
             divisor_latch_access,
         ));
+        let enable_fifo: bool = true;
+        let clear_receive_fifo: bool = true;
+        let clear_transmit_fifo: bool = true;
+        let dma_mode_select: bool = false;
+        let enable_64byte_fifo: bool = false;
+        let interrupt_trigger_level: u8 = 14;
+        com.write_fifo_control(fifo_control::Register::create(
+            enable_fifo,
+            clear_receive_fifo,
+            clear_transmit_fifo,
+            dma_mode_select,
+            enable_64byte_fifo,
+            interrupt_trigger_level,
+        ));
         com
     }
 
@@ -67,6 +83,10 @@ impl Com {
 
     fn port_divisor_latch_low_byte(&self) -> u16 {
         self.port + Self::OFFSET_DIVISOR_LATCH_LOW_BYTE
+    }
+
+    fn port_fifo_control(&self) -> u16 {
+        self.port + Self::OFFSET_FIFO_CONTROL
     }
 
     fn port_interrupt_enable(&self) -> u16 {
@@ -96,6 +116,10 @@ impl Com {
         self.enable_divisor_latch_access();
         asm::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
         asm::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
+    }
+
+    fn write_fifo_control(&self, register: fifo_control::Register) {
+        asm::outb(self.port_fifo_control(), register.into());
     }
 
     fn write_interrupt_enable(&self, register: interrupt_enable::Register) {

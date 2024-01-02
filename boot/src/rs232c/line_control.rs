@@ -29,13 +29,10 @@ impl Register {
         divisor_latch_access: bool,
     ) -> Self {
         assert!(5 <= word_length && word_length <= 8);
-        let length_of_stop: bool = length_of_stop.into(word_length);
-        let word_length: u8 = word_length - 5;
-        let parity_select: u8 = parity_select.into();
         Self::new()
-            .with_word_length(word_length)
-            .with_length_of_stop(length_of_stop)
-            .with_parity_select(parity_select)
+            .with_word_length(word_length - 5)
+            .with_length_of_stop(length_of_stop.into(word_length))
+            .with_parity_select(parity_select.into())
             .with_set_break_enable(set_break_enable)
             .with_divisor_latch_access(divisor_latch_access)
     }
