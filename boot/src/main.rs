@@ -1,3 +1,5 @@
+//! The bootloader
+
 #![no_main]
 #![no_std]
 #![feature(abi_efiapi)]

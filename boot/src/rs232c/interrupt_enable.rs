@@ -1,3 +1,5 @@
+//! RS232C interrupt enable register
+
 use bitfield_struct::bitfield;
 
 // https://www.lookrs232.com/rs232/ier.htm

@@ -1,3 +1,5 @@
+//! RS232C modem control register
+
 use bitfield_struct::bitfield;
 
 // https://www.lookrs232.com/rs232/mcr.htm

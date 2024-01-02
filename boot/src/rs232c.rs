@@ -1,3 +1,8 @@
+//! String writing function by RS232C COM2.
+//!
+//! GPD MicroPC, a tester hardware of the OS, has a RS232C port as COM2.
+//! So we use COM2 to log boot progress.
+
 use {
     core::fmt::{
         self,

@@ -2,10 +2,12 @@
 
 This is my original operating system running on x64 architecture.
 
-## Development environment
+## A development environment
 
-HeliOS is developed on a Docker container provided by [.docker](.docker) directory.
-You can build and enter development environment like below.
+We assume you are in an environment where you can use [Docker](https://www.docker.com/).
+We call this environment the host.
+In the host, clone and enter this repository.
+And `make environment` to build and enter the development environment.
 
 ```
 /somewhere $ git clone https://github.com/TaiseiIto/HeliOS.git
@@ -13,7 +15,51 @@ You can build and enter development environment like below.
 /somewhere/HeliOS $ make environment
 ~/HeliOS #
 ```
-Now you are in development environment!
+Now you are in the development environment!
+
+## Run HeliOS on QEMU
+
+On the development environment, `make run` to run HeliOS on QEMU.
+
+```
+~/HeliOS # make run
+```
+
+This command divides terminal screen left and right by tmux.
+The left screen shows a log from COM2 of the QEMU.
+The right screen is a terminal of the development environment.
+Press `Ctrl+t` and press `h` to move from the right screen to the left screen.
+Also, press `Ctrl+t` and press `l` to move from the left screen to the right screen.
+And Connect from a VNC client on the host to `localhost:5900` according to [RFB protocol](https://datatracker.ietf.org/doc/html/rfc6143) to operate HeliOS.
+
+## Stop HeliOS on QEMU
+
+Move to the right screen and `make stop` to stop HeliOS on QEMU.
+
+```
+~/HeliOS # make stop
+```
+
+## Debug HeliOS on QEMU by GDB
+
+On the development environment, `make debug` to debug HeliOS on QEMU by GDB.
+
+```
+~/HeliOS # make debug
+```
+
+This command divides terminal screen left and right by tmux.
+The left screen shows a log from COM2 of the QEMU.
+The right screen is a GDB terminal attaching QEMU.
+Press `Ctrl+t` and press `h` to move from the right screen to the left screen.
+Also, press `Ctrl+t` and press `l` to move from the left screen to the right screen.
+And Connect from a VNC client on the host to `localhost:5900` according to [RFB protocol](https://datatracker.ietf.org/doc/html/rfc6143) to operate HeliOS.
+When you finish debugging HeliOS, move to right screen, `quit` GDB and `make stop`.
+
+```
+(gdb) quit
+~/Helios # make stop
+```
 
 ## Get development permission (for only developers, not users)
 

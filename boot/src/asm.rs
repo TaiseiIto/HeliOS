@@ -1,3 +1,5 @@
+//! Wrapper functions of x64 instructions.
+
 use core::arch::asm;
 
 pub fn hlt() {

@@ -1,3 +1,5 @@
+//! RS232C line status register
+
 use bitfield_struct::bitfield;
 
 // https://www.lookrs232.com/rs232/lsr.htm

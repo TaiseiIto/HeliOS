@@ -1,3 +1,5 @@
+//! RS232C FIFO control register
+
 use bitfield_struct::bitfield;
 
 // https://www.lookrs232.com/rs232/fcr.htm
