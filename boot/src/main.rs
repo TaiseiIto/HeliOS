@@ -10,7 +10,7 @@ mod rs232c;
 
 #[no_mangle]
 fn efi_main() {
-    let com2 = rs232c::com2();
+    let com2: Option<rs232c::Com> = rs232c::com2();
     panic!("Hello, World!");
 }
 
