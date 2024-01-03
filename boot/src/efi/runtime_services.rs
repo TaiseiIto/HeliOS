@@ -12,6 +12,10 @@ pub struct RuntimeServices {
     set_virtual_address_map: SetVirtualAddressMap,
     convert_pointer: ConvertPointer,
     get_variable: GetVariable,
+    get_next_variable_name: GetNextVariableName,
+    set_variable: SetVariable,
+    get_next_high_monotonic_count: GetNextHighMonotonicCount,
+    reset_system: ResetSystem,
 }
 
 /// # GetTime
@@ -76,4 +80,36 @@ type ConvertPointer = extern "efiapi" fn(usize, &&()) -> super::Status;
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
 type GetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, &mut u32, &mut usize, &mut ()) -> super::Status;
+
+/// # GetNextVariableName
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
+type GetNextVariableName = extern "efiapi" fn(&mut usize, super::char16::NullTerminatedString, &mut super::Guid) -> super::Status;
+
+/// # SetVariable
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
+type SetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, u32, usize, &()) -> super::Status;
+
+/// # ResetSystem
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
+type ResetSystem = extern "efiapi" fn(ResetType, super::Status, usize, &());
+
+/// # EFI_RESET_TYPE
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
+#[derive(Debug)]
+#[repr(C)]
+enum ResetType {
+    Cold,
+    Warm,
+    Shutdown,
+    PlatformSpecific,
+}
+
+/// # GetNextHighMonotonicCount
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.2 Get Next High Monotonic Count
+type GetNextHighMonotonicCount = extern "efiapi" fn(&mut u32) -> super::Status;
 
