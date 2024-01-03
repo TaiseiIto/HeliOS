@@ -2,6 +2,7 @@
 //! ## References
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf)
 
+mod boot_services;
 mod char16;
 mod event;
 mod handle;
@@ -12,6 +13,7 @@ mod status;
 mod system_table;
 mod table_header;
 
+pub use boot_services::MemoryDescriptor;
 pub use char16::Char16;
 pub use event::Event;
 pub use handle::Handle;
