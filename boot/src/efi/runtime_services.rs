@@ -65,7 +65,7 @@ type SetWakeupTime = extern "efiapi" fn(bool, &Time) -> super::Status;
 /// # SetVirtualAddressMap
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
-type SetVirtualAddressMap = extern "efiapi" fn(usize, usize, u32, &super::MemoryDescriptor) -> super::Status;
+type SetVirtualAddressMap = extern "efiapi" fn(usize, usize, u32, &super::memory::Descriptor) -> super::Status;
 
 /// # ConvertPointer
 /// ## References

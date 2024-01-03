@@ -8,7 +8,7 @@ pub type PhysicalAddress = u64;
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
 #[derive(Debug)]
 #[repr(C)]
-pub struct MemoryDescriptor {
+pub struct Descriptor {
     memory_type: u32,
     physical_start: PhysicalAddress,
     virtual_start: VirtualAddress,
