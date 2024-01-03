@@ -1,4 +1,7 @@
-use core::fmt;
+use core::{
+    fmt,
+    iter,
+};
 
 /// # CHAR16
 /// ## References
@@ -11,7 +14,10 @@ pub struct NullTerminatedString<'a>(&'a Char16);
 
 impl fmt::Debug for NullTerminatedString<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.clone().fold(Ok(()), |result, character| result.and(write!(formatter, "{}", character)))
+        iter::once('"')
+            .chain(self.clone())
+            .chain(iter::once('"'))
+            .fold(Ok(()), |result, character| result.and(write!(formatter, "{}", character)))
     }
 }
 
