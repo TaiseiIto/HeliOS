@@ -5,7 +5,7 @@ TARGET=target/$(FORMAT)/release/$(PRODUCT).efi
 DOCUMENT=target/doc/boot/index.html
 
 # Build a bootloader.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --other))
+$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	cargo build --release --target $(FORMAT)
 
 # Generate documents.
@@ -14,7 +14,7 @@ $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --other))
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(shell find . -type f | grep -vf <(git ls-files --other))
+$(DOCUMENT): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	cargo doc
 
 # Get a bootloader file path.
