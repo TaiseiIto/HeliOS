@@ -1,9 +1,9 @@
-/// # Status codeo
+/// # EFI_STATUS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 2.3.1 Data Types
 pub struct Status(usize);
 
-/// # The operation was aborted.
+/// # EFI_ABORTED
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) Appendix D - Status Codes, Table D-3 EFI_STATUS Error Codes (High Bit Set)
 pub const ABORTED: Status = Status(Status::ERROR + 21);
