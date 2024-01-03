@@ -9,5 +9,7 @@ pub struct SystemTable<'a> {
     firmware_revision: u32,
     console_in_handle: super::Handle<'a>,
     con_in: &'a super::SimpleTextInputProtocol<'a>,
+    console_out_handle: super::Handle<'a>,
+    con_out: &'a super::SimpleTextOutputProtocol,
 }
 
