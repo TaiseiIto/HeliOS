@@ -72,6 +72,6 @@ struct SimpleTextOutputMode {
     attribute: i32,
     cursor_column: i32,
     cursor_row: i32,
-    cursor_visible: i32,
+    cursor_visible: bool,
 }
 

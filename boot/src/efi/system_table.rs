@@ -11,5 +11,8 @@ pub struct SystemTable<'a> {
     con_in: &'a super::SimpleTextInputProtocol<'a>,
     console_out_handle: super::Handle<'a>,
     con_out: &'a super::SimpleTextOutputProtocol<'a>,
+    standard_error_handle: super::Handle<'a>,
+    std_err: &'a super::SimpleTextOutputProtocol<'a>,
+    runtime_services: &'a super::RuntimeServices,
 }
 

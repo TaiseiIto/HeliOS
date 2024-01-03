@@ -5,6 +5,7 @@
 mod char16;
 mod event;
 mod handle;
+mod runtime_services;
 mod simple_text_input_protocol;
 mod simple_text_output_protocol;
 mod status;
@@ -14,6 +15,7 @@ mod table_header;
 pub use char16::Char16;
 pub use event::Event;
 pub use handle::Handle;
+pub use runtime_services::RuntimeServices;
 pub use simple_text_input_protocol::SimpleTextInputProtocol;
 pub use simple_text_output_protocol::SimpleTextOutputProtocol;
 pub use status::Status;
