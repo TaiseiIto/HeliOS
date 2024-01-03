@@ -4,8 +4,12 @@
 
 mod handle;
 mod status;
+mod system_table;
+mod table_header;
 
 pub use handle::Handle;
 pub use status::Status;
 pub use status::ABORTED;
+pub use system_table::SystemTable;
+pub use table_header::TableHeader;
 
