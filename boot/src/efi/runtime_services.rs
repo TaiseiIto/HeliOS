@@ -10,6 +10,8 @@ pub struct RuntimeServices {
     get_wakeup_time: GetWakeupTime,
     set_wakeup_time: SetWakeupTime,
     set_virtual_address_map: SetVirtualAddressMap,
+    convert_pointer: ConvertPointer,
+    get_variable: GetVariable,
 }
 
 /// # GetTime
@@ -64,4 +66,14 @@ type SetWakeupTime = extern "efiapi" fn(bool, &Time) -> super::Status;
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
 type SetVirtualAddressMap = extern "efiapi" fn(usize, usize, u32, &super::MemoryDescriptor) -> super::Status;
+
+/// # ConvertPointer
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
+type ConvertPointer = extern "efiapi" fn(usize, &&()) -> super::Status;
+
+/// # GetVariable
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
+type GetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, &mut u32, &mut usize, &mut ()) -> super::Status;
 

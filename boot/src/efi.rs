@@ -5,6 +5,7 @@
 mod boot_services;
 mod char16;
 mod event;
+mod guid;
 mod handle;
 mod runtime_services;
 mod simple_text_input_protocol;
@@ -16,6 +17,7 @@ mod table_header;
 pub use boot_services::MemoryDescriptor;
 pub use char16::Char16;
 pub use event::Event;
+pub use guid::Guid;
 pub use handle::Handle;
 pub use runtime_services::RuntimeServices;
 pub use simple_text_input_protocol::SimpleTextInputProtocol;
