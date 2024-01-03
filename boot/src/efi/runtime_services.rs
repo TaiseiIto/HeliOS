@@ -17,6 +17,8 @@ pub struct RuntimeServices {
     get_next_high_monotonic_count: GetNextHighMonotonicCount,
     reset_system: ResetSystem,
     update_capsule: UpdateCapsule,
+    query_capsule_capabilities: QueryCapsuleCapabilities,
+    query_variable_info: QueryVariableInfo,
 }
 
 /// # GetTime
@@ -64,6 +66,11 @@ type GetNextVariableName = extern "efiapi" fn(&mut usize, super::char16::NullTer
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
 type SetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, u32, usize, &()) -> super::Status;
 
+/// # QueryVariableInfo
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
+type QueryVariableInfo = extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -> super::Status;
+
 /// # ResetSystem
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
@@ -108,4 +115,9 @@ union DataBlockOrContinuationPointer {
     data_block: super::memory::PhysicalAddress,
     continuation_pointer: super::memory::PhysicalAddress,
 }
+
+/// # QueryCapsuleCapabilities
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
+type QueryCapsuleCapabilities = extern "efiapi" fn(&&CapsuleHeader, usize, &mut u64, &mut ResetType) -> super::Status;
 
