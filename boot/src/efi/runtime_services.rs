@@ -16,55 +16,28 @@ pub struct RuntimeServices {
     set_variable: SetVariable,
     get_next_high_monotonic_count: GetNextHighMonotonicCount,
     reset_system: ResetSystem,
+    update_capsule: UpdateCapsule,
 }
 
 /// # GetTime
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type GetTime = extern "efiapi" fn(&mut Time, &mut TimeCapabilities) -> super::Status;
-
-/// # EFI_TIME
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-#[repr(C)]
-struct Time {
-    year: u16,
-    month: u8,
-    day: u8,
-    hour: u8,
-    minute: u8,
-    second: u8,
-    pad1: u8,
-    nanosecond: u32,
-    time_zone: i16,
-    day_light: u8,
-    pad2: u8,
-}
-
-/// # EFI_TIME_CAPABILITIES
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-#[repr(C)]
-struct TimeCapabilities {
-    resolution: u32,
-    accuracy: u32,
-    sets_to_zero: bool,
-}
+type GetTime = extern "efiapi" fn(&mut super::Time, &mut super::time::Capabilities) -> super::Status;
 
 /// # SetTime
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type SetTime = extern "efiapi" fn(&Time) -> super::Status;
+type SetTime = extern "efiapi" fn(&super::Time) -> super::Status;
 
 /// # GetWakeupTime
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type GetWakeupTime = extern "efiapi" fn(&mut bool, &mut bool, &mut Time) -> super::Status;
+type GetWakeupTime = extern "efiapi" fn(&mut bool, &mut bool, &mut super::Time) -> super::Status;
 
 /// # SetWakeupTime
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type SetWakeupTime = extern "efiapi" fn(bool, &Time) -> super::Status;
+type SetWakeupTime = extern "efiapi" fn(bool, &super::Time) -> super::Status;
 
 /// # SetVirtualAddressMap
 /// ## References
@@ -112,4 +85,27 @@ enum ResetType {
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.2 Get Next High Monotonic Count
 type GetNextHighMonotonicCount = extern "efiapi" fn(&mut u32) -> super::Status;
+
+/// # UpdateCapsule
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
+type UpdateCapsule = extern "efiapi" fn(&&CapsuleHeader, usize, super::memory::PhysicalAddress) -> super::Status;
+
+/// EFI_CAPSULE_HEADER
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
+#[repr(C)]
+struct CapsuleHeader {
+    length: u64,
+    data_block_or_continuation_pointer: DataBlockOrContinuationPointer,
+}
+
+/// A union of data block or continuation pointer
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
+#[repr(C)]
+union DataBlockOrContinuationPointer {
+    data_block: super::memory::PhysicalAddress,
+    continuation_pointer: super::memory::PhysicalAddress,
+}
 

@@ -13,6 +13,7 @@ mod simple_text_output_protocol;
 mod status;
 mod system_table;
 mod table_header;
+mod time;
 
 pub use char16::Char16;
 pub use event::Event;
@@ -25,4 +26,5 @@ pub use status::Status;
 pub use status::ABORTED;
 pub use system_table::SystemTable;
 pub use table_header::TableHeader;
+pub use time::Time;
 
