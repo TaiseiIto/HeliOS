@@ -11,6 +11,7 @@ pub struct Char16(u16);
 
 /// # Null terminated string
 #[derive(Clone)]
+#[repr(C)]
 pub struct NullTerminatedString<'a>(&'a Char16);
 
 impl fmt::Debug for NullTerminatedString<'_> {

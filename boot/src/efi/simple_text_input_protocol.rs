@@ -12,16 +12,12 @@ pub struct SimpleTextInputProtocol<'a> {
 /// # EFI_INPUT_RESET
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.3 Simple Text Input Protocol
-#[derive(Debug)]
-#[repr(C)]
-struct InputReset(extern "efiapi" fn(&SimpleTextInputProtocol, bool) -> super::Status);
+type InputReset = extern "efiapi" fn(&SimpleTextInputProtocol, bool) -> super::Status;
 
 /// # EFI_INPUT_READ_KEY
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.3 Simple Text Input Protocol
-#[derive(Debug)]
-#[repr(C)]
-struct InputReadKey(extern "efiapi" fn(&SimpleTextInputProtocol, &InputKey) -> super::Status);
+type InputReadKey = extern "efiapi" fn(&SimpleTextInputProtocol, &InputKey) -> super::Status;
 
 #[repr(C)]
 #[repr(C)]
