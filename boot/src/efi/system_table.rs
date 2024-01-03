@@ -10,6 +10,6 @@ pub struct SystemTable<'a> {
     console_in_handle: super::Handle<'a>,
     con_in: &'a super::SimpleTextInputProtocol<'a>,
     console_out_handle: super::Handle<'a>,
-    con_out: &'a super::SimpleTextOutputProtocol,
+    con_out: &'a super::SimpleTextOutputProtocol<'a>,
 }
 
