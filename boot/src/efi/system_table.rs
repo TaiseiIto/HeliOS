@@ -29,3 +29,9 @@ pub struct SystemTable<'a> {
     configuration_tables: configuration::Tables<'a>,
 }
 
+impl SystemTable<'_> {
+    pub fn shutdown(&self) {
+        self.runtime_services.shutdown();
+    }
+}
+

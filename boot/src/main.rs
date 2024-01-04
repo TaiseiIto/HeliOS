@@ -18,7 +18,8 @@ mod rs232c;
 fn efi_main(image_handle: efi::Handle, system_table: &efi::SystemTable) -> efi::Status {
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", system_table);
-    efi::ABORTED
+    system_table.shutdown();
+    efi::Status::ABORTED
 }
 
 /// # A panic handler of the boot loader

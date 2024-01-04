@@ -28,7 +28,6 @@ pub use runtime_services::RuntimeServices;
 pub use simple_text_input_protocol::SimpleTextInputProtocol;
 pub use simple_text_output_protocol::SimpleTextOutputProtocol;
 pub use status::Status;
-pub use status::ABORTED;
 pub use system_table::SystemTable;
 pub use table_header::TableHeader;
 pub use time::Time;
