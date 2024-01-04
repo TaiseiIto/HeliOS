@@ -6,6 +6,7 @@ use {
     },
 };
 
+#[derive(Clone)]
 #[repr(C)]
 pub struct Tables<'a> {
     number_of_table_entries: usize,
@@ -16,15 +17,28 @@ impl fmt::Debug for Tables<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_list()
-            .entries((0..self.number_of_table_entries)
-                .map(|i| {
-                    let first_table: &Table = self.configuration_table;
-                    let first_table: *const Table = first_table as *const Table;
-                    unsafe {
-                        &*first_table.add(i)
-                    }
-                }))
+            .entries(self.clone())
             .finish()
+    }
+}
+
+impl<'a> Iterator for Tables<'a> {
+    type Item = &'a Table;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.number_of_table_entries {
+            0 => None,
+            _ => {
+                let output: &Table = self.configuration_table;
+                let configuration_table: &Table = self.configuration_table;
+                let configuration_table: *const Table = configuration_table as *const Table;
+                self.number_of_table_entries -= 1;
+                self.configuration_table = unsafe {
+                    &*configuration_table.add(1)
+                };
+                Some(output)
+            },
+        }
     }
 }
 
