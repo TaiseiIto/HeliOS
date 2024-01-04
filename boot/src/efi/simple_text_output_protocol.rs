@@ -24,47 +24,47 @@ pub struct SimpleTextOutputProtocol<'a> {
 /// # EFI_TEXT_RESET
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextReset = extern "efiapi" fn(&SimpleTextOutputProtocol, bool) -> Status;
+type TextReset = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* ExtendedVerification */ bool) -> Status;
 
 /// # EFI_TEXT_STRING
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextString = extern "efiapi" fn(&SimpleTextOutputProtocol, char16::NullTerminatedString) -> Status;
+type TextString = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* String */ char16::NullTerminatedString) -> Status;
 
 /// # EFI_TEXT_TEST_STRING
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextTestString = extern "efiapi" fn(&SimpleTextOutputProtocol, char16::NullTerminatedString) -> Status;
+type TextTestString = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* String */ char16::NullTerminatedString) -> Status;
 
 /// # EFI_TEXT_QUERY_MODE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextQueryMode = extern "efiapi" fn(&SimpleTextOutputProtocol, usize, &mut usize, &mut usize) -> Status;
+type TextQueryMode = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* ModeNumber */ usize, /* Columns */ &mut usize, /* Rows */ &mut usize) -> Status;
 
 /// # EFI_TEXT_SET_MODE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextSetMode = extern "efiapi" fn(&SimpleTextOutputProtocol, usize) -> Status;
+type TextSetMode = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* ModeNumber */ usize) -> Status;
 
 /// # EFI_TEXT_SET_ATTRIBUTE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextSetAttribute = extern "efiapi" fn(&SimpleTextOutputProtocol, usize) -> Status;
+type TextSetAttribute = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* Attribute */ usize) -> Status;
 
 /// # EFI_TEXT_CLEAR_SCREEN
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextClearScreen = extern "efiapi" fn(&SimpleTextOutputProtocol) -> Status;
+type TextClearScreen = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol) -> Status;
 
 /// # EFI_TEXT_SET_CURSOR_POSITION
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextSetCursorPosition = extern "efiapi" fn(&SimpleTextOutputProtocol, usize, usize) -> Status;
+type TextSetCursorPosition = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* Column */ usize, /* Row */ usize) -> Status;
 
 /// # EFI_TEXT_ENABLE_CURSOR
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
-type TextEnableCursor = extern "efiapi" fn(&SimpleTextOutputProtocol, bool) -> Status;
+type TextEnableCursor = extern "efiapi" fn(/* This */ &SimpleTextOutputProtocol, /* Visible */ bool) -> Status;
 
 /// # SIMPLE_TEXT_OUTPUT_MODE
 /// ## References

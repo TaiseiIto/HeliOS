@@ -32,60 +32,60 @@ pub struct RuntimeServices {
     query_variable_info: QueryVariableInfo,
 }
 
-/// # GetTime
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type GetTime = extern "efiapi" fn(&mut Time, &mut time::Capabilities) -> Status;
-
-/// # SetTime
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type SetTime = extern "efiapi" fn(&Time) -> Status;
-
-/// # GetWakeupTime
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type GetWakeupTime = extern "efiapi" fn(&mut bool, &mut bool, &mut Time) -> Status;
-
-/// # SetWakeupTime
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
-type SetWakeupTime = extern "efiapi" fn(bool, &Time) -> Status;
-
-/// # SetVirtualAddressMap
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
-type SetVirtualAddressMap = extern "efiapi" fn(usize, usize, u32, &memory::Descriptor) -> Status;
-
-/// # ConvertPointer
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
-type ConvertPointer = extern "efiapi" fn(usize, &&Void) -> Status;
-
 /// # GetVariable
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type GetVariable = extern "efiapi" fn(char16::NullTerminatedString, &Guid, &mut u32, &mut usize, &mut Void) -> Status;
+type GetVariable = extern "efiapi" fn(/* VariableName */ char16::NullTerminatedString, /* VendorGuid */ &Guid, /* Attributes */ &mut u32, /* DataSize */ &mut usize, /* Data */ &mut Void) -> Status;
 
 /// # GetNextVariableName
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type GetNextVariableName = extern "efiapi" fn(&mut usize, char16::NullTerminatedString, &mut Guid) -> Status;
+type GetNextVariableName = extern "efiapi" fn(/* VariableNameSize */ &mut usize, /* VariableName */ char16::NullTerminatedString, /* VendorGuid */ &mut Guid) -> Status;
 
 /// # SetVariable
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type SetVariable = extern "efiapi" fn(char16::NullTerminatedString, &Guid, u32, usize, &Void) -> Status;
+type SetVariable = extern "efiapi" fn(/* VariableName */ char16::NullTerminatedString, /* VendorGuid */ &Guid, /* Attributes */ u32, /* DataSize */ usize, /* Data */ &Void) -> Status;
 
 /// # QueryVariableInfo
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type QueryVariableInfo = extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -> Status;
+type QueryVariableInfo = extern "efiapi" fn(/* Attributes */ u32, /* MaximumVariableStorageSize */ &mut u64, /* RemainingVariableStorageSize */ &mut u64, /* MaximumVariableSize */ &mut u64) -> Status;
+
+/// # GetTime
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
+type GetTime = extern "efiapi" fn(/* Time */ &mut Time, /* Capabilities */ &mut time::Capabilities) -> Status;
+
+/// # SetTime
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
+type SetTime = extern "efiapi" fn(/* Time */ &Time) -> Status;
+
+/// # GetWakeupTime
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
+type GetWakeupTime = extern "efiapi" fn(/* Enabled */ &mut bool, /* Pending */ &mut bool, /* Time */ &mut Time) -> Status;
+
+/// # SetWakeupTime
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.3 Time Services
+type SetWakeupTime = extern "efiapi" fn(/* Enable */ bool, /* Time */ &Time) -> Status;
+
+/// # SetVirtualAddressMap
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
+type SetVirtualAddressMap = extern "efiapi" fn(/* MemoryMapSize */ usize, /* DescriptorSize */ usize, /* DescriptorVersion */ u32, /* VirtualMap */ &memory::Descriptor) -> Status;
+
+/// # ConvertPointer
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
+type ConvertPointer = extern "efiapi" fn(/* DebugDisposition */ usize, /* Address */ &&Void) -> Status;
 
 /// # ResetSystem
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
-type ResetSystem = extern "efiapi" fn(ResetType, Status, usize, &Void);
+type ResetSystem = extern "efiapi" fn(/* ResetType */ ResetType, /* ResetStatus */ Status, /* DataSize */ usize, /* ResetData */ &Void);
 
 /// # EFI_RESET_TYPE
 /// ## References
@@ -102,12 +102,12 @@ enum ResetType {
 /// # GetNextHighMonotonicCount
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.2 Get Next High Monotonic Count
-type GetNextHighMonotonicCount = extern "efiapi" fn(&mut u32) -> Status;
+type GetNextHighMonotonicCount = extern "efiapi" fn(/* HighCount */ &mut u32) -> Status;
 
 /// # UpdateCapsule
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
-type UpdateCapsule = extern "efiapi" fn(&&CapsuleHeader, usize, memory::PhysicalAddress) -> Status;
+type UpdateCapsule = extern "efiapi" fn(/* CapsuleHeaderArray */ &&CapsuleHeader, /* CapsuleCount */ usize, /* ScatterGatherList */ memory::PhysicalAddress) -> Status;
 
 /// EFI_CAPSULE_HEADER
 /// ## References
@@ -130,5 +130,5 @@ union DataBlockOrContinuationPointer {
 /// # QueryCapsuleCapabilities
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.3 Update Capsule
-type QueryCapsuleCapabilities = extern "efiapi" fn(&&CapsuleHeader, usize, &mut u64, &mut ResetType) -> Status;
+type QueryCapsuleCapabilities = extern "efiapi" fn(/* CapsuleHeaderArray */ &&CapsuleHeader, /* CapsuleCount */ usize, /* MaximumCapsuleSize */ &mut u64, /* ResetType */ &mut ResetType) -> Status;
 
