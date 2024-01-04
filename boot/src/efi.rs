@@ -8,6 +8,7 @@ mod event;
 mod guid;
 mod handle;
 mod memory;
+mod protocol;
 mod runtime_services;
 mod simple_text_input_protocol;
 mod simple_text_output_protocol;
