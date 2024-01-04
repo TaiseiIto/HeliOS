@@ -1,3 +1,40 @@
+/// # EFI_ALLOCATE_TYPE
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+#[derive(Debug)]
+#[repr(C)]
+pub enum AllocateType {
+    AllocateAnyPages,
+    AllocateMaxAddress,
+    AllocateAddress,
+    MaxAllocateType,
+}
+
+/// # EFI_MEMORY_TYPE
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+#[derive(Debug)]
+#[repr(C)]
+pub enum Type {
+    ReservedMemoryType,
+    LoaderCode,
+    LoaderData,
+    BootServicesCode,
+    BootServicesData,
+    RuntimeServicesCode,
+    RuntimeServicesData,
+    ConventionalMemory,
+    UnusableMemory,
+    ACPIReclaimMemory,
+    ACPIMemoryNVS,
+    MemoryMappedIO,
+    MemoryMappedIOPortSpace,
+    PalCode,
+    PersistentMemory,
+    UnacceptedMemoryType,
+    MaxMemoryType,
+}
+
 /// # EFI_PHYSICAL_ADDRESS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
