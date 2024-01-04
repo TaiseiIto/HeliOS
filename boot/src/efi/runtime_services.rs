@@ -49,12 +49,12 @@ type SetVirtualAddressMap = extern "efiapi" fn(usize, usize, u32, &super::memory
 /// # ConvertPointer
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.4 Virtual Memory Services
-type ConvertPointer = extern "efiapi" fn(usize, &&()) -> super::Status;
+type ConvertPointer = extern "efiapi" fn(usize, &&super::Void) -> super::Status;
 
 /// # GetVariable
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type GetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, &mut u32, &mut usize, &mut ()) -> super::Status;
+type GetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, &mut u32, &mut usize, &mut super::Void) -> super::Status;
 
 /// # GetNextVariableName
 /// ## References
@@ -64,7 +64,7 @@ type GetNextVariableName = extern "efiapi" fn(&mut usize, super::char16::NullTer
 /// # SetVariable
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.2 Variable Services
-type SetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, u32, usize, &()) -> super::Status;
+type SetVariable = extern "efiapi" fn(super::char16::NullTerminatedString, &super::Guid, u32, usize, &super::Void) -> super::Status;
 
 /// # QueryVariableInfo
 /// ## References
@@ -74,7 +74,7 @@ type QueryVariableInfo = extern "efiapi" fn(u32, &mut u64, &mut u64, &mut u64) -
 /// # ResetSystem
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
-type ResetSystem = extern "efiapi" fn(ResetType, super::Status, usize, &());
+type ResetSystem = extern "efiapi" fn(ResetType, super::Status, usize, &super::Void);
 
 /// # EFI_RESET_TYPE
 /// ## References

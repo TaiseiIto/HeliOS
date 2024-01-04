@@ -15,6 +15,7 @@ mod status;
 mod system_table;
 mod table_header;
 mod time;
+mod void;
 
 pub use boot_services::BootServices;
 pub use char16::Char16;
@@ -29,4 +30,5 @@ pub use status::ABORTED;
 pub use system_table::SystemTable;
 pub use table_header::TableHeader;
 pub use time::Time;
+pub use void::Void;
 
