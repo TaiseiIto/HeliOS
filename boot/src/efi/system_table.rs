@@ -25,8 +25,7 @@ pub struct SystemTable<'a> {
     standard_error_handle: Handle<'a>,
     std_err: &'a SimpleTextOutputProtocol<'a>,
     runtime_services: &'a RuntimeServices,
-    boot_services: &'a BootServices<'a>,
-    number_of_table_entries: usize,
-    configuration_table: &'a configuration::Table<'a>,
+    boot_services: &'a BootServices,
+    configuration_tables: configuration::Tables<'a>,
 }
 

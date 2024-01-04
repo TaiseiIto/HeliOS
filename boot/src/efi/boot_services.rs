@@ -17,7 +17,7 @@ use super::{
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.4 EFI Boot Services Table
 #[derive(Debug)]
 #[repr(C)]
-pub struct BootServices<'a> {
+pub struct BootServices {
     hdr: TableHeader,
     raise_tpl: RaiseTpl,
     restore_tpl: RestoreTpl,
@@ -36,7 +36,7 @@ pub struct BootServices<'a> {
     reinstall_protocol_interface: ReinstallProtocolInterface,
     uninstall_protocol_interface: UninstallProtocolInterface,
     handle_protocol: HandleProtocol,
-    reserved: &'a Void,
+    reserved: *const Void,
     register_protocol_notify: RegisterProtocolNotify,
     locate_handle: LocateHandle,
     locate_device_path: LocateDevicePath,
