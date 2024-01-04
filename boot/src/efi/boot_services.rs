@@ -27,6 +27,11 @@ pub struct BootServices<'a> {
     locate_handle: LocateHandle,
     locate_device_path: LocateDevicePath,
     install_configuration_table: InstallConfigurationTable,
+    load_image: ImageLoad,
+    start_image: ImageStart,
+    exit: Exit,
+    unload_image: ImageUnload,
+    exit_boot_services: ExitBootServices,
 }
 
 /// # EFI_RAISE_TPL
@@ -43,31 +48,6 @@ type RestoreTpl = extern "efiapi" fn(Tpl);
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
 type Tpl = usize;
-
-/// # EFI_ALLOCATE_PAGES
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type AllocatePages = extern "efiapi" fn(super::memory::AllocateType, super::memory::Type, usize, &mut super::memory::PhysicalAddress) -> super::Status;
-
-/// # EFI_FREE_PAGES
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type FreePages = extern "efiapi" fn(super::memory::PhysicalAddress, usize) -> super::Status;
-
-/// # EFI_GET_MEMORY_MAP
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type GetMemoryMap = extern "efiapi" fn(&mut usize, &mut super::memory::Descriptor, &mut usize, &mut usize, &mut u32) -> super::Status;
-
-/// # EFI_ALLOCATE_POOL
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type AllocatePool = extern "efiapi" fn(super::memory::Type, usize, &mut &super::Void) -> super::Status;
-
-/// # EFI_FREE_POOL
-/// ## References
-/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type FreePool = extern "efiapi" fn(&super::Void) -> super::Status;
 
 /// # EFI_CREATE_EVENT
 /// ## References
@@ -98,6 +78,31 @@ type CheckEvent = extern "efiapi" fn(super::Event) -> super::Status;
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
 type SetTimer = extern "efiapi" fn(super::Event, super::time::Delay, u64) -> super::Status;
+
+/// # EFI_ALLOCATE_PAGES
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+type AllocatePages = extern "efiapi" fn(super::memory::AllocateType, super::memory::Type, usize, &mut super::memory::PhysicalAddress) -> super::Status;
+
+/// # EFI_FREE_PAGES
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+type FreePages = extern "efiapi" fn(super::memory::PhysicalAddress, usize) -> super::Status;
+
+/// # EFI_GET_MEMORY_MAP
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+type GetMemoryMap = extern "efiapi" fn(&mut usize, &mut super::memory::Descriptor, &mut usize, &mut usize, &mut u32) -> super::Status;
+
+/// # EFI_ALLOCATE_POOL
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+type AllocatePool = extern "efiapi" fn(super::memory::Type, usize, &mut &super::Void) -> super::Status;
+
+/// # EFI_FREE_POOL
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+type FreePool = extern "efiapi" fn(&super::Void) -> super::Status;
 
 /// # EFI_INSTALL_PROTOCOL_INTERFACE
 /// ## References
@@ -153,6 +158,31 @@ type HandleProtocol = extern "efiapi" fn(super::Handle, &super::Guid, &mut &supe
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
 type LocateDevicePath = extern "efiapi" fn(&super::Guid, &mut &super::protocol::DevicePath, &mut super::Handle) -> super::Status;
+
+/// # EFI_IMAGE_LOAD
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
+type ImageLoad = extern "efiapi" fn(bool, super::Handle, &super::protocol::DevicePath, &super::Void, usize, &mut super::Handle) -> super::Status;
+
+/// # EFI_IMAGE_START
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
+type ImageStart = extern "efiapi" fn(super::Handle, &mut usize, &mut super::char16::NullTerminatedString) -> super::Status;
+
+/// # EFI_EXIT
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
+type Exit = extern "efiapi" fn(super::Handle, super::Status, usize, super::char16::NullTerminatedString) -> super::Status;
+
+/// # EFI_IMAGE_UNLOAD
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
+type ImageUnload = extern "efiapi" fn(super::Handle) -> super::Status;
+
+/// # EFI_EXIT_BOOT_SERVICES
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
+type ExitBootServices = extern "efiapi" fn(super::Handle, usize) -> super::Status;
 
 /// # EFI_INSTALL_CONFIGURATION_TABLE
 /// ## References
