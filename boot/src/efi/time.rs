@@ -26,3 +26,14 @@ pub struct Capabilities {
     sets_to_zero: bool,
 }
 
+/// # EFI_TIMER_DELAY
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
+#[derive(Debug)]
+#[repr(C)]
+pub enum Delay {
+    Cancel,
+    Periodic,
+    Relative,
+}
+
