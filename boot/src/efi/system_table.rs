@@ -14,5 +14,6 @@ pub struct SystemTable<'a> {
     standard_error_handle: super::Handle<'a>,
     std_err: &'a super::SimpleTextOutputProtocol<'a>,
     runtime_services: &'a super::RuntimeServices,
+    boot_services: &'a super::BootServices,
 }
 
