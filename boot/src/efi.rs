@@ -4,6 +4,7 @@
 
 mod boot_services;
 mod char16;
+mod configuration;
 mod event;
 mod guid;
 mod handle;

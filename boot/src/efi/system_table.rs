@@ -6,9 +6,10 @@ use super::{
     SimpleTextOutputProtocol,
     TableHeader,
     char16,
+    configuration,
 };
 
-/// # EFI System Table
+/// # EFI_SYSTEM_TABLE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.3 EFI System Table
 #[derive(Debug)]
@@ -25,5 +26,7 @@ pub struct SystemTable<'a> {
     std_err: &'a SimpleTextOutputProtocol<'a>,
     runtime_services: &'a RuntimeServices,
     boot_services: &'a BootServices<'a>,
+    number_of_table_entries: usize,
+    configuration_table: &'a configuration::Table<'a>,
 }
 
