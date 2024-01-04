@@ -46,6 +46,9 @@ pub struct BootServices<'a> {
     exit: Exit,
     unload_image: ImageUnload,
     exit_boot_services: ExitBootServices,
+    get_next_monotonic_count: GetNextMonotonicCount,
+    stall: Stall,
+    set_watchdog_timer: SetWatchdogTimer,
 }
 
 /// # EFI_RAISE_TPL
@@ -202,4 +205,19 @@ type ExitBootServices = extern "efiapi" fn(Handle, usize) -> Status;
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
 type InstallConfigurationTable = extern "efiapi" fn(&Guid, &Void) -> Status;
+
+/// # EFI_SET_WATCHDOG_TIMER
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
+type SetWatchdogTimer = extern "efiapi" fn(usize, u64, usize, char16::NullTerminatedString) -> Status;
+
+/// # EFI_STALL
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
+type Stall = extern "efiapi" fn(usize) -> Status;
+
+/// # EFI_GET_NEXT_MONOTONIC_COUNT
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
+type GetNextMonotonicCount = extern "efiapi" fn(&mut u64) -> Status;
 
