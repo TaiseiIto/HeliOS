@@ -4,6 +4,7 @@ use super::{
     Handle,
     Status,
     TableHeader,
+    VOID,
     Void,
     char16,
     event,
@@ -63,6 +64,23 @@ pub struct BootServices {
     copy_mem: CopyMem,
     set_mem: SetMem,
     create_event_ex: CreateEventEx,
+}
+
+impl BootServices {
+    pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
+        let mut pool: &Void = &VOID;
+        match (self.allocate_pool)(memory::Type::ConventionalMemory, size, &mut pool) {
+            Status::SUCCESS => Ok(pool),
+            status => Err(status),
+        }
+    }
+
+    pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
+        match (self.free_pool)(pool) {
+            Status::SUCCESS => Ok(()),
+            status => Err(status),
+        }
+    }
 }
 
 /// # EFI_CREATE_EVENT

@@ -4,7 +4,9 @@ use super::{
     RuntimeServices,
     SimpleTextInputProtocol,
     SimpleTextOutputProtocol,
+    Status,
     TableHeader,
+    Void,
     char16,
     configuration,
 };
@@ -32,6 +34,14 @@ pub struct SystemTable<'a> {
 }
 
 impl SystemTable<'_> {
+    pub fn allocate(&self, size: usize) -> Result<&Void, Status> {
+        self.boot_services.allocate_pool(size)
+    }
+
+    pub fn deallocate(&self, pool: &Void) -> Result<(), Status> {
+        self.boot_services.free_pool(pool)
+    }
+
     pub fn shutdown(&self) {
         self.runtime_services.shutdown();
     }
