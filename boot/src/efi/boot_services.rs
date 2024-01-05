@@ -69,17 +69,12 @@ pub struct BootServices {
 impl BootServices {
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
         let mut pool: &Void = &VOID;
-        match (self.allocate_pool)(memory::Type::ConventionalMemory, size, &mut pool) {
-            Status::SUCCESS => Ok(pool),
-            status => Err(status),
-        }
+        let result: Result<(), Status> = (self.allocate_pool)(memory::Type::ConventionalMemory, size, &mut pool).into();
+        result.map(|_| pool)
     }
 
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
-        match (self.free_pool)(pool) {
-            Status::SUCCESS => Ok(()),
-            status => Err(status),
-        }
+        (self.free_pool)(pool).into()
     }
 }
 

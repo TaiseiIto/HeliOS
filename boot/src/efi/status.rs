@@ -21,3 +21,12 @@ impl Status {
     const ERROR: usize = 1 << (usize::BITS - 1);
 }
 
+impl Into<Result<(), Self>> for Status {
+    fn into(self) -> Result<(), Self> {
+        match self {
+            Self::SUCCESS => Ok(()),
+            _ => Err(self),
+        }
+    }
+}
+

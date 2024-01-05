@@ -21,6 +21,12 @@ pub struct SimpleTextOutputProtocol<'a> {
     mode: &'a SimpleTextOutputMode,
 }
 
+impl SimpleTextOutputProtocol<'_> {
+    pub fn output_string(&self, string: char16::NullTerminatedString) -> Result<(), Status> {
+        (self.output_string)(self, string).into()
+    }
+}
+
 /// # EFI_TEXT_RESET
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.4 Simple Text Output Protocol
