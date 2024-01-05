@@ -5,7 +5,10 @@ extern crate alloc;
 use {
     alloc::alloc::Layout,
     core::alloc::GlobalAlloc,
-    crate::efi,
+    super::{
+        SystemTable,
+        Void,
+    },
 };
 
 #[global_allocator]
@@ -23,10 +26,10 @@ unsafe impl GlobalAlloc for Allocator {
         // EFI_BOOT_SERVICES.AllocatePool()
         // "All allocations are eight-byte aligned."
         assert!(align <= 8);
-        efi::SystemTable::get()
+        SystemTable::get()
             .allocate(size)
             .map(|ptr| {
-                let ptr: *const efi::Void = ptr as *const efi::Void;
+                let ptr: *const Void = ptr as *const Void;
                 let ptr: usize = ptr as usize;
                 ptr as *mut u8
             })
@@ -35,9 +38,9 @@ unsafe impl GlobalAlloc for Allocator {
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         let ptr: usize = ptr as usize;
-        let ptr: *const efi::Void = ptr as *const efi::Void;
-        let ptr: &efi::Void = &*ptr;
-        efi::SystemTable::get()
+        let ptr: *const Void = ptr as *const Void;
+        let ptr: &Void = &*ptr;
+        SystemTable::get()
             .deallocate(ptr)
             .unwrap()
     }

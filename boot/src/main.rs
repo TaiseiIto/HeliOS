@@ -7,7 +7,6 @@
 
 use core::panic::PanicInfo;
 
-mod allocator;
 mod asm;
 mod efi;
 mod rs232c;
