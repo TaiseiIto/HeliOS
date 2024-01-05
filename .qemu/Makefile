@@ -4,7 +4,7 @@
 QEMU=qemu-system-x86_64
 LOG=-d int,cpu_reset -D $(LOG_PATH)
 LOG_PATH=../qemu.log
-MEMORY_SIZE=-m 1G
+MEMORY_SIZE=-m 64M
 MONITOR=-monitor telnet::$(TELNET_PORT),server,nowait
 NO_REBOOT=--no-reboot
 OS=-drive file=$(OS_PATH),format=raw,id=$(OS_NAME),if=none -device ide-hd,drive=$(OS_NAME),bootindex=1

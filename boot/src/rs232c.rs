@@ -1,3 +1,10 @@
+//! # String writing function by RS232C COM2
+//! GPD MicroPC, a tester hardware of the OS, has a RS232C port as COM2.
+//! So we use COM2 to log boot progress.
+//! ## References
+//! * [Serial Ports - OSdev WiKi](https://wiki.osdev.org/Serial_Ports)
+//! * [Look RS232](https://www.lookrs232.com/rs232/registers.htm)
+
 use {
     core::fmt::{
         self,
@@ -12,36 +19,38 @@ mod line_control;
 mod line_status;
 mod modem_control;
 
+/// # Print with a line feed to COM2
+/// Usage is the same as [println](https://doc.rust-lang.org/std/macro.println.html)
 #[macro_export]
 macro_rules! com2_println {
     ($fmt:expr) => (com2_print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (com2_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
+/// # Print without a line feed to COM2
+/// Usage is the same as [print](https://doc.rust-lang.org/std/macro.print.html)
 #[macro_export]
 macro_rules! com2_print {
     ($($arg:tt)*) => ($crate::rs232c::com2_print(format_args!($($arg)*)));
 }
 
-static mut COM2: Option<Com> = None;
-const COM2_PORT: u16 = 0x02f8;
-
 pub fn com2_print(args: fmt::Arguments) {
     unsafe {
         if COM2.is_none() {
-            COM2 = Some(Com::new(COM2_PORT));
+            COM2 = Some(Com::new(COM2_PORT, COM2_BAUD_RATE));
         }
         COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
     }
 }
 
+static mut COM2: Option<Com> = None;
+const COM2_PORT: u16 = 0x02f8;
+const COM2_BAUD_RATE: u32 = 9600;
+
 pub struct Com {
     port: u16,
 }
 
-const BAUD_RATE: u32 = 9600;
-
-// https://www.lookrs232.com/rs232/registers.htm
 impl Com {
     const FREQUENCY: u32 = 115200;
     const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
@@ -75,13 +84,12 @@ impl Com {
         }
     }
 
-    // https://wiki.osdev.org/Serial_Ports#:~:text=Example%20Code-,Initialization,-%23define%20PORT%200x3f8
-    fn new(port: u16) -> Self {
+    fn new(port: u16, baud_rate: u32) -> Self {
         let com = Self {
             port
         };
         com.disable_all_interrupts();
-        com.write_baud_rate(BAUD_RATE);
+        com.write_baud_rate(baud_rate);
         // 8 bits, no parity, one stop bit
         let word_length: u8 = 8;
         let length_of_stop = line_control::LengthOfStop::One;
@@ -229,7 +237,7 @@ impl Com {
     }
 }
 
-impl Write for Com {
+impl fmt::Write for Com {
     fn write_str(&mut self, string: &str) -> fmt::Result {
         string.bytes().for_each(|byte| self.send(byte));
         Ok(())

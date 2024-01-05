@@ -1,6 +1,9 @@
+//! # RS232C line status register
+//! ## References
+//! * [Look RS232 Line Status Register](https://www.lookrs232.com/rs232/lsr.htm)
+
 use bitfield_struct::bitfield;
 
-// https://www.lookrs232.com/rs232/lsr.htm
 #[bitfield(u8)]
 pub struct Register {
     data_ready: bool,

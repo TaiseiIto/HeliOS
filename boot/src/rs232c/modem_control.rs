@@ -1,6 +1,9 @@
+//! # RS232C modem control register
+//! ## References
+//! * [Look RS232 Model Control Register](https://www.lookrs232.com/rs232/mcr.htm)
+
 use bitfield_struct::bitfield;
 
-// https://www.lookrs232.com/rs232/mcr.htm
 #[bitfield(u8)]
 pub struct Register {
     force_data_terminal_ready: bool,

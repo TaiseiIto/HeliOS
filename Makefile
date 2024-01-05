@@ -31,7 +31,7 @@ TELNET_PORT=23
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
-$(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
+$(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -44,14 +44,14 @@ $(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ |
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(MOUNT_DIRECTORY): $(BOOTLOADER_SOURCE) $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
+$(MOUNT_DIRECTORY): $(BOOTLOADER_SOURCE) $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
 	mkdir -p $(shell dirname $(BOOTLOADER_DESTINATION))
 	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
 
-$(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --other))
+$(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(BOOT_DIRECTORY)
 
 # Run the OS on QEMU.

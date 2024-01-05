@@ -1,6 +1,9 @@
+//! # RS232C interrupt enable register
+//! ## References
+//! * [Look RS232 Interrupt Enable Register](https://www.lookrs232.com/rs232/ier.htm)
+
 use bitfield_struct::bitfield;
 
-// https://www.lookrs232.com/rs232/ier.htm
 #[bitfield(u8)]
 pub struct Register {
     enable_received_data_available_interrupt: bool,
