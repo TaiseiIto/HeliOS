@@ -69,7 +69,7 @@ pub struct BootServices {
 impl BootServices {
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
         let mut pool: &Void = &VOID;
-        let result: Result<(), Status> = (self.allocate_pool)(memory::Type::ConventionalMemory, size, &mut pool).into();
+        let result: Result<(), Status> = (self.allocate_pool)(memory::Type::LoaderData, size, &mut pool).into();
         result.map(|_| pool)
     }
 
