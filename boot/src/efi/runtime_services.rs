@@ -4,6 +4,7 @@ use super::{
     TableHeader,
     Time,
     Void,
+    VOID,
     char16,
     memory,
     time,
@@ -37,7 +38,7 @@ impl RuntimeServices {
         let reset_type = ResetType::Shutdown;
         let status = Status::SUCCESS;
         let data_size: usize = 0;
-        let data: Void = ();
+        let data: Void = VOID;
         (self.reset_system)(ResetType::Shutdown, Status::SUCCESS, data_size, &data);
     }
 }

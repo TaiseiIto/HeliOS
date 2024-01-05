@@ -32,4 +32,5 @@ pub use system_table::SystemTable;
 pub use table_header::TableHeader;
 pub use time::Time;
 pub use void::Void;
+pub use void::VOID;
 
