@@ -17,10 +17,11 @@ mod rs232c;
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.1 UEFI Image Entry Point
 #[no_mangle]
-fn efi_main(image_handle: efi::Handle, system_table: &'static efi::SystemTable<'static>) -> efi::Status {
+fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
     com2_println!("image_handle = {:#x?}", image_handle);
-    com2_println!("system_table = {:#x?}", system_table);
+    com2_println!("system_table = {:#x?}", efi::SystemTable::get());
+    efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
 }

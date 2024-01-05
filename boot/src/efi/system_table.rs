@@ -1,7 +1,10 @@
 use {
     alloc::vec::Vec,
     core::{
-        fmt,
+        fmt::{
+            self,
+            Write,
+        },
         iter,
     },
     super::{
@@ -18,7 +21,18 @@ use {
     },
 };
 
-static mut SYSTEM_TABLE: Option<&'static SystemTable<'static>> = None;
+#[macro_export]
+macro_rules! efi_print {
+    ($($arg:tt)*) => ($crate::efi::SystemTable::print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! efi_println {
+    ($fmt:expr) => (efi_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (efi_print!(concat!($fmt, "\n"), $($arg)*));
+}
+
+static mut SYSTEM_TABLE: Option<&'static mut SystemTable<'static>> = None;
 
 /// # EFI_SYSTEM_TABLE
 /// ## References
@@ -55,13 +69,17 @@ impl SystemTable<'_> {
 }
 
 impl SystemTable<'static> {
-    pub fn get() -> &'static Self {
+    pub fn get() -> &'static mut Self {
         unsafe {
-            SYSTEM_TABLE.expect("Can't get a UEFI system table!")
+            SYSTEM_TABLE.as_mut().expect("Can't get a UEFI system table!")
         }
     }
 
-    pub fn set(&'static self) {
+    pub fn print(args: fmt::Arguments) {
+        Self::get().write_fmt(args).expect("UEFI can't print.")
+    }
+
+    pub fn set(&'static mut self) {
         unsafe {
             SYSTEM_TABLE = Some(self);
         }
