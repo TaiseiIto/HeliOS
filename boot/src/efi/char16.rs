@@ -1,13 +1,15 @@
-use core::{
-    fmt,
-    iter,
+use {
+    alloc::vec::Vec,
+    core::{
+        fmt,
+        iter,
+    },
 };
 
 /// # CHAR16
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 2.3.1 Data Types
-#[repr(C)]
-pub struct Char16(u16);
+pub type Char16 = u16;
 
 /// # Null terminated string
 #[derive(Clone)]
@@ -23,11 +25,17 @@ impl fmt::Debug for NullTerminatedString<'_> {
     }
 }
 
+impl<'a> From<&'a Vec<u16>> for NullTerminatedString<'a> {
+    fn from(string: &'a Vec<u16>) -> Self {
+        Self(&string[0])
+    }
+}
+
 impl Iterator for NullTerminatedString<'_> {
     type Item = char;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let output = (self.0).0;
+        let output = *self.0;
         match output {
             0 => None,
             output => {

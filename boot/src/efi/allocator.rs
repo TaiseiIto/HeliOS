@@ -1,7 +1,5 @@
 //! # A memory allocator
 
-extern crate alloc;
-
 use {
     alloc::alloc::Layout,
     core::alloc::GlobalAlloc,

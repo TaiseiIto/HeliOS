@@ -5,6 +5,8 @@
 #![feature(abi_efiapi)]
 #![allow(stable_features)]
 
+extern crate alloc;
+
 use core::panic::PanicInfo;
 
 mod asm;

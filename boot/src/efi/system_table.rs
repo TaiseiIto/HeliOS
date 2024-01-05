@@ -1,14 +1,21 @@
-use super::{
-    BootServices,
-    Handle,
-    RuntimeServices,
-    SimpleTextInputProtocol,
-    SimpleTextOutputProtocol,
-    Status,
-    TableHeader,
-    Void,
-    char16,
-    configuration,
+use {
+    alloc::vec::Vec,
+    core::{
+        fmt,
+        iter,
+    },
+    super::{
+        BootServices,
+        Handle,
+        RuntimeServices,
+        SimpleTextInputProtocol,
+        SimpleTextOutputProtocol,
+        Status,
+        TableHeader,
+        Void,
+        char16,
+        configuration,
+    },
 };
 
 static mut SYSTEM_TABLE: Option<&'static SystemTable<'static>> = None;
@@ -58,6 +65,21 @@ impl SystemTable<'static> {
         unsafe {
             SYSTEM_TABLE = Some(self);
         }
+    }
+}
+
+impl fmt::Write for SystemTable<'_> {
+    fn write_str(&mut self, string: &str) -> fmt::Result {
+        let string: Vec<u16> = string
+            .replace("\n", "\r\n")
+            .chars()
+            .filter_map(|character| (character as u32).try_into().ok())
+            .chain(iter::once(0))
+            .collect();
+        let string: char16::NullTerminatedString = (&string).into();
+        self.con_out
+            .output_string(string)
+            .map_err(|_| fmt::Error::default())
     }
 }
 
