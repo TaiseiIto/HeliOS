@@ -10,10 +10,9 @@ use {
 };
 
 #[global_allocator]
-static mut ALLOCATOR: Allocator = Allocator();
+static mut ALLOCATOR: Allocator = Allocator;
 
-#[derive(Default)]
-struct Allocator();
+struct Allocator;
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
