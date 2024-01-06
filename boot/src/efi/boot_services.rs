@@ -1,4 +1,5 @@
 use {
+    alloc::vec::Vec,
     crate::{
         com2_print,
         com2_println,
@@ -94,6 +95,28 @@ impl BootServices {
         let mut key: usize = 0;
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
+        let status: Result<(), Status> = (self.get_memory_map)(
+            &mut size,
+            map,
+            &mut key,
+            &mut descriptor_size,
+            &mut descriptor_version
+        ).into();
+        com2_println!("status = {:#x?}", status);
+        com2_println!("size = {:#x?}", size);
+        com2_println!("key = {:#x?}", key);
+        com2_println!("descriptor_size = {:#x?}", descriptor_size);
+        com2_println!("descriptor_version = {:#x?}", descriptor_version);
+        let mut map: Vec<u8> = (0..size)
+            .map(|_| 0)
+            .collect();
+        let map: &mut u8 = &mut map[0];
+        let map: *mut u8 = map as *mut u8;
+        let map: *mut memory::Descriptor = map as *mut memory::Descriptor;
+        let map: &mut memory::Descriptor = unsafe {
+            &mut *map
+        };
+        size += 2 * descriptor_size;
         let status: Result<(), Status> = (self.get_memory_map)(
             &mut size,
             map,
