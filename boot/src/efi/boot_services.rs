@@ -1,16 +1,22 @@
-use super::{
-    Event,
-    Guid,
-    Handle,
-    Status,
-    TableHeader,
-    VOID,
-    Void,
-    char16,
-    event,
-    memory,
-    protocol,
-    time,
+use {
+    crate::{
+        com2_print,
+        com2_println,
+    },
+    super::{
+        Event,
+        Guid,
+        Handle,
+        Status,
+        TableHeader,
+        VOID,
+        Void,
+        char16,
+        event,
+        memory,
+        protocol,
+        time,
+    },
 };
 
 /// # EFI_BOOT_SERVICES
@@ -75,6 +81,31 @@ impl BootServices {
 
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
         (self.free_pool)(pool).into()
+    }
+
+    pub fn memory_map(&self) {
+        com2_println!("Get a memory map.");
+        let mut size: usize = 0;
+        let map: usize = 0;
+        let map: *mut memory::Descriptor = map as *mut memory::Descriptor;
+        let map: &mut memory::Descriptor = unsafe {
+            &mut *map
+        };
+        let mut key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        let status: Result<(), Status> = (self.get_memory_map)(
+            &mut size,
+            map,
+            &mut key,
+            &mut descriptor_size,
+            &mut descriptor_version
+        ).into();
+        com2_println!("status = {:#x?}", status);
+        com2_println!("size = {:#x?}", size);
+        com2_println!("key = {:#x?}", key);
+        com2_println!("descriptor_size = {:#x?}", descriptor_size);
+        com2_println!("descriptor_version = {:#x?}", descriptor_version);
     }
 }
 

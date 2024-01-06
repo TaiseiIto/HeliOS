@@ -21,6 +21,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     system_table.set();
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
+    efi::SystemTable::get().memory_map();
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

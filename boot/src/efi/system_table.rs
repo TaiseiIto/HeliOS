@@ -63,6 +63,10 @@ impl SystemTable<'_> {
         self.boot_services.free_pool(pool)
     }
 
+    pub fn memory_map(&self) {
+        self.boot_services.memory_map()
+    }
+
     pub fn shutdown(&self) {
         self.runtime_services.shutdown();
     }
