@@ -28,6 +28,12 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("memory_map = {:#x?}", memory_map);
     let cr0 = asm::control::Register0::get();
     com2_println!("cr0 = {:#x?}", cr0);
+    let cr2 = asm::control::Register2::get();
+    com2_println!("cr2 = {:#x?}", cr2);
+    let cr3 = asm::control::Register3::get();
+    com2_println!("cr3 = {:#x?}", cr3);
+    let cr4 = asm::control::Register4::get();
+    com2_println!("cr4 = {:#x?}", cr4);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

@@ -12,7 +12,7 @@ pub struct Register {
     enable_modem_status_interrupt: bool,
     enable_sleep_mode: bool,
     enable_low_power_mode: bool,
-    #[bits(2)]
+    #[bits(2, access = RO)]
     reserved: u8,
 }
 

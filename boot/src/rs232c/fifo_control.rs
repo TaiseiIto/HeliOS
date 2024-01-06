@@ -10,7 +10,7 @@ pub struct Register {
     clear_receive_fifo: bool,
     clear_transmit_fifo: bool,
     dma_mode_select: bool,
-    #[bits(default = false)]
+    #[bits(default = false, access = RO)]
     reserved: bool,
     enable_64byte_fifo: bool,
     #[bits(2)]
