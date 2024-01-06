@@ -9,7 +9,7 @@ mod configuration;
 mod event;
 mod guid;
 mod handle;
-mod memory;
+pub mod memory;
 mod protocol;
 mod runtime_services;
 mod simple_text_input_protocol;

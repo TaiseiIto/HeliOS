@@ -43,7 +43,7 @@ pub type PhysicalAddress = u64;
 /// # EFI_MEMORY_DESCRIPTOR
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-#[derive(Debug)]
+#[derive(Clone,Debug)]
 #[repr(C)]
 pub struct Descriptor {
     memory_type: u32,

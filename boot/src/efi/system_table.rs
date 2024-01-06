@@ -18,6 +18,7 @@ use {
         Void,
         char16,
         configuration,
+        memory,
     },
 };
 
@@ -63,7 +64,7 @@ impl SystemTable<'_> {
         self.boot_services.free_pool(pool)
     }
 
-    pub fn memory_map(&self) {
+    pub fn memory_map(&self) -> Vec<memory::Descriptor> {
         self.boot_services.memory_map()
     }
 
