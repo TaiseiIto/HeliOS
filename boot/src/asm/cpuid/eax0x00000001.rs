@@ -4,7 +4,10 @@
 
 use {
     bitfield_struct::bitfield,
-    super::Return,
+    super::{
+        Eax0x00000000,
+        Return,
+    },
 };
 
 #[derive(Debug)]
@@ -19,18 +22,22 @@ impl Eax0x00000001 {
     pub fn get() -> Option<Self> {
         let eax: u32 = 0x00000001;
         let ecx: u32 = 0x00000000;
-        Return::get(eax, ecx).map(|cpuid_return| {
-            let eax: Eax = cpuid_return.eax().into();
-            let ebx: Ebx = cpuid_return.ebx().into();
-            let ecx: Ecx = cpuid_return.ecx().into();
-            let edx: Edx = cpuid_return.edx().into();
-            Self {
-                eax,
-                ebx,
-                ecx,
-                edx,
-            }
-        })
+        Eax0x00000000::get().map(|eax0x00000000| if eax <= eax0x00000000.max_eax() {
+            Return::get(eax, ecx).map(|eax0x00000001| {
+                let eax: Eax = eax0x00000001.eax().into();
+                let ebx: Ebx = eax0x00000001.ebx().into();
+                let ecx: Ecx = eax0x00000001.ecx().into();
+                let edx: Edx = eax0x00000001.edx().into();
+                Self {
+                    eax,
+                    ebx,
+                    ecx,
+                    edx,
+                }
+            })
+        } else {
+            None
+        }).flatten()
     }
 }
 

@@ -37,5 +37,9 @@ impl Eax0x00000000 {
             }
         })
     }
+
+    pub fn max_eax(&self) -> u32 {
+        self.max_eax
+    }
 }
 
