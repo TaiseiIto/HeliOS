@@ -5,6 +5,9 @@
 use core::arch::asm;
 
 pub mod control;
+pub mod rflags;
+
+pub use rflags::Rflags;
 
 /// # Halt
 /// ## References
