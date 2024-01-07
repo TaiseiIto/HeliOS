@@ -8,8 +8,10 @@ use {
 };
 
 mod eax0x00000000;
+mod eax0x00000001;
 
 pub use eax0x00000000::Eax0x00000000;
+pub use eax0x00000001::Eax0x00000001;
 
 pub struct Return {
     eax: u32,

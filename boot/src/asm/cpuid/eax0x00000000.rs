@@ -15,8 +15,8 @@ pub struct Eax0x00000000 {
 
 impl Eax0x00000000 {
     pub fn get() -> Option<Self> {
-        let eax: u32 = 0;
-        let ecx: u32 = 0;
+        let eax: u32 = 0x00000000;
+        let ecx: u32 = 0x00000000;
         Return::get(eax, ecx).map(|cpuid_return| {
             let eax: u32 = cpuid_return.eax();
             let ebx: u32 = cpuid_return.ebx();

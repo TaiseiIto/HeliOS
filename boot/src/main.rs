@@ -35,8 +35,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cr3 = {:#x?}", cr3);
     let cr4 = asm::control::Register4::get();
     com2_println!("cr4 = {:#x?}", cr4);
-    let cpuid = asm::cpuid::Eax0x00000000::get();
-    com2_println!("cpuid = {:#x?}", cpuid);
+    let cpuid_eax0x00000000 = asm::cpuid::Eax0x00000000::get();
+    com2_println!("cpuid_eax0x00000000 = {:#x?}", cpuid_eax0x00000000);
+    let cpuid_eax0x00000001 = asm::cpuid::Eax0x00000001::get();
+    com2_println!("cpuid_eax0x00000001 = {:#x?}", cpuid_eax0x00000001);
     let paging = memory::Paging::get();
     com2_println!("paging = {:#x?}", paging);
     efi_println!("Hello, World!");
