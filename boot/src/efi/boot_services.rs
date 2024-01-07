@@ -97,6 +97,8 @@ impl BootServices {
             &mut descriptor_size,
             &mut descriptor_version
         ).into();
+        let status: Status = status.expect_err("Can't get a memory map!");
+        assert!(status == Status::BUFFER_TOO_SMALL);
         size += 2 * descriptor_size;
         let mut map: Vec<u8> = (0..size)
             .map(|_| 0)
@@ -114,6 +116,7 @@ impl BootServices {
             &mut descriptor_size,
             &mut descriptor_version
         ).into();
+        status.expect("Can't get a memory map!");
         map[0..size]
             .chunks(descriptor_size)
             .map(|descriptor| {

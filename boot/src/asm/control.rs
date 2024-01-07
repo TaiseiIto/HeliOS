@@ -7,7 +7,7 @@ use {
     core::arch::asm,
 };
 
-#[bitfield(u32)]
+#[bitfield(u64)]
 pub struct Register0 {
     pe: bool,
     mp: bool,
@@ -26,11 +26,13 @@ pub struct Register0 {
     nw: bool,
     cd: bool,
     pg: bool,
+    #[bits(32)]
+    reserved3: u32,
 }
 
 impl Register0 {
     pub fn get() -> Self {
-        let mut cr0: u32;
+        let mut cr0: u64;
         unsafe {
             asm!(
                 "mov {0}, cr0",

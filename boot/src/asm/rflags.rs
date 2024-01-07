@@ -70,13 +70,13 @@ impl Rflags {
     }
 
     pub fn cpuid_is_supported() -> bool {
-        Self::get().with_id(false).set();
+        Self::get().with_id(true).set();
         let rflags = Self::get();
         if rflags.id() {
-            false
+            rflags.with_id(false).set();
+            !Self::get().id()
         } else {
-            rflags.with_id(true).set();
-            Self::get().id()
+            false
         }
     }
 }

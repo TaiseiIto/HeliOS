@@ -1,6 +1,7 @@
 /// # EFI_ALLOCATE_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum AllocateType {
@@ -13,6 +14,7 @@ pub enum AllocateType {
 /// # EFI_MEMORY_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 #[repr(u32)]
 pub enum Type {

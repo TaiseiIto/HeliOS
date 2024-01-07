@@ -33,7 +33,7 @@ unsafe impl GlobalAlloc for Allocator {
             .unwrap()
     }
 
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+    unsafe fn dealloc(&self, ptr: *mut u8, _: Layout) {
         let ptr: usize = ptr as usize;
         let ptr: *const Void = ptr as *const Void;
         let ptr: &Void = &*ptr;
