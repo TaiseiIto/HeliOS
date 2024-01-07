@@ -21,6 +21,7 @@ pub struct Return {
 }
 
 impl Return {
+    #[inline(never)]
     pub fn get(mut eax: u32, mut ecx: u32) -> Option<Self> {
         if Rflags::cpuid_is_supported() {
             let mut ebx: u32;

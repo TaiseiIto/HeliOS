@@ -31,6 +31,7 @@ pub struct Register0 {
 }
 
 impl Register0 {
+    #[inline(never)]
     pub fn get() -> Self {
         let mut cr0: u64;
         unsafe {
@@ -53,6 +54,7 @@ pub struct Register2 {
 }
 
 impl Register2 {
+    #[inline(never)]
     pub fn get() -> Self {
         let mut cr2: u64;
         unsafe {
@@ -78,6 +80,7 @@ pub struct Register3 {
 }
 
 impl Register3 {
+    #[inline(never)]
     pub fn get() -> Self {
         let mut cr3: u64;
         unsafe {
@@ -124,6 +127,7 @@ pub struct Register4 {
 }
 
 impl Register4 {
+    #[inline(never)]
     pub fn get() -> Self {
         let mut cr4: u64;
         unsafe {

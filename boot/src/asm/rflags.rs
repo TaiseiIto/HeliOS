@@ -43,6 +43,7 @@ impl Rflags {
     /// # Get RFLAGS
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 4-521 PUSHF/PUSHFD/PUSHFQ Push EFLAGS Register Onto the Stack
+    #[inline(never)]
     pub fn get() -> Self {
         let mut rflags: u64;
         unsafe {
@@ -55,9 +56,10 @@ impl Rflags {
         rflags.into()
     }
 
-    /// # Get RFLAGS
+    /// # Set RFLAGS
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-401 POPF/POPFD/POPFQ Pop Stack Into EFLAGS Register
+    #[inline(never)]
     pub fn set(self) {
         let rflags: u64 = self.into();
         unsafe {
