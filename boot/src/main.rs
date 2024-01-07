@@ -27,8 +27,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get().memory_map();
     com2_println!("memory_map = {:#x?}", memory_map);
-    let rflags = asm::Rflags::get();
-    com2_println!("rflags = {:#x?}", rflags);
+    com2_println!("cpuid_is_supported = {:#x?}", asm::Rflags::cpuid_is_supported());
     let cr0 = asm::control::Register0::get();
     com2_println!("cr0 = {:#x?}", cr0);
     let cr2 = asm::control::Register2::get();

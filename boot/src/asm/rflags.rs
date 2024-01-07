@@ -3,11 +3,10 @@ use {
     core::arch::asm,
 };
 
-/// RFLAGS
+/// # RFLAGS
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.1A 3.4.3.4 RFLAGS Register in 64-Bit Mode
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.1A 3.4.3 EFLAGS Register
-/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 4-521 PUSHF/PUSHFD/PUSHFQ Push EFLAGS Register Onto the Stack
 #[bitfield(u64)]
 pub struct Rflags {
     cf: bool,
@@ -41,6 +40,9 @@ pub struct Rflags {
 }
 
 impl Rflags {
+    /// # Get RFLAGS
+    /// ## References
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 4-521 PUSHF/PUSHFD/PUSHFQ Push EFLAGS Register Onto the Stack
     pub fn get() -> Self {
         let mut rflags: u64;
         unsafe {
@@ -51,6 +53,31 @@ impl Rflags {
             );
         }
         rflags.into()
+    }
+
+    /// # Get RFLAGS
+    /// ## References
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-401 POPF/POPFD/POPFQ Pop Stack Into EFLAGS Register
+    pub fn set(self) {
+        let rflags: u64 = self.into();
+        unsafe {
+            asm!(
+                "push {0}",
+                "popfq",
+                in(reg) rflags,
+            );
+        }
+    }
+
+    pub fn cpuid_is_supported() -> bool {
+        Self::get().with_id(false).set();
+        let rflags = Self::get();
+        if rflags.id() {
+            false
+        } else {
+            rflags.with_id(true).set();
+            Self::get().id()
+        }
     }
 }
 
