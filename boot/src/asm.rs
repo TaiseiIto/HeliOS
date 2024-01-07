@@ -5,6 +5,7 @@
 use core::arch::asm;
 
 pub mod control;
+pub mod cpuid;
 pub mod rflags;
 
 pub use rflags::Rflags;

@@ -27,7 +27,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get().memory_map();
     com2_println!("memory_map = {:#x?}", memory_map);
-    com2_println!("cpuid_is_supported = {:#x?}", asm::Rflags::cpuid_is_supported());
     let cr0 = asm::control::Register0::get();
     com2_println!("cr0 = {:#x?}", cr0);
     let cr2 = asm::control::Register2::get();
@@ -36,6 +35,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cr3 = {:#x?}", cr3);
     let cr4 = asm::control::Register4::get();
     com2_println!("cr4 = {:#x?}", cr4);
+    let cpuid = asm::cpuid::Eax0x00000000::get();
+    com2_println!("cpuid = {:#x?}", cpuid);
     let paging = memory::Paging::get();
     com2_println!("paging = {:#x?}", paging);
     efi_println!("Hello, World!");
