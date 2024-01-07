@@ -14,6 +14,7 @@ use {
 
 mod asm;
 mod efi;
+mod memory;
 mod rs232c;
 
 /// # The entry point of the OS
@@ -34,6 +35,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cr3 = {:#x?}", cr3);
     let cr4 = asm::control::Register4::get();
     com2_println!("cr4 = {:#x?}", cr4);
+    let paging = memory::Paging::get();
+    com2_println!("paging = {:#x?}", paging);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

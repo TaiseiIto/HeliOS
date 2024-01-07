@@ -39,6 +39,10 @@ impl Register0 {
         }
         cr0.into()
     }
+
+    pub fn paging_is_enabled(&self) -> bool {
+        self.pe() && self.pg()
+    }
 }
 
 #[bitfield(u64)]
@@ -127,6 +131,10 @@ impl Register4 {
             );
         }
         cr4.into()
+    }
+
+    pub fn bit32_paging_is_enabled(&self) -> bool {
+        !self.pae()
     }
 }
 
