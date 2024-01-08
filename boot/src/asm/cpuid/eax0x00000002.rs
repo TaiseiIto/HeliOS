@@ -30,7 +30,8 @@ impl Eax0x00000002 {
                 .filter(|dword| dword & 0x80000000 == 0)
                 .map(|dword| dword
                     .to_le_bytes()
-                    .into_iter())
+                    .into_iter()
+                    .filter(|byte| *byte != 0))
                 .flatten()
                 .collect();
             Some(Self {
