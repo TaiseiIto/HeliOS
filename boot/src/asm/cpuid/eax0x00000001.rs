@@ -38,6 +38,10 @@ impl Eax0x00000001 {
             None
         }
     }
+
+    pub fn psn(&self) -> bool {
+        self.edx.psn()
+    }
 }
 
 #[bitfield(u32)]
