@@ -23,13 +23,16 @@ pub struct Cpuid {
 
 impl Cpuid {
     pub fn get() -> Option<Self> {
-        Eax0x00000000::get().map(|eax0x00000000| {
-            let eax0x00000001 = Eax0x00000001::get(&eax0x00000000);
-            Self {
+        if Rflags::cpuid_is_supported() {
+            let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
+            let eax0x00000001: Option<Eax0x00000001> = Eax0x00000001::get(&eax0x00000000);
+            Some(Self {
                 eax0x00000000,
-                eax0x00000001
-            }
-        })
+                eax0x00000001,
+            })
+        } else {
+            None
+        }
     }
 }
 
@@ -42,28 +45,24 @@ pub struct Return {
 
 impl Return {
     #[inline(never)]
-    pub fn get(mut eax: u32, mut ecx: u32) -> Option<Self> {
-        if Rflags::cpuid_is_supported() {
-            let mut ebx: u32;
-            let mut edx: u32;
-            unsafe {
-                asm!(
-                    "cpuid",
-                    "mov {0:e}, ebx",
-                    out(reg) ebx,
-                    inout("eax") eax,
-                    inout("ecx") ecx,
-                    out("edx") edx,
-                );
-            }
-            Some(Self {
-                eax,
-                ebx,
-                ecx,
-                edx,
-            })
-        } else {
-            None
+    pub fn get(mut eax: u32, mut ecx: u32) -> Self {
+        let mut ebx: u32;
+        let mut edx: u32;
+        unsafe {
+            asm!(
+                "cpuid",
+                "mov {0:e}, ebx",
+                out(reg) ebx,
+                inout("eax") eax,
+                inout("ecx") ecx,
+                out("edx") edx,
+            );
+        }
+        Self {
+            eax,
+            ebx,
+            ecx,
+            edx,
         }
     }
 
