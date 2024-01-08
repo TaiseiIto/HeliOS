@@ -19,10 +19,10 @@ pub struct Eax0x00000001 {
 }
 
 impl Eax0x00000001 {
-    pub fn get() -> Option<Self> {
+    pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000001;
         let ecx: u32 = 0x00000000;
-        Eax0x00000000::get().map(|eax0x00000000| if eax <= eax0x00000000.max_eax() {
+        if eax <= eax0x00000000.max_eax() {
             Return::get(eax, ecx).map(|eax0x00000001| {
                 let eax: Eax = eax0x00000001.eax().into();
                 let ebx: Ebx = eax0x00000001.ebx().into();
@@ -37,7 +37,7 @@ impl Eax0x00000001 {
             })
         } else {
             None
-        }).flatten()
+        }
     }
 }
 

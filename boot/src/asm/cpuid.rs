@@ -1,6 +1,3 @@
-//! # CPUID
-//! ## References
-//! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
 use {
     core::arch::asm,
@@ -14,6 +11,27 @@ mod eax0x00000002;
 pub use eax0x00000000::Eax0x00000000;
 pub use eax0x00000001::Eax0x00000001;
 pub use eax0x00000002::Eax0x00000002;
+
+/// # CPUID
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
+#[derive(Debug)]
+pub struct Cpuid {
+    eax0x00000000: Eax0x00000000,
+    eax0x00000001: Option<Eax0x00000001>,
+}
+
+impl Cpuid {
+    pub fn get() -> Option<Self> {
+        Eax0x00000000::get().map(|eax0x00000000| {
+            let eax0x00000001 = Eax0x00000001::get(&eax0x00000000);
+            Self {
+                eax0x00000000,
+                eax0x00000001
+            }
+        })
+    }
+}
 
 pub struct Return {
     eax: u32,
