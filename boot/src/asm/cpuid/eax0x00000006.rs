@@ -23,11 +23,11 @@ impl Eax0x00000006 {
         let eax: u32 = 0x00000006;
         let ecx: u32 = 0x00000000;
         if eax <= eax0x00000000.max_eax() {
-            let eax0x00000001 = Return::get(eax, ecx);
-            let eax: Eax = eax0x00000001.eax().into();
-            let ebx: Ebx = eax0x00000001.ebx().into();
-            let ecx: Ecx = eax0x00000001.ecx().into();
-            let edx: Edx = eax0x00000001.edx().into();
+            let eax0x00000006 = Return::get(eax, ecx);
+            let eax: Eax = eax0x00000006.eax().into();
+            let ebx: Ebx = eax0x00000006.ebx().into();
+            let ecx: Ecx = eax0x00000006.ecx().into();
+            let edx: Edx = eax0x00000006.edx().into();
             Some(Self {
                 eax,
                 ebx,
