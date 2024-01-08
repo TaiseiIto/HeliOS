@@ -1,12 +1,12 @@
 SHELL=/bin/bash
 PRODUCT=$(shell basename $$(pwd))
 FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $$2}')
-TARGET=target/$(FORMAT)/release/$(PRODUCT).efi
+TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/boot/index.html
 
 # Build a bootloader.
 $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	cargo build --release --target $(FORMAT)
+	cargo build --target $(FORMAT)
 
 # Generate documents.
 # Usage: $ make doc
