@@ -4,18 +4,21 @@
 
 mod ecx0x00000000;
 mod ecx0x00000001;
+mod ecx0x00000002;
 
 use super::Eax0x00000000;
 
 pub use {
     ecx0x00000000::Ecx0x00000000,
     ecx0x00000001::Ecx0x00000001,
+    ecx0x00000002::Ecx0x00000002,
 };
 
 #[derive(Debug)]
 pub struct Eax0x00000007 {
     ecx0x00000000: Ecx0x00000000,
     ecx0x00000001: Option<Ecx0x00000001>,
+    ecx0x00000002: Option<Ecx0x00000002>,
 }
 
 impl Eax0x00000007 {
@@ -24,9 +27,11 @@ impl Eax0x00000007 {
         if eax <= eax0x00000000.max_eax() {
             let ecx0x00000000 = Ecx0x00000000::get(eax, eax0x00000000);
             let ecx0x00000001: Option<Ecx0x00000001> = Ecx0x00000001::get(eax, &ecx0x00000000);
+            let ecx0x00000002: Option<Ecx0x00000002> = Ecx0x00000002::get(eax, &ecx0x00000000);
             Some(Self {
                 ecx0x00000000,
                 ecx0x00000001,
+                ecx0x00000002,
             })
         } else {
             None
