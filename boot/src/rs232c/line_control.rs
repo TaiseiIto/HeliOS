@@ -31,7 +31,7 @@ impl Register {
         set_break_enable: bool,
         divisor_latch_access: bool,
     ) -> Self {
-        assert!(5 <= word_length && word_length <= 8);
+        assert!((5..=8).contains(&word_length));
         Self::new()
             .with_word_length(word_length - 5)
             .with_length_of_stop(length_of_stop.into(word_length))
@@ -60,7 +60,7 @@ impl LengthOfStop {
                 true
             },
             Self::Two => {
-                assert!(6 <= word_length && word_length <= 8);
+                assert!((6..=8).contains(&word_length));
                 true
             },
         }

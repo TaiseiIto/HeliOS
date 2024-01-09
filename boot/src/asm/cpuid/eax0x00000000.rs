@@ -26,10 +26,9 @@ impl Eax0x00000000 {
         let max_eax: u32 = eax;
         let vendor: String = [ebx, edx, ecx]
             .into_iter()
-            .map(|dword| dword
+            .flat_map(|dword| dword
                 .to_le_bytes()
                 .into_iter())
-            .flatten()
             .filter_map(|byte| char::from_u32(byte as u32))
             .collect();
         Self {

@@ -8,7 +8,7 @@ pub enum AllocateType {
     AllocateAnyPages,
     AllocateMaxAddress,
     AllocateAddress,
-    MaxAllocateType,
+    Max,
 }
 
 /// # EFI_MEMORY_TYPE
@@ -18,7 +18,7 @@ pub enum AllocateType {
 #[derive(Clone, Debug)]
 #[repr(u32)]
 pub enum Type {
-    ReservedMemoryType,
+    ReservedMemory,
     LoaderCode,
     LoaderData,
     BootServicesCode,
@@ -33,8 +33,8 @@ pub enum Type {
     MemoryMappedIOPortSpace,
     PalCode,
     PersistentMemory,
-    UnacceptedMemoryType,
-    MaxMemoryType,
+    UnacceptedMemory,
+    MaxMemory,
 }
 
 /// # EFI_PHYSICAL_ADDRESS

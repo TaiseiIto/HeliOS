@@ -94,7 +94,7 @@ impl SystemTable<'static> {
 impl fmt::Write for SystemTable<'_> {
     fn write_str(&mut self, string: &str) -> fmt::Result {
         let string: Vec<u16> = string
-            .replace("\n", "\r\n")
+            .replace('\n', "\r\n")
             .chars()
             .filter_map(|character| (character as u32).try_into().ok())
             .chain(iter::once(0))
@@ -102,7 +102,7 @@ impl fmt::Write for SystemTable<'_> {
         let string: char16::NullTerminatedString = (&string).into();
         self.con_out
             .output_string(string)
-            .map_err(|_| fmt::Error::default())
+            .map_err(|_| fmt::Error)
     }
 }
 

@@ -29,11 +29,10 @@ impl Eax0x00000002 {
             let cache_and_tlb_information: BTreeSet<u8> = [eax, ebx, ecx, edx]
                 .into_iter()
                 .filter(|dword| dword & 0x80000000 == 0)
-                .map(|dword| dword
+                .flat_map(|dword| dword
                     .to_le_bytes()
                     .into_iter()
                     .filter(|byte| *byte != 0))
-                .flatten()
                 .collect();
             Some(Self {
                 cache_and_tlb_information,
