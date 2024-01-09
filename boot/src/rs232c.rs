@@ -39,7 +39,9 @@ pub fn com2_print(args: fmt::Arguments) {
         if COM2.is_none() {
             COM2 = Some(Com::new(COM2_PORT, COM2_BAUD_RATE));
         }
-        COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
+        if let Some(com2) = COM2.as_mut() {
+            com2.write_fmt(args).expect("COM2 can't print!")
+        }
     }
 }
 

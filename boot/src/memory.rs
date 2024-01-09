@@ -8,7 +8,9 @@ pub enum Paging {
     Disable,
     Bit32,
     Pae,
+    #[allow(dead_code)]
     Level4,
+    #[allow(dead_code)]
     Level5,
 }
 

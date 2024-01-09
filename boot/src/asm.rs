@@ -56,6 +56,7 @@ pub fn outb(port: u16, data: u8) {
 /// # Read From Model Specific Register
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-4-537
+#[allow(dead_code)]
 #[inline(never)]
 pub fn rdmsr(ecx: u32) -> u64 {
     let mut eax: u32;

@@ -75,14 +75,14 @@ pub enum ParitySelect {
     Low,
 }
 
-impl Into<u8> for ParitySelect {
-    fn into(self) -> u8 {
-        match self {
-            Self::No => 0b000,
-            Self::Odd => 0b001,
-            Self::Even => 0b011,
-            Self::High => 0b101,
-            Self::Low => 0b111,
+impl From<ParitySelect> for u8 {
+    fn from(parity_select: ParitySelect) -> Self {
+        match parity_select {
+            ParitySelect::No => 0b000,
+            ParitySelect::Odd => 0b001,
+            ParitySelect::Even => 0b011,
+            ParitySelect::High => 0b101,
+            ParitySelect::Low => 0b111,
         }
     }
 }

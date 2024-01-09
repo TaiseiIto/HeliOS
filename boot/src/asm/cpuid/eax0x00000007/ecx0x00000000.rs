@@ -4,22 +4,22 @@
 
 use {
     bitfield_struct::bitfield,
-    super::super::{
-        Eax0x00000000,
-        Return,
-    },
+    super::super::Return,
 };
 
 #[derive(Debug)]
 pub struct Ecx0x00000000 {
     eax: Eax,
+    #[allow(dead_code)]
     ebx: Ebx,
+    #[allow(dead_code)]
     ecx: Ecx,
+    #[allow(dead_code)]
     edx: Edx,
 }
 
 impl Ecx0x00000000 {
-    pub fn get(eax: u32, eax0x00000000: &Eax0x00000000) -> Self {
+    pub fn get(eax: u32) -> Self {
         let ecx: u32 = 0x00000000;
         let ecx0x00000000 = Return::get(eax, ecx);
         let eax: Eax = ecx0x00000000.eax().into();

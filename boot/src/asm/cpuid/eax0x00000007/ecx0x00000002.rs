@@ -6,15 +6,13 @@ use {
     bitfield_struct::bitfield,
     super::{
         Ecx0x00000000,
-        super::{
-            Eax0x00000000,
-            Return,
-        },
+        super::Return,
     },
 };
 
 #[derive(Debug)]
 pub struct Ecx0x00000002 {
+    #[allow(dead_code)]
     edx: Edx,
 }
 

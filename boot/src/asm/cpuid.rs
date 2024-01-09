@@ -33,15 +33,25 @@ pub use {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 #[derive(Debug)]
 pub struct Cpuid {
+    #[allow(dead_code)]
     eax0x00000000: Eax0x00000000,
+    #[allow(dead_code)]
     eax0x00000001: Option<Eax0x00000001>,
+    #[allow(dead_code)]
     eax0x00000002: Option<Eax0x00000002>,
+    #[allow(dead_code)]
     eax0x00000003: Option<Eax0x00000003>,
+    #[allow(dead_code)]
     eax0x00000004: Option<Eax0x00000004>,
+    #[allow(dead_code)]
     eax0x00000005: Option<Eax0x00000005>,
+    #[allow(dead_code)]
     eax0x00000006: Option<Eax0x00000006>,
+    #[allow(dead_code)]
     eax0x00000007: Option<Eax0x00000007>,
+    #[allow(dead_code)]
     eax0x00000009: Option<Eax0x00000009>,
+    #[allow(dead_code)]
     eax0x0000000a: Option<Eax0x0000000a>,
 }
 

@@ -10,6 +10,7 @@ use super::{
 
 #[derive(Debug)]
 pub struct Eax0x00000003 {
+    #[allow(dead_code)]
     processor_serial_number: u64,
 }
 

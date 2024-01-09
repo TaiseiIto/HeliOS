@@ -12,9 +12,13 @@ use {
 
 #[derive(Debug)]
 pub struct Eax0x00000005 {
+    #[allow(dead_code)]
     eax: Eax,
+    #[allow(dead_code)]
     ebx: Ebx,
+    #[allow(dead_code)]
     ecx: Ecx,
+    #[allow(dead_code)]
     edx: Edx,
 }
 

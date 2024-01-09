@@ -10,6 +10,7 @@ use {
 #[derive(Debug)]
 pub struct Eax0x00000000 {
     max_eax: u32,
+    #[allow(dead_code)]
     vendor: String,
 }
 

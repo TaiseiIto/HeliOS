@@ -12,6 +12,7 @@ use {
 
 #[derive(Debug)]
 pub struct Eax0x00000002 {
+    #[allow(dead_code)]
     cache_and_tlb_information: BTreeSet<u8>,
 }
 
