@@ -34,6 +34,18 @@ impl Ecx0x00000001 {
             edx,
         }
     }
+
+    pub fn ia32_xss_n_is_valid(&self, n: u32) -> bool {
+        if (0..u32::BITS).contains(&n) {
+            let ecx: u32 = self.ecx.into();
+            ecx & (1 << n) != 0
+        } else if (u32::BITS..2 * u32::BITS).contains(&n) {
+            let edx: u32 = self.edx.into();
+            edx & (1 << (n - u32::BITS)) != 0
+        } else {
+            panic!("Can't get IA32_XSS.n validity.")
+        }
+    }
 }
 
 #[bitfield(u32)]
@@ -49,7 +61,7 @@ pub struct Eax {
 
 #[bitfield(u32)]
 pub struct Ebx {
-    the_size_in_bytes_of_the_xsave_area_containing_all_states_enabled_by_xcr0_ia32_xdd: u32,
+    the_size_in_bytes_of_the_xsave_area_containing_all_states_enabled_by_xcr0_ia32_xss: u32,
 }
 
 #[bitfield(u32)]

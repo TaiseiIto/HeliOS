@@ -34,6 +34,18 @@ impl Ecx0x00000000 {
             edx,
         }
     }
+
+    pub fn xcr0_n_is_valid(&self, n: u32) -> bool {
+        if (0..u32::BITS).contains(&n) {
+            let eax: u32 = self.eax.into();
+            eax & (1 << n) != 0
+        } else if (u32::BITS..2 * u32::BITS).contains(&n) {
+            let edx: u32 = self.edx.into();
+            edx & (1 << (n - u32::BITS)) != 0
+        } else {
+            panic!("Can't get XCR0.n validity.")
+        }
+    }
 }
 
 #[bitfield(u32)]
