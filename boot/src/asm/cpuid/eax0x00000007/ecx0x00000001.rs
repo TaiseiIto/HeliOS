@@ -4,9 +4,12 @@
 
 use {
     bitfield_struct::bitfield,
-    super::super::{
-        Eax0x00000000,
-        Return,
+    super::{
+        Ecx0x00000000,
+        super::{
+            Eax0x00000000,
+            Return,
+        },
     },
 };
 
@@ -18,16 +21,20 @@ pub struct Ecx0x00000001 {
 }
 
 impl Ecx0x00000001 {
-    pub fn get(eax: u32, eax0x00000000: &Eax0x00000000) -> Self {
+    pub fn get(eax: u32, ecx0x00000000: &Ecx0x00000000) -> Option<Self> {
         let ecx: u32 = 0x00000001;
-        let ecx0x00000001 = Return::get(eax, ecx);
-        let eax: Eax = ecx0x00000001.eax().into();
-        let ebx: Ebx = ecx0x00000001.ebx().into();
-        let edx: Edx = ecx0x00000001.edx().into();
-        Self {
-            eax,
-            ebx,
-            edx,
+        if ecx <= ecx0x00000000.max_ecx() {
+            let ecx0x00000001 = Return::get(eax, ecx);
+            let eax: Eax = ecx0x00000001.eax().into();
+            let ebx: Ebx = ecx0x00000001.ebx().into();
+            let edx: Edx = ecx0x00000001.edx().into();
+            Some(Self {
+                eax,
+                ebx,
+                edx,
+            })
+        } else {
+            None
         }
     }
 }

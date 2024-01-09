@@ -33,11 +33,15 @@ impl Ecx0x00000000 {
             edx,
         }
     }
+
+    pub fn max_ecx(&self) -> u32 {
+        self.eax.max_ecx()
+    }
 }
 
 #[bitfield(u32)]
 pub struct Eax {
-    reports_the_maximum_input_value_for_supported_leaf_7_sub_leaves: u32,
+    max_ecx: u32,
 }
 
 #[bitfield(u32)]
