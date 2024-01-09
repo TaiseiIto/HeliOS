@@ -78,6 +78,7 @@ pub struct Ecx {
     cmpxchg16b: bool,
     xtpr: bool,
     pdcm: bool,
+    #[bits(access = RO)]
     reserved0: bool,
     pcid: bool,
     dca: bool,
@@ -93,6 +94,7 @@ pub struct Ecx {
     avx: bool,
     f16c: bool,
     rdrand: bool,
+    #[bits(access = RO)]
     reserved1: bool,
 }
 
@@ -111,6 +113,7 @@ pub struct Edx {
     mce: bool,
     cx8: bool,
     apic: bool,
+    #[bits(access = RO)]
     reserved0: bool,
     sep: bool,
     mtrr: bool,
@@ -121,6 +124,7 @@ pub struct Edx {
     ps: bool,
     psn: bool,
     clfsh: bool,
+    #[bits(access = RO)]
     reserved1: bool,
     ds: bool,
     acpi: bool,
@@ -131,6 +135,7 @@ pub struct Edx {
     ss: bool,
     htt: bool,
     tm: bool,
+    #[bits(access = RO)]
     reserved2: bool,
     pbe: bool,
 }

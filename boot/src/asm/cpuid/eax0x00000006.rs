@@ -45,6 +45,7 @@ pub struct Eax {
     digital_temperature_sensor_is_supported: bool,
     intel_turbo_boost_technology_available: bool,
     arat: bool,
+    #[bits(access = RO)]
     reserved0: bool,
     pln: bool,
     ecmd: bool,
@@ -54,6 +55,7 @@ pub struct Eax {
     hwp_activity_window: bool,
     hwp_energy_performance_preference: bool,
     hwp_package_level_request: bool,
+    #[bits(access = RO)]
     reserved1: bool,
     hdc: bool,
     intel_turbo_boost_max_technology_30_available: bool,
@@ -63,11 +65,11 @@ pub struct Eax {
     fast_access_mode_for_the_ia32_hwp_request_msr_is_supported: bool,
     hw_feedback: bool,
     ignoring_idle_logical_processor_hwp_request_is_supported: bool,
-    #[bits(2)]
+    #[bits(2, access = RO)]
     reserved2: u8,
     intel_thread_director_supported: bool,
     ia32_therm_interrupt_msr_bit_25_is_supported: bool,
-    #[bits(7)]
+    #[bits(7, access = RO)]
     reserved3: u8,
 }
 
@@ -75,19 +77,20 @@ pub struct Eax {
 pub struct Ebx {
     #[bits(4)]
     number_of_interrupt_thresholds_in_digital_thermal_sensor: u8,
-    #[bits(28)]
+    #[bits(28, access = RO)]
     reserved0: u32,
 }
 
 #[bitfield(u32)]
 pub struct Ecx {
     hardware_coordination_feedback_capability: bool,
-    #[bits(2)]
+    #[bits(2, access = RO)]
     reserved0: u8,
     the_processor_supports_performance_energy_bias_preference: bool,
-    #[bits(4)]
+    #[bits(4, access = RO)]
     reserved1: u8,
     number_of_intel_thread_director_classes_supported_by_the_processor: u8,
+    #[bits(access = RO)]
     reserved2: u16,
 }
 
@@ -96,7 +99,7 @@ pub struct Edx  {
     bitmap_of_supported_hardware_feedback_interface_capabilities: u8,
     #[bits(4)]
     enumerates_the_size_of_the_hardware_feedback_interface_structure_in_number_of_4_kb_pages: u8,
-    #[bits(4)]
+    #[bits(4, access = RO)]
     reserved0: u8,
     index_of_this_logical_processors_row_in_the_hardware_feedback_interface_structure: u16,
 }

@@ -64,6 +64,7 @@ pub struct Ebx {
     adx: bool,
     smap: bool,
     avx512_ifma: bool,
+    #[bits(access = RO)]
     reserved0: bool,
     clflushopt: bool,
     clwb: bool,
@@ -93,6 +94,7 @@ pub struct Ecx {
     avx512_bitalg: bool,
     tme_en: bool,
     avx512_vpopcntdq: bool,
+    #[bits(access = RO)]
     reserved0: bool,
     la57: bool,
     #[bits(5)]
@@ -101,6 +103,7 @@ pub struct Ecx {
     kl: bool,
     bus_lock_detect: bool,
     cldemote: bool,
+    #[bits(access = RO)]
     reserved1: bool,
     movdiri: bool,
     movdir64b: bool,
@@ -111,27 +114,31 @@ pub struct Ecx {
 
 #[bitfield(u32)]
 pub struct Edx {
+    #[bits(access = RO)]
     reserved0: bool,
     sgx_keys: bool,
     avx512_4vnniw: bool,
     avx512_4fmaps: bool,
     fast_short_rep_mov: bool,
     uintr: bool,
-    #[bits(2)]
+    #[bits(2, access = RO)]
     reserved1: u8,
     avx512_vp2intersect: bool,
     srbds_ctrl: bool,
     md_clear_supported: bool,
     rtm_always_abort: bool,
+    #[bits(access = RO)]
     reserved2: bool,
     rtm_force_abort_supported: bool,
     serialize: bool,
     hybrid: bool,
     tsxldtrk: bool,
+    #[bits(access = RO)]
     reserved3: bool,
     pconfig: bool,
     architectural_lbrs: bool,
     cet_ibt: bool,
+    #[bits(access = RO)]
     reserved4: bool,
     amx_bf16: bool,
     avx512_fp16: bool,

@@ -26,7 +26,7 @@ pub struct Register0 {
     nw: bool,
     cd: bool,
     pg: bool,
-    #[bits(32)]
+    #[bits(32, access = RO)]
     reserved3: u32,
 }
 
