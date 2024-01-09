@@ -51,7 +51,7 @@ pub struct Eax {
     used_for_ia32_xdd1: u8,
     tilecfg_state: bool,
     tiledata_state: bool,
-    #[bits(13)]
+    #[bits(13, access = RO)]
     reserved0: u16,
 }
 
@@ -62,7 +62,7 @@ pub struct Ebx {
 
 #[bitfield(u32)]
 pub struct Ecx {
-    maximum_size_of_the_xsave_xrstore_save_area_required_by_all_supported_features_in_the_processor: u32,
+    maximum_size_of_the_xsave_xrstor_save_area_required_by_all_supported_features_in_the_processor: u32,
 }
 
 #[bitfield(u32)]
