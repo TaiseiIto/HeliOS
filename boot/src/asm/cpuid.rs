@@ -13,14 +13,16 @@ mod eax0x00000005;
 mod eax0x00000006;
 mod eax0x00000007;
 
-pub use eax0x00000000::Eax0x00000000;
-pub use eax0x00000001::Eax0x00000001;
-pub use eax0x00000002::Eax0x00000002;
-pub use eax0x00000003::Eax0x00000003;
-pub use eax0x00000004::Eax0x00000004;
-pub use eax0x00000005::Eax0x00000005;
-pub use eax0x00000006::Eax0x00000006;
-pub use eax0x00000007::Eax0x00000007;
+pub use {
+    eax0x00000000::Eax0x00000000,
+    eax0x00000001::Eax0x00000001,
+    eax0x00000002::Eax0x00000002,
+    eax0x00000003::Eax0x00000003,
+    eax0x00000004::Eax0x00000004,
+    eax0x00000005::Eax0x00000005,
+    eax0x00000006::Eax0x00000006,
+    eax0x00000007::Eax0x00000007,
+};
 
 /// # CPUID
 /// ## References

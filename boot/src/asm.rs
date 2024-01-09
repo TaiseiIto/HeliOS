@@ -8,8 +8,10 @@ pub mod control;
 pub mod cpuid;
 pub mod rflags;
 
-pub use cpuid::Cpuid;
-pub use rflags::Rflags;
+pub use {
+    cpuid::Cpuid,
+    rflags::Rflags,
+};
 
 /// # Halt
 /// ## References
