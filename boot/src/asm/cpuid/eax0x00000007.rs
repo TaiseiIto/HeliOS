@@ -39,5 +39,9 @@ impl Eax0x00000007 {
             None
         }
     }
+
+    pub fn sgx(&self) -> bool {
+        self.ecx0x00000000.sgx()
+    }
 }
 

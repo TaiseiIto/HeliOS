@@ -97,7 +97,7 @@ impl Cpuid {
             let eax0x0000000d: Option<Eax0x0000000d> = Eax0x0000000d::get(&eax0x00000000);
             let eax0x0000000f: Option<Eax0x0000000f> = Eax0x0000000f::get(&eax0x00000000);
             let eax0x00000010: Option<Eax0x00000010> = Eax0x00000010::get(&eax0x00000000);
-            let eax0x00000012: Option<Eax0x00000012> = Eax0x00000012::get(&eax0x00000000);
+            let eax0x00000012: Option<Eax0x00000012> = Eax0x00000012::get(&eax0x00000000, &eax0x00000007);
             Some(Self {
                 eax0x00000000,
                 eax0x00000001,
