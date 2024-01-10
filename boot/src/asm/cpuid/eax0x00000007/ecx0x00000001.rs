@@ -40,7 +40,7 @@ impl Ecx0x00000001 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     #[bits(4, access = RO)]
     reserved0: u8,
     avx_vnni: bool,
@@ -61,14 +61,14 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     enumerates_the_presence_of_the_ia32_ppin_and_ia32_ppin_ctl_msrs: bool,
     #[bits(31, access = RO)]
     reserved: u32,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     #[bits(18, access = RO)]
     reserved: u32,
     cet_sss: bool,

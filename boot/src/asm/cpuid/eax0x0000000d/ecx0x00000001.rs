@@ -49,7 +49,7 @@ impl Ecx0x00000001 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     xsaveopt: bool,
     supports_xsavec_and_the_compacted_form_of_xrstor: bool,
     supports_xgetbv_with_ecx_1: bool,
@@ -60,12 +60,12 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     the_size_in_bytes_of_the_xsave_area_containing_all_states_enabled_by_xcr0_ia32_xss: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     used_for_xcr0_0: u8,
     pt_state: bool,
     used_for_xcr0_1: bool,
@@ -83,7 +83,7 @@ pub struct Ecx {
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     reports_the_supported_bits_of_the_upper_32_bits_of_the_ia32_xss_msr: u32,
 }
 

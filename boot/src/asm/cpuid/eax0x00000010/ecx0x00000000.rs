@@ -25,7 +25,7 @@ impl Ecx0x00000000 {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     reserved0: bool,
     supports_l3_cache_allocation_technology: bool,
     supports_l2_cache_allocation_technology: bool,

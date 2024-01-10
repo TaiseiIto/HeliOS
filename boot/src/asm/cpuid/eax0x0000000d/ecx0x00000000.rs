@@ -49,7 +49,7 @@ impl Ecx0x00000000 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     x87_state: bool,
     sse_state: bool,
     avx_state: bool,
@@ -68,17 +68,17 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     maximum_size_required_by_enabled_features_in_xcr0: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     maximum_size_of_the_xsave_xrstor_save_area_required_by_all_supported_features_in_the_processor: u32,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     reports_the_supported_bits_of_the_upper_32_bits_of_xcr0: u32,
 }
 

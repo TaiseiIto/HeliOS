@@ -4,10 +4,9 @@
 
 mod ecx0x00000000;
 
-use super::Eax0x00000000;
-
-pub use {
+use {
     ecx0x00000000::Ecx0x00000000,
+    super::Eax0x00000000,
 };
 
 #[derive(Debug)]

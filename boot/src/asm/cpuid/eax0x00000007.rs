@@ -6,9 +6,8 @@ mod ecx0x00000000;
 mod ecx0x00000001;
 mod ecx0x00000002;
 
-use super::Eax0x00000000;
-
-pub use {
+use {
+    super::Eax0x00000000,
     ecx0x00000000::Ecx0x00000000,
     ecx0x00000001::Ecx0x00000001,
     ecx0x00000002::Ecx0x00000002,

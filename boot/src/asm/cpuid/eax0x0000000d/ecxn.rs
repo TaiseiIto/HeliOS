@@ -36,17 +36,17 @@ impl EcxN {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     size_in_bytes_of_the_save_area_for_an_extended_state_feature_associated_with_a_valid_sub_leaf_index_n: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     the_offset_in_bytes_of_this_extended_state_components_save_area_from_the_beginning_of_the_xsave_xrstor_area: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     bit_n_is_supported_in_the_ia32_xss_msr: bool,
     the_compacted_format_of_an_xsave_area_is_used: bool,
     #[bits(30, access = RO)]
@@ -54,7 +54,7 @@ pub struct Ecx {
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     valid: u32,
 }
 

@@ -40,12 +40,12 @@ impl Ecx0x00000000 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     max_ecx: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     fsgsbase: bool,
     ia32_tsc_adjust_msr_is_supported: bool,
     sgx: bool,
@@ -82,7 +82,7 @@ pub struct Ebx {
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     prefetchwt1: bool,
     avx512_vbmi: bool,
     umip: bool,
@@ -117,7 +117,7 @@ pub struct Ecx {
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     #[bits(access = RO)]
     reserved0: bool,
     sgx_keys: bool,

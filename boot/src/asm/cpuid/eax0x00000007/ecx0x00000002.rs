@@ -32,7 +32,7 @@ impl Ecx0x00000002 {
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     psfd: bool,
     ipred_ctrl: bool,
     rrsba_ctrl: bool,
