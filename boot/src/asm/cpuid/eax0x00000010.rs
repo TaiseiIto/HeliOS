@@ -11,24 +11,20 @@ use {
 };
 
 #[derive(Debug)]
-pub struct Eax0x0000000f {
+pub struct Eax0x00000010 {
     #[allow(dead_code)]
     ebx: Ebx,
-    #[allow(dead_code)]
-    edx: Edx,
 }
 
-impl Eax0x0000000f {
+impl Eax0x00000010 {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
-        let eax: u32 = 0x0000000f;
+        let eax: u32 = 0x00000010;
         let ecx: u32 = 0x00000000;
         if eax <= eax0x00000000.max_eax() {
             let eax0x0000000f = Return::get(eax, ecx);
             let ebx: Ebx = eax0x0000000f.ebx().into();
-            let edx: Edx = eax0x0000000f.edx().into();
             Some(Self {
                 ebx,
-                edx,
             })
         } else {
             None
@@ -38,15 +34,11 @@ impl Eax0x0000000f {
 
 #[bitfield(u32)]
 pub struct Ebx {
-    maximum_range_of_rmid_within_this_physical_processor_of_all_types: u32,
-}
-
-#[bitfield(u32)]
-pub struct Edx {
-    #[bits(access = RO)]
     reserved0: bool,
-    supports_l3_cache_intel_rdt_monitoring: bool,
-    #[bits(30, access = RO)]
+    supports_l3_cache_allocation_technology: bool,
+    supports_l2_cache_allocation_technology: bool,
+    supports_memory_bandwidth_allocation: bool,
+    #[bits(28, access = RO)]
     reserved1: u32,
 }
 

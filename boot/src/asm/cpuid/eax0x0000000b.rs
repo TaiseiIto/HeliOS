@@ -24,7 +24,7 @@ pub struct Eax0x0000000b {
 
 impl Eax0x0000000b {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
-        let eax: u32 = 0x0000000a;
+        let eax: u32 = 0x0000000b;
         let ecx: u32 = 0x00000000;
         if eax <= eax0x00000000.max_eax() {
             let eax0x0000000b = Return::get(eax, ecx);
