@@ -10,7 +10,6 @@ use {
 #[derive(Debug)]
 pub struct Ecx0x00000000 {
     eax: Eax,
-    #[allow(dead_code)]
     ebx: Ebx,
     #[allow(dead_code)]
     ecx: Ecx,
