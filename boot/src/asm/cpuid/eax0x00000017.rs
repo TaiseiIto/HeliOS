@@ -5,10 +5,7 @@
 mod ecx0x00000000;
 
 use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
+    alloc::string::String,
     super::{
         Eax0x00000000,
         Return,
@@ -29,7 +26,7 @@ impl Eax0x00000017 {
         let eax: u32 = 0x00000017;
         if eax <= eax0x00000000.max_eax() {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
-            let soc_vendor_brand_string: Vec<u8> = (1..=3)
+            let soc_vendor_brand_string = String::from_utf8((1..=3)
                 .flat_map(|ecx| {
                     let soc_vendor_brand_string = Return::get(eax, ecx);
                     let eax: u32 = soc_vendor_brand_string.eax();
@@ -42,8 +39,7 @@ impl Eax0x00000017 {
                             .to_le_bytes()
                             .into_iter())
                 })
-                .collect();
-            let soc_vendor_brand_string = String::from_utf8(soc_vendor_brand_string).ok();
+                .collect()).ok();
             Some(Self {
                 ecx0x00000000,
                 soc_vendor_brand_string,
