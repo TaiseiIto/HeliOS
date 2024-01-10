@@ -21,7 +21,7 @@ pub struct Ecx0x00000002 {
 
 impl Ecx0x00000002 {
     pub fn get(eax: u32) -> Self {
-        let ecx: u32 = 0x00000001;
+        let ecx: u32 = 0x00000002;
         let ecx0x00000002 = Return::get(eax, ecx);
         let eax: Eax = ecx0x00000002.eax().into();
         let ebx: Ebx = ecx0x00000002.ebx().into();
