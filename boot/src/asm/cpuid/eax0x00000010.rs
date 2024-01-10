@@ -4,10 +4,14 @@
 
 mod ecx0x00000000;
 mod ecx0x00000001;
+mod ecx0x00000002;
+mod ecx0x00000003;
 
 use {
     ecx0x00000000::Ecx0x00000000,
     ecx0x00000001::Ecx0x00000001,
+    ecx0x00000002::Ecx0x00000002,
+    ecx0x00000003::Ecx0x00000003,
     super::Eax0x00000000,
 };
 
@@ -17,6 +21,10 @@ pub struct Eax0x00000010 {
     ecx0x00000000: Ecx0x00000000,
     #[allow(dead_code)]
     ecx0x00000001: Ecx0x00000001,
+    #[allow(dead_code)]
+    ecx0x00000002: Ecx0x00000002,
+    #[allow(dead_code)]
+    ecx0x00000003: Ecx0x00000003,
 }
 
 impl Eax0x00000010 {
@@ -25,9 +33,13 @@ impl Eax0x00000010 {
         if eax <= eax0x00000000.max_eax() {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let ecx0x00000001 = Ecx0x00000001::get(eax);
+            let ecx0x00000002 = Ecx0x00000002::get(eax);
+            let ecx0x00000003 = Ecx0x00000003::get(eax);
             Some(Self {
                 ecx0x00000000,
                 ecx0x00000001,
+                ecx0x00000002,
+                ecx0x00000003,
             })
         } else {
             None
