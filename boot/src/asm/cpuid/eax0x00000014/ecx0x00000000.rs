@@ -30,6 +30,10 @@ impl Ecx0x00000000 {
             ecx,
         }
     }
+
+    pub fn max_ecx(&self) -> u32 {
+        self.eax.max_ecx()
+    }
 }
 
 #[bitfield(u32)]
