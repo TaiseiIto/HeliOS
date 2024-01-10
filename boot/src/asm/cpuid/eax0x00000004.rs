@@ -45,7 +45,7 @@ impl Eax0x00000004 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     #[bits(5)]
     cache_type_field: u8,
     #[bits(3)]
@@ -61,7 +61,7 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     #[bits(12)]
     system_coherency_line_size: u16,
     #[bits(10)]
@@ -71,13 +71,13 @@ pub struct Ebx {
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     #[bits(32)]
     number_of_bits: u32,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     write_back_invalidate_invalidate: bool,
     cache_inclusiveness: bool,
     complex_cache_indexing: bool,

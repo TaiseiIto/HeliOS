@@ -33,7 +33,7 @@ impl Eax0x00000009 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     ia32_platform_dca_cap_msr: u32,
 }
 

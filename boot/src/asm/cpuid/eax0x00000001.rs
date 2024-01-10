@@ -49,12 +49,12 @@ impl Eax0x00000001 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     version_information: u32,
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     brand_index: u8,
     clflush_line_size: u8,
     maximum_number_of_addressable_ids_for_logical_processors: u8,
@@ -65,7 +65,7 @@ pub struct Ebx {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-243 Figure 3-7. Feature Information Returned in the ECX Register
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     sse3: bool,
     pclmulqdq: bool,
     dtes64: bool,
@@ -106,7 +106,7 @@ pub struct Ecx {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-245 Figure 3-8. Feature Information Returned in the EDX Register
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     fpu: bool,
     vme: bool,
     de: bool,

@@ -45,7 +45,7 @@ impl Eax0x00000006 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     digital_temperature_sensor_is_supported: bool,
     intel_turbo_boost_technology_available: bool,
     arat: bool,
@@ -78,7 +78,7 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     #[bits(4)]
     number_of_interrupt_thresholds_in_digital_thermal_sensor: u8,
     #[bits(28, access = RO)]
@@ -86,7 +86,7 @@ pub struct Ebx {
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     hardware_coordination_feedback_capability: bool,
     #[bits(2, access = RO)]
     reserved0: u8,
@@ -99,7 +99,7 @@ pub struct Ecx {
 }
 
 #[bitfield(u32)]
-pub struct Edx  {
+struct Edx  {
     bitmap_of_supported_hardware_feedback_interface_capabilities: u8,
     #[bits(4)]
     enumerates_the_size_of_the_hardware_feedback_interface_structure_in_number_of_4_kb_pages: u8,

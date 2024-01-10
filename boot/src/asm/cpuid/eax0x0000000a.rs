@@ -45,7 +45,7 @@ impl Eax0x0000000a {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     version_id_of_architectural_performance_monitoring: u8,
     number_of_general_purpose_performance_monitoring_counter_per_logical_processor: u8,
     bit_width_of_general_purpose_performance_monitoring_counter: u8,
@@ -53,7 +53,7 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     core_cycle_event_not_available: bool,
     instruction_retired_event_not_available: bool,
     reference_cycles_event_not_available: bool,
@@ -67,12 +67,12 @@ pub struct Ebx {
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     supported_fixed_counters_bit_mask: u32,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     #[bits(5)]
     number_of_contiguous_fixed_function_performance_counters_starting_from_0: u8,
     bit_width_of_fixed_function_performance_counters: u8,

@@ -45,7 +45,7 @@ impl Eax0x0000000b {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     #[bits(5)]
     the_number_of_bits_that_the_x2apic_id_must_be_shifted_to_the_right_to_address_instances_of_the_next_higher_scoped_domain: u8,
     #[bits(27)]
@@ -53,20 +53,20 @@ pub struct Eax {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     the_number_of_logical_processors_across_all_instances_of_this_domain_within_the_next_higher_scoped_domain: u16,
     reserved0: u16,
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     the_input_ecx_sub_leaf_index: u8,
     domain_type: u8,
     reserved0: u16,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     x2apic_id_of_the_current_logical_processor: u32,
 }
 

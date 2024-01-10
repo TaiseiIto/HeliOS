@@ -45,21 +45,21 @@ impl Eax0x00000005 {
 }
 
 #[bitfield(u32)]
-pub struct Eax {
+struct Eax {
     smallest_monitor_line_size_in_bytes: u16,
     #[bits(access = RO)]
     reserved0: u16,
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     largest_monitor_line_size_in_bytes: u16,
     #[bits(access = RO)]
     reserved0: u16,
 }
 
 #[bitfield(u32)]
-pub struct Ecx {
+struct Ecx {
     enumeration_of_monitor_mwait_extensions_beyond_eax_and_ebx_registers_supported: bool,
     supports_treating_interrupts_as_break_event_for_mwait_even_when_interrupts_disabled: bool,
     #[bits(30, access = RO)]
@@ -67,7 +67,7 @@ pub struct Ecx {
 }
 
 #[bitfield(u32)]
-pub struct Edx  {
+struct Edx  {
     #[bits(4)]
     number_of_c0_sub_c_states_supported_using_mwait: u8,
     #[bits(4)]

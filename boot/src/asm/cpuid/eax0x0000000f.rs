@@ -37,12 +37,12 @@ impl Eax0x0000000f {
 }
 
 #[bitfield(u32)]
-pub struct Ebx {
+struct Ebx {
     maximum_range_of_rmid_within_this_physical_processor_of_all_types: u32,
 }
 
 #[bitfield(u32)]
-pub struct Edx {
+struct Edx {
     #[bits(access = RO)]
     reserved0: bool,
     supports_l3_cache_intel_rdt_monitoring: bool,
