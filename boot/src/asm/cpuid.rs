@@ -3,6 +3,7 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
 use {
+    alloc::string::String,
     core::arch::asm,
     super::Rflags,
 };
@@ -136,6 +137,8 @@ pub struct Cpuid {
     eax0x80000000: Eax0x80000000,
     #[allow(dead_code)]
     eax0x80000001: Option<Eax0x80000001>,
+    #[allow(dead_code)]
+    processor_brand_string: Option<String>,
 }
 
 impl Cpuid {
@@ -173,6 +176,24 @@ impl Cpuid {
             let eax0x00000020: Option<Eax0x00000020> = Eax0x00000020::get(&eax0x00000000);
             let eax0x80000000: Eax0x80000000 = Eax0x80000000::get();
             let eax0x80000001: Option<Eax0x80000001> = Eax0x80000001::get(&eax0x80000000);
+            let processor_brand_string: Option<String> = String::from_utf8((0x80000002..=0x80000004)
+                    .take_while(|eax| *eax <= eax0x80000000.max_eax())
+                    .flat_map(|eax| {
+                        let ecx: u32 = 0x00000000;
+                        let cpuid_return = Return::get(eax, ecx);
+                        let eax: u32 = cpuid_return.eax();
+                        let ebx: u32 = cpuid_return.ebx();
+                        let ecx: u32 = cpuid_return.ecx();
+                        let edx: u32 = cpuid_return.edx();
+                        [eax, ebx, ecx, edx]
+                            .into_iter()
+                            .flat_map(|dword| dword
+                                .to_le_bytes()
+                                .into_iter())
+                    })
+                    .collect())
+                .ok()
+                .map(|processor_brand_string| processor_brand_string.replace('\0', ""));
             Some(Self {
                 eax0x00000000,
                 eax0x00000001,
@@ -204,6 +225,7 @@ impl Cpuid {
                 eax0x00000020,
                 eax0x80000000,
                 eax0x80000001,
+                processor_brand_string,
             })
         } else {
             None
