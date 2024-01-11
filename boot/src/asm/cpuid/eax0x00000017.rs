@@ -27,18 +27,12 @@ impl Eax0x00000017 {
         if eax <= eax0x00000000.max_eax() {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let soc_vendor_brand_string = String::from_utf8((1..=3)
-                .flat_map(|ecx| {
-                    let soc_vendor_brand_string = Return::get(eax, ecx);
-                    let eax: u32 = soc_vendor_brand_string.eax();
-                    let ebx: u32 = soc_vendor_brand_string.ebx();
-                    let ecx: u32 = soc_vendor_brand_string.ecx();
-                    let edx: u32 = soc_vendor_brand_string.edx();
-                    [eax, ebx, ecx, edx]
-                        .into_iter()
-                        .flat_map(|dword| dword
-                            .to_le_bytes()
-                            .into_iter())
-                })
+                .flat_map(|ecx| Return::get(eax, ecx)
+                    .eax_ebx_ecx_edx()
+                    .into_iter()
+                    .flat_map(|dword| dword
+                        .to_le_bytes()
+                        .into_iter()))
                 .collect()).ok();
             Some(Self {
                 ecx0x00000000,

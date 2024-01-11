@@ -13,12 +13,8 @@ pub struct Ecx0x00000001 {
 impl Ecx0x00000001 {
     pub fn get(eax: u32) -> Self {
         let ecx: u32 = 0x00000001;
-        let ecx0x00000001 = Return::get(eax, ecx);
-        let eax: u32 = ecx0x00000001.eax();
-        let ebx: u32 = ecx0x00000001.ebx();
-        let ecx: u32 = ecx0x00000001.ecx();
-        let edx: u32 = ecx0x00000001.edx();
-        let the_valid_bits_of_secs_attributes_that_software_can_set_with_ecreate: u128 = [eax, ebx, ecx, edx]
+        let the_valid_bits_of_secs_attributes_that_software_can_set_with_ecreate: u128 = Return::get(eax, ecx)
+            .eax_ebx_ecx_edx()
             .into_iter()
             .flat_map(|dword| dword
                 .to_le_bytes()

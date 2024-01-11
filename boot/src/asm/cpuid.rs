@@ -180,12 +180,8 @@ impl Cpuid {
                     .take_while(|eax| *eax <= eax0x80000000.max_eax())
                     .flat_map(|eax| {
                         let ecx: u32 = 0x00000000;
-                        let cpuid_return = Return::get(eax, ecx);
-                        let eax: u32 = cpuid_return.eax();
-                        let ebx: u32 = cpuid_return.ebx();
-                        let ecx: u32 = cpuid_return.ecx();
-                        let edx: u32 = cpuid_return.edx();
-                        [eax, ebx, ecx, edx]
+                        Return::get(eax, ecx)
+                            .eax_ebx_ecx_edx()
                             .into_iter()
                             .flat_map(|dword| dword
                                 .to_le_bytes()
@@ -263,6 +259,10 @@ impl Return {
         }
     }
 
+    pub fn eax_ebx_ecx_edx(self) -> [u32; 4] {
+        self.into()
+    }
+
     pub fn eax(&self) -> u32 {
         self.eax
     }
@@ -277,6 +277,16 @@ impl Return {
 
     pub fn edx(&self) -> u32 {
         self.edx
+    }
+}
+
+impl From<Return> for [u32; 4] {
+    fn from(cpuid_return: Return) -> Self {
+        let eax: u32 = cpuid_return.eax();
+        let ebx: u32 = cpuid_return.ebx();
+        let ecx: u32 = cpuid_return.ecx();
+        let edx: u32 = cpuid_return.edx();
+        [eax, ebx, ecx, edx]
     }
 }
 
