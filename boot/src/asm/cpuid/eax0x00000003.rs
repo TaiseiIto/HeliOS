@@ -15,20 +15,22 @@ pub struct Eax0x00000003 {
 }
 
 impl Eax0x00000003 {
-    pub fn get(eax0x00000000: &Eax0x00000000, eax0x00000001: &Eax0x00000001) -> Option<Self> {
+    pub fn get(eax0x00000000: &Eax0x00000000, eax0x00000001: &Option<Eax0x00000001>) -> Option<Self> {
         let eax: u32 = 0x00000003;
         let ecx: u32 = 0x00000000;
-        if eax <= eax0x00000000.max_eax() && eax0x00000001.psn() {
-            let eax0x00000003 = Return::get(eax, ecx);
-            let ecx: u32 = eax0x00000003.ecx();
-            let edx: u32 = eax0x00000003.edx();
-            let processor_serial_number: u64 = (ecx as u64) | ((edx as u64) << u32::BITS);
-            Some(Self {
-                processor_serial_number
+        eax0x00000001
+            .as_ref()
+            .and_then(|eax0x00000001| if eax <= eax0x00000000.max_eax() && eax0x00000001.psn() {
+                let eax0x00000003 = Return::get(eax, ecx);
+                let ecx: u32 = eax0x00000003.ecx();
+                let edx: u32 = eax0x00000003.edx();
+                let processor_serial_number: u64 = (ecx as u64) | ((edx as u64) << u32::BITS);
+                Some(Self {
+                    processor_serial_number
+                })
+            } else {
+                None
             })
-        } else {
-            None
-        }
     }
 }
 

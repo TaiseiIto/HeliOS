@@ -159,9 +159,7 @@ impl Cpuid {
             let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
             let eax0x00000001: Option<Eax0x00000001> = Eax0x00000001::get(&eax0x00000000);
             let eax0x00000002: Option<Eax0x00000002> = Eax0x00000002::get(&eax0x00000000);
-            let eax0x00000003: Option<Eax0x00000003> = eax0x00000001
-                .as_ref()
-                .and_then(|eax0x00000001| Eax0x00000003::get(&eax0x00000000, eax0x00000001));
+            let eax0x00000003: Option<Eax0x00000003> = Eax0x00000003::get(&eax0x00000000, &eax0x00000001);
             let eax0x00000004: Option<Eax0x00000004> = Eax0x00000004::get(&eax0x00000000);
             let eax0x00000005: Option<Eax0x00000005> = Eax0x00000005::get(&eax0x00000000);
             let eax0x00000006: Option<Eax0x00000006> = Eax0x00000006::get(&eax0x00000000);
