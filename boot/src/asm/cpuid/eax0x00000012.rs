@@ -35,9 +35,9 @@ impl Eax0x00000012 {
             let ecx0x00000001 = Ecx0x00000001::get(eax);
             let ecx2ecxn: BTreeMap<u32, EcxN> = if eax0x00000007.as_ref().map_or(false, |eax0x00000007| eax0x00000007.sgx()) {
                 (2..)
-                    .map(|ecx| (ecx, EcxN::get(eax, ecx)))
-                    .take_while(|ecx_and_ecxn| ecx_and_ecxn.1.is_some())
-                    .filter_map(|ecx_and_ecxn| ecx_and_ecxn.1.map(|ecxn| (ecx_and_ecxn.0, ecxn)))
+                    .map(|ecx| EcxN::get(eax, ecx).map(|ecxn| (ecx, ecxn)))
+                    .take_while(|ecx_and_ecxn| ecx_and_ecxn.is_some())
+                    .flatten()
                     .collect()
             } else {
                 BTreeMap::<u32, EcxN>::new()
