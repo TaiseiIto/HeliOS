@@ -37,6 +37,10 @@ impl Ecx0x00000000 {
         self.eax.max_ecx()
     }
 
+    pub fn pconfig(&self) -> bool {
+        self.edx.pconfig()
+    }
+
     pub fn sgx(&self) -> bool {
         self.ebx.sgx()
     }
