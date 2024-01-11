@@ -30,6 +30,7 @@ mod eax0x00000018;
 mod eax0x00000019;
 mod eax0x0000001a;
 mod eax0x0000001b;
+mod eax0x0000001c;
 
 pub use {
     eax0x00000000::Eax0x00000000,
@@ -55,6 +56,7 @@ pub use {
     eax0x00000019::Eax0x00000019,
     eax0x0000001a::Eax0x0000001a,
     eax0x0000001b::Eax0x0000001b,
+    eax0x0000001c::Eax0x0000001c,
 };
 
 /// # CPUID
@@ -108,6 +110,8 @@ pub struct Cpuid {
     eax0x0000001a: Option<Eax0x0000001a>,
     #[allow(dead_code)]
     eax0x0000001b: Option<Eax0x0000001b>,
+    #[allow(dead_code)]
+    eax0x0000001c: Option<Eax0x0000001c>,
 }
 
 impl Cpuid {
@@ -138,6 +142,7 @@ impl Cpuid {
             let eax0x00000019: Option<Eax0x00000019> = Eax0x00000019::get(&eax0x00000000);
             let eax0x0000001a: Option<Eax0x0000001a> = Eax0x0000001a::get(&eax0x00000000);
             let eax0x0000001b: Option<Eax0x0000001b> = Eax0x0000001b::get(&eax0x00000000, &eax0x00000007);
+            let eax0x0000001c: Option<Eax0x0000001c> = Eax0x0000001c::get(&eax0x00000000);
             Some(Self {
                 eax0x00000000,
                 eax0x00000001,
@@ -162,6 +167,7 @@ impl Cpuid {
                 eax0x00000019,
                 eax0x0000001a,
                 eax0x0000001b,
+                eax0x0000001c,
             })
         } else {
             None
