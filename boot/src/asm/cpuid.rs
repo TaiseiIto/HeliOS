@@ -38,6 +38,7 @@ mod eax0x0000001f;
 mod eax0x00000020;
 mod eax0x80000000;
 mod eax0x80000001;
+mod eax0x80000006;
 
 pub use {
     eax0x00000000::Eax0x00000000,
@@ -70,6 +71,7 @@ pub use {
     eax0x00000020::Eax0x00000020,
     eax0x80000000::Eax0x80000000,
     eax0x80000001::Eax0x80000001,
+    eax0x80000006::Eax0x80000006,
 };
 
 /// # CPUID
@@ -139,6 +141,8 @@ pub struct Cpuid {
     eax0x80000001: Option<Eax0x80000001>,
     #[allow(dead_code)]
     processor_brand_string: Option<String>,
+    #[allow(dead_code)]
+    eax0x80000006: Option<Eax0x80000006>,
 }
 
 impl Cpuid {
@@ -190,6 +194,7 @@ impl Cpuid {
                     .collect())
                 .ok()
                 .map(|processor_brand_string| processor_brand_string.replace('\0', ""));
+            let eax0x80000006: Option<Eax0x80000006> = Eax0x80000006::get(&eax0x80000000);
             Some(Self {
                 eax0x00000000,
                 eax0x00000001,
@@ -222,6 +227,7 @@ impl Cpuid {
                 eax0x80000000,
                 eax0x80000001,
                 processor_brand_string,
+                eax0x80000006,
             })
         } else {
             None
