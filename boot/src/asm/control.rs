@@ -139,7 +139,7 @@ impl Register4 {
         cr4.into()
     }
 
-    pub fn bit32_paging_is_enabled(&self) -> bool {
+    pub fn bit32_paging_is_used(&self) -> bool {
         !self.pae()
     }
 }

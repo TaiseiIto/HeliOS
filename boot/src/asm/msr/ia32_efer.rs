@@ -40,5 +40,9 @@ impl Ia32Efer {
                 None
             })
     }
+
+    pub fn pae_paging_is_used(&self) -> bool {
+        !self.lme()
+    }
 }
 

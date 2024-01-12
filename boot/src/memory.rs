@@ -8,24 +8,26 @@ pub enum Paging {
     Disable,
     Bit32,
     Pae,
-    #[allow(dead_code)]
     Level4,
     #[allow(dead_code)]
     Level5,
 }
 
 impl Paging {
-    pub fn get() -> Self {
+    pub fn get(ia32_efer: &Option<asm::msr::Ia32Efer>) -> Self {
         let cr0 = asm::control::Register0::get();
         let cr4 = asm::control::Register4::get();
-        if cr0.paging_is_enabled() {
-            if cr4.bit32_paging_is_enabled() {
-                Self::Bit32
-            } else {
-                Self::Pae
-            }
-        } else {
+        if !cr0.paging_is_enabled() {
             Self::Disable
+        } else if cr4.bit32_paging_is_used() {
+            Self::Bit32
+        } else if ia32_efer
+            .as_ref()
+            .expect("Can't get a paging structure.")
+            .pae_paging_is_used() {
+            Self::Pae
+        } else {
+            Self::Level4
         }
     }
 }
