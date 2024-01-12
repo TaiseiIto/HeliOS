@@ -142,5 +142,9 @@ impl Register4 {
     pub fn bit32_paging_is_used(&self) -> bool {
         !self.pae()
     }
+
+    pub fn level4_paging_is_used(&self) -> bool {
+        !self.la57()
+    }
 }
 

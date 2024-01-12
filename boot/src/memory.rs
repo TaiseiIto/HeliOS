@@ -9,7 +9,6 @@ pub enum Paging {
     Bit32,
     Pae,
     Level4,
-    #[allow(dead_code)]
     Level5,
 }
 
@@ -26,8 +25,10 @@ impl Paging {
             .expect("Can't get a paging structure.")
             .pae_paging_is_used() {
             Self::Pae
-        } else {
+        } else if cr4.level4_paging_is_used() {
             Self::Level4
+        } else {
+            Self::Level5
         }
     }
 }
