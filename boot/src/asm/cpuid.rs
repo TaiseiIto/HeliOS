@@ -141,7 +141,6 @@ pub struct Cpuid {
     eax0x00000020: Option<Eax0x00000020>,
     #[allow(dead_code)]
     eax0x80000000: Eax0x80000000,
-    #[allow(dead_code)]
     eax0x80000001: Option<Eax0x80000001>,
     #[allow(dead_code)]
     processor_brand_string: Option<String>,
@@ -242,6 +241,15 @@ impl Cpuid {
         } else {
             None
         }
+    }
+
+    /// # CPUID
+    /// ## References
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 4 2-63
+    pub fn ia32_efer_is_supported(&self) -> bool {
+        self.eax0x80000001.
+            as_ref()
+            .map_or(false, |eax0x80000001| eax0x80000001.ia32_efer_is_supported())
     }
 }
 
