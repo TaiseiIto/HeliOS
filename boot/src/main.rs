@@ -37,7 +37,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cr4 = {:#x?}", cr4);
     let cpuid = asm::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
-    com2_println!("ia32_efer_is_supported = {:#x?}", cpuid.map_or(false, |cpuid| cpuid.ia32_efer_is_supported()));
+    let ia32_efer = asm::msr::Ia32Efer::get(&cpuid);
+    com2_println!("ia32_efer = {:#x?}", ia32_efer);
     let paging = memory::Paging::get();
     com2_println!("paging = {:#x?}", paging);
     efi_println!("Hello, World!");

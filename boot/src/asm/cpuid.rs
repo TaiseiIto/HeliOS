@@ -80,7 +80,7 @@ pub use {
 
 /// # CPUID
 /// ## References
-/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-217
 #[derive(Debug)]
 pub struct Cpuid {
     #[allow(dead_code)]
@@ -243,9 +243,9 @@ impl Cpuid {
         }
     }
 
-    /// # CPUID
+    /// # GEt IA32_EFER availability.
     /// ## References
-    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 4 2-63
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
     pub fn ia32_efer_is_supported(&self) -> bool {
         self.eax0x80000001.
             as_ref()
