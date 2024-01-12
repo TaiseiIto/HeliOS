@@ -3,6 +3,7 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4.5 4-Level Paging and 5-Level Paging
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -22,10 +23,15 @@ pub struct Cr3 {
 
 impl fmt::Debug for Cr3 {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let pml4_table: Vec<&Pml4e> = self.core
+            .pml4_table()
+            .iter()
+            .filter(|pml4e| pml4e.present())
+            .collect();
         formatter
             .debug_struct("Cr3")
             .field("core", &self.core)
-            .field("PML4 table", self.core.pml4_table())
+            .field("PML4 table", &pml4_table)
             .finish()
     }
 }
@@ -74,6 +80,12 @@ impl Cr3Core {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 struct Pml4e {
     core: Pml4eCore,
+}
+
+impl Pml4e {
+    fn present(&self) -> bool {
+        self.core.p()
+    }
 }
 
 impl fmt::Debug for Pml4e {
