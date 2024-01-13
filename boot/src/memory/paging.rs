@@ -11,7 +11,7 @@ pub enum Paging {
     Bit32,
     Pae,
     Level4 {
-        cr3: level4::Cr3,
+        pml4_table: level4::Pml4Table,
     },
     Level5,
 }
@@ -32,8 +32,9 @@ impl Paging {
             Self::Pae
         } else if cr4.level4_paging_is_used() {
             let cr3: level4::Cr3 = cr3.into();
+            let pml4_table: level4::Pml4Table = cr3.into();
             Self::Level4 {
-                cr3,
+                pml4_table,
             }
         } else {
             Self::Level5
