@@ -1,6 +1,9 @@
 mod level4;
 
-use crate::asm;
+use {
+    alloc::boxed::Box,
+    crate::asm,
+};
 
 /// # Paging
 /// ## References
@@ -11,7 +14,7 @@ pub enum Paging<'a> {
     Bit32,
     Pae,
     Level4 {
-        pml4_table: level4::Pml4Table<'a>,
+        pml4t: Box<level4::Pml4t<'a>>,
     },
     Level5,
 }
@@ -31,10 +34,9 @@ impl Paging<'_> {
             .pae_paging_is_used() {
             Self::Pae
         } else if cr4.level4_paging_is_used() {
-            let cr3: level4::Cr3 = cr3.into();
-            let pml4_table: level4::Pml4Table = cr3.into();
+            let pml4t: Box<level4::Pml4t> = Box::new(cr3.into());
             Self::Level4 {
-                pml4_table,
+                pml4t,
             }
         } else {
             Self::Level5

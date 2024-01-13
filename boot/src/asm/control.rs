@@ -91,6 +91,10 @@ impl Register3 {
         }
         cr3.into()
     }
+
+    pub fn get_page_directory_base(&self) -> u64 {
+        self.page_directory_base() << Self::PAGE_DIRECTORY_BASE_OFFSET
+    }
 }
 
 #[bitfield(u64)]
