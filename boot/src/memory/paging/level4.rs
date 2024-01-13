@@ -90,7 +90,7 @@ impl Pml4e {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 struct Pdpt<'a> {
     pml4e: &'a mut Pml4e,
-    vaddr2pdt: Option<BTreeMap<usize, Pdt<'a>>>,
+    vaddr2pdt: Option<BTreeMap<usize, PdtOrPe1Gib<'a>>>,
 }
 
 impl<'a> Pdpt<'a> {
@@ -100,15 +100,15 @@ impl<'a> Pdpt<'a> {
 
     fn new(pml4i: usize, pml4e: &'a mut Pml4e) -> Self {
         let pdpt: usize = pml4e.get_pdpt();
-        let pdpt: *mut [Pdpe; PDPT_LENGTH] = pdpt as *mut [Pdpe; PDPT_LENGTH];
-        let pdpt: &mut [Pdpe; PDPT_LENGTH] = unsafe {
+        let pdpt: *mut [u64; PDPT_LENGTH] = pdpt as *mut [u64; PDPT_LENGTH];
+        let pdpt: &mut [u64; PDPT_LENGTH] = unsafe {
             &mut *pdpt
         };
-        let vaddr2pdt: Option<BTreeMap<usize, Pdt<'_>>> = if pml4e.p() {
+        let vaddr2pdt: Option<BTreeMap<usize, PdtOrPe1Gib<'a>>> = if pml4e.p() {
             Some(pdpt
                 .iter_mut()
                 .enumerate()
-                .map(|(pdpi, pdpe)| (Vaddr::create(pml4i, pdpi, 0, 0, 0).into(), Pdt::new(pdpe)))
+                .map(|(pdpi, pdpe)| (Vaddr::create(pml4i, pdpi, 0, 0, 0).into(), pdpe.into()))
                 .collect())
         } else {
             None
@@ -124,16 +124,51 @@ impl fmt::Debug for Pdpt<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct = formatter.debug_struct("Pdpt");
         debug_struct.field("pml4e", &self.pml4e);
-        self.vaddr2pdt
-            .as_ref()
-            .map(|vaddr2pdt| {
-                let vaddr2pdt: BTreeMap<&usize, &Pdt<'_>> = vaddr2pdt
-                    .iter()
-                    .filter(|(_vaddr, pdt)| pdt.exists())
-                    .collect();
-                debug_struct.field("vaddr2pdt", &vaddr2pdt);
-            });
+        if let Some(vaddr2pdt) = self.vaddr2pdt.as_ref() {
+            let vaddr2pdt: BTreeMap<&usize, &PdtOrPe1Gib<'_>> = vaddr2pdt
+                .iter()
+                .filter(|(_vaddr, pdt_or_pe1gib)| pdt_or_pe1gib.exists())
+                .collect();
+            debug_struct.field("vaddr2pdt", &vaddr2pdt);
+        }
         debug_struct.finish()
+    }
+}
+
+/// # Page Directory Table or 1GiB Page Entry
+#[derive(Debug)]
+enum PdtOrPe1Gib<'a> {
+    Pdt(Pdt<'a>),
+    Pe1Gib(&'a mut Pe1Gib),
+}
+
+impl PdtOrPe1Gib<'_> {
+    fn exists(&self) -> bool {
+        match self {
+            Self::Pdt(pdt) => pdt.exists(),
+            Self::Pe1Gib(pe1gib) => pe1gib.p(),
+        }
+    }
+}
+
+impl<'a> From<&'a mut u64> for PdtOrPe1Gib<'a> {
+    fn from(pdpe: &'a mut u64) -> Self {
+        match *pdpe & 1 << Pdpe::PAGE_1GIB_OFFSET {
+            0 => {
+                let pdpe: *mut u64 = pdpe as *mut u64;
+                let pdpe: *mut Pdpe = pdpe as *mut Pdpe;
+                Self::Pdt(Pdt::new(unsafe {
+                    &mut *pdpe
+                }))
+            },
+            _ => {
+                let pe1gib: *mut u64 = pdpe as *mut u64;
+                let pe1gib: *mut Pe1Gib = pe1gib as *mut Pe1Gib;
+                Self::Pe1Gib(unsafe {
+                    &mut *pe1gib
+                })
+            },
+        }
     }
 }
 
@@ -158,6 +193,35 @@ struct Pdpe {
     address_of_pdt: u64,
     #[bits(15, access = RO)]
     reserved2: u16,
+    xd: bool,
+}
+
+/// # 1GiB Page Entry
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[bitfield(u64)]
+struct Pe1Gib {
+    p: bool,
+    rw: bool,
+    us: bool,
+    pwt: bool,
+    pcd: bool,
+    a: bool,
+    d: bool,
+    page_1gib: bool,
+    g: bool,
+    #[bits(2, access = RO)]
+    reserved0: u8,
+    r: bool,
+    pat: bool,
+    #[bits(17, access = RO)]
+    reserved1: u32,
+    #[bits(18)]
+    address_of_1gib_page_frame: u32,
+    #[bits(11, access = RO)]
+    reserved2: u16,
+    #[bits(4)]
+    prot_key: u8,
     xd: bool,
 }
 
