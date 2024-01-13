@@ -11,9 +11,10 @@ use {
 };
 
 const TABLE_SIZE: usize = 4 * KIB;
-const PML4_TABLE_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pml4e>();
+const PML4T_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pml4e>();
+const PDPT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pdpe>();
 
-/// # 4-Level Paging PML4E
+/// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 #[derive(Debug)]
@@ -24,15 +25,15 @@ pub struct Pml4t<'a> {
 
 impl From<asm::control::Register3> for Pml4t<'static> {
     fn from(cr3: asm::control::Register3) -> Self {
-        let pml4t: u64 = cr3.get_page_directory_base();
-        let pml4t: *mut [Pml4e; PML4_TABLE_LENGTH] = pml4t as *mut [Pml4e; PML4_TABLE_LENGTH];
-        let pml4t: &mut [Pml4e; PML4_TABLE_LENGTH] = unsafe {
+        let pml4t: usize = cr3.get_page_directory_base();
+        let pml4t: *mut [Pml4e; PML4T_LENGTH] = pml4t as *mut [Pml4e; PML4T_LENGTH];
+        let pml4t: &mut [Pml4e; PML4T_LENGTH] = unsafe {
             &mut *pml4t
         };
         let vaddr2pdpt: BTreeMap<usize, Pdpt<'_>> = pml4t
             .iter_mut()
             .enumerate()
-            .map(|(index, pml4e)| (Vaddr::create(index, 0, 0, 0, 0).into(), pml4e.into()))
+            .map(|(pml4i, pml4e)| (Vaddr::create(pml4i, 0, 0, 0, 0).into(), Pdpt::new(pml4i, pml4e)))
             .collect();
         Self {
             cr3,
@@ -41,7 +42,7 @@ impl From<asm::control::Register3> for Pml4t<'static> {
     }
 }
 
-/// # 4-Level Paging PML4E
+/// # Page Map Level 4 Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 #[bitfield(u64)]
@@ -56,60 +57,128 @@ struct Pml4e {
     reserved0: u8,
     r: bool,
     #[bits(36)]
-    address_of_vaddr2pdpt: u64,
+    address_of_pdpt: u64,
     #[bits(15, access = RO)]
     reserved1: u16,
     xd: bool,
 }
 
-/// # 4-Level Paging PML4E
+impl Pml4e {
+    fn get_pdpt(&self) -> usize {
+        (self.address_of_pdpt() << Self::ADDRESS_OF_PDPT_OFFSET) as usize
+    }
+}
+
+/// # Page Directory Pointer Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 #[derive(Debug)]
 struct Pdpt<'a> {
     pml4e: &'a mut Pml4e,
+    vaddr2pdt: Option<BTreeMap<usize, Pdt<'a>>>,
 }
 
-impl<'a> From<&'a mut Pml4e> for Pdpt<'a> {
-    fn from(pml4e: &'a mut Pml4e) -> Self {
+impl<'a> Pdpt<'a> {
+    fn new(pml4i: usize, pml4e: &'a mut Pml4e) -> Self {
+        let pdpt: usize = pml4e.get_pdpt();
+        let pdpt: *mut [Pdpe; PDPT_LENGTH] = pdpt as *mut [Pdpe; PDPT_LENGTH];
+        let pdpt: &mut [Pdpe; PDPT_LENGTH] = unsafe {
+            &mut *pdpt
+        };
+        let vaddr2pdt: Option<BTreeMap<usize, Pdt<'_>>> = if pml4e.p() {
+            Some(pdpt
+                .iter_mut()
+                .enumerate()
+                .map(|(pdpi, pdpe)| (Vaddr::create(pml4i, pdpi, 0, 0, 0).into(), Pdt::new(pdpe)))
+                .collect())
+        } else {
+            None
+        };
         Self {
             pml4e,
+            vaddr2pdt,
         }
     }
 }
 
-/// # 4-Level Paging PML4E
+/// # Page Directory Pointer Entry
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[bitfield(u64)]
+struct Pdpe {
+    p: bool,
+    rw: bool,
+    us: bool,
+    pwt: bool,
+    pcd: bool,
+    a: bool,
+    #[bits(access = RO)]
+    reserved0: bool,
+    page_1gib: bool,
+    #[bits(3, access = RO)]
+    reserved1: u8,
+    r: bool,
+    #[bits(36)]
+    address_of_pdt: u64,
+    #[bits(15, access = RO)]
+    reserved2: u16,
+    xd: bool,
+}
+
+/// # Page Directory Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+#[derive(Debug)]
+struct Pdt<'a> {
+    pdpe: &'a mut Pdpe,
+}
+
+impl<'a> Pdt<'a> {
+    fn new(pdpe: &'a mut Pdpe) -> Self {
+        Self {
+            pdpe,
+        }
+    }
+}
+
+/// # Virtual Address
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+/// ## Fields
+/// * `offset` - Offset from page base.
+/// * `pi` - Page index.
+/// * `pdi` - Page directory index.
+/// * `pdpi` - Page directory pointer index.
+/// * `pml4i` - Page map level 4 index.
 #[bitfield(u64)]
 struct Vaddr {
     #[bits(12)]
     offset: u16,
     #[bits(9)]
-    p: u16,
+    pi: u16,
     #[bits(9)]
-    pd: u16,
+    pdi: u16,
     #[bits(9)]
-    pdp: u16,
+    pdpi: u16,
     #[bits(9)]
-    pml4: u16,
+    pml4i: u16,
     reserved0: u16,
 }
 
 impl Vaddr {
-    fn create(pml4: usize, pdp: usize, pd: usize, p: usize, offset: usize) -> Self {
-        let pml4: u16 = pml4 as u16;
-        let pdp: u16 = pdp as u16;
-        let pd: u16 = pd as u16;
-        let p: u16 = p as u16;
+    fn create(pml4i: usize, pdpi: usize, pdi: usize, pi: usize, offset: usize) -> Self {
+        let pml4i: u16 = pml4i as u16;
+        let pdpi: u16 = pdpi as u16;
+        let pdi: u16 = pdi as u16;
+        let pi: u16 = pi as u16;
         let offset: u16 = offset as u16;
         Self::new()
             .with_offset(offset)
-            .with_p(p)
-            .with_pd(pd)
-            .with_pdp(pdp)
-            .with_pml4(pml4)
-            .with_reserved0(match pml4 & (1 << (Self::PML4_BITS - 1)) {
+            .with_pi(pi)
+            .with_pdi(pdi)
+            .with_pdpi(pdpi)
+            .with_pml4i(pml4i)
+            .with_reserved0(match pml4i & (1 << (Self::PML4I_BITS - 1)) {
                 0 => 0,
                 _ => 0xffff,
             })
