@@ -124,13 +124,15 @@ impl fmt::Debug for Pdpt<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct = formatter.debug_struct("Pdpt");
         debug_struct.field("pml4e", &self.pml4e);
-        if let Some(vaddr2pdt) = self.vaddr2pdt.as_ref() {
-            let vaddr2pdt: BTreeMap<&usize, &Pdt<'_>> = vaddr2pdt
-                .iter()
-                .filter(|(_vaddr, pdt)| pdt.exists())
-                .collect();
-            debug_struct.field("vaddr2pdt", &vaddr2pdt);
-        }
+        self.vaddr2pdt
+            .as_ref()
+            .map(|vaddr2pdt| {
+                let vaddr2pdt: BTreeMap<&usize, &Pdt<'_>> = vaddr2pdt
+                    .iter()
+                    .filter(|(_vaddr, pdt)| pdt.exists())
+                    .collect();
+                debug_struct.field("vaddr2pdt", &vaddr2pdt);
+            });
         debug_struct.finish()
     }
 }

@@ -36,12 +36,9 @@ macro_rules! com2_print {
 
 pub fn com2_print(args: fmt::Arguments) {
     unsafe {
-        if COM2.is_none() {
-            COM2 = Some(Com::new(COM2_PORT, COM2_BAUD_RATE));
-        }
-        if let Some(com2) = COM2.as_mut() {
-            com2.write_fmt(args).expect("COM2 can't print!")
-        }
+        COM2.get_or_insert(Com::new(COM2_PORT, COM2_BAUD_RATE))
+            .write_fmt(args)
+            .expect("COM2 can't print!")
     }
 }
 
