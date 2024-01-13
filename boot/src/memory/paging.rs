@@ -6,17 +6,17 @@ use crate::asm;
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4 Paging
 #[derive(Debug)]
-pub enum Paging {
+pub enum Paging<'a> {
     Disable,
     Bit32,
     Pae,
     Level4 {
-        pml4_table: level4::Pml4Table,
+        pml4_table: level4::Pml4Table<'a>,
     },
     Level5,
 }
 
-impl Paging {
+impl Paging<'_> {
     pub fn get(ia32_efer: &Option<asm::msr::Ia32Efer>) -> Self {
         let cr0 = asm::control::Register0::get();
         let cr3 = asm::control::Register3::get();

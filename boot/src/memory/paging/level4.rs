@@ -29,16 +29,6 @@ pub struct Cr3 {
     reserved2: u16,
 }
 
-impl Cr3 {
-    fn pml4_table(&self) -> &mut [Pml4e; PML4_TABLE_LENGTH] {
-        let pml4_table: u64 = self.address_of_pml4_table() << Self::ADDRESS_OF_PML4_TABLE_OFFSET;
-        let pml4_table: *mut [Pml4e; PML4_TABLE_LENGTH] = pml4_table as *mut [Pml4e; PML4_TABLE_LENGTH];
-        unsafe {
-            &mut *pml4_table
-        }
-    }
-}
-
 impl From<asm::control::Register3> for Cr3 {
     fn from(cr3: asm::control::Register3) -> Self {
         let cr3: u64 = cr3.into();
@@ -50,14 +40,21 @@ impl From<asm::control::Register3> for Cr3 {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 #[derive(Debug)]
-pub struct Pml4Table {
+pub struct Pml4Table<'a> {
     cr3: Cr3,
+    pml4_table: &'a [Pml4e; PML4_TABLE_LENGTH],
 }
 
-impl From<Cr3> for Pml4Table {
+impl From<Cr3> for Pml4Table<'static> {
     fn from(cr3: Cr3) -> Self {
+        let pml4_table: u64 = cr3.address_of_pml4_table() << Cr3::ADDRESS_OF_PML4_TABLE_OFFSET;
+        let pml4_table: *const [Pml4e; PML4_TABLE_LENGTH] = pml4_table as *const [Pml4e; PML4_TABLE_LENGTH];
+        let pml4_table: &[Pml4e; PML4_TABLE_LENGTH] = unsafe {
+            &*pml4_table
+        };
         Self {
             cr3,
+            pml4_table,
         }
     }
 }
@@ -82,3 +79,4 @@ struct Pml4e {
     reserved1: u16,
     xd: bool,
 }
+
