@@ -3,6 +3,7 @@
 #![no_main]
 #![no_std]
 #![feature(abi_efiapi)]
+#![feature(array_methods)]
 #![allow(stable_features)]
 
 extern crate alloc;
