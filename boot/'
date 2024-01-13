@@ -17,7 +17,7 @@ const TABLE_SIZE: usize = 4 * KIB;
 const PML4T_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pml4e>();
 const PDPT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pdpe>();
 const PDT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pde>();
-const PT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pe4Kib>();
+const PDT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pe4Kib>();
 
 /// # Page Map Level 4 Table
 /// ## References
@@ -398,7 +398,7 @@ impl<'a> Pt<'a> {
             Some(pt
                 .iter_mut()
                 .enumerate()
-                .map(|(pi, pe)| (Vaddr::create(pml4i, pdpi, pdi, pi, 0).into(), pe))
+                .map(|pi, pe| (Vaddr::create(pml4i, pdpi, pdi, pi, 0).into(), pe))
                 .collect())
         } else {
             None
@@ -440,12 +440,12 @@ struct Pe4Kib {
     pat: bool,
     g: bool,
     #[bits(2, access = RO)]
-    reserved0: u8,
+    reserved0: bool,
     r: bool,
     #[bits(36)]
     address_of_4mib_page_frame: u64,
     #[bits(11, access = RO)]
-    reserved1: u16,
+    reserved1: bool,
     #[bits(4)]
     prot_key: u8,
     xd: bool,
