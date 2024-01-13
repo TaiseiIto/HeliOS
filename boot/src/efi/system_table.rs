@@ -1,6 +1,7 @@
 use {
     alloc::vec::Vec,
     core::{
+        cell::OnceCell,
         fmt::{
             self,
             Write,
@@ -33,7 +34,7 @@ macro_rules! efi_println {
     ($fmt:expr, $($arg:tt)*) => (efi_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-static mut SYSTEM_TABLE: Option<&'static mut SystemTable<'static>> = None;
+static mut SYSTEM_TABLE: OnceCell<&'static mut SystemTable<'static>> = OnceCell::new();
 
 /// # EFI_SYSTEM_TABLE
 /// ## References
@@ -76,18 +77,22 @@ impl SystemTable<'_> {
 impl SystemTable<'static> {
     pub fn get() -> &'static mut Self {
         unsafe {
-            SYSTEM_TABLE.as_mut().expect("Can't get a UEFI system table!")
+            SYSTEM_TABLE
+                .get_mut()
+                .expect("Can't get a UEFI system table!")
         }
     }
 
     pub fn print(args: fmt::Arguments) {
-        Self::get().write_fmt(args).expect("UEFI can't print.")
+        Self::get()
+            .write_fmt(args)
+            .expect("UEFI can't print.")
     }
 
     pub fn set(&'static mut self) {
         unsafe {
-            SYSTEM_TABLE = Some(self);
-        }
+            SYSTEM_TABLE.set(self)
+        }.expect("Can't set a UEFI system table.")
     }
 }
 

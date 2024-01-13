@@ -6,9 +6,12 @@
 //! * [Look RS232](https://www.lookrs232.com/rs232/registers.htm)
 
 use {
-    core::fmt::{
-        self,
-        Write,
+    core::{
+        cell::OnceCell,
+        fmt::{
+            self,
+            Write,
+        },
     },
     crate::asm,
 };
@@ -35,18 +38,24 @@ macro_rules! com2_print {
 }
 
 pub fn com2_print(args: fmt::Arguments) {
+    get_com2()
+        .write_fmt(args)
+        .expect("COM2 can't print!")
+}
+
+fn get_com2() -> &'static mut Com {
     unsafe {
-        COM2.get_or_insert(Com::new(COM2_PORT, COM2_BAUD_RATE))
-            .write_fmt(args)
+        COM2.get_or_init(|| Com::new(COM2_PORT, COM2_BAUD_RATE));
+        COM2.get_mut()
             .expect("COM2 can't print!")
     }
 }
 
-static mut COM2: Option<Com> = None;
+static mut COM2: OnceCell<Com> = OnceCell::new();
 const COM2_PORT: u16 = 0x02f8;
 const COM2_BAUD_RATE: u32 = 9600;
 
-pub struct Com {
+struct Com {
     port: u16,
 }
 
@@ -196,7 +205,7 @@ impl Com {
         asm::inb(self.port_line_status()).into()
     }
 
-    pub fn send(&self, data: u8) {
+    fn send(&self, data: u8) {
         while !self.can_send() {}
         self.write_transmitter_holding_buffer(data);
     }

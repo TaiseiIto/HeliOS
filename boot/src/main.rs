@@ -39,8 +39,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cpuid = {:#x?}", cpuid);
     let ia32_efer = asm::msr::Ia32Efer::get(&cpuid);
     com2_println!("ia32_efer = {:#x?}", ia32_efer);
-    let paging = memory::Paging::get(&ia32_efer);
-    com2_println!("paging = {:#x?}", paging);
+    let _paging = memory::Paging::get(&ia32_efer);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
