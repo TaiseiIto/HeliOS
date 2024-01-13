@@ -3,6 +3,7 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4.5 4-Level Paging and 5-Level Paging
 
 use {
+    alloc::collections::BTreeMap,
     bitfield_struct::bitfield,
     core::mem,
     crate::asm,
@@ -18,22 +19,24 @@ const PML4_TABLE_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pml4e>();
 #[derive(Debug)]
 pub struct Pml4t<'a> {
     cr3: asm::control::Register3,
-    pml4_table: [Pdpt<'a>; PML4_TABLE_LENGTH],
+    vaddr2pdpt: BTreeMap<usize, Pdpt<'a>>,
 }
 
 impl From<asm::control::Register3> for Pml4t<'static> {
     fn from(cr3: asm::control::Register3) -> Self {
-        let pml4_table: u64 = cr3.get_page_directory_base();
-        let pml4_table: *mut [Pml4e; PML4_TABLE_LENGTH] = pml4_table as *mut [Pml4e; PML4_TABLE_LENGTH];
-        let pml4_table: &mut [Pml4e; PML4_TABLE_LENGTH] = unsafe {
-            &mut *pml4_table
+        let pml4t: u64 = cr3.get_page_directory_base();
+        let pml4t: *mut [Pml4e; PML4_TABLE_LENGTH] = pml4t as *mut [Pml4e; PML4_TABLE_LENGTH];
+        let pml4t: &mut [Pml4e; PML4_TABLE_LENGTH] = unsafe {
+            &mut *pml4t
         };
-        let pml4_table: [Pdpt<'_>; PML4_TABLE_LENGTH] = pml4_table
-            .each_mut()
-            .map(|pml4e| pml4e.into());
+        let vaddr2pdpt: BTreeMap<usize, Pdpt<'_>> = pml4t
+            .iter_mut()
+            .enumerate()
+            .map(|(index, pml4e)| (index, pml4e.into()))
+            .collect();
         Self {
             cr3,
-            pml4_table,
+            vaddr2pdpt,
         }
     }
 }
@@ -53,7 +56,7 @@ struct Pml4e {
     reserved0: u8,
     r: bool,
     #[bits(36)]
-    address_of_pml4_table: u64,
+    address_of_vaddr2pdpt: u64,
     #[bits(15, access = RO)]
     reserved1: u16,
     xd: bool,
