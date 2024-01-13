@@ -5,7 +5,10 @@
 use {
     alloc::collections::BTreeMap,
     bitfield_struct::bitfield,
-    core::mem,
+    core::{
+        fmt,
+        mem,
+    },
     crate::asm,
     super::super::KIB,
 };
@@ -17,10 +20,23 @@ const PDPT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pdpe>();
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
-#[derive(Debug)]
 pub struct Pml4t<'a> {
     cr3: asm::control::Register3,
     vaddr2pdpt: BTreeMap<usize, Pdpt<'a>>,
+}
+
+impl fmt::Debug for Pml4t<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let vaddr2pdpt: BTreeMap<&usize, &Pdpt<'_>> = self.vaddr2pdpt
+            .iter()
+            .filter(|(_vaddr, pdpt)| pdpt.exists())
+            .collect();
+        formatter
+            .debug_struct("Pml4t")
+            .field("cr3", &self.cr3)
+            .field("vaddr2pdpt", &vaddr2pdpt)
+            .finish()
+    }
 }
 
 impl From<asm::control::Register3> for Pml4t<'static> {
@@ -72,13 +88,16 @@ impl Pml4e {
 /// # Page Directory Pointer Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
-#[derive(Debug)]
 struct Pdpt<'a> {
     pml4e: &'a mut Pml4e,
     vaddr2pdt: Option<BTreeMap<usize, Pdt<'a>>>,
 }
 
 impl<'a> Pdpt<'a> {
+    fn exists(&self) -> bool {
+        self.pml4e.p()
+    }
+
     fn new(pml4i: usize, pml4e: &'a mut Pml4e) -> Self {
         let pdpt: usize = pml4e.get_pdpt();
         let pdpt: *mut [Pdpe; PDPT_LENGTH] = pdpt as *mut [Pdpe; PDPT_LENGTH];
@@ -98,6 +117,21 @@ impl<'a> Pdpt<'a> {
             pml4e,
             vaddr2pdt,
         }
+    }
+}
+
+impl fmt::Debug for Pdpt<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = formatter.debug_struct("Pdpt");
+        debug_struct.field("pml4e", &self.pml4e);
+        if let Some(vaddr2pdt) = self.vaddr2pdt.as_ref() {
+            let vaddr2pdt: BTreeMap<&usize, &Pdt<'_>> = vaddr2pdt
+                .iter()
+                .filter(|(_vaddr, pdt)| pdt.exists())
+                .collect();
+            debug_struct.field("vaddr2pdt", &vaddr2pdt);
+        }
+        debug_struct.finish()
     }
 }
 
@@ -134,6 +168,10 @@ struct Pdt<'a> {
 }
 
 impl<'a> Pdt<'a> {
+    fn exists(&self) -> bool {
+        self.pdpe.p()
+    }
+
     fn new(pdpe: &'a mut Pdpe) -> Self {
         Self {
             pdpe,
