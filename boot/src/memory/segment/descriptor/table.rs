@@ -34,8 +34,8 @@ impl fmt::Debug for Table<'_> {
                 .enumerate()
                 .filter_map(|(index, descriptor)| {
                     let selector: u16 = (index * mem::size_of::<Descriptor>()) as u16;
-                    let readable: Option<Debug> = descriptor.into();
-                    readable.map(|readable| (selector, readable))
+                    let descriptor: Option<Debug> = descriptor.into();
+                    descriptor.map(|descriptor| (selector, descriptor))
                 }))
             .finish()
     }
