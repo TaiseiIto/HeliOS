@@ -30,8 +30,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let cpuid = x64::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
     let _paging = memory::Paging::get(&cpuid);
-    let gdtr = memory::segment::descriptor::table::Register::get();
-    com2_println!("gdtr = {:#x?}", gdtr);
+    let gdt = memory::segment::descriptor::Table::get();
+    com2_println!("gdt = {:#x?}", gdt);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

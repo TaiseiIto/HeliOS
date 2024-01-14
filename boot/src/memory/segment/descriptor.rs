@@ -1,6 +1,8 @@
-use bitfield_struct::bitfield;
-
 pub mod table;
+
+pub use table::Table;
+
+use bitfield_struct::bitfield;
 
 /// # Segment Descriptor
 /// ## References
