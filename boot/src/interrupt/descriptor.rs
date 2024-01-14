@@ -32,7 +32,7 @@ pub struct Descriptor {
 #[derive(Debug)]
 pub struct Interface {
     #[allow(dead_code)]
-    offset: u64,
+    offset: usize,
     #[allow(dead_code)]
     segment_selector: u16,
     #[allow(dead_code)]
@@ -46,9 +46,9 @@ pub struct Interface {
 impl From<&Descriptor> for Option<Interface> {
     fn from(descriptor: &Descriptor) -> Self {
         if descriptor.p() {
-            let offset0: u64 = descriptor.offset0() as u64;
-            let offset1: u64 = descriptor.offset1();
-            let offset: u64 = offset0 + (offset1 << Descriptor::OFFSET0_OFFSET);
+            let offset0: usize = descriptor.offset0() as usize;
+            let offset1: usize = descriptor.offset1() as usize;
+            let offset: usize = offset0 + (offset1 << Descriptor::OFFSET0_OFFSET);
             let segment_selector: u16 = descriptor.segment_selector();
             let interrupt_stack_table: u8 = descriptor.ist();
             let descriptor_type: u8 = descriptor.descriptor_type();

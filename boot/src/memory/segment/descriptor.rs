@@ -40,9 +40,9 @@ impl Descriptor {
 #[derive(Debug)]
 pub struct Interface {
     #[allow(dead_code)]
-    base: u32,
+    base: usize,
     #[allow(dead_code)]
-    size: u32,
+    size: usize,
     #[allow(dead_code)]
     dpl: u8,
     #[allow(dead_code)]
@@ -54,15 +54,15 @@ pub struct Interface {
 impl From<&Descriptor> for Option<Interface> {
     fn from(descriptor: &Descriptor) -> Self {
         if descriptor.p() {
-            let base0: u32 = descriptor.base0();
-            let base1: u32 = descriptor.base1() as u32;
-            let base: u32 = base0 + (base1 << Descriptor::BASE0_BITS);
-            let limit0: u32 = descriptor.limit0() as u32;
-            let limit1: u32 = descriptor.limit1() as u32;
-            let limit: u32 = limit0 + (limit1 << Descriptor::LIMIT1_BITS);
-            let size: u32 = limit + 1;
-            let size: u32 = if descriptor.g() {
-                (4 * KIB as u32) * size
+            let base0: usize = descriptor.base0() as usize;
+            let base1: usize = descriptor.base1() as usize;
+            let base: usize = base0 + (base1 << Descriptor::BASE0_BITS);
+            let limit0: usize = descriptor.limit0() as usize;
+            let limit1: usize = descriptor.limit1() as usize;
+            let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
+            let size: usize = limit + 1;
+            let size: usize = if descriptor.g() {
+                (4 * KIB as usize) * size
             } else {
                 size
             };
