@@ -6,9 +6,9 @@ use {
         mem,
         slice,
     },
-    super::super::{
-        Descriptor,
-        descriptor::Readable,
+    super::{
+        Readable,
+        super::Descriptor,
     },
 };
 

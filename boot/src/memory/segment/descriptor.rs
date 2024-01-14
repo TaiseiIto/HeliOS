@@ -3,6 +3,7 @@ pub mod table;
 pub use table::Table;
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     super::super::KIB,
 };
@@ -15,10 +16,8 @@ pub struct Descriptor {
     limit0: u16,
     #[bits(24)]
     base0: u32,
-    type0: bool,
-    type1: bool,
-    type2: bool,
-    type3: bool,
+    #[bits(4)]
+    segment_type: u8,
     s: bool,
     #[bits(2)]
     dpl: u8,
@@ -44,6 +43,7 @@ pub struct Readable {
     size: u32,
     dpl: u8,
     avl: bool,
+    segment_type: Type,
 }
 
 impl From<&Descriptor> for Option<Readable> {
@@ -63,14 +63,58 @@ impl From<&Descriptor> for Option<Readable> {
             };
             let dpl: u8 = descriptor.dpl();
             let avl: bool = descriptor.avl();
+            let segment_type: u8 = descriptor.segment_type();
+            let s: bool = descriptor.s();
+            let segment_type = Type::new(segment_type, s);
             Some(Readable {
                 base,
                 size,
                 dpl,
                 avl,
+                segment_type,
             })
         } else {
             None
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Type {
+    Code,
+    Data,
+    Ldt,
+    AvailableTss,
+    BusyTss,
+    CallGate,
+    InterruptGate,
+    TrapGate,
+}
+
+impl Type {
+    fn new(segment_type: u8, s: bool) -> Self {
+        if s {
+            let segment_type: Vec<bool> = (0..Descriptor::SEGMENT_TYPE_BITS)
+                .map(|offset| segment_type & (1 << offset) != 0)
+                .collect();
+            let segment_type: [bool; Descriptor::SEGMENT_TYPE_BITS] = segment_type
+                .try_into()
+                .expect("Can't get a type.");
+            if segment_type[3] {
+                Self::Code
+            } else {
+                Self::Data
+            }
+        } else {
+            match segment_type {
+                2 => Self::Ldt,
+                9 => Self::AvailableTss,
+                11 => Self::BusyTss,
+                12 => Self::CallGate,
+                14 => Self::InterruptGate,
+                15 => Self::TrapGate,
+                _ => panic!("Can't get a type."),
+            }
         }
     }
 }
