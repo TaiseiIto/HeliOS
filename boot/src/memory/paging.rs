@@ -17,7 +17,8 @@ pub enum Paging<'a> {
 }
 
 impl Paging<'_> {
-    pub fn get(ia32_efer: &Option<asm::msr::Ia32Efer>) -> Self {
+    pub fn get(cpuid: &Option<asm::Cpuid>) -> Self {
+        let ia32_efer: Option<asm::msr::Ia32Efer> = asm::msr::Ia32Efer::get(cpuid);
         let cr0 = asm::control::Register0::get();
         let cr3 = asm::control::Register3::get();
         let cr4 = asm::control::Register4::get();
@@ -26,7 +27,6 @@ impl Paging<'_> {
         } else if cr4.bit32_paging_is_used() {
             Self::Bit32
         } else if ia32_efer
-            .as_ref()
             .expect("Can't get a paging structure.")
             .pae_paging_is_used() {
             Self::Pae
