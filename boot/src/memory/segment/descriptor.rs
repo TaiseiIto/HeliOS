@@ -15,8 +15,10 @@ pub struct Descriptor {
     limit0: u16,
     #[bits(24)]
     base0: u32,
-    #[bits(4)]
-    segment_type: u8,
+    type0: bool,
+    type1: bool,
+    type2: bool,
+    type3: bool,
     s: bool,
     #[bits(2)]
     dp: u8,
@@ -40,6 +42,12 @@ impl Descriptor {
 pub struct Readable {
     base: u32,
     size: u32,
+    accessed: bool,
+    conforming: bool,
+    executable: bool,
+    expand_down: bool,
+    readable: bool,
+    writable: bool,
 }
 
 impl From<&Descriptor> for Readable {
@@ -56,9 +64,25 @@ impl From<&Descriptor> for Readable {
         } else {
             size
         };
+        let type0: bool = descriptor.type0();
+        let type1: bool = descriptor.type1();
+        let type2: bool = descriptor.type2();
+        let type3: bool = descriptor.type3();
+        let executable: bool = type3;
+        let accessed: bool = type0;
+        let conforming: bool = executable && type2;
+        let expand_down: bool = !executable && type2;
+        let readable: bool = !executable || type1;
+        let writable: bool = !executable && type1;
         Self {
             base,
             size,
+            accessed,
+            conforming,
+            executable,
+            expand_down,
+            readable,
+            writable,
         }
     }
 }
