@@ -43,7 +43,7 @@ impl Ecx0x00000000 {
             let edx: u32 = self.edx.into();
             edx & (1 << (n - u32::BITS)) != 0
         } else {
-            panic!("Invalid XCR0 index {}", n)
+            panic!("Invalid XCR0 index {}.", n)
         }
     }
 }

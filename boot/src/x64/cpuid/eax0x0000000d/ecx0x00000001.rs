@@ -43,7 +43,7 @@ impl Ecx0x00000001 {
             let edx: u32 = self.edx.into();
             edx & (1 << (n - u32::BITS)) != 0
         } else {
-            panic!("Invalid IA32_XSS index {}", n)
+            panic!("Invalid IA32_XSS index {}.", n)
         }
     }
 }

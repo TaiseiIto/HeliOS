@@ -65,7 +65,9 @@ impl From<&Descriptor> for Option<Readable> {
             let avl: bool = descriptor.avl();
             let segment_type: u8 = descriptor.segment_type();
             let s: bool = descriptor.s();
-            let segment_type = Type::new(segment_type, s);
+            let db: bool = descriptor.db();
+            let l: bool = descriptor.l();
+            let segment_type = Type::new(segment_type, s, db, l);
             Some(Readable {
                 base,
                 size,
@@ -81,8 +83,18 @@ impl From<&Descriptor> for Option<Readable> {
 
 #[derive(Debug)]
 enum Type {
-    Code,
-    Data,
+    Code {
+        accessed: bool,
+        readable: bool,
+        conforming: bool,
+        default_bits: usize,
+    },
+    Data {
+        accessed: bool,
+        writable: bool,
+        expand_down: bool,
+        default_bits: usize,
+    },
     Ldt,
     AvailableTss,
     BusyTss,
@@ -92,7 +104,7 @@ enum Type {
 }
 
 impl Type {
-    fn new(segment_type: u8, s: bool) -> Self {
+    fn new(segment_type: u8, s: bool, db: bool, l: bool) -> Self {
         if s {
             let segment_type: Vec<bool> = (0..Descriptor::SEGMENT_TYPE_BITS)
                 .map(|offset| segment_type & (1 << offset) != 0)
@@ -100,10 +112,36 @@ impl Type {
             let segment_type: [bool; Descriptor::SEGMENT_TYPE_BITS] = segment_type
                 .try_into()
                 .unwrap();
+            let accessed: bool = segment_type[0];
             if segment_type[3] {
-                Self::Code
+                let readable: bool = segment_type[1];
+                let conforming: bool = segment_type[2];
+                let default_bits: usize = match (db, l) {
+                    (false, false) => 16,
+                    (false, true) => 64,
+                    (true, false) => 32,
+                    (true, true) => panic!("Invalid code segment."),
+                };
+                Self::Code {
+                    accessed,
+                    readable,
+                    conforming,
+                    default_bits,
+                }
             } else {
-                Self::Data
+                let writable: bool = segment_type[1];
+                let expand_down: bool = segment_type[2];
+                let default_bits: usize = if db {
+                    32
+                } else {
+                    16
+                };
+                Self::Data {
+                    accessed,
+                    writable,
+                    expand_down,
+                    default_bits,
+                }
             }
         } else {
             match segment_type {
@@ -113,7 +151,7 @@ impl Type {
                 12 => Self::CallGate,
                 14 => Self::InterruptGate,
                 15 => Self::TrapGate,
-                segment_type => panic!("Invalid segment type {}", segment_type),
+                segment_type => panic!("Invalid segment type {}.", segment_type),
             }
         }
     }
