@@ -194,15 +194,15 @@ impl Com {
 
     fn read_interrupt_enable(&self) -> interrupt_enable::Register {
         self.disable_divisor_latch_access();
-        asm::inb(self.port_interrupt_enable()).into()
+        asm::port::inb(self.port_interrupt_enable()).into()
     }
 
     fn read_line_control(&self) -> line_control::Register {
-        asm::inb(self.port_line_control()).into()
+        asm::port::inb(self.port_line_control()).into()
     }
 
     fn read_line_status(&self) -> line_status::Register {
-        asm::inb(self.port_line_status()).into()
+        asm::port::inb(self.port_line_status()).into()
     }
 
     fn send(&self, data: u8) {
@@ -218,30 +218,30 @@ impl Com {
         let divisor_latch_high: u16 = divisor_latch >> 8;
         let divisor_latch_high: u8 = divisor_latch_high as u8;
         self.enable_divisor_latch_access();
-        asm::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
-        asm::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
+        asm::port::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
+        asm::port::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
     }
 
     fn write_fifo_control(&self, register: fifo_control::Register) {
-        asm::outb(self.port_fifo_control(), register.into());
+        asm::port::outb(self.port_fifo_control(), register.into());
     }
 
     fn write_interrupt_enable(&self, register: interrupt_enable::Register) {
         self.disable_divisor_latch_access();
-        asm::outb(self.port_interrupt_enable(), register.into());
+        asm::port::outb(self.port_interrupt_enable(), register.into());
     }
 
     fn write_line_control(&self, register: line_control::Register) {
-        asm::outb(self.port_line_control(), register.into());
+        asm::port::outb(self.port_line_control(), register.into());
     }
 
     fn write_modem_control(&self, register: modem_control::Register) {
-        asm::outb(self.port_modem_control(), register.into());
+        asm::port::outb(self.port_modem_control(), register.into());
     }
 
     fn write_transmitter_holding_buffer(&self, data: u8) {
         self.disable_divisor_latch_access();
-        asm::outb(self.port_transmitter_holding_buffer(), data);
+        asm::port::outb(self.port_transmitter_holding_buffer(), data);
     }
 }
 
