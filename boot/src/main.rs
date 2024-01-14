@@ -30,6 +30,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let cpuid = asm::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
     let _paging = memory::Paging::get(&cpuid);
+    let gdtr = asm::gdt::Register::get();
+    com2_println!("gdtr = {:#x?}", gdtr);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
