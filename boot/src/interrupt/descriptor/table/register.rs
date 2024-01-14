@@ -1,4 +1,10 @@
-use core::arch::asm;
+use {
+    core::{
+        arch::asm,
+        mem,
+    },
+    super::super::super::Descriptor,
+};
 
 #[derive(Debug, Default)]
 #[repr(packed)]
@@ -8,6 +14,10 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn base(&self) -> *const Descriptor {
+        self.base as *const Descriptor
+    }
+
     pub fn get() -> Self {
         let mut register = Register::default();
         unsafe {
@@ -17,6 +27,10 @@ impl Register {
             );
         }
         register
+    }
+
+    pub fn length(&self) -> usize {
+        (self.limit as usize + 1) / mem::size_of::<Descriptor>()
     }
 }
 

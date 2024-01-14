@@ -33,7 +33,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let _paging = memory::Paging::get(&cpuid);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
-    let idt = interrupt::descriptor::table::Register::get();
+    let idt = interrupt::descriptor::Table::get();
     com2_print!("idt = {:#x?}", idt);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
