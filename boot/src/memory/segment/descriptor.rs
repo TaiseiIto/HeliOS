@@ -99,7 +99,7 @@ impl Type {
                 .collect();
             let segment_type: [bool; Descriptor::SEGMENT_TYPE_BITS] = segment_type
                 .try_into()
-                .expect("Can't get a type.");
+                .unwrap();
             if segment_type[3] {
                 Self::Code
             } else {
@@ -113,7 +113,7 @@ impl Type {
                 12 => Self::CallGate,
                 14 => Self::InterruptGate,
                 15 => Self::TrapGate,
-                _ => panic!("Can't get a type."),
+                segment_type => panic!("Invalid segment type {}", segment_type),
             }
         }
     }

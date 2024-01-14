@@ -79,20 +79,20 @@ impl SystemTable<'static> {
         unsafe {
             SYSTEM_TABLE
                 .get_mut()
-                .expect("Can't get a UEFI system table!")
+                .unwrap()
         }
     }
 
     pub fn print(args: fmt::Arguments) {
         Self::get()
             .write_fmt(args)
-            .expect("UEFI can't print.")
+            .unwrap()
     }
 
     pub fn set(&'static mut self) {
         unsafe {
             SYSTEM_TABLE.set(self)
-        }.expect("Can't set a UEFI system table.")
+        }.unwrap()
     }
 }
 

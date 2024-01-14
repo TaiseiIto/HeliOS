@@ -37,7 +37,7 @@ impl Register {
                 4 => 0b01,
                 8 => 0b10,
                 14 => 0b11,
-                _ => panic!("Invalid interrupt trigger level!"),
+                interrupt_trigger_level => panic!("Invalid interrupt trigger level {}", interrupt_trigger_level),
             })
     }
 }

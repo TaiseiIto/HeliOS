@@ -40,14 +40,14 @@ macro_rules! com2_print {
 pub fn com2_print(args: fmt::Arguments) {
     get_com2()
         .write_fmt(args)
-        .expect("COM2 can't print!")
+        .unwrap()
 }
 
 fn get_com2() -> &'static mut Com {
     unsafe {
         COM2.get_or_init(|| Com::new(COM2_PORT, COM2_BAUD_RATE));
         COM2.get_mut()
-            .expect("COM2 can't print!")
+            .unwrap()
     }
 }
 

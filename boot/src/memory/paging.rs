@@ -27,7 +27,7 @@ impl Paging<'_> {
         } else if cr4.bit32_paging_is_used() {
             Self::Bit32
         } else if ia32_efer
-            .expect("Can't get a paging structure.")
+            .unwrap()
             .pae_paging_is_used() {
             Self::Pae
         } else if cr4.level4_paging_is_used() {
