@@ -39,10 +39,15 @@ impl Descriptor {
 
 #[derive(Debug)]
 pub struct Readable {
+    #[allow(dead_code)]
     base: u32,
+    #[allow(dead_code)]
     size: u32,
+    #[allow(dead_code)]
     dpl: u8,
+    #[allow(dead_code)]
     avl: bool,
+    #[allow(dead_code)]
     segment_type: Type,
 }
 
@@ -84,15 +89,23 @@ impl From<&Descriptor> for Option<Readable> {
 #[derive(Debug)]
 enum Type {
     Code {
+        #[allow(dead_code)]
         accessed: bool,
+        #[allow(dead_code)]
         readable: bool,
+        #[allow(dead_code)]
         conforming: bool,
+        #[allow(dead_code)]
         default_bits: usize,
     },
     Data {
+        #[allow(dead_code)]
         accessed: bool,
+        #[allow(dead_code)]
         writable: bool,
+        #[allow(dead_code)]
         expand_down: bool,
+        #[allow(dead_code)]
         default_bits: usize,
     },
     Ldt,
