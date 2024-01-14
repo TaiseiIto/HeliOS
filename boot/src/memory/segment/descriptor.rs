@@ -2,7 +2,10 @@ pub mod table;
 
 pub use table::Table;
 
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::super::KIB,
+};
 
 /// # Segment Descriptor
 /// ## References
@@ -10,8 +13,8 @@ use bitfield_struct::bitfield;
 #[bitfield(u64)]
 pub struct Descriptor {
     limit0: u16,
-    base0: u16,
-    base1: u8,
+    #[bits(24)]
+    base0: u32,
     #[bits(4)]
     segment_type: u8,
     s: bool,
@@ -24,6 +27,39 @@ pub struct Descriptor {
     l: bool,
     db: bool,
     g: bool,
-    base2: u8,
+    base1: u8,
+}
+
+impl Descriptor {
+    pub fn present(&self) -> bool {
+        self.p()
+    }
+}
+
+#[derive(Debug)]
+pub struct Readable {
+    base: u32,
+    size: u32,
+}
+
+impl From<&Descriptor> for Readable {
+    fn from(descriptor: &Descriptor) -> Self {
+        let base0: u32 = descriptor.base0();
+        let base1: u32 = descriptor.base1() as u32;
+        let base: u32 = base0 + (base1 << Descriptor::BASE0_BITS);
+        let limit0: u32 = descriptor.limit0() as u32;
+        let limit1: u32 = descriptor.limit1() as u32;
+        let limit: u32 = limit0 + (limit1 << Descriptor::LIMIT1_BITS);
+        let size: u32 = limit + 1;
+        let size: u32 = if descriptor.g() {
+            (4 * KIB as u32) * size
+        } else {
+            size
+        };
+        Self {
+            base,
+            size,
+        }
+    }
 }
 
