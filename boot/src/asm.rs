@@ -6,7 +6,7 @@ use core::arch::asm;
 
 pub mod control;
 pub mod cpuid;
-pub mod gdt;
+pub mod global;
 pub mod msr;
 pub mod port;
 pub mod rflags;
