@@ -38,7 +38,7 @@ impl Descriptor {
 }
 
 #[derive(Debug)]
-pub struct Readable {
+pub struct Debug {
     #[allow(dead_code)]
     base: u32,
     #[allow(dead_code)]
@@ -51,7 +51,7 @@ pub struct Readable {
     segment_type: Type,
 }
 
-impl From<&Descriptor> for Option<Readable> {
+impl From<&Descriptor> for Option<Debug> {
     fn from(descriptor: &Descriptor) -> Self {
         if descriptor.p() {
             let base0: u32 = descriptor.base0();
@@ -73,7 +73,7 @@ impl From<&Descriptor> for Option<Readable> {
             let db: bool = descriptor.db();
             let l: bool = descriptor.l();
             let segment_type = Type::new(segment_type, s, db, l);
-            Some(Readable {
+            Some(Debug {
                 base,
                 size,
                 dpl,

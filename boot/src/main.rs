@@ -34,7 +34,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let idt = interrupt::descriptor::Table::get();
-    com2_print!("idt = {:#x?}", idt);
+    com2_println!("idt = {:#x?}", idt);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

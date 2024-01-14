@@ -7,7 +7,7 @@ use {
         slice,
     },
     super::{
-        Readable,
+        Debug,
         super::Descriptor,
     },
 };
@@ -34,7 +34,7 @@ impl fmt::Debug for Table<'_> {
                 .enumerate()
                 .filter_map(|(index, descriptor)| {
                     let selector: u16 = (index * mem::size_of::<Descriptor>()) as u16;
-                    let readable: Option<Readable> = descriptor.into();
+                    let readable: Option<Debug> = descriptor.into();
                     readable.map(|readable| (selector, readable))
                 }))
             .finish()
