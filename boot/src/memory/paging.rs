@@ -1,6 +1,6 @@
 mod level4;
 
-use crate::asm;
+use crate::x64;
 
 /// # Paging
 /// ## References
@@ -17,11 +17,11 @@ pub enum Paging<'a> {
 }
 
 impl Paging<'_> {
-    pub fn get(cpuid: &Option<asm::Cpuid>) -> Self {
-        let ia32_efer: Option<asm::msr::Ia32Efer> = asm::msr::Ia32Efer::get(cpuid);
-        let cr0 = asm::control::Register0::get();
-        let cr3 = asm::control::Register3::get();
-        let cr4 = asm::control::Register4::get();
+    pub fn get(cpuid: &Option<x64::Cpuid>) -> Self {
+        let ia32_efer: Option<x64::msr::Ia32Efer> = x64::msr::Ia32Efer::get(cpuid);
+        let cr0 = x64::control::Register0::get();
+        let cr3 = x64::control::Register3::get();
+        let cr4 = x64::control::Register4::get();
         if !cr0.paging_is_enabled() {
             Self::Disable
         } else if cr4.bit32_paging_is_used() {

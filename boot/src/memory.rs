@@ -1,4 +1,5 @@
-mod paging;
+pub mod paging;
+pub mod segment;
 
 pub use paging::Paging;
 

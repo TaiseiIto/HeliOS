@@ -9,7 +9,7 @@ use {
         fmt,
         mem,
     },
-    crate::asm,
+    crate::x64,
     super::super::KIB,
 };
 
@@ -23,7 +23,7 @@ const PT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pe4Kib>();
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
 pub struct Pml4t<'a> {
-    cr3: asm::control::Register3,
+    cr3: x64::control::Register3,
     vaddr2pdpt: BTreeMap<usize, Pdpt<'a>>,
 }
 
@@ -41,8 +41,8 @@ impl fmt::Debug for Pml4t<'_> {
     }
 }
 
-impl From<asm::control::Register3> for Pml4t<'static> {
-    fn from(cr3: asm::control::Register3) -> Self {
+impl From<x64::control::Register3> for Pml4t<'static> {
+    fn from(cr3: x64::control::Register3) -> Self {
         let pml4t: usize = cr3.get_page_directory_base();
         let pml4t: *mut [Pml4e; PML4T_LENGTH] = pml4t as *mut [Pml4e; PML4T_LENGTH];
         let pml4t: &mut [Pml4e; PML4T_LENGTH] = unsafe {

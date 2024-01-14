@@ -9,7 +9,6 @@ pub mod cpuid;
 pub mod msr;
 pub mod port;
 pub mod rflags;
-pub mod segment;
 
 pub use {
     cpuid::Cpuid,

@@ -12,10 +12,10 @@ use {
     core::panic::PanicInfo,
 };
 
-mod asm;
 mod efi;
 mod memory;
 mod rs232c;
+mod x64;
 
 /// # The entry point of the OS
 /// ## References
@@ -27,10 +27,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get().memory_map();
     com2_println!("memory_map = {:#x?}", memory_map);
-    let cpuid = asm::Cpuid::get();
+    let cpuid = x64::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
     let _paging = memory::Paging::get(&cpuid);
-    let gdtr = asm::segment::descriptor::table::Register::get();
+    let gdtr = memory::segment::descriptor::table::Register::get();
     com2_println!("gdtr = {:#x?}", gdtr);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
@@ -43,7 +43,7 @@ fn panic(panic: &PanicInfo) -> ! {
     com2_println!("BOOT PANIC!!!");
     com2_println!("{}", panic);
     loop {
-        asm::hlt();
+        x64::hlt();
     }
 }
 
