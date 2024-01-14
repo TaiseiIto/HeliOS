@@ -30,7 +30,7 @@ pub struct Descriptor {
 }
 
 #[derive(Debug)]
-pub struct Debug {
+pub struct Interface {
     #[allow(dead_code)]
     offset: u64,
     #[allow(dead_code)]
@@ -43,7 +43,7 @@ pub struct Debug {
     dpl: u8,
 }
 
-impl From<&Descriptor> for Option<Debug> {
+impl From<&Descriptor> for Option<Interface> {
     fn from(descriptor: &Descriptor) -> Self {
         if descriptor.p() {
             let offset0: u64 = descriptor.offset0() as u64;
@@ -54,7 +54,7 @@ impl From<&Descriptor> for Option<Debug> {
             let descriptor_type: u8 = descriptor.descriptor_type();
             let descriptor_type = Type::new(descriptor_type, false, false, false);
             let dpl: u8 = descriptor.dpl();
-            Some(Debug {
+            Some(Interface {
                 offset,
                 segment_selector,
                 interrupt_stack_table,

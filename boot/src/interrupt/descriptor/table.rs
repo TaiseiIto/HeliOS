@@ -6,7 +6,7 @@ use {
         slice,
     },
     super::{
-        Debug,
+        Interface,
         super::Descriptor,
     },
 };
@@ -32,7 +32,7 @@ impl fmt::Debug for Table<'_> {
                 .iter()
                 .enumerate()
                 .filter_map(|(interrupt_number, descriptor)| {
-                    let descriptor: Option<Debug> = descriptor.into();
+                    let descriptor: Option<Interface> = descriptor.into();
                     descriptor.map(|descriptor| (interrupt_number, descriptor))
                 }))
             .finish()
