@@ -1,3 +1,5 @@
+pub mod simple_text;
+
 use super::Handle;
 
 /// # EFI_INTERFACE_TYPE

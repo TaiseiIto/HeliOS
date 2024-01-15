@@ -12,8 +12,6 @@ mod handle;
 pub mod memory;
 mod protocol;
 mod runtime_services;
-mod simple_text_input_protocol;
-mod simple_text_output_protocol;
 mod status;
 mod system_table;
 mod table_header;
@@ -27,8 +25,6 @@ pub use {
     guid::Guid,
     handle::Handle,
     runtime_services::RuntimeServices,
-    simple_text_input_protocol::SimpleTextInputProtocol,
-    simple_text_output_protocol::SimpleTextOutputProtocol,
     status::Status,
     system_table::SystemTable,
     table_header::TableHeader,
