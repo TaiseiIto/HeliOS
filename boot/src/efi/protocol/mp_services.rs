@@ -5,6 +5,10 @@
 use {
     alloc::collections::BTreeMap,
     core::fmt,
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::super::{
         Event,
         Guid,
@@ -51,6 +55,7 @@ impl Protocol {
             .all;
         (0..number_of_processors)
             .map(|processor_number| {
+                com2_println!("processor_number = {:#x?}", processor_number);
                 let processor_information: ProcessorInformation = self
                     .get_processor_information(processor_number)
                     .unwrap();
@@ -61,7 +66,7 @@ impl Protocol {
 
     pub fn get_processor_information(&self, processor_number: usize) -> Result<ProcessorInformation, Status> {
         let mut processor_information = ProcessorInformation::default();
-        let result: Result<(), Status> = (self.get_processor_info)(self, &processor_number, &mut processor_information).into();
+        let result: Result<(), Status> = (self.get_processor_info)(self, processor_number, &mut processor_information).into();
         result.map(|_| processor_information)
     }
 
@@ -97,7 +102,7 @@ pub struct NumberOfProcessors {
 /// # EFI_MP_SERVICES_GET_PROCESSOR_INFO
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNumber */ &usize, /* ProcessorInfoBuffer */ &mut ProcessorInformation) -> Status;
+type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNumber */ usize, /* ProcessorInfoBuffer */ &mut ProcessorInformation) -> Status;
 
 /// # EFI_PROCESSOR_INFORMATION
 /// ## References
