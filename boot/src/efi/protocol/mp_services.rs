@@ -3,6 +3,7 @@
 //! * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4 MP Services Protocol
 
 use {
+    alloc::collections::BTreeMap,
     core::fmt,
     super::super::{
         Event,
@@ -43,6 +44,33 @@ impl Protocol {
         }
     }
 
+    pub fn get_all_processor_informations(&self) -> BTreeMap<usize, ProcessorInformation> {
+        let number_of_processors: usize = self
+            .number_of_processors()
+            .unwrap()
+            .all;
+        (0..number_of_processors)
+            .map(|processor_number| {
+                let processor_information: ProcessorInformation = self
+                    .get_processor_information(processor_number)
+                    .unwrap();
+                (processor_number, processor_information)
+            })
+            .collect()
+    }
+
+    pub fn get_processor_information(&self, processor_number: usize) -> Result<ProcessorInformation, Status> {
+        let mut processor_information = ProcessorInformation::default();
+        let result: Result<(), Status> = (self.get_processor_info)(self, &processor_number, &mut processor_information).into();
+        result.map(|_| processor_information)
+    }
+
+    pub fn my_processor_number(&self) -> Result<usize, Status> {
+        let mut my_processor_number: usize = 0;
+        let result: Result<(), Status> = (self.who_am_i)(self, &mut my_processor_number).into();
+        result.map(|_| my_processor_number)
+    }
+
     pub fn number_of_processors(&self) -> Result<NumberOfProcessors, Status> {
         let mut all: usize = 0;
         let mut enabled: usize = 0;
@@ -51,12 +79,6 @@ impl Protocol {
             all,
             enabled,
         })
-    }
-
-    pub fn my_processor_number(&self) -> Result<usize, Status> {
-        let mut my_processor_number: usize = 0;
-        let result: Result<(), Status> = (self.who_am_i)(self, &mut my_processor_number).into();
-        result.map(|_| my_processor_number)
     }
 }
 
@@ -68,6 +90,7 @@ type GetNumberOfProcessors = extern "efiapi" fn(/* This */ &Protocol, /* NumberO
 #[derive(Debug)]
 pub struct NumberOfProcessors {
     all: usize,
+    #[allow(dead_code)]
     enabled: usize,
 }
 
@@ -79,7 +102,7 @@ type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNum
 /// # EFI_PROCESSOR_INFORMATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[repr(C)]
 pub struct ProcessorInformation {
     processor_id: u64,
@@ -91,7 +114,7 @@ pub struct ProcessorInformation {
 /// # EFI_CPU_PHYSICAL_LOCATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[repr(C)]
 pub struct CpuPhysicalLocation {
     package: u32,
@@ -124,10 +147,19 @@ impl fmt::Debug for ExtendedProcessorInformation {
     }
 }
 
+impl Default for ExtendedProcessorInformation {
+    fn default() -> Self {
+        let location2 = CpuPhysicalLocation2::default();
+        Self {
+            location2
+        }
+    }
+}
+
 /// # EFI_CPU_PHYSICAL_LOCATION2
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 #[repr(C)]
 pub struct CpuPhysicalLocation2 {
     package: u32,

@@ -8,7 +8,10 @@
 extern crate alloc;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     core::panic::PanicInfo,
 };
 
@@ -28,10 +31,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let mp_services_protocol = efi::mp_services::Protocol::get();
     com2_println!("mp_services_protocol = {:#x?}", mp_services_protocol);
-    let number_of_processors = mp_services_protocol.number_of_processors().unwrap();
-    com2_println!("number_of_processors = {:#x?}", number_of_processors);
     let my_processor_number = mp_services_protocol.my_processor_number().unwrap();
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
+    let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
+    com2_println!("processor_informations = {:#x?}", processor_informations);
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get().memory_map();
     com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid = x64::Cpuid::get();
