@@ -5,10 +5,6 @@
 use {
     alloc::collections::BTreeMap,
     core::fmt,
-    crate::{
-        com2_print,
-        com2_println,
-    },
     super::super::{
         Event,
         Guid,
@@ -55,7 +51,6 @@ impl Protocol {
             .all;
         (0..number_of_processors)
             .map(|processor_number| {
-                com2_println!("processor_number = {:#x?}", processor_number);
                 let processor_information: ProcessorInformation = self
                     .get_processor_information(processor_number)
                     .unwrap();
