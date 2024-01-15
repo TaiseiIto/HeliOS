@@ -52,6 +52,12 @@ impl Protocol {
             enabled,
         })
     }
+
+    pub fn my_processor_number(&self) -> Result<usize, Status> {
+        let mut my_processor_number: usize = 0;
+        let result: Result<(), Status> = (self.who_am_i)(self, &mut my_processor_number).into();
+        result.map(|_| my_processor_number)
+    }
 }
 
 /// # EFI_MP_SERVICES_GET_NUMBER_OF_PROCESSORS
