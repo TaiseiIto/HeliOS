@@ -16,16 +16,18 @@ pub struct Descriptor {
     segment_selector: u16,
     #[bits(3)]
     ist: u8,
-    #[bits(5)]
+    #[bits(5, access = RO)]
     reserved0: u8,
     #[bits(4)]
     descriptor_type: u8,
+    #[bits(access = RO)]
     reserved1: bool,
     #[bits(2)]
     dpl: u8,
     p: bool,
     #[bits(48)]
     offset1: u64,
+    #[bits(access = RO)]
     reserved2: u32,
 }
 

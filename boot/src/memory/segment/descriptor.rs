@@ -62,7 +62,7 @@ impl From<&Descriptor> for Option<Interface> {
             let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
             let size: usize = limit + 1;
             let size: usize = if descriptor.g() {
-                (4 * KIB as usize) * size
+                4 * KIB * size
             } else {
                 size
             };
