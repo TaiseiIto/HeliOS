@@ -5,6 +5,7 @@
 use {
     core::fmt,
     super::super::{
+        Event,
         Guid,
         Status,
         SystemTable,
@@ -20,6 +21,7 @@ use {
 pub struct Protocol {
     get_number_of_processors: GetNumberOfProcessors,
     get_processor_info: GetProcessorInfo,
+    startup_all_aps: StartupAllAps,
 }
 
 impl Protocol {
@@ -112,4 +114,14 @@ pub struct CpuPhysicalLocation2 {
     core: u32,
     thread: u32,
 }
+
+/// # EFI_MP_SERVICES_STARTUP_ALL_APS
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.4 EFI_MP_SERVICES_PROTOCOL.StartupAllAPs()
+type StartupAllAps = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* SingleThread */ bool, /* WaitEvent */ Event, /* TimeoutINMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* FailedCpuList */ &mut &usize) -> Status;
+
+/// # EFI_AP_PROCEDURE
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.4 EFI_MP_SERVICES_PROTOCOL.StartupAllAPs()
+type ApProcedure = extern "efiapi" fn(/* ProcedureArgument */ &Void);
 
