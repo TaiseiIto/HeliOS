@@ -10,6 +10,7 @@ use {
         Status,
         SystemTable,
         Void,
+        null,
     },
 };
 
@@ -22,16 +23,16 @@ pub struct Protocol {
     get_number_of_processors: GetNumberOfProcessors,
     get_processor_info: GetProcessorInfo,
     startup_all_aps: StartupAllAps,
+    startup_this_ap: StartupThisAp,
+    switch_bsp: SwitchBsp,
+    enable_disable_ap: EnableDisableAp,
+    who_am_i: WhoAmI,
 }
 
 impl Protocol {
     pub fn get() -> &'static Self {
         let guid = Guid::new(0x3fdda605, 0xa76e, 0x4f46, [0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08]);
-        let registration: usize = 0;
-        let registration: *const Void = registration as *const Void;
-        let registration: &Void = unsafe {
-            &*registration
-        };
+        let registration: &Void = null();
         let protocol: &Void = SystemTable::get()
             .locate_protocol(registration, guid)
             .unwrap();
@@ -118,10 +119,30 @@ pub struct CpuPhysicalLocation2 {
 /// # EFI_MP_SERVICES_STARTUP_ALL_APS
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.4 EFI_MP_SERVICES_PROTOCOL.StartupAllAPs()
-type StartupAllAps = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* SingleThread */ bool, /* WaitEvent */ Event, /* TimeoutINMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* FailedCpuList */ &mut &usize) -> Status;
+type StartupAllAps = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* SingleThread */ bool, /* WaitEvent */ Event, /* TimeoutInMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* FailedCpuList */ &mut &usize) -> Status;
 
 /// # EFI_AP_PROCEDURE
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.4 EFI_MP_SERVICES_PROTOCOL.StartupAllAPs()
 type ApProcedure = extern "efiapi" fn(/* ProcedureArgument */ &Void);
+
+/// # EFI_MP_SERVICES_STARTUP_THIS_AP
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.5 EFI_MP_SERVICES_PROTOCOL.StartupThisAP()
+type StartupThisAp = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* ProcessorNumber */ usize, /* WaitEvent */ Event, /* TimeoutInMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* Finished */ &mut bool) -> Status;
+
+/// # EFI_MP_SERVICES_SWITCH_BSP
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.6 EFI_MP_SERVICES_PROTOCOL.SwitchBSP()
+type SwitchBsp = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ usize, /* EnableOldBSP */ bool) -> Status;
+
+/// # EFI_MP_SERVICES_ENABLEDISABLEAP
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.7 EFI_MP_SERVICES_PROTOCOL.EnableDisableAp()
+type EnableDisableAp = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ usize, /* EnableAP */ bool, /* HealthFlag */ &u32) -> Status;
+
+/// # EFI_MP_SERVICES_WHOAMI
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.8 EFI_MP_SERVICES_PROTOCOL.WhoAmI()
+type WhoAmI = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ &mut usize) -> Status;
 

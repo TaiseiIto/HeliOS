@@ -32,6 +32,7 @@ pub use {
     void::{
         VOID,
         Void,
+        null,
     },
     protocol::{
         simple_text,

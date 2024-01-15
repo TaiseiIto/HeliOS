@@ -5,3 +5,11 @@ pub struct Void;
 
 pub const VOID: Void = Void;
 
+pub fn null() -> &'static Void {
+    let null: usize = 0;
+    let null: *const Void = null as *const Void;
+    unsafe {
+        &*null
+    }
+}
+
