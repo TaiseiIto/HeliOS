@@ -2,11 +2,14 @@
 //! ## References
 //! * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4 MP Services Protocol
 
-use super::super::{
-    Guid,
-    Status,
-    SystemTable,
-    Void,
+use {
+    core::fmt,
+    super::super::{
+        Guid,
+        Status,
+        SystemTable,
+        Void,
+    },
 };
 
 /// # EFI_MP_SERVICES_PROTOCOL
@@ -16,6 +19,7 @@ use super::super::{
 #[repr(C)]
 pub struct Protocol {
     get_number_of_processors: GetNumberOfProcessors,
+    get_processor_info: GetProcessorInfo,
 }
 
 impl Protocol {
@@ -41,4 +45,71 @@ impl Protocol {
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.2 EFI_MP_SERVICES_PROTOCOL.GetNumberOfProcessors()
 type GetNumberOfProcessors = extern "efiapi" fn(/* This */ &Protocol, /* NumberOfProcessors */ &mut usize, /* NumberOfEnabledProcessors */ &mut usize) -> Status;
+
+/// # EFI_MP_SERVICES_GET_PROCESSOR_INFO
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNumber */ &usize, /* ProcessorInfoBuffer */ &mut ProcessorInformation) -> Status;
+
+/// # EFI_PROCESSOR_INFORMATION
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+#[derive(Debug)]
+#[repr(C)]
+pub struct ProcessorInformation {
+    processor_id: u64,
+    status_flag: u32,
+    location: CpuPhysicalLocation,
+    extended_information: ExtendedProcessorInformation,
+}
+
+/// # EFI_CPU_PHYSICAL_LOCATION
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+#[derive(Debug)]
+#[repr(C)]
+pub struct CpuPhysicalLocation {
+    package: u32,
+    core: u32,
+    thread: u32,
+}
+
+/// # EXTENDED_PROCESSOR_INFORMATION
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+#[repr(C)]
+pub union ExtendedProcessorInformation {
+    location2: CpuPhysicalLocation2,
+}
+
+impl ExtendedProcessorInformation {
+    fn location2(&self) -> &CpuPhysicalLocation2 {
+        unsafe {
+            &self.location2
+        }
+    }
+}
+
+impl fmt::Debug for ExtendedProcessorInformation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ExtendedProcessorInformation")
+            .field("location2", self.location2())
+            .finish()
+    }
+}
+
+/// # EFI_CPU_PHYSICAL_LOCATION2
+/// ## References
+/// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+pub struct CpuPhysicalLocation2 {
+    package: u32,
+    module: u32,
+    tile: u32,
+    die: u32,
+    core: u32,
+    thread: u32,
+}
 
