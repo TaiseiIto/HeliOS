@@ -80,6 +80,12 @@ impl BootServices {
         (self.free_pool)(pool).into()
     }
 
+    pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
+        let mut protocol: &Void = &VOID;
+        let result: Result<(), Status> = (self.locate_protocol)(&guid, registration, &mut protocol).into();
+        result.map(|_| protocol)
+    }
+
     pub fn memory_map(&self) -> Vec<memory::Descriptor> {
         let mut size: usize = 0;
         let descriptor: usize = 0;

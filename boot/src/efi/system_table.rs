@@ -10,6 +10,7 @@ use {
     },
     super::{
         BootServices,
+        Guid,
         Handle,
         RuntimeServices,
         Status,
@@ -18,7 +19,7 @@ use {
         char16,
         configuration,
         memory,
-        protocol::simple_text,
+        simple_text,
     },
 };
 
@@ -62,6 +63,10 @@ impl SystemTable<'_> {
 
     pub fn deallocate(&self, pool: &Void) -> Result<(), Status> {
         self.boot_services.free_pool(pool)
+    }
+
+    pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
+        self.boot_services.locate_protocol(registration, guid)
     }
 
     pub fn memory_map(&self) -> Vec<memory::Descriptor> {

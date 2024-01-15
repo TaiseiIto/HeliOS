@@ -29,7 +29,13 @@ pub use {
     system_table::SystemTable,
     table_header::TableHeader,
     time::Time,
-    void::VOID,
-    void::Void,
+    void::{
+        VOID,
+        Void,
+    },
+    protocol::{
+        simple_text,
+        mp_services,
+    },
 };
 

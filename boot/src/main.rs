@@ -35,6 +35,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("gdt = {:#x?}", gdt);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
+    let mp_services_protocol = efi::mp_services::Protocol::get();
+    com2_println!("mp_services_protocol = {:#x?}", mp_services_protocol);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
