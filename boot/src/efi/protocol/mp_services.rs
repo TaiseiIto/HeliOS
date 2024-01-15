@@ -42,12 +42,28 @@ impl Protocol {
             &*protocol
         }
     }
+
+    pub fn number_of_processors(&self) -> Result<NumberOfProcessors, Status> {
+        let mut all: usize = 0;
+        let mut enabled: usize = 0;
+        let result: Result<(), Status> = (self.get_number_of_processors)(self, &mut all, &mut enabled).into();
+        result.map(|_| NumberOfProcessors {
+            all,
+            enabled,
+        })
+    }
 }
 
 /// # EFI_MP_SERVICES_GET_NUMBER_OF_PROCESSORS
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.2 EFI_MP_SERVICES_PROTOCOL.GetNumberOfProcessors()
 type GetNumberOfProcessors = extern "efiapi" fn(/* This */ &Protocol, /* NumberOfProcessors */ &mut usize, /* NumberOfEnabledProcessors */ &mut usize) -> Status;
+
+#[derive(Debug)]
+pub struct NumberOfProcessors {
+    all: usize,
+    enabled: usize,
+}
 
 /// # EFI_MP_SERVICES_GET_PROCESSOR_INFO
 /// ## References

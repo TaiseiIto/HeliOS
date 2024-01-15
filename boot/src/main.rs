@@ -37,6 +37,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("idt = {:#x?}", idt);
     let mp_services_protocol = efi::mp_services::Protocol::get();
     com2_println!("mp_services_protocol = {:#x?}", mp_services_protocol);
+    let number_of_processors = mp_services_protocol.number_of_processors().unwrap();
+    com2_println!("number_of_processors = {:#x?}", number_of_processors);
     efi_println!("Hello, World!");
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
