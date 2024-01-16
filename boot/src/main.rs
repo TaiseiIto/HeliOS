@@ -44,6 +44,16 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("gdt = {:#x?}", gdt);
     let cs: memory::segment::selector::Interface = memory::segment::Selector::cs().into();
     com2_println!("cs = {:#x?}", cs);
+    let ds: memory::segment::selector::Interface = memory::segment::Selector::ds().into();
+    com2_println!("ds = {:#x?}", ds);
+    let es: memory::segment::selector::Interface = memory::segment::Selector::es().into();
+    com2_println!("es = {:#x?}", es);
+    let fs: memory::segment::selector::Interface = memory::segment::Selector::fs().into();
+    com2_println!("fs = {:#x?}", fs);
+    let gs: memory::segment::selector::Interface = memory::segment::Selector::gs().into();
+    com2_println!("gs = {:#x?}", gs);
+    let ss: memory::segment::selector::Interface = memory::segment::Selector::ss().into();
+    com2_println!("ss = {:#x?}", ss);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()

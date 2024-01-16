@@ -26,6 +26,61 @@ impl Selector {
         }
         cs.into()
     }
+
+    pub fn ds() -> Self {
+        let ds: u16;
+        unsafe {
+            asm!(
+                "mov {0:x}, ds",
+                out(reg) ds,
+            );
+        }
+        ds.into()
+    }
+
+    pub fn es() -> Self {
+        let es: u16;
+        unsafe {
+            asm!(
+                "mov {0:x}, es",
+                out(reg) es,
+            );
+        }
+        es.into()
+    }
+
+    pub fn fs() -> Self {
+        let fs: u16;
+        unsafe {
+            asm!(
+                "mov {0:x}, fs",
+                out(reg) fs,
+            );
+        }
+        fs.into()
+    }
+
+    pub fn gs() -> Self {
+        let gs: u16;
+        unsafe {
+            asm!(
+                "mov {0:x}, gs",
+                out(reg) gs,
+            );
+        }
+        gs.into()
+    }
+
+    pub fn ss() -> Self {
+        let ss: u16;
+        unsafe {
+            asm!(
+                "mov {0:x}, ss",
+                out(reg) ss,
+            );
+        }
+        ss.into()
+    }
 }
 
 #[derive(Debug)]
