@@ -42,6 +42,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let _paging = memory::Paging::get(&cpuid);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
+    let cs = memory::segment::Selector::cs();
+    com2_println!("cs = {:#x?}", cs);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
