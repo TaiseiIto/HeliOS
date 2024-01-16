@@ -69,7 +69,7 @@ impl SystemTable<'_> {
         self.boot_services.locate_protocol(registration, guid)
     }
 
-    pub fn memory_map(&self) -> Vec<memory::Descriptor> {
+    pub fn memory_map(&self) -> Result<memory::Map, Status> {
         self.boot_services.memory_map()
     }
 

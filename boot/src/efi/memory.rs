@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 /// # EFI_ALLOCATE_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
@@ -53,6 +55,42 @@ pub struct Descriptor {
     virtual_start: VirtualAddress,
     number_of_pages: u64,
     attribute: u64,
+}
+
+#[derive(Debug)]
+pub struct Map {
+    descriptors: Vec<u8>,
+    descriptor_size: usize,
+    #[allow(dead_code)]
+    descriptor_version: u32,
+    key: usize,
+}
+
+impl Map {
+    pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
+        Self {
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+            key,
+        }
+    }
+}
+
+impl From<Map> for Vec<Descriptor> {
+    fn from(map: Map) -> Vec<Descriptor> {
+        map.descriptors
+            .chunks(map.descriptor_size)
+            .map(|descriptor| {
+                let descriptor: *const [u8] = descriptor as *const [u8];
+                let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                let descriptor: &Descriptor = unsafe {
+                    &*descriptor
+                };
+                descriptor.clone()
+            })
+            .collect()
+    }
 }
 
 /// # EFI_VIRTUAL_ADDRESS

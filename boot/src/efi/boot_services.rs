@@ -86,7 +86,7 @@ impl BootServices {
         result.map(|_| protocol)
     }
 
-    pub fn memory_map(&self) -> Vec<memory::Descriptor> {
+    pub fn memory_map(&self) -> Result<memory::Map, Status> {
         let mut size: usize = 0;
         let descriptor: usize = 0;
         let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
@@ -106,10 +106,10 @@ impl BootServices {
         let status: Status = status.unwrap_err();
         assert!(status == Status::BUFFER_TOO_SMALL);
         size += 2 * descriptor_size;
-        let mut map: Vec<u8> = (0..size)
+        let mut descriptors: Vec<u8> = (0..size)
             .map(|_| 0)
             .collect();
-        let descriptor: &mut u8 = &mut map[0];
+        let descriptor: &mut u8 = &mut descriptors[0];
         let descriptor: *mut u8 = descriptor as *mut u8;
         let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
         let descriptor: &mut memory::Descriptor = unsafe {
@@ -122,18 +122,7 @@ impl BootServices {
             &mut descriptor_size,
             &mut descriptor_version
         ).into();
-        status.unwrap();
-        map[0..size]
-            .chunks(descriptor_size)
-            .map(|descriptor| {
-                let descriptor: *const [u8] = descriptor as *const [u8];
-                let descriptor: *const memory::Descriptor = descriptor as *const memory::Descriptor;
-                let descriptor: &memory::Descriptor = unsafe {
-                    &*descriptor
-                };
-                descriptor.clone()
-            })
-            .collect()
+        status.map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
     }
 }
 
