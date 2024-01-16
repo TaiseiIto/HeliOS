@@ -1,22 +1,26 @@
+use alloc::vec::Vec;
+
 /// # EFI_ALLOCATE_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum AllocateType {
     AllocateAnyPages,
     AllocateMaxAddress,
     AllocateAddress,
-    MaxAllocateType,
+    Max,
 }
 
 /// # EFI_MEMORY_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-#[derive(Debug)]
-#[repr(C)]
+#[allow(dead_code)]
+#[derive(Clone, Debug)]
+#[repr(u32)]
 pub enum Type {
-    ReservedMemoryType,
+    ReservedMemory,
     LoaderCode,
     LoaderData,
     BootServicesCode,
@@ -31,8 +35,8 @@ pub enum Type {
     MemoryMappedIOPortSpace,
     PalCode,
     PersistentMemory,
-    UnacceptedMemoryType,
-    MaxMemoryType,
+    UnacceptedMemory,
+    MaxMemory,
 }
 
 /// # EFI_PHYSICAL_ADDRESS
@@ -43,14 +47,54 @@ pub type PhysicalAddress = u64;
 /// # EFI_MEMORY_DESCRIPTOR
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Descriptor {
-    memory_type: u32,
+    memory_type: Type,
     physical_start: PhysicalAddress,
     virtual_start: VirtualAddress,
     number_of_pages: u64,
     attribute: u64,
+}
+
+#[derive(Debug)]
+pub struct Map {
+    descriptors: Vec<u8>,
+    descriptor_size: usize,
+    #[allow(dead_code)]
+    descriptor_version: u32,
+    key: usize,
+}
+
+impl Map {
+    pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
+        Self {
+            descriptors,
+            descriptor_size,
+            descriptor_version,
+            key,
+        }
+    }
+
+    pub fn key(&self) -> usize {
+        self.key
+    }
+}
+
+impl From<Map> for Vec<Descriptor> {
+    fn from(map: Map) -> Vec<Descriptor> {
+        map.descriptors
+            .chunks(map.descriptor_size)
+            .map(|descriptor| {
+                let descriptor: *const [u8] = descriptor as *const [u8];
+                let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                let descriptor: &Descriptor = unsafe {
+                    &*descriptor
+                };
+                descriptor.clone()
+            })
+            .collect()
+    }
 }
 
 /// # EFI_VIRTUAL_ADDRESS

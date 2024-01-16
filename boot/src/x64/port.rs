@@ -4,18 +4,10 @@
 
 use core::arch::asm;
 
-/// # Halt
-/// ## References
-/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-489
-pub fn hlt() {
-    unsafe {
-        asm!("hlt");
-    }
-}
-
 /// # Input from port
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-505
+#[inline(never)]
 pub fn inb(port: u16) -> u8 {
     let mut data: u8;
     unsafe {
@@ -31,6 +23,7 @@ pub fn inb(port: u16) -> u8 {
 /// # Output to port
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-176
+#[inline(never)]
 pub fn outb(port: u16, data: u8) {
     unsafe {
         asm!(

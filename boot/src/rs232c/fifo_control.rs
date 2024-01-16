@@ -10,7 +10,7 @@ pub struct Register {
     clear_receive_fifo: bool,
     clear_transmit_fifo: bool,
     dma_mode_select: bool,
-    #[bits(default = false)]
+    #[bits(default = false, access = RO)]
     reserved: bool,
     enable_64byte_fifo: bool,
     #[bits(2)]
@@ -37,7 +37,7 @@ impl Register {
                 4 => 0b01,
                 8 => 0b10,
                 14 => 0b11,
-                _ => panic!("Invalid interrupt trigger level!"),
+                interrupt_trigger_level => panic!("Invalid interrupt trigger level {}.", interrupt_trigger_level),
             })
     }
 }

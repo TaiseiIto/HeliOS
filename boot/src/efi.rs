@@ -9,29 +9,34 @@ mod configuration;
 mod event;
 mod guid;
 mod handle;
-mod memory;
+pub mod memory;
 mod protocol;
 mod runtime_services;
-mod simple_text_input_protocol;
-mod simple_text_output_protocol;
 mod status;
 mod system_table;
 mod table_header;
 mod time;
 mod void;
 
-pub use boot_services::BootServices;
-pub use char16::Char16;
-pub use event::Event;
-pub use guid::Guid;
-pub use handle::Handle;
-pub use runtime_services::RuntimeServices;
-pub use simple_text_input_protocol::SimpleTextInputProtocol;
-pub use simple_text_output_protocol::SimpleTextOutputProtocol;
-pub use status::Status;
-pub use system_table::SystemTable;
-pub use table_header::TableHeader;
-pub use time::Time;
-pub use void::Void;
-pub use void::VOID;
+pub use {
+    boot_services::BootServices,
+    char16::Char16,
+    event::Event,
+    guid::Guid,
+    handle::Handle,
+    runtime_services::RuntimeServices,
+    status::Status,
+    system_table::SystemTable,
+    table_header::TableHeader,
+    time::Time,
+    void::{
+        VOID,
+        Void,
+        null,
+    },
+    protocol::{
+        simple_text,
+        mp_services,
+    },
+};
 

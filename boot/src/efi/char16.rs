@@ -40,7 +40,7 @@ impl Iterator for NullTerminatedString<'_> {
             0 => None,
             output => {
                 let output = Self::Item::from_u32(output as u32);
-                if let Some(_) = output {
+                if output.is_some() {
                     self.0 = unsafe {
                         &*(self.0 as *const Char16).add(1)
                     };

@@ -6,11 +6,14 @@
 //! * [Look RS232](https://www.lookrs232.com/rs232/registers.htm)
 
 use {
-    core::fmt::{
-        self,
-        Write,
+    core::{
+        cell::OnceCell,
+        fmt::{
+            self,
+            Write,
+        },
     },
-    crate::asm,
+    crate::x64,
 };
 
 mod fifo_control;
@@ -35,19 +38,24 @@ macro_rules! com2_print {
 }
 
 pub fn com2_print(args: fmt::Arguments) {
+    get_com2()
+        .write_fmt(args)
+        .unwrap()
+}
+
+fn get_com2() -> &'static mut Com {
     unsafe {
-        if COM2.is_none() {
-            COM2 = Some(Com::new(COM2_PORT, COM2_BAUD_RATE));
-        }
-        COM2.as_mut().map(|com2| com2.write_fmt(args).expect("COM2 can't print!"));
+        COM2.get_or_init(|| Com::new(COM2_PORT, COM2_BAUD_RATE));
+        COM2.get_mut()
+            .unwrap()
     }
 }
 
-static mut COM2: Option<Com> = None;
+static mut COM2: OnceCell<Com> = OnceCell::new();
 const COM2_PORT: u16 = 0x02f8;
 const COM2_BAUD_RATE: u32 = 9600;
 
-pub struct Com {
+struct Com {
     port: u16,
 }
 
@@ -186,18 +194,18 @@ impl Com {
 
     fn read_interrupt_enable(&self) -> interrupt_enable::Register {
         self.disable_divisor_latch_access();
-        asm::inb(self.port_interrupt_enable()).into()
+        x64::port::inb(self.port_interrupt_enable()).into()
     }
 
     fn read_line_control(&self) -> line_control::Register {
-        asm::inb(self.port_line_control()).into()
+        x64::port::inb(self.port_line_control()).into()
     }
 
     fn read_line_status(&self) -> line_status::Register {
-        asm::inb(self.port_line_status()).into()
+        x64::port::inb(self.port_line_status()).into()
     }
 
-    pub fn send(&self, data: u8) {
+    fn send(&self, data: u8) {
         while !self.can_send() {}
         self.write_transmitter_holding_buffer(data);
     }
@@ -210,30 +218,30 @@ impl Com {
         let divisor_latch_high: u16 = divisor_latch >> 8;
         let divisor_latch_high: u8 = divisor_latch_high as u8;
         self.enable_divisor_latch_access();
-        asm::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
-        asm::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
+        x64::port::outb(self.port_divisor_latch_low_byte(), divisor_latch_low);
+        x64::port::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
     }
 
     fn write_fifo_control(&self, register: fifo_control::Register) {
-        asm::outb(self.port_fifo_control(), register.into());
+        x64::port::outb(self.port_fifo_control(), register.into());
     }
 
     fn write_interrupt_enable(&self, register: interrupt_enable::Register) {
         self.disable_divisor_latch_access();
-        asm::outb(self.port_interrupt_enable(), register.into());
+        x64::port::outb(self.port_interrupt_enable(), register.into());
     }
 
     fn write_line_control(&self, register: line_control::Register) {
-        asm::outb(self.port_line_control(), register.into());
+        x64::port::outb(self.port_line_control(), register.into());
     }
 
     fn write_modem_control(&self, register: modem_control::Register) {
-        asm::outb(self.port_modem_control(), register.into());
+        x64::port::outb(self.port_modem_control(), register.into());
     }
 
     fn write_transmitter_holding_buffer(&self, data: u8) {
         self.disable_divisor_latch_access();
-        asm::outb(self.port_transmitter_holding_buffer(), data);
+        x64::port::outb(self.port_transmitter_holding_buffer(), data);
     }
 }
 

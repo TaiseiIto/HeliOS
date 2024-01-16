@@ -1,7 +1,15 @@
 /// # CHAR16
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 2.3.1 Data Types
-pub type Void = ();
+pub struct Void;
 
-pub const VOID: () = ();
+pub const VOID: Void = Void;
+
+pub fn null() -> &'static Void {
+    let null: usize = 0;
+    let null: *const Void = null as *const Void;
+    unsafe {
+        &*null
+    }
+}
 

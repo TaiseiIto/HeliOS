@@ -31,7 +31,7 @@ impl Register {
         set_break_enable: bool,
         divisor_latch_access: bool,
     ) -> Self {
-        assert!(5 <= word_length && word_length <= 8);
+        assert!((5..=8).contains(&word_length));
         Self::new()
             .with_word_length(word_length - 5)
             .with_length_of_stop(length_of_stop.into(word_length))
@@ -60,7 +60,7 @@ impl LengthOfStop {
                 true
             },
             Self::Two => {
-                assert!(6 <= word_length && word_length <= 8);
+                assert!((6..=8).contains(&word_length));
                 true
             },
         }
@@ -75,14 +75,14 @@ pub enum ParitySelect {
     Low,
 }
 
-impl Into<u8> for ParitySelect {
-    fn into(self) -> u8 {
-        match self {
-            Self::No => 0b000,
-            Self::Odd => 0b001,
-            Self::Even => 0b011,
-            Self::High => 0b101,
-            Self::Low => 0b111,
+impl From<ParitySelect> for u8 {
+    fn from(parity_select: ParitySelect) -> Self {
+        match parity_select {
+            ParitySelect::No => 0b000,
+            ParitySelect::Odd => 0b001,
+            ParitySelect::Even => 0b011,
+            ParitySelect::High => 0b101,
+            ParitySelect::Low => 0b111,
         }
     }
 }

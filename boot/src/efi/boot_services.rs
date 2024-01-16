@@ -1,16 +1,19 @@
-use super::{
-    Event,
-    Guid,
-    Handle,
-    Status,
-    TableHeader,
-    VOID,
-    Void,
-    char16,
-    event,
-    memory,
-    protocol,
-    time,
+use {
+    alloc::vec::Vec,
+    super::{
+        Event,
+        Guid,
+        Handle,
+        Status,
+        TableHeader,
+        VOID,
+        Void,
+        char16,
+        event,
+        memory,
+        protocol,
+        time,
+    },
 };
 
 /// # EFI_BOOT_SERVICES
@@ -73,8 +76,61 @@ impl BootServices {
         result.map(|_| pool)
     }
 
+    pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
+        let memory_map: memory::Map = self
+            .memory_map()
+            .unwrap();
+        let result: Result<(), Status> = (self.exit_boot_services)(image, memory_map.key()).into();
+        result.map(|_| memory_map)
+    }
+
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
         (self.free_pool)(pool).into()
+    }
+
+    pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
+        let mut protocol: &Void = &VOID;
+        let result: Result<(), Status> = (self.locate_protocol)(&guid, registration, &mut protocol).into();
+        result.map(|_| protocol)
+    }
+
+    pub fn memory_map(&self) -> Result<memory::Map, Status> {
+        let mut size: usize = 0;
+        let descriptor: usize = 0;
+        let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
+        let descriptor: &mut memory::Descriptor = unsafe {
+            &mut *descriptor
+        };
+        let mut key: usize = 0;
+        let mut descriptor_size: usize = 0;
+        let mut descriptor_version: u32 = 0;
+        let status: Result<(), Status> = (self.get_memory_map)(
+            &mut size,
+            descriptor,
+            &mut key,
+            &mut descriptor_size,
+            &mut descriptor_version
+        ).into();
+        let status: Status = status.unwrap_err();
+        assert!(status == Status::BUFFER_TOO_SMALL);
+        size += 2 * descriptor_size;
+        let mut descriptors: Vec<u8> = (0..size)
+            .map(|_| 0)
+            .collect();
+        let descriptor: &mut u8 = &mut descriptors[0];
+        let descriptor: *mut u8 = descriptor as *mut u8;
+        let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
+        let descriptor: &mut memory::Descriptor = unsafe {
+            &mut *descriptor
+        };
+        let status: Result<(), Status> = (self.get_memory_map)(
+            &mut size,
+            descriptor,
+            &mut key,
+            &mut descriptor_size,
+            &mut descriptor_version
+        ).into();
+        status.map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
     }
 }
 
