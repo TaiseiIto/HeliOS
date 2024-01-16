@@ -65,6 +65,10 @@ impl SystemTable<'_> {
         self.boot_services.free_pool(pool)
     }
 
+    pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
+        self.boot_services.exit_boot_services(image)
+    }
+
     pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
         self.boot_services.locate_protocol(registration, guid)
     }

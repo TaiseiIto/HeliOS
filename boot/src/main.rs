@@ -37,11 +37,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
-        .memory_map()
-        .unwrap()
-        .into();
-    com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid = x64::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
     let _paging = memory::Paging::get(&cpuid);
@@ -49,7 +44,15 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("gdt = {:#x?}", gdt);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
+    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
+        .memory_map()
+        .unwrap()
+        .into();
+    com2_println!("memory_map = {:#x?}", memory_map);
     efi_println!("Hello, World!");
+    let memory_map: efi::memory::Map = efi::SystemTable::get()
+        .exit_boot_services(image_handle)
+        .unwrap();
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
 }

@@ -75,6 +75,10 @@ impl Map {
             key,
         }
     }
+
+    pub fn key(&self) -> usize {
+        self.key
+    }
 }
 
 impl From<Map> for Vec<Descriptor> {

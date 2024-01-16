@@ -76,6 +76,14 @@ impl BootServices {
         result.map(|_| pool)
     }
 
+    pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
+        let memory_map: memory::Map = self
+            .memory_map()
+            .unwrap();
+        let result: Result<(), Status> = (self.exit_boot_services)(image, memory_map.key()).into();
+        result.map(|_| memory_map)
+    }
+
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
         (self.free_pool)(pool).into()
     }
