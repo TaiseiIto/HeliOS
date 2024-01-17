@@ -1,6 +1,7 @@
 pub mod register;
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         slice,
@@ -16,19 +17,21 @@ pub use register::Register;
 /// # Interrupt Descriptor
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.10 Interrupt Descriptor Table (IDT)
-pub struct Table<'a>(&'a [Descriptor]);
+pub struct Table {
+    descriptors: Vec<Descriptor>,
+}
 
-impl Table<'static> {
+impl Table {
     pub fn get() -> Self {
         Register::get().into()
     }
 }
 
-impl fmt::Debug for Table<'_> {
+impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.0
+            .entries(self.descriptors
                 .iter()
                 .enumerate()
                 .filter_map(|(interrupt_number, descriptor)| {
@@ -39,11 +42,19 @@ impl fmt::Debug for Table<'_> {
     }
 }
 
-impl From<Register> for Table<'static> {
+impl From<Register> for Table {
     fn from(register: Register) -> Self {
-        Self(unsafe {
+        let descriptors: &[Descriptor] = unsafe {
             slice::from_raw_parts(register.base(), register.length())
-        })
+        };
+        let descriptors: Vec<Descriptor> = (u8::MIN..=u8::MAX)
+            .map(|interrupt_number| *descriptors
+                .get(interrupt_number as usize)
+                .unwrap_or(&Descriptor::default()))
+            .collect();
+        Self {
+            descriptors,
+        }
     }
 }
 
