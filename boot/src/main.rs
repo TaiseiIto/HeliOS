@@ -59,6 +59,9 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("ss = {:#x?}", ss);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
+    let idtr: interrupt::descriptor::table::Register = (&idt).into();
+    com2_println!("idtr = {:#x?}", idtr);
+    idtr.set();
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
         .memory_map()
         .unwrap()
