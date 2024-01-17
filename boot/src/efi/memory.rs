@@ -1,3 +1,7 @@
+mod pages;
+
+pub use pages::Pages;
+
 use {
     alloc::vec::Vec,
     super::Void,
