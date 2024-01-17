@@ -3,7 +3,10 @@ use {
         arch::asm,
         mem,
     },
-    super::super::super::Descriptor,
+    super::super::{
+        super::Descriptor,
+        Table,
+    },
 };
 
 #[derive(Debug, Default)]
@@ -31,6 +34,26 @@ impl Register {
 
     pub fn length(&self) -> usize {
         (self.limit as usize + 1) / mem::size_of::<Descriptor>()
+    }
+
+    pub fn set(&self) {
+        unsafe {
+            asm!(
+                "lgdt [{}]",
+                in(reg) self,
+            );
+        }
+    }
+}
+
+impl From<&Table> for Register {
+    fn from(table: &Table) -> Self {
+        let limit: u16 = table.limit();
+        let base: u64 = table.base();
+        Self {
+            limit,
+            base,
+        }
     }
 }
 

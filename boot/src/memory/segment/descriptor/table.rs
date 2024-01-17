@@ -23,8 +23,21 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn base(&self) -> u64 {
+        self.descriptors
+            .as_slice()
+            .as_ptr() as u64
+    }
+
     pub fn get() -> Self {
         Register::get().into()
+    }
+
+    pub fn limit(&self) -> u16 {
+        let length: usize = self.descriptors.len();
+        let size: usize = length * mem::size_of::<Descriptor>();
+        let limit: usize = size - 1;
+        limit as u16
     }
 }
 
