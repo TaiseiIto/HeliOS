@@ -6,7 +6,7 @@ use {
         Handle,
         Status,
         TableHeader,
-        VOID,
+        null,
         Void,
         char16,
         event,
@@ -70,9 +70,18 @@ pub struct BootServices {
 }
 
 impl BootServices {
+    pub fn allocate_pages(&self, pages: usize) -> Result<memory::PhysicalAddress, Status> {
+        let allocate_type = memory::AllocateType::AllocateAnyPages;
+        let memory_type = memory::Type::LoaderData;
+        let mut physical_address: memory::PhysicalAddress = 0;
+        let result: Result<(), Status> = (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address).into();
+        result.map(|_| physical_address)
+    }
+
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
-        let mut pool: &Void = &VOID;
-        let result: Result<(), Status> = (self.allocate_pool)(memory::Type::LoaderData, size, &mut pool).into();
+        let memory_type = memory::Type::LoaderData;
+        let mut pool: &Void = null();
+        let result: Result<(), Status> = (self.allocate_pool)(memory_type, size, &mut pool).into();
         result.map(|_| pool)
     }
 
@@ -84,12 +93,16 @@ impl BootServices {
         result.map(|_| memory_map)
     }
 
+    pub fn free_pages(&self, physical_address: memory::PhysicalAddress, pages: usize) -> Result<(), Status> {
+        (self.free_pages)(physical_address, pages).into()
+    }
+
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
         (self.free_pool)(pool).into()
     }
 
     pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
-        let mut protocol: &Void = &VOID;
+        let mut protocol: &Void = null();
         let result: Result<(), Status> = (self.locate_protocol)(&guid, registration, &mut protocol).into();
         result.map(|_| protocol)
     }

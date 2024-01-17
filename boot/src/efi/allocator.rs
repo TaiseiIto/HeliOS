@@ -24,21 +24,14 @@ unsafe impl GlobalAlloc for Allocator {
         // "All allocations are eight-byte aligned."
         assert!(align <= 8);
         SystemTable::get()
-            .allocate(size)
-            .map(|ptr| {
-                let ptr: *const Void = ptr as *const Void;
-                let ptr: usize = ptr as usize;
-                ptr as *mut u8
-            })
+            .allocate_pool(size)
+            .map(|pointer| pointer.into())
             .unwrap()
     }
 
-    unsafe fn dealloc(&self, ptr: *mut u8, _: Layout) {
-        let ptr: usize = ptr as usize;
-        let ptr: *const Void = ptr as *const Void;
-        let ptr: &Void = &*ptr;
+    unsafe fn dealloc(&self, pointer: *mut u8, _: Layout) {
         SystemTable::get()
-            .deallocate(ptr)
+            .free_pool(pointer.into())
             .unwrap()
     }
 }

@@ -57,16 +57,27 @@ pub struct SystemTable<'a> {
 }
 
 impl SystemTable<'_> {
-    pub fn allocate(&self, size: usize) -> Result<&Void, Status> {
-        self.boot_services.allocate_pool(size)
+    pub fn allocate_pages(&self, pages: usize) -> Result<&Void, Status> {
+        self.boot_services
+            .allocate_pages(pages)
+            .map(|physical_address| physical_address.into())
     }
 
-    pub fn deallocate(&self, pool: &Void) -> Result<(), Status> {
-        self.boot_services.free_pool(pool)
+    pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
+        self.boot_services.allocate_pool(size)
     }
 
     pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
         self.boot_services.exit_boot_services(image)
+    }
+
+    pub fn free_pages(&self, virtual_address: &Void, pages: usize) -> Result<(), Status> {
+        let physical_address: memory::PhysicalAddress = virtual_address.into();
+        self.boot_services.free_pages(physical_address, pages)
+    }
+
+    pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
+        self.boot_services.free_pool(pool)
     }
 
     pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {

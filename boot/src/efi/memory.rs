@@ -1,4 +1,7 @@
-use alloc::vec::Vec;
+use {
+    alloc::vec::Vec,
+    super::Void,
+};
 
 /// # EFI_ALLOCATE_TYPE
 /// ## References
@@ -43,6 +46,13 @@ pub enum Type {
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
 pub type PhysicalAddress = u64;
+
+impl From<&Void> for PhysicalAddress {
+    fn from(void: &Void) -> Self {
+        let void: *const Void = void as *const Void;
+        void as Self
+    }
+}
 
 /// # EFI_MEMORY_DESCRIPTOR
 /// ## References
