@@ -1,6 +1,7 @@
 pub use register::Register;
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
@@ -17,19 +18,21 @@ mod register;
 /// Segment Descriptor Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.5.1 Segment Descriptor Tables
-pub struct Table<'a>(&'a [Descriptor]);
+pub struct Table {
+    descriptors: Vec<Descriptor>,
+}
 
-impl Table<'static> {
+impl Table {
     pub fn get() -> Self {
         Register::get().into()
     }
 }
 
-impl fmt::Debug for Table<'_> {
+impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.0
+            .entries(self.descriptors
                 .iter()
                 .enumerate()
                 .filter_map(|(index, descriptor)| {
@@ -41,11 +44,20 @@ impl fmt::Debug for Table<'_> {
     }
 }
 
-impl From<Register> for Table<'static> {
+impl From<Register> for Table {
     fn from(register: Register) -> Self {
-        Self(unsafe {
+        let descriptors: &[Descriptor] = unsafe {
             slice::from_raw_parts(register.base(), register.length())
-        })
+        };
+        let descriptors: Vec<Descriptor> = (u16::MIN..=u16::MAX)
+            .step_by(mem::size_of::<Descriptor>())
+            .map(|segment_selector| *descriptors
+                .get(segment_selector as usize / mem::size_of::<Descriptor>())
+                .unwrap_or(&Descriptor::default()))
+            .collect();
+        Self {
+            descriptors,
+        }
     }
 }
 
