@@ -9,11 +9,13 @@ use {
         fmt,
         mem,
     },
-    crate::x64,
-    super::super::KIB,
+    crate::{
+        memory,
+        x64,
+    },
 };
 
-const TABLE_SIZE: usize = 4 * KIB;
+const TABLE_SIZE: usize = memory::PAGE_SIZE;
 const PML4T_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pml4e>();
 const PDPT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pdpe>();
 const PDT_LENGTH: usize = TABLE_SIZE / mem::size_of::<Pde>();

@@ -68,7 +68,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .into();
     com2_println!("memory_map = {:#x?}", memory_map);
     efi_println!("Hello, World!");
-    let memory_map: efi::memory::Map = efi::SystemTable::get()
+    let _memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
     efi::SystemTable::get().shutdown();

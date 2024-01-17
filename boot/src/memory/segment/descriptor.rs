@@ -3,9 +3,11 @@ pub mod table;
 pub use table::Table;
 
 use {
-    crate::x64::descriptor::Type,
+    crate::{
+        memory,
+        x64::descriptor::Type,
+    },
     bitfield_struct::bitfield,
-    super::super::KIB,
 };
 
 /// # Segment Descriptor
@@ -62,7 +64,7 @@ impl From<&Descriptor> for Option<Interface> {
             let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
             let size: usize = limit + 1;
             let size: usize = if descriptor.g() {
-                4 * KIB * size
+                memory::PAGE_SIZE * size
             } else {
                 size
             };

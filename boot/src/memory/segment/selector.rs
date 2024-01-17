@@ -85,8 +85,11 @@ impl Selector {
 
 #[derive(Debug)]
 pub struct Interface {
+    #[allow(dead_code)]
     rpl: u8,
+    #[allow(dead_code)]
     ti: bool,
+    #[allow(dead_code)]
     index: u16,
 }
 
