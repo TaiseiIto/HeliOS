@@ -41,14 +41,20 @@ enum Pml4teInterface<'a> {
     },
 }
 
-impl<'a> From<&'a Pml4te> for Pml4teInterface<'a> {
-    fn from(pml4te: &'a Pml4te) -> Self {
-        match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
-            (Some(pml4e), None) => Self::Pml4e {
-                pml4e,
+impl<'a> Pml4teInterface<'a> {
+    fn copy(source: &'a Pml4te, destination: &'a mut Pml4te) -> Self {
+        match (source.pml4e(), source.pml4te_not_present()) {
+            (Some(pml4e), None) => {
+                let pml4e: &Pml4e = destination.set_pml4e(*pml4e);
+                Self::Pml4e {
+                    pml4e,
+                }
             },
-            (None, Some(pml4te_not_present)) => Self::Pml4teNotPresent {
-                pml4te_not_present
+            (None, Some(pml4te_not_present)) => {
+                let pml4te_not_present: &Pml4teNotPresent = destination.set_pml4te_not_present(*pml4te_not_present);
+                Self::Pml4teNotPresent {
+                    pml4te_not_present
+                }
             },
             _ => panic!("Can't get a page map level 4 table entry."),
         }
@@ -84,6 +90,20 @@ impl Pml4te {
             None
         } else {
             Some(pml4te_not_present)
+        }
+    }
+
+    fn set_pml4e(&mut self, pml4e: Pml4e) -> &Pml4e {
+        unsafe {
+            self.pml4e = pml4e;
+            &self.pml4e
+        }
+    }
+
+    fn set_pml4te_not_present(&mut self, pml4te_not_present: Pml4teNotPresent) -> &Pml4teNotPresent {
+        unsafe {
+            self.pml4te_not_present = pml4te_not_present;
+            &self.pml4te_not_present
         }
     }
 }
