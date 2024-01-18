@@ -426,9 +426,10 @@ enum PteInterface<'a> {
     },
 }
 
-impl<'a> From<&'a Pte> for PteInterface<'a> {
-    fn from(pte: &'a Pte) -> Self {
-        match (pte.pe4kib(), pte.pte_not_present()) {
+impl<'a> PteInterface<'a> {
+    fn copy(source: &'a Pte, destination: &'a mut Pte) -> Self {
+        *destination = *source;
+        match (destination.pe4kib(), destination.pte_not_present()) {
             (Some(pe4kib), None) => Self::Pe4Kib {
                 pe4kib,
             },
@@ -443,6 +444,7 @@ impl<'a> From<&'a Pte> for PteInterface<'a> {
 /// # Page Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone, Copy)]
 #[repr(C)]
 union Pte {
     pe4kib: Pe4Kib,
