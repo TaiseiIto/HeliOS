@@ -53,7 +53,8 @@ impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
 /// # Page Map Level 4 Table Entry Interface
 enum Pml4teInterface<'a> {
     Pml4e {
-        pml4e: &'a Pml4e
+        pml4e: &'a Pml4e,
+        pdpt: Box<Pdpt>,
     },
     Pml4teNotPresent {
         pml4te_not_present: &'a Pml4teNotPresent,
@@ -65,8 +66,10 @@ impl<'a> Pml4teInterface<'a> {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let pml4e: &Pml4e = destination.set_pml4e(*pml4e);
+                let pdpt: Box<Pdpt> = Box::new(Pdpt::default());
                 Self::Pml4e {
                     pml4e,
+                    pdpt,
                 }
             },
             (None, Some(pml4te_not_present)) => {
@@ -202,6 +205,7 @@ enum PdpteInterface<'a> {
     },
     Pdpe {
         pdpe: &'a Pdpe,
+        pdt: Box<Pdt>
     },
     PdpteNotPresent {
         pdpte_not_present: &'a PdpteNotPresent,
@@ -219,8 +223,10 @@ impl<'a> PdpteInterface<'a> {
             },
             (None, Some(pdpe), None) => {
                 let pdpe: &Pdpe = destination.set_pdpe(*pdpe);
+                let pdt: Box<Pdt> = Box::new(Pdt::default());
                 Self::Pdpe {
                     pdpe,
+                    pdt,
                 }
             },
             (None, None, Some(pdpte_not_present)) => {
@@ -407,6 +413,7 @@ enum PdteInterface<'a> {
     },
     Pde {
         pde: &'a Pde,
+        pt: Box<Pt>,
     },
     PdteNotPresent {
         pdte_not_present: &'a PdteNotPresent,
@@ -424,8 +431,10 @@ impl<'a> PdteInterface<'a> {
             },
             (None, Some(pde), None) => {
                 let pde: &Pde = destination.set_pde(*pde);
+                let pt: Box<Pt> = Box::new(Pt::default());
                 Self::Pde {
                     pde,
+                    pt,
                 }
             },
             (None, None, Some(pdte_not_present)) => {
