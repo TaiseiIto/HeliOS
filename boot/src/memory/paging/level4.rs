@@ -31,6 +31,15 @@ struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],
 }
 
+impl Default for Pml4t {
+    fn default() -> Self {
+        let pml4te = [Pml4te::default(); PML4T_LENGTH];
+        Self {
+            pml4te,
+        }
+    }
+}
+
 impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
     fn from(cr3: &'a x64::control::Register3) -> Self {
         let pml4te: usize = cr3.get_page_directory_base();
@@ -74,10 +83,20 @@ impl<'a> Pml4teInterface<'a> {
 /// # Page Map Level 4 Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone, Copy)]
 #[repr(C)]
 union Pml4te {
     pml4e: Pml4e,
     pml4te_not_present: Pml4teNotPresent,
+}
+
+impl Default for Pml4te {
+    fn default() -> Self {
+        let pml4te_not_present = Pml4teNotPresent::default();
+        Self {
+            pml4te_not_present
+        }
+    }
 }
 
 impl Pml4te {
@@ -157,6 +176,15 @@ struct Pdpt {
     pdpte: [Pdpte; PDPT_LENGTH],
 }
 
+impl Default for Pdpt {
+    fn default() -> Self {
+        let pdpte = [Pdpte::default(); PDPT_LENGTH];
+        Self {
+            pdpte,
+        }
+    }
+}
+
 impl<'a> From<&'a Pml4e> for &'a Pdpt {
     fn from(pml4e: &'a Pml4e) -> Self {
         let pdpt: u64 = pml4e.address_of_pdpt() << Pml4e::ADDRESS_OF_PDPT_OFFSET;
@@ -209,6 +237,7 @@ impl<'a> PdpteInterface<'a> {
 /// # Page Directory Pointer Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone, Copy)]
 #[repr(C)]
 union Pdpte {
     pe1gib: Pe1Gib,
@@ -268,6 +297,15 @@ impl Pdpte {
         unsafe {
             self.pdpte_not_present = pdpte_not_present;
             &self.pdpte_not_present
+        }
+    }
+}
+
+impl Default for Pdpte {
+    fn default() -> Self {
+        let pdpte_not_present = PdpteNotPresent::default();
+        Self {
+            pdpte_not_present
         }
     }
 }
@@ -343,6 +381,15 @@ struct Pdt {
     pdte: [Pdte; PDT_LENGTH],
 }
 
+impl Default for Pdt {
+    fn default() -> Self {
+        let pdte = [Pdte::default(); PDT_LENGTH];
+        Self {
+            pdte,
+        }
+    }
+}
+
 impl<'a> From<&'a Pdpe> for &'a Pdt {
     fn from(pdpe: &'a Pdpe) -> Self {
         let pdt: u64 = pdpe.address_of_pdt() << Pdpe::ADDRESS_OF_PDT_OFFSET;
@@ -395,6 +442,7 @@ impl<'a> PdteInterface<'a> {
 /// # Page Directory Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone, Copy)]
 #[repr(C)]
 union Pdte {
     pe2mib: Pe2Mib,
@@ -454,6 +502,15 @@ impl Pdte {
         unsafe {
             self.pdte_not_present = pdte_not_present;
             &self.pdte_not_present
+        }
+    }
+}
+
+impl Default for Pdte {
+    fn default() -> Self {
+        let pdte_not_present = PdteNotPresent::default();
+        Self {
+            pdte_not_present
         }
     }
 }
@@ -527,6 +584,15 @@ struct PdteNotPresent {
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
+}
+
+impl Default for Pt {
+    fn default() -> Self {
+        let pte = [Pte::default(); PT_LENGTH];
+        Self {
+            pte,
+        }
+    }
 }
 
 impl<'a> From<&'a Pde> for &'a Pt {
@@ -613,6 +679,15 @@ impl Pte {
         unsafe {
             self.pte_not_present = pte_not_present;
             &self.pte_not_present
+        }
+    }
+}
+
+impl Default for Pte {
+    fn default() -> Self {
+        let pte_not_present = PteNotPresent::default();
+        Self {
+            pte_not_present
         }
     }
 }
