@@ -6,17 +6,15 @@ use crate::x64;
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4 Paging
 #[derive(Debug)]
-pub enum Paging<'a> {
+pub enum Paging {
     Disable,
     Bit32,
     Pae,
-    Level4 {
-        pml4t: level4::Pml4t<'a>,
-    },
+    Level4,
     Level5,
 }
 
-impl Paging<'_> {
+impl Paging {
     pub fn get(cpuid: &Option<x64::Cpuid>) -> Self {
         let ia32_efer: Option<x64::msr::Ia32Efer> = x64::msr::Ia32Efer::get(cpuid);
         let cr0 = x64::control::Register0::get();
@@ -31,10 +29,7 @@ impl Paging<'_> {
             .pae_paging_is_used() {
             Self::Pae
         } else if cr4.level4_paging_is_used() {
-            let pml4t: level4::Pml4t = cr3.into();
-            Self::Level4 {
-                pml4t,
-            }
+            Self::Level4
         } else {
             Self::Level5
         }
