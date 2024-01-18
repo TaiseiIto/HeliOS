@@ -15,10 +15,10 @@ use {
     },
 };
 
-const PML4T_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pml4e>();
-const PDPT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdpe>();
-const PDT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pde>();
-const PT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pe4Kib>();
+const PML4T_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pml4te>();
+const PDPT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdpte>();
+const PDT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdte>();
+const PT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pte>();
 
 /// # Page Map Level 4 Table
 /// ## References
