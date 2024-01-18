@@ -3,7 +3,10 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4.5 4-Level Paging and 5-Level Paging
 
 use {
-    alloc::collections::BTreeMap,
+    alloc::{
+        boxed::Box,
+        collections::BTreeMap,
+    },
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -283,17 +286,26 @@ enum PdteInterface<'a> {
     },
 }
 
-impl<'a> From<&'a Pdte> for PdteInterface<'a> {
-    fn from(pdte: &'a Pdte) -> Self {
-        match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
-            (Some(pe2mib), None, None) => Self::Pe2Mib {
-                pe2mib,
+impl<'a> PdteInterface<'a> {
+    fn copy(source: &'a Pdte, destination: &'a mut Pdte) -> Self {
+        match (source.pe2mib(), source.pde(), source.pdte_not_present()) {
+            (Some(pe2mib), None, None) => {
+                let pe2mib: &Pe2Mib = destination.set_pe2mib(*pe2mib);
+                Self::Pe2Mib {
+                    pe2mib,
+                }
             },
-            (None, Some(pde), None) => Self::Pde {
-                pde,
+            (None, Some(pde), None) => {
+                let pde: &Pde = destination.set_pde(*pde);
+                Self::Pde {
+                    pde,
+                }
             },
-            (None, None, Some(pdte_not_present)) => Self::PdteNotPresent {
-                pdte_not_present,
+            (None, None, Some(pdte_not_present)) => {
+                let pdte_not_present: &PdteNotPresent = destination.set_pdte_not_present(*pdte_not_present);
+                Self::PdteNotPresent {
+                    pdte_not_present,
+                }
             },
             _ => panic!("Can't get a page directory table entry."),
         }
@@ -341,6 +353,27 @@ impl Pdte {
             None
         } else {
             Some(pdte_not_present)
+        }
+    }
+
+    fn set_pe2mib(&mut self, pe2mib: Pe2Mib) -> &Pe2Mib {
+        unsafe {
+            self.pe2mib = pe2mib;
+            &self.pe2mib
+        }
+    }
+
+    fn set_pde(&mut self, pde: Pde) -> &Pde {
+        unsafe {
+            self.pde = pde;
+            &self.pde
+        }
+    }
+
+    fn set_pdte_not_present(&mut self, pdte_not_present: PdteNotPresent) -> &PdteNotPresent {
+        unsafe {
+            self.pdte_not_present = pdte_not_present;
+            &self.pdte_not_present
         }
     }
 }
