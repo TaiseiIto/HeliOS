@@ -140,17 +140,26 @@ enum PdpteInterface<'a> {
     },
 }
 
-impl<'a> From<&'a Pdpte> for PdpteInterface<'a> {
-    fn from(pdpte: &'a Pdpte) -> Self {
-        match (pdpte.pe1gib(), pdpte.pdpe(), pdpte.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => Self::Pe1Gib {
-                pe1gib,
+impl<'a> PdpteInterface<'a> {
+    fn copy(source: &'a Pdpte, destination: &'a mut Pdpte) -> Self {
+        match (source.pe1gib(), source.pdpe(), source.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => {
+                let pe1gib: &Pe1Gib = destination.set_pe1gib(*pe1gib);
+                Self::Pe1Gib {
+                    pe1gib,
+                }
             },
-            (None, Some(pdpe), None) => Self::Pdpe {
-                pdpe,
+            (None, Some(pdpe), None) => {
+                let pdpe: &Pdpe = destination.set_pdpe(*pdpe);
+                Self::Pdpe {
+                    pdpe,
+                }
             },
-            (None, None, Some(pdpte_not_present)) => Self::PdpteNotPresent {
-                pdpte_not_present,
+            (None, None, Some(pdpte_not_present)) => {
+                let pdpte_not_present: &PdpteNotPresent = destination.set_pdpte_not_present(*pdpte_not_present);
+                Self::PdpteNotPresent {
+                    pdpte_not_present,
+                }
             },
             _ => panic!("Can't get a page directory pointer table entry."),
         }
@@ -198,6 +207,27 @@ impl Pdpte {
             None
         } else {
             Some(pdpte_not_present)
+        }
+    }
+
+    fn set_pe1gib(&mut self, pe1gib: Pe1Gib) -> &Pe1Gib {
+        unsafe {
+            self.pe1gib = pe1gib;
+            &self.pe1gib
+        }
+    }
+
+    fn set_pdpe(&mut self, pdpe: Pdpe) -> &Pdpe {
+        unsafe {
+            self.pdpe = pdpe;
+            &self.pdpe
+        }
+    }
+
+    fn set_pdpte_not_present(&mut self, pdpte_not_present: PdpteNotPresent) -> &PdpteNotPresent {
+        unsafe {
+            self.pdpte_not_present = pdpte_not_present;
+            &self.pdpte_not_present
         }
     }
 }
