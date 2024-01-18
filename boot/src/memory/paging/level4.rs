@@ -428,13 +428,18 @@ enum PteInterface<'a> {
 
 impl<'a> PteInterface<'a> {
     fn copy(source: &'a Pte, destination: &'a mut Pte) -> Self {
-        *destination = *source;
-        match (destination.pe4kib(), destination.pte_not_present()) {
-            (Some(pe4kib), None) => Self::Pe4Kib {
-                pe4kib,
+        match (source.pe4kib(), source.pte_not_present()) {
+            (Some(pe4kib), None) => {
+                let pe4kib: &Pe4Kib = destination.set_pe4kib(*pe4kib);
+                Self::Pe4Kib {
+                    pe4kib,
+                }
             },
-            (None, Some(pte_not_present)) => Self::PteNotPresent {
-                pte_not_present,
+            (None, Some(pte_not_present)) => {
+                let pte_not_present: &PteNotPresent = destination.set_pte_not_present(*pte_not_present);
+                Self::PteNotPresent {
+                    pte_not_present,
+                }
             },
             _ => panic!("Can't get a page table entry."),
         }
@@ -471,6 +476,20 @@ impl Pte {
             None
         } else {
             Some(pte_not_present)
+        }
+    }
+
+    fn set_pe4kib(&mut self, pe4kib: Pe4Kib) -> &Pe4Kib {
+        unsafe {
+            self.pe4kib = pe4kib;
+            &self.pe4kib
+        }
+    }
+
+    fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) -> &PteNotPresent {
+        unsafe {
+            self.pte_not_present = pte_not_present;
+            &self.pte_not_present
         }
     }
 }
