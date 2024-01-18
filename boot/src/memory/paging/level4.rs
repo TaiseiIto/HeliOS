@@ -129,6 +129,16 @@ struct Pml4e {
     xd: bool,
 }
 
+impl Pml4e {
+    fn pdpt<'a>(&'a self) -> &'a Pdpt {
+        let pdpt: u64 = self.address_of_pdpt() << Self::ADDRESS_OF_PDPT_OFFSET;
+        let pdpt: *const Pdpt = pdpt as *const Pdpt;
+        unsafe {
+            &*pdpt
+        }
+    }
+}
+
 /// # Page Map Level 4 Entry Not Present
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -305,6 +315,16 @@ struct Pdpe {
     xd: bool,
 }
 
+impl Pdpe {
+    fn pdt<'a>(&'a self) -> &'a Pdt {
+        let pdt: u64 = self.address_of_pdt() << Self::ADDRESS_OF_PDT_OFFSET;
+        let pdt: *const Pdt = pdt as *const Pdt;
+        unsafe {
+            &*pdt
+        }
+    }
+}
+
 /// # Page Directory Pointer Table Entry Not Present
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -479,6 +499,16 @@ struct Pde {
     #[bits(15, access = RO)]
     reserved2: u16,
     xd: bool,
+}
+
+impl Pde {
+    fn pt<'a>(&'a self) -> &'a Pt {
+        let pt: u64 = self.address_of_pt() << Self::ADDRESS_OF_PT_OFFSET;
+        let pt: *const Pt = pt as *const Pt;
+        unsafe {
+            &*pt
+        }
+    }
 }
 
 /// # Page Directory Table Entry Not Present
