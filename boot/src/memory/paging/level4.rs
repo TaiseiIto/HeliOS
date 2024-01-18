@@ -31,6 +31,16 @@ struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],
 }
 
+impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
+    fn from(cr3: &'a x64::control::Register3) -> Self {
+        let pml4te: usize = cr3.get_page_directory_base();
+        let pml4te: *const Pml4t = pml4te as *const Pml4t;
+        unsafe {
+            &*pml4te
+        }
+    }
+}
+
 /// # Page Map Level 4 Table Entry Interface
 enum Pml4teInterface<'a> {
     Pml4e {
