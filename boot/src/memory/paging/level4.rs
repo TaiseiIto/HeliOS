@@ -65,8 +65,8 @@ impl<'a> Pml4teInterface<'a> {
     fn copy(source: &'a Pml4te, destination: &'a mut Pml4te) -> Self {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
-                let pml4e: &Pml4e = destination.set_pml4e(*pml4e);
                 let pdpt: Box<Pdpt> = Box::new(Pdpt::default());
+                let pml4e: &Pml4e = destination.set_pml4e(*pml4e, pdpt.as_ref());
                 Self::Pml4e {
                     pml4e,
                     pdpt,
@@ -125,9 +125,13 @@ impl Pml4te {
         }
     }
 
-    fn set_pml4e(&mut self, pml4e: Pml4e) -> &Pml4e {
+    fn set_pml4e(&mut self, pml4e: Pml4e, pdpt: &Pdpt) -> &Pml4e {
+        let pdpt: *const Pdpt = pdpt as *const Pdpt;
+        let pdpt: u64 = pdpt as u64;
+        let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
         unsafe {
             self.pml4e = pml4e;
+            self.pml4e.set_address_of_pdpt(pdpt);
             &self.pml4e
         }
     }
@@ -222,8 +226,8 @@ impl<'a> PdpteInterface<'a> {
                 }
             },
             (None, Some(pdpe), None) => {
-                let pdpe: &Pdpe = destination.set_pdpe(*pdpe);
                 let pdt: Box<Pdt> = Box::new(Pdt::default());
+                let pdpe: &Pdpe = destination.set_pdpe(*pdpe, pdt.as_ref());
                 Self::Pdpe {
                     pdpe,
                     pdt,
@@ -292,9 +296,13 @@ impl Pdpte {
         }
     }
 
-    fn set_pdpe(&mut self, pdpe: Pdpe) -> &Pdpe {
+    fn set_pdpe(&mut self, pdpe: Pdpe, pdt: &Pdt) -> &Pdpe {
+        let pdt: *const Pdt = pdt as *const Pdt;
+        let pdt: u64 = pdt as u64;
+        let pdt: u64 = pdt >> Pdpe::ADDRESS_OF_PDT_OFFSET;
         unsafe {
             self.pdpe = pdpe;
+            self.pdpe.set_address_of_pdt(pdt);
             &self.pdpe
         }
     }
@@ -430,8 +438,8 @@ impl<'a> PdteInterface<'a> {
                 }
             },
             (None, Some(pde), None) => {
-                let pde: &Pde = destination.set_pde(*pde);
                 let pt: Box<Pt> = Box::new(Pt::default());
+                let pde: &Pde = destination.set_pde(*pde, pt.as_ref());
                 Self::Pde {
                     pde,
                     pt,
@@ -500,9 +508,13 @@ impl Pdte {
         }
     }
 
-    fn set_pde(&mut self, pde: Pde) -> &Pde {
+    fn set_pde(&mut self, pde: Pde, pt: &Pt) -> &Pde {
+        let pt: *const Pt = pt as *const Pt;
+        let pt: u64 = pt as u64;
+        let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
         unsafe {
             self.pde = pde;
+            self.pde.set_address_of_pt(pt);
             &self.pde
         }
     }
