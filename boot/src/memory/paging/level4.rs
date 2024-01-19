@@ -422,6 +422,7 @@ enum PdteInterface<'a> {
     Pde {
         pde: &'a Pde,
         pt: Box<Pt>,
+        vaddr2pte_interface: BTreeMap<Vaddr, PteInterface<'a>>,
     },
     PdteNotPresent {
         pdte_not_present: &'a PdteNotPresent,
@@ -429,7 +430,7 @@ enum PdteInterface<'a> {
 }
 
 impl<'a> PdteInterface<'a> {
-    fn copy(source: &'a Pdte, destination: &'a mut Pdte) -> Self {
+    fn copy(source: &'a Pdte, destination: &'a mut Pdte, vaddr: Vaddr) -> Self {
         match (source.pe2mib(), source.pde(), source.pdte_not_present()) {
             (Some(pe2mib), None, None) => {
                 let pe2mib: &Pe2Mib = destination.set_pe2mib(*pe2mib);
@@ -438,11 +439,25 @@ impl<'a> PdteInterface<'a> {
                 }
             },
             (None, Some(pde), None) => {
-                let pt: Box<Pt> = Box::new(Pt::default());
-                let pde: &Pde = destination.set_pde(*pde, pt.as_ref());
+                let source: &Pt = pde.into();
+                let mut pt: Box<Pt> = Box::new(Pt::default());
+                let pt_mut: &mut Pt = pt.as_mut();
+                let pt_ptr: *mut Pt = pt_mut as *mut Pt;
+                let pt_ptr: u64 = pt_ptr as u64;
+                let pde: &Pde = destination.set_pde(*pde, pt_ptr);
+                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = source.pte
+                    .as_slice()
+                    .iter()
+                    .zip(pt_mut.pte
+                        .as_mut_slice()
+                        .iter_mut())
+                    .enumerate()
+                    .map(|(pi, (source, destination))| (vaddr.with_pi(pi as u16), PteInterface::copy(source, destination)))
+                    .collect();
                 Self::Pde {
                     pde,
                     pt,
+                    vaddr2pte_interface,
                 }
             },
             (None, None, Some(pdte_not_present)) => {
@@ -508,9 +523,7 @@ impl Pdte {
         }
     }
 
-    fn set_pde(&mut self, pde: Pde, pt: &Pt) -> &Pde {
-        let pt: *const Pt = pt as *const Pt;
-        let pt: u64 = pt as u64;
+    fn set_pde(&mut self, pde: Pde, pt: u64) -> &Pde {
         let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
         unsafe {
             self.pde = pde;
@@ -759,6 +772,7 @@ struct PteNotPresent {
 /// * `pdpi` - Page directory pointer index.
 /// * `pml4i` - Page map level 4 index.
 #[bitfield(u64)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 struct Vaddr {
     #[bits(12)]
     offset: u16,
