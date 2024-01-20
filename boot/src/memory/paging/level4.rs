@@ -23,18 +23,17 @@ const PDPT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdpte>();
 const PDT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdte>();
 const PT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pte>();
 
-struct Interface {
+pub struct Interface {
     cr3: x64::control::Register3,
     pml4t: Box<Pml4t>,
     vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface>,
 }
 
 impl Interface {
-    fn copy(cr3: &x64::control::Register3) -> Self {
+    pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
         let mut pml4t: Box<Pml4t> = Box::new(Pml4t::default());
-        let mut cr3: x64::control::Register3 = cr3.clone();
-        cr3.set_paging_structure(pml4t.as_ref());
+        let cr3: x64::control::Register3 = cr3.with_paging_structure(pml4t.as_ref());
         let vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface> = source.pml4te
             .as_slice()
             .iter()

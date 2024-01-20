@@ -100,11 +100,11 @@ impl Register3 {
         }
     }
 
-    pub fn set_paging_structure<T>(&mut self, page_directory_base: &T) {
+    pub fn with_paging_structure<T>(self, page_directory_base: &T) -> Self {
         let page_directory_base: *const T = page_directory_base as *const T;
         let page_directory_base: u64 = page_directory_base as u64;
         let page_directory_base: u64 = page_directory_base >> Self::PAGE_DIRECTORY_BASE_OFFSET;
-        self.set_page_directory_base(page_directory_base);
+        self.with_page_directory_base(page_directory_base)
     }
 }
 
