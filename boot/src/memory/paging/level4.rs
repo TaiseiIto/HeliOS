@@ -317,6 +317,29 @@ impl PdpteInterface {
     }
 }
 
+impl fmt::Debug for PdpteInterface {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Pe1Gib => formatter.write_str("Pe1Gib"),
+            Self::Pdpe {
+                pdt,
+                vaddr2pdte_interface,
+            } => formatter
+                .debug_map()
+                .entries(vaddr2pdte_interface
+                    .iter()
+                    .zip(pdt
+                        .as_ref()
+                        .pdte
+                        .as_slice()
+                        .iter())
+                    .map(|((vaddr, pdte_interface), pdte)| (vaddr, (pdte, pdte_interface))))
+                .finish(),
+            Self::PdpteNotPresent => formatter.write_str("PdpteNotPresent"),
+        }
+    }
+}
+
 /// # Page Directory Pointer Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -590,7 +613,7 @@ impl PdteInterface {
 impl fmt::Debug for PdteInterface {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Pe2Mib => write!(formatter, "Pe2Mib"),
+            Self::Pe2Mib => formatter.write_str("Pe2Mib"),
             Self::Pde {
                 pt,
                 vaddr2pte_interface,
@@ -605,7 +628,7 @@ impl fmt::Debug for PdteInterface {
                         .iter())
                     .map(|((vaddr, pte_interface), pte)| (vaddr, (pte, pte_interface))))
                 .finish(),
-            Self::PdteNotPresent => write!(formatter, "PdteNotPresent"),
+            Self::PdteNotPresent => formatter.write_str("PdteNotPresent"),
         }
     }
 }
