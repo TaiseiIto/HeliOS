@@ -56,6 +56,22 @@ impl Interface {
     }
 }
 
+impl fmt::Debug for Interface {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries(self.vaddr2pml4te_interface
+                .iter()
+                .zip(self.pml4t
+                    .as_ref()
+                    .pml4te
+                    .as_slice()
+                    .iter())
+                .map(|((vaddr, pml4te_interface), pml4te)| (vaddr, (pml4te, pml4te_interface))))
+            .finish()
+    }
+}
+
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -119,6 +135,28 @@ impl Pml4teInterface {
                 Self::Pml4teNotPresent
             },
             _ => panic!("Can't get a page map level 4 table entry."),
+        }
+    }
+}
+
+impl fmt::Debug for Pml4teInterface {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Pml4e {
+                pdpt,
+                vaddr2pdpte_interface,
+            } => formatter
+                .debug_map()
+                .entries(vaddr2pdpte_interface
+                    .iter()
+                    .zip(pdpt
+                        .as_ref()
+                        .pdpte
+                        .as_slice()
+                        .iter())
+                    .map(|((vaddr, pdpte_interface), pdpte)| (vaddr, (pdpte, pdpte_interface))))
+                .finish(),
+            Self::Pml4teNotPresent => formatter.write_str("Pml4teNotPresent"),
         }
     }
 }
