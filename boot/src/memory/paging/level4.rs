@@ -415,56 +415,45 @@ impl<'a> From<&'a Pdpe> for &'a Pdt {
 }
 
 /// # Page Directory Table Entry Interface
-enum PdteInterface<'a> {
-    Pe2Mib {
-        pe2mib: &'a Pe2Mib,
-    },
+enum PdteInterface {
+    Pe2Mib,
     Pde {
-        pde: &'a Pde,
         pt: Box<Pt>,
         vaddr2pte_interface: BTreeMap<Vaddr, PteInterface>,
     },
-    PdteNotPresent {
-        pdte_not_present: &'a PdteNotPresent,
-    },
+    PdteNotPresent,
 }
 
-impl<'a> PdteInterface<'a> {
-    fn copy(source: &'a Pdte, destination: &'a mut Pdte, vaddr: Vaddr) -> Self {
+impl PdteInterface {
+    fn copy(source: &Pdte, destination: &mut Pdte, vaddr: Vaddr) -> Self {
         match (source.pe2mib(), source.pde(), source.pdte_not_present()) {
             (Some(pe2mib), None, None) => {
-                let pe2mib: &Pe2Mib = destination.set_pe2mib(*pe2mib);
-                Self::Pe2Mib {
-                    pe2mib,
-                }
+                destination.set_pe2mib(*pe2mib);
+                Self::Pe2Mib
             },
             (None, Some(pde), None) => {
                 let source: &Pt = pde.into();
                 let mut pt: Box<Pt> = Box::new(Pt::default());
-                let pt_mut: &mut Pt = pt.as_mut();
-                let pt_ptr: *mut Pt = pt_mut as *mut Pt;
-                let pt_ptr: u64 = pt_ptr as u64;
-                let pde: &Pde = destination.set_pde(*pde, pt_ptr);
+                destination.set_pde(*pde, pt.as_ref());
                 let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = source.pte
                     .as_slice()
                     .iter()
-                    .zip(pt_mut.pte
+                    .zip(pt
+                        .as_mut()
+                        .pte
                         .as_mut_slice()
                         .iter_mut())
                     .enumerate()
                     .map(|(pi, (source, destination))| (vaddr.with_pi(pi as u16), PteInterface::copy(source, destination)))
                     .collect();
                 Self::Pde {
-                    pde,
                     pt,
                     vaddr2pte_interface,
                 }
             },
             (None, None, Some(pdte_not_present)) => {
-                let pdte_not_present: &PdteNotPresent = destination.set_pdte_not_present(*pdte_not_present);
-                Self::PdteNotPresent {
-                    pdte_not_present,
-                }
+                destination.set_pdte_not_present(*pdte_not_present);
+                Self::PdteNotPresent
             },
             _ => panic!("Can't get a page directory table entry."),
         }
@@ -516,27 +505,35 @@ impl Pdte {
         }
     }
 
-    fn set_pe2mib(&mut self, pe2mib: Pe2Mib) -> &Pe2Mib {
+    fn set_pe2mib(&mut self, pe2mib: Pe2Mib) {
         unsafe {
             self.pe2mib = pe2mib;
-            &self.pe2mib
         }
+        assert!(self.pe2mib().is_some());
+        assert!(self.pde().is_none());
+        assert!(self.pdte_not_present().is_none());
     }
 
-    fn set_pde(&mut self, pde: Pde, pt: u64) -> &Pde {
+    fn set_pde(&mut self, pde: Pde, pt: &Pt) {
+        let pt: *const Pt = pt as *const Pt;
+        let pt: u64 = pt as u64;
         let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
         unsafe {
             self.pde = pde;
             self.pde.set_address_of_pt(pt);
-            &self.pde
         }
+        assert!(self.pe2mib().is_none());
+        assert!(self.pde().is_some());
+        assert!(self.pdte_not_present().is_none());
     }
 
-    fn set_pdte_not_present(&mut self, pdte_not_present: PdteNotPresent) -> &PdteNotPresent {
+    fn set_pdte_not_present(&mut self, pdte_not_present: PdteNotPresent) {
         unsafe {
             self.pdte_not_present = pdte_not_present;
-            &self.pdte_not_present
         }
+        assert!(self.pe2mib().is_none());
+        assert!(self.pde().is_none());
+        assert!(self.pdte_not_present().is_some());
     }
 }
 
@@ -699,12 +696,14 @@ impl Pte {
             self.pe4kib = pe4kib;
         }
         assert!(self.pe4kib().is_some());
+        assert!(self.pte_not_present().is_none());
     }
 
     fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) {
         unsafe {
             self.pte_not_present = pte_not_present;
         }
+        assert!(self.pe4kib().is_none());
         assert!(self.pte_not_present().is_some());
     }
 }
