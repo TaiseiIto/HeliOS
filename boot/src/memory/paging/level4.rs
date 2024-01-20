@@ -156,14 +156,12 @@ impl Pml4te {
         }
     }
 
-    fn set_pml4e(&mut self, pml4e: Pml4e, pdpt: &Pdpt) {
+    fn set_pml4e(&mut self, mut pml4e: Pml4e, pdpt: &Pdpt) {
         let pdpt: *const Pdpt = pdpt as *const Pdpt;
         let pdpt: u64 = pdpt as u64;
         let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
+        pml4e.set_address_of_pdpt(pdpt);
         self.pml4e = pml4e;
-        unsafe {
-            self.pml4e.set_address_of_pdpt(pdpt);
-        }
         assert!(self.pml4e().is_some());
         assert!(self.pml4te_not_present().is_none());
     }
@@ -375,14 +373,12 @@ impl Pdpte {
         assert!(self.pdpte_not_present().is_none());
     }
 
-    fn set_pdpe(&mut self, pdpe: Pdpe, pdt: &Pdt) {
+    fn set_pdpe(&mut self, mut pdpe: Pdpe, pdt: &Pdt) {
         let pdt: *const Pdt = pdt as *const Pdt;
         let pdt: u64 = pdt as u64;
         let pdt: u64 = pdt >> Pdpe::ADDRESS_OF_PDT_OFFSET;
+        pdpe.set_address_of_pdt(pdt);
         self.pdpe = pdpe;
-        unsafe {
-            self.pdpe.set_address_of_pdt(pdt);
-        }
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_some());
         assert!(self.pdpte_not_present().is_none());
@@ -653,14 +649,12 @@ impl Pdte {
         assert!(self.pdte_not_present().is_none());
     }
 
-    fn set_pde(&mut self, pde: Pde, pt: &Pt) {
+    fn set_pde(&mut self, mut pde: Pde, pt: &Pt) {
         let pt: *const Pt = pt as *const Pt;
         let pt: u64 = pt as u64;
         let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
+        pde.set_address_of_pt(pt);
         self.pde = pde;
-        unsafe {
-            self.pde.set_address_of_pt(pt);
-        }
         assert!(self.pe2mib().is_none());
         assert!(self.pde().is_some());
         assert!(self.pdte_not_present().is_none());
