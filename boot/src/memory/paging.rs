@@ -5,6 +5,7 @@ use crate::x64;
 /// # Paging
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4 Paging
+#[derive(Debug)]
 pub enum Paging {
     Disable,
     Bit32,
@@ -36,6 +37,20 @@ impl Paging {
             }
         } else {
             Self::Level5
+        }
+    }
+
+    pub fn set(&self) {
+        match self {
+            Self::Disable => {},
+            Self::Bit32 => {},
+            Self::Pae => {},
+            Self::Level4 {
+                interface
+            } => {
+                interface.set()
+            },
+            Self::Level5 => {},
         }
     }
 }

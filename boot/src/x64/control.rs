@@ -100,6 +100,16 @@ impl Register3 {
         }
     }
 
+    pub fn set(&self) {
+        let cr3: u64 = (*self).into();
+        unsafe {
+            asm!(
+                "mov cr3, {0}",
+                in(reg) cr3,
+            );
+        }
+    }
+
     pub fn with_paging_structure<T>(self, page_directory_base: &T) -> Self {
         let page_directory_base: *const T = page_directory_base as *const T;
         let page_directory_base: u64 = page_directory_base as u64;

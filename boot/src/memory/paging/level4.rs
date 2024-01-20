@@ -54,6 +54,10 @@ impl Interface {
             vaddr2pml4te_interface,
         }
     }
+
+    pub fn set(&self) {
+        self.cr3.set()
+    }
 }
 
 impl fmt::Debug for Interface {
