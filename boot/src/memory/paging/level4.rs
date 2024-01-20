@@ -449,7 +449,7 @@ impl Pdpte {
         self.pdpte_not_present = pdpte_not_present;
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_none());
-        assert!(self.pdpte_not_present().is_none());
+        assert!(self.pdpte_not_present().is_some());
     }
 }
 
