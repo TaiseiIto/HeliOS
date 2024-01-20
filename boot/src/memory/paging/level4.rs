@@ -203,41 +203,48 @@ impl<'a> From<&'a Pml4e> for &'a Pdpt {
 }
 
 /// # Page Directory Pointer Table Entry Interface
-enum PdpteInterface<'a> {
-    Pe1Gib {
-        pe1gib: &'a Pe1Gib,
-    },
+enum PdpteInterface {
+    Pe1Gib,
     Pdpe {
-        pdpe: &'a Pdpe,
-        pdt: Box<Pdt>
+        pdt: Box<Pdt>,
+        vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface>,
     },
-    PdpteNotPresent {
-        pdpte_not_present: &'a PdpteNotPresent,
-    },
+    PdpteNotPresent,
 }
 
-impl<'a> PdpteInterface<'a> {
-    fn copy(source: &'a Pdpte, destination: &'a mut Pdpte) -> Self {
+impl PdpteInterface {
+    fn copy(source: &Pdpte, destination: &mut Pdpte, vaddr: Vaddr) -> Self {
         match (source.pe1gib(), source.pdpe(), source.pdpte_not_present()) {
             (Some(pe1gib), None, None) => {
-                let pe1gib: &Pe1Gib = destination.set_pe1gib(*pe1gib);
-                Self::Pe1Gib {
-                    pe1gib,
-                }
+                destination.set_pe1gib(*pe1gib);
+                Self::Pe1Gib
             },
             (None, Some(pdpe), None) => {
-                let pdt: Box<Pdt> = Box::new(Pdt::default());
-                let pdpe: &Pdpe = destination.set_pdpe(*pdpe, pdt.as_ref());
+                let source: &Pdt = pdpe.into();
+                let mut pdt: Box<Pdt> = Box::new(Pdt::default());
+                destination.set_pdpe(*pdpe, pdt.as_ref());
+                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = source.pdte
+                    .as_slice()
+                    .iter()
+                    .zip(pdt
+                        .as_mut()
+                        .pdte
+                        .as_mut_slice()
+                        .iter_mut())
+                    .enumerate()
+                    .map(|(pdi, (source, destination))| {
+                        let vaddr: Vaddr = vaddr.with_pdi(pdi as u16);
+                        (vaddr, PdteInterface::copy(source, destination, vaddr))
+                    })
+                    .collect();
                 Self::Pdpe {
-                    pdpe,
                     pdt,
+                    vaddr2pdte_interface,
                 }
             },
             (None, None, Some(pdpte_not_present)) => {
-                let pdpte_not_present: &PdpteNotPresent = destination.set_pdpte_not_present(*pdpte_not_present);
-                Self::PdpteNotPresent {
-                    pdpte_not_present,
-                }
+                destination.set_pdpte_not_present(*pdpte_not_present);
+                Self::PdpteNotPresent
             },
             _ => panic!("Can't get a page directory pointer table entry."),
         }
@@ -289,29 +296,35 @@ impl Pdpte {
         }
     }
 
-    fn set_pe1gib(&mut self, pe1gib: Pe1Gib) -> &Pe1Gib {
+    fn set_pe1gib(&mut self, pe1gib: Pe1Gib) {
         unsafe {
             self.pe1gib = pe1gib;
-            &self.pe1gib
         }
+        assert!(self.pe1gib().is_some());
+        assert!(self.pdpe().is_none());
+        assert!(self.pdpte_not_present().is_none());
     }
 
-    fn set_pdpe(&mut self, pdpe: Pdpe, pdt: &Pdt) -> &Pdpe {
+    fn set_pdpe(&mut self, pdpe: Pdpe, pdt: &Pdt) {
         let pdt: *const Pdt = pdt as *const Pdt;
         let pdt: u64 = pdt as u64;
         let pdt: u64 = pdt >> Pdpe::ADDRESS_OF_PDT_OFFSET;
         unsafe {
             self.pdpe = pdpe;
             self.pdpe.set_address_of_pdt(pdt);
-            &self.pdpe
         }
+        assert!(self.pe1gib().is_none());
+        assert!(self.pdpe().is_some());
+        assert!(self.pdpte_not_present().is_none());
     }
 
-    fn set_pdpte_not_present(&mut self, pdpte_not_present: PdpteNotPresent) -> &PdpteNotPresent {
+    fn set_pdpte_not_present(&mut self, pdpte_not_present: PdpteNotPresent) {
         unsafe {
             self.pdpte_not_present = pdpte_not_present;
-            &self.pdpte_not_present
         }
+        assert!(self.pe1gib().is_none());
+        assert!(self.pdpe().is_none());
+        assert!(self.pdpte_not_present().is_none());
     }
 }
 
