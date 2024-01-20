@@ -32,7 +32,7 @@ pub struct Interface {
 impl Interface {
     pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
-        let mut pml4t: Box<Pml4t> = Box::new(Pml4t::default());
+        let mut pml4t: Box<Pml4t> = Box::default();
         let cr3: x64::control::Register3 = cr3.with_paging_structure(pml4t.as_ref());
         let vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface> = source.pml4te
             .as_slice()
@@ -93,7 +93,7 @@ impl Pml4teInterface {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let source: &Pdpt = pml4e.into();
-                let mut pdpt: Box<Pdpt> = Box::new(Pdpt::default());
+                let mut pdpt: Box<Pdpt> = Box::default();
                 destination.set_pml4e(*pml4e, pdpt.as_ref());
                 let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = source.pdpte
                     .as_slice()
@@ -131,15 +131,6 @@ impl Pml4teInterface {
 union Pml4te {
     pml4e: Pml4e,
     pml4te_not_present: Pml4teNotPresent,
-}
-
-impl Default for Pml4te {
-    fn default() -> Self {
-        let pml4te_not_present = Pml4teNotPresent::default();
-        Self {
-            pml4te_not_present
-        }
-    }
 }
 
 impl Pml4te {
@@ -181,6 +172,43 @@ impl Pml4te {
         self.pml4te_not_present = pml4te_not_present;
         assert!(self.pml4e().is_none());
         assert!(self.pml4te_not_present().is_some());
+    }
+}
+
+impl Default for Pml4te {
+    fn default() -> Self {
+        let pml4te_not_present = Pml4teNotPresent::default();
+        Self {
+            pml4te_not_present
+        }
+    }
+}
+
+impl fmt::Debug for Pml4te {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pml4e(), self.pml4te_not_present()) {
+            (Some(pml4e), None) => {
+                formatter
+                    .debug_struct("Pml4e")
+                    .field("p", &pml4e.p())
+                    .field("rw", &pml4e.rw())
+                    .field("us", &pml4e.us())
+                    .field("pwt", &pml4e.pwt())
+                    .field("pcd", &pml4e.pcd())
+                    .field("a", &pml4e.a())
+                    .field("r", &pml4e.r())
+                    .field("pdpt", &pml4e.pdpt())
+                    .field("xd", &pml4e.xd())
+                    .finish()
+            },
+            (None, Some(pml4te_not_present)) => {
+                formatter
+                    .debug_struct("Pml4teNotPresent")
+                    .field("p", &pml4te_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page map level 4 table entry."),
+        }
     }
 }
 
@@ -265,7 +293,7 @@ impl PdpteInterface {
             },
             (None, Some(pdpe), None) => {
                 let source: &Pdt = pdpe.into();
-                let mut pdt: Box<Pdt> = Box::new(Pdt::default());
+                let mut pdt: Box<Pdt> = Box::default();
                 destination.set_pdpe(*pdpe, pdt.as_ref());
                 let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = source.pdte
                     .as_slice()
@@ -304,54 +332,6 @@ union Pdpte {
     pe1gib: Pe1Gib,
     pdpe: Pdpe,
     pdpte_not_present: PdpteNotPresent,
-}
-
-impl fmt::Debug for Pdpte {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => {
-                formatter
-                    .debug_struct("Pe1Gib")
-                    .field("p", &pe1gib.p())
-                    .field("rw", &pe1gib.rw())
-                    .field("us", &pe1gib.us())
-                    .field("pwt", &pe1gib.pwt())
-                    .field("pcd", &pe1gib.pcd())
-                    .field("a", &pe1gib.a())
-                    .field("d", &pe1gib.d())
-                    .field("is_page_1gib", &pe1gib.is_page_1gib())
-                    .field("g", &pe1gib.g())
-                    .field("r", &pe1gib.r())
-                    .field("pat", &pe1gib.pat())
-                    .field("page_1gib", &pe1gib.page_1gib())
-                    .field("prot_key", &pe1gib.prot_key())
-                    .field("xd", &pe1gib.xd())
-                    .finish()
-            },
-            (None, Some(pdpe), None) => {
-                formatter
-                    .debug_struct("Pdpe")
-                    .field("p", &pdpe.p())
-                    .field("rw", &pdpe.rw())
-                    .field("us", &pdpe.us())
-                    .field("pwt", &pdpe.pwt())
-                    .field("pcd", &pdpe.pcd())
-                    .field("a", &pdpe.a())
-                    .field("is_page_1gib", &pdpe.is_page_1gib())
-                    .field("r", &pdpe.r())
-                    .field("pdt", &pdpe.pdt())
-                    .field("xd", &pdpe.xd())
-                    .finish()
-            },
-            (None, None, Some(pdpte_not_present)) => {
-                formatter
-                    .debug_struct("PdpteNotPresent")
-                    .field("p", &pdpte_not_present.p())
-                    .finish()
-            },
-            _ => panic!("Can't format a page directory pointer table entry."),
-        }
-    }
 }
 
 impl Pdpte {
@@ -421,6 +401,54 @@ impl Default for Pdpte {
         let pdpte_not_present = PdpteNotPresent::default();
         Self {
             pdpte_not_present
+        }
+    }
+}
+
+impl fmt::Debug for Pdpte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => {
+                formatter
+                    .debug_struct("Pe1Gib")
+                    .field("p", &pe1gib.p())
+                    .field("rw", &pe1gib.rw())
+                    .field("us", &pe1gib.us())
+                    .field("pwt", &pe1gib.pwt())
+                    .field("pcd", &pe1gib.pcd())
+                    .field("a", &pe1gib.a())
+                    .field("d", &pe1gib.d())
+                    .field("is_page_1gib", &pe1gib.is_page_1gib())
+                    .field("g", &pe1gib.g())
+                    .field("r", &pe1gib.r())
+                    .field("pat", &pe1gib.pat())
+                    .field("page_1gib", &pe1gib.page_1gib())
+                    .field("prot_key", &pe1gib.prot_key())
+                    .field("xd", &pe1gib.xd())
+                    .finish()
+            },
+            (None, Some(pdpe), None) => {
+                formatter
+                    .debug_struct("Pdpe")
+                    .field("p", &pdpe.p())
+                    .field("rw", &pdpe.rw())
+                    .field("us", &pdpe.us())
+                    .field("pwt", &pdpe.pwt())
+                    .field("pcd", &pdpe.pcd())
+                    .field("a", &pdpe.a())
+                    .field("is_page_1gib", &pdpe.is_page_1gib())
+                    .field("r", &pdpe.r())
+                    .field("pdt", &pdpe.pdt())
+                    .field("xd", &pdpe.xd())
+                    .finish()
+            },
+            (None, None, Some(pdpte_not_present)) => {
+                formatter
+                    .debug_struct("PdpteNotPresent")
+                    .field("p", &pdpte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page directory pointer table entry."),
         }
     }
 }
@@ -546,7 +574,7 @@ impl PdteInterface {
             },
             (None, Some(pde), None) => {
                 let source: &Pt = pde.into();
-                let mut pt: Box<Pt> = Box::new(Pt::default());
+                let mut pt: Box<Pt> = Box::default();
                 destination.set_pde(*pde, pt.as_ref());
                 let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = source.pte
                     .as_slice()
@@ -582,54 +610,6 @@ union Pdte {
     pe2mib: Pe2Mib,
     pde: Pde,
     pdte_not_present: PdteNotPresent,
-}
-
-impl fmt::Debug for Pdte {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
-            (Some(pe2mib), None, None) => {
-                formatter
-                    .debug_struct("Pe2Mib")
-                    .field("p", &pe2mib.p())
-                    .field("rw", &pe2mib.rw())
-                    .field("us", &pe2mib.us())
-                    .field("pwt", &pe2mib.pwt())
-                    .field("pcd", &pe2mib.pcd())
-                    .field("a", &pe2mib.a())
-                    .field("d", &pe2mib.d())
-                    .field("is_page_2mib", &pe2mib.is_page_2mib())
-                    .field("g", &pe2mib.g())
-                    .field("r", &pe2mib.r())
-                    .field("pat", &pe2mib.pat())
-                    .field("page_2mib", &pe2mib.page_2mib())
-                    .field("prot_key", &pe2mib.prot_key())
-                    .field("xd", &pe2mib.xd())
-                    .finish()
-            },
-            (None, Some(pde), None) => {
-                formatter
-                    .debug_struct("Pde")
-                    .field("p", &pde.p())
-                    .field("rw", &pde.rw())
-                    .field("us", &pde.us())
-                    .field("pwt", &pde.pwt())
-                    .field("pcd", &pde.pcd())
-                    .field("a", &pde.a())
-                    .field("is_page_2mib", &pde.is_page_2mib())
-                    .field("r", &pde.r())
-                    .field("pt", &pde.pt())
-                    .field("xd", &pde.xd())
-                    .finish()
-            },
-            (None, None, Some(pdte_not_present)) => {
-                formatter
-                    .debug_struct("PdteNotPresent")
-                    .field("p", &pdte_not_present.p())
-                    .finish()
-            },
-            _ => panic!("Can't format a page directory table entry."),
-        }
-    }
 }
 
 impl Pdte {
@@ -699,6 +679,54 @@ impl Default for Pdte {
         let pdte_not_present = PdteNotPresent::default();
         Self {
             pdte_not_present
+        }
+    }
+}
+
+impl fmt::Debug for Pdte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
+            (Some(pe2mib), None, None) => {
+                formatter
+                    .debug_struct("Pe2Mib")
+                    .field("p", &pe2mib.p())
+                    .field("rw", &pe2mib.rw())
+                    .field("us", &pe2mib.us())
+                    .field("pwt", &pe2mib.pwt())
+                    .field("pcd", &pe2mib.pcd())
+                    .field("a", &pe2mib.a())
+                    .field("d", &pe2mib.d())
+                    .field("is_page_2mib", &pe2mib.is_page_2mib())
+                    .field("g", &pe2mib.g())
+                    .field("r", &pe2mib.r())
+                    .field("pat", &pe2mib.pat())
+                    .field("page_2mib", &pe2mib.page_2mib())
+                    .field("prot_key", &pe2mib.prot_key())
+                    .field("xd", &pe2mib.xd())
+                    .finish()
+            },
+            (None, Some(pde), None) => {
+                formatter
+                    .debug_struct("Pde")
+                    .field("p", &pde.p())
+                    .field("rw", &pde.rw())
+                    .field("us", &pde.us())
+                    .field("pwt", &pde.pwt())
+                    .field("pcd", &pde.pcd())
+                    .field("a", &pde.a())
+                    .field("is_page_2mib", &pde.is_page_2mib())
+                    .field("r", &pde.r())
+                    .field("pt", &pde.pt())
+                    .field("xd", &pde.xd())
+                    .finish()
+            },
+            (None, None, Some(pdte_not_present)) => {
+                formatter
+                    .debug_struct("PdteNotPresent")
+                    .field("p", &pdte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page directory table entry."),
         }
     }
 }
@@ -838,38 +866,6 @@ union Pte {
     pte_not_present: PteNotPresent,
 }
 
-impl fmt::Debug for Pte {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (self.pe4kib(), self.pte_not_present()) {
-            (Some(pe4kib), None) => {
-                formatter
-                    .debug_struct("Pe4Kib")
-                    .field("p", &pe4kib.p())
-                    .field("rw", &pe4kib.rw())
-                    .field("us", &pe4kib.us())
-                    .field("pwt", &pe4kib.pwt())
-                    .field("pcd", &pe4kib.pcd())
-                    .field("a", &pe4kib.a())
-                    .field("d", &pe4kib.d())
-                    .field("pat", &pe4kib.pat())
-                    .field("g", &pe4kib.g())
-                    .field("r", &pe4kib.r())
-                    .field("page4kib", &pe4kib.page4kib())
-                    .field("prot_key", &pe4kib.prot_key())
-                    .field("xd", &pe4kib.xd())
-                    .finish()
-            },
-            (None, Some(pte_not_present)) => {
-                formatter
-                    .debug_struct("PteNotPresent")
-                    .field("p", &pte_not_present.p())
-                    .finish()
-            },
-            _ => panic!("Can't format a page table entry."),
-        }
-    }
-}
-
 impl Pte {
     fn pe4kib(&self) -> Option<&Pe4Kib> {
         let pe4kib: &Pe4Kib = unsafe {
@@ -911,6 +907,38 @@ impl Default for Pte {
         let pte_not_present = PteNotPresent::default();
         Self {
             pte_not_present
+        }
+    }
+}
+
+impl fmt::Debug for Pte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe4kib(), self.pte_not_present()) {
+            (Some(pe4kib), None) => {
+                formatter
+                    .debug_struct("Pe4Kib")
+                    .field("p", &pe4kib.p())
+                    .field("rw", &pe4kib.rw())
+                    .field("us", &pe4kib.us())
+                    .field("pwt", &pe4kib.pwt())
+                    .field("pcd", &pe4kib.pcd())
+                    .field("a", &pe4kib.a())
+                    .field("d", &pe4kib.d())
+                    .field("pat", &pe4kib.pat())
+                    .field("g", &pe4kib.g())
+                    .field("r", &pe4kib.r())
+                    .field("page4kib", &pe4kib.page4kib())
+                    .field("prot_key", &pe4kib.prot_key())
+                    .field("xd", &pe4kib.xd())
+                    .finish()
+            },
+            (None, Some(pte_not_present)) => {
+                formatter
+                    .debug_struct("PteNotPresent")
+                    .field("p", &pte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page table entry."),
         }
     }
 }
