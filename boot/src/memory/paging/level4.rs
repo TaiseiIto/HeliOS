@@ -185,26 +185,22 @@ impl Default for Pml4te {
 impl fmt::Debug for Pml4te {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match (self.pml4e(), self.pml4te_not_present()) {
-            (Some(pml4e), None) => {
-                formatter
-                    .debug_struct("Pml4e")
-                    .field("p", &pml4e.p())
-                    .field("rw", &pml4e.rw())
-                    .field("us", &pml4e.us())
-                    .field("pwt", &pml4e.pwt())
-                    .field("pcd", &pml4e.pcd())
-                    .field("a", &pml4e.a())
-                    .field("r", &pml4e.r())
-                    .field("pdpt", &pml4e.pdpt())
-                    .field("xd", &pml4e.xd())
-                    .finish()
-            },
-            (None, Some(pml4te_not_present)) => {
-                formatter
-                    .debug_struct("Pml4teNotPresent")
-                    .field("p", &pml4te_not_present.p())
-                    .finish()
-            },
+            (Some(pml4e), None) => formatter
+                .debug_struct("Pml4e")
+                .field("p", &pml4e.p())
+                .field("rw", &pml4e.rw())
+                .field("us", &pml4e.us())
+                .field("pwt", &pml4e.pwt())
+                .field("pcd", &pml4e.pcd())
+                .field("a", &pml4e.a())
+                .field("r", &pml4e.r())
+                .field("pdpt", &pml4e.pdpt())
+                .field("xd", &pml4e.xd())
+                .finish(),
+            (None, Some(pml4te_not_present)) => formatter
+                .debug_struct("Pml4teNotPresent")
+                .field("p", &pml4te_not_present.p())
+                .finish(),
             _ => panic!("Can't format a page map level 4 table entry."),
         }
     }
@@ -404,46 +400,40 @@ impl Default for Pdpte {
 impl fmt::Debug for Pdpte {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => {
-                formatter
-                    .debug_struct("Pe1Gib")
-                    .field("p", &pe1gib.p())
-                    .field("rw", &pe1gib.rw())
-                    .field("us", &pe1gib.us())
-                    .field("pwt", &pe1gib.pwt())
-                    .field("pcd", &pe1gib.pcd())
-                    .field("a", &pe1gib.a())
-                    .field("d", &pe1gib.d())
-                    .field("is_page_1gib", &pe1gib.is_page_1gib())
-                    .field("g", &pe1gib.g())
-                    .field("r", &pe1gib.r())
-                    .field("pat", &pe1gib.pat())
-                    .field("page_1gib", &pe1gib.page_1gib())
-                    .field("prot_key", &pe1gib.prot_key())
-                    .field("xd", &pe1gib.xd())
-                    .finish()
-            },
-            (None, Some(pdpe), None) => {
-                formatter
-                    .debug_struct("Pdpe")
-                    .field("p", &pdpe.p())
-                    .field("rw", &pdpe.rw())
-                    .field("us", &pdpe.us())
-                    .field("pwt", &pdpe.pwt())
-                    .field("pcd", &pdpe.pcd())
-                    .field("a", &pdpe.a())
-                    .field("is_page_1gib", &pdpe.is_page_1gib())
-                    .field("r", &pdpe.r())
-                    .field("pdt", &pdpe.pdt())
-                    .field("xd", &pdpe.xd())
-                    .finish()
-            },
-            (None, None, Some(pdpte_not_present)) => {
-                formatter
-                    .debug_struct("PdpteNotPresent")
-                    .field("p", &pdpte_not_present.p())
-                    .finish()
-            },
+            (Some(pe1gib), None, None) => formatter
+                .debug_struct("Pe1Gib")
+                .field("p", &pe1gib.p())
+                .field("rw", &pe1gib.rw())
+                .field("us", &pe1gib.us())
+                .field("pwt", &pe1gib.pwt())
+                .field("pcd", &pe1gib.pcd())
+                .field("a", &pe1gib.a())
+                .field("d", &pe1gib.d())
+                .field("is_page_1gib", &pe1gib.is_page_1gib())
+                .field("g", &pe1gib.g())
+                .field("r", &pe1gib.r())
+                .field("pat", &pe1gib.pat())
+                .field("page_1gib", &pe1gib.page_1gib())
+                .field("prot_key", &pe1gib.prot_key())
+                .field("xd", &pe1gib.xd())
+                .finish(),
+            (None, Some(pdpe), None) => formatter
+                .debug_struct("Pdpe")
+                .field("p", &pdpe.p())
+                .field("rw", &pdpe.rw())
+                .field("us", &pdpe.us())
+                .field("pwt", &pdpe.pwt())
+                .field("pcd", &pdpe.pcd())
+                .field("a", &pdpe.a())
+                .field("is_page_1gib", &pdpe.is_page_1gib())
+                .field("r", &pdpe.r())
+                .field("pdt", &pdpe.pdt())
+                .field("xd", &pdpe.xd())
+                .finish(),
+            (None, None, Some(pdpte_not_present)) => formatter
+                .debug_struct("PdpteNotPresent")
+                .field("p", &pdpte_not_present.p())
+                .finish(),
             _ => panic!("Can't format a page directory pointer table entry."),
         }
     }
@@ -597,6 +587,29 @@ impl PdteInterface {
     }
 }
 
+impl fmt::Debug for PdteInterface {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Pe2Mib => write!(formatter, "Pe2Mib"),
+            Self::Pde {
+                pt,
+                vaddr2pte_interface,
+            } => formatter
+                .debug_map()
+                .entries(vaddr2pte_interface
+                    .iter()
+                    .zip(pt
+                        .as_ref()
+                        .pte
+                        .as_slice()
+                        .iter())
+                    .map(|((vaddr, pte_interface), pte)| (vaddr, (pte, pte_interface))))
+                .finish(),
+            Self::PdteNotPresent => write!(formatter, "PdteNotPresent"),
+        }
+    }
+}
+
 /// # Page Directory Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -680,46 +693,40 @@ impl Default for Pdte {
 impl fmt::Debug for Pdte {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
-            (Some(pe2mib), None, None) => {
-                formatter
-                    .debug_struct("Pe2Mib")
-                    .field("p", &pe2mib.p())
-                    .field("rw", &pe2mib.rw())
-                    .field("us", &pe2mib.us())
-                    .field("pwt", &pe2mib.pwt())
-                    .field("pcd", &pe2mib.pcd())
-                    .field("a", &pe2mib.a())
-                    .field("d", &pe2mib.d())
-                    .field("is_page_2mib", &pe2mib.is_page_2mib())
-                    .field("g", &pe2mib.g())
-                    .field("r", &pe2mib.r())
-                    .field("pat", &pe2mib.pat())
-                    .field("page_2mib", &pe2mib.page_2mib())
-                    .field("prot_key", &pe2mib.prot_key())
-                    .field("xd", &pe2mib.xd())
-                    .finish()
-            },
-            (None, Some(pde), None) => {
-                formatter
-                    .debug_struct("Pde")
-                    .field("p", &pde.p())
-                    .field("rw", &pde.rw())
-                    .field("us", &pde.us())
-                    .field("pwt", &pde.pwt())
-                    .field("pcd", &pde.pcd())
-                    .field("a", &pde.a())
-                    .field("is_page_2mib", &pde.is_page_2mib())
-                    .field("r", &pde.r())
-                    .field("pt", &pde.pt())
-                    .field("xd", &pde.xd())
-                    .finish()
-            },
-            (None, None, Some(pdte_not_present)) => {
-                formatter
-                    .debug_struct("PdteNotPresent")
-                    .field("p", &pdte_not_present.p())
-                    .finish()
-            },
+            (Some(pe2mib), None, None) => formatter
+                .debug_struct("Pe2Mib")
+                .field("p", &pe2mib.p())
+                .field("rw", &pe2mib.rw())
+                .field("us", &pe2mib.us())
+                .field("pwt", &pe2mib.pwt())
+                .field("pcd", &pe2mib.pcd())
+                .field("a", &pe2mib.a())
+                .field("d", &pe2mib.d())
+                .field("is_page_2mib", &pe2mib.is_page_2mib())
+                .field("g", &pe2mib.g())
+                .field("r", &pe2mib.r())
+                .field("pat", &pe2mib.pat())
+                .field("page_2mib", &pe2mib.page_2mib())
+                .field("prot_key", &pe2mib.prot_key())
+                .field("xd", &pe2mib.xd())
+                .finish(),
+            (None, Some(pde), None) => formatter
+                .debug_struct("Pde")
+                .field("p", &pde.p())
+                .field("rw", &pde.rw())
+                .field("us", &pde.us())
+                .field("pwt", &pde.pwt())
+                .field("pcd", &pde.pcd())
+                .field("a", &pde.a())
+                .field("is_page_2mib", &pde.is_page_2mib())
+                .field("r", &pde.r())
+                .field("pt", &pde.pt())
+                .field("xd", &pde.xd())
+                .finish(),
+            (None, None, Some(pdte_not_present)) => formatter
+                .debug_struct("PdteNotPresent")
+                .field("p", &pdte_not_present.p())
+                .finish(),
             _ => panic!("Can't format a page directory table entry."),
         }
     }
@@ -829,6 +836,7 @@ impl<'a> From<&'a Pde> for &'a Pt {
 }
 
 /// # Page Table Entry Interface
+#[derive(Debug)]
 enum PteInterface {
     Pe4Kib,
     PteNotPresent,
@@ -908,30 +916,26 @@ impl Default for Pte {
 impl fmt::Debug for Pte {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match (self.pe4kib(), self.pte_not_present()) {
-            (Some(pe4kib), None) => {
-                formatter
-                    .debug_struct("Pe4Kib")
-                    .field("p", &pe4kib.p())
-                    .field("rw", &pe4kib.rw())
-                    .field("us", &pe4kib.us())
-                    .field("pwt", &pe4kib.pwt())
-                    .field("pcd", &pe4kib.pcd())
-                    .field("a", &pe4kib.a())
-                    .field("d", &pe4kib.d())
-                    .field("pat", &pe4kib.pat())
-                    .field("g", &pe4kib.g())
-                    .field("r", &pe4kib.r())
-                    .field("page4kib", &pe4kib.page4kib())
-                    .field("prot_key", &pe4kib.prot_key())
-                    .field("xd", &pe4kib.xd())
-                    .finish()
-            },
-            (None, Some(pte_not_present)) => {
-                formatter
-                    .debug_struct("PteNotPresent")
-                    .field("p", &pte_not_present.p())
-                    .finish()
-            },
+            (Some(pe4kib), None) => formatter
+                .debug_struct("Pe4Kib")
+                .field("p", &pe4kib.p())
+                .field("rw", &pe4kib.rw())
+                .field("us", &pe4kib.us())
+                .field("pwt", &pe4kib.pwt())
+                .field("pcd", &pe4kib.pcd())
+                .field("a", &pe4kib.a())
+                .field("d", &pe4kib.d())
+                .field("pat", &pe4kib.pat())
+                .field("g", &pe4kib.g())
+                .field("r", &pe4kib.r())
+                .field("page4kib", &pe4kib.page4kib())
+                .field("prot_key", &pe4kib.prot_key())
+                .field("xd", &pe4kib.xd())
+                .finish(),
+            (None, Some(pte_not_present)) => formatter
+                .debug_struct("PteNotPresent")
+                .field("p", &pte_not_present.p())
+                .finish(),
             _ => panic!("Can't format a page table entry."),
         }
     }
