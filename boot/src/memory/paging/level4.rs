@@ -169,8 +169,8 @@ impl Pml4te {
         let pdpt: *const Pdpt = pdpt as *const Pdpt;
         let pdpt: u64 = pdpt as u64;
         let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
+        self.pml4e = pml4e;
         unsafe {
-            self.pml4e = pml4e;
             self.pml4e.set_address_of_pdpt(pdpt);
         }
         assert!(self.pml4e().is_some());
@@ -178,9 +178,7 @@ impl Pml4te {
     }
 
     fn set_pml4te_not_present(&mut self, pml4te_not_present: Pml4teNotPresent) {
-        unsafe {
-            self.pml4te_not_present = pml4te_not_present;
-        }
+        self.pml4te_not_present = pml4te_not_present;
         assert!(self.pml4e().is_none());
         assert!(self.pml4te_not_present().is_some());
     }
@@ -313,7 +311,7 @@ impl Pdpte {
         let pe1gib: &Pe1Gib = unsafe {
             &self.pe1gib
         };
-        if pe1gib.p() && pe1gib.page_1gib() {
+        if pe1gib.p() && pe1gib.is_page_1gib() {
             Some(pe1gib)
         } else {
             None
@@ -324,7 +322,7 @@ impl Pdpte {
         let pdpe: &Pdpe = unsafe {
             &self.pdpe
         };
-        if pdpe.p() && !pdpe.page_1gib() {
+        if pdpe.p() && !pdpe.is_page_1gib() {
             Some(pdpe)
         } else {
             None
@@ -343,9 +341,7 @@ impl Pdpte {
     }
 
     fn set_pe1gib(&mut self, pe1gib: Pe1Gib) {
-        unsafe {
-            self.pe1gib = pe1gib;
-        }
+        self.pe1gib = pe1gib;
         assert!(self.pe1gib().is_some());
         assert!(self.pdpe().is_none());
         assert!(self.pdpte_not_present().is_none());
@@ -355,8 +351,8 @@ impl Pdpte {
         let pdt: *const Pdt = pdt as *const Pdt;
         let pdt: u64 = pdt as u64;
         let pdt: u64 = pdt >> Pdpe::ADDRESS_OF_PDT_OFFSET;
+        self.pdpe = pdpe;
         unsafe {
-            self.pdpe = pdpe;
             self.pdpe.set_address_of_pdt(pdt);
         }
         assert!(self.pe1gib().is_none());
@@ -365,9 +361,7 @@ impl Pdpte {
     }
 
     fn set_pdpte_not_present(&mut self, pdpte_not_present: PdpteNotPresent) {
-        unsafe {
-            self.pdpte_not_present = pdpte_not_present;
-        }
+        self.pdpte_not_present = pdpte_not_present;
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_none());
         assert!(self.pdpte_not_present().is_none());
@@ -395,7 +389,7 @@ struct Pe1Gib {
     pcd: bool,
     a: bool,
     d: bool,
-    page_1gib: bool,
+    is_page_1gib: bool,
     g: bool,
     #[bits(2, access = RO)]
     reserved0: u8,
@@ -425,7 +419,7 @@ struct Pdpe {
     a: bool,
     #[bits(access = RO)]
     reserved0: bool,
-    page_1gib: bool,
+    is_page_1gib: bool,
     #[bits(3, access = RO)]
     reserved1: u8,
     r: bool,
@@ -547,12 +541,11 @@ impl fmt::Debug for Pdte {
                     .field("pcd", &pe2mib.pcd())
                     .field("a", &pe2mib.a())
                     .field("d", &pe2mib.d())
-                    .field("page_2mib", &pe2mib.page_2mib())
+                    .field("is_page_2mib", &pe2mib.is_page_2mib())
                     .field("g", &pe2mib.g())
                     .field("r", &pe2mib.r())
                     .field("pat", &pe2mib.pat())
-                    .field("reserved1", &pe2mib.reserved1())
-                    .field("page2mib", &pe2mib.page2mib())
+                    .field("page_2mib", &pe2mib.page_2mib())
                     .field("prot_key", &pe2mib.prot_key())
                     .field("xd", &pe2mib.xd())
                     .finish()
@@ -566,8 +559,7 @@ impl fmt::Debug for Pdte {
                     .field("pwt", &pde.pwt())
                     .field("pcd", &pde.pcd())
                     .field("a", &pde.a())
-                    .field("page_2mib", &pde.page_2mib())
-                    .field("reserved1", &pde.reserved1())
+                    .field("is_page_2mib", &pde.is_page_2mib())
                     .field("r", &pde.r())
                     .field("pt", &pde.pt())
                     .field("xd", &pde.xd())
@@ -589,7 +581,7 @@ impl Pdte {
         let pe2mib: &Pe2Mib = unsafe {
             &self.pe2mib
         };
-        if pe2mib.p() && pe2mib.page_2mib() {
+        if pe2mib.p() && pe2mib.is_page_2mib() {
             Some(pe2mib)
         } else {
             None
@@ -600,7 +592,7 @@ impl Pdte {
         let pde: &Pde = unsafe {
             &self.pde
         };
-        if pde.p() && !pde.page_2mib() {
+        if pde.p() && !pde.is_page_2mib() {
             Some(pde)
         } else {
             None
@@ -619,9 +611,7 @@ impl Pdte {
     }
 
     fn set_pe2mib(&mut self, pe2mib: Pe2Mib) {
-        unsafe {
-            self.pe2mib = pe2mib;
-        }
+        self.pe2mib = pe2mib;
         assert!(self.pe2mib().is_some());
         assert!(self.pde().is_none());
         assert!(self.pdte_not_present().is_none());
@@ -631,8 +621,8 @@ impl Pdte {
         let pt: *const Pt = pt as *const Pt;
         let pt: u64 = pt as u64;
         let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
+        self.pde = pde;
         unsafe {
-            self.pde = pde;
             self.pde.set_address_of_pt(pt);
         }
         assert!(self.pe2mib().is_none());
@@ -641,9 +631,7 @@ impl Pdte {
     }
 
     fn set_pdte_not_present(&mut self, pdte_not_present: PdteNotPresent) {
-        unsafe {
-            self.pdte_not_present = pdte_not_present;
-        }
+        self.pdte_not_present = pdte_not_present;
         assert!(self.pe2mib().is_none());
         assert!(self.pde().is_none());
         assert!(self.pdte_not_present().is_some());
@@ -671,7 +659,7 @@ struct Pe2Mib {
     pcd: bool,
     a: bool,
     d: bool,
-    page_2mib: bool,
+    is_page_2mib: bool,
     g: bool,
     #[bits(2, access = RO)]
     reserved0: u8,
@@ -689,7 +677,7 @@ struct Pe2Mib {
 }
 
 impl Pe2Mib {
-    fn page2mib(&self) -> *const Page2Mib {
+    fn page_2mib(&self) -> *const Page2Mib {
         (self.address_of_2mib_page_frame() << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) as *const Page2Mib
     }
 }
@@ -709,7 +697,7 @@ struct Pde {
     a: bool,
     #[bits(access = RO)]
     reserved0: bool,
-    page_2mib: bool,
+    is_page_2mib: bool,
     #[bits(3, access = RO)]
     reserved1: u8,
     r: bool,
@@ -850,17 +838,13 @@ impl Pte {
     }
 
     fn set_pe4kib(&mut self, pe4kib: Pe4Kib) {
-        unsafe {
-            self.pe4kib = pe4kib;
-        }
+        self.pe4kib = pe4kib;
         assert!(self.pe4kib().is_some());
         assert!(self.pte_not_present().is_none());
     }
 
     fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) {
-        unsafe {
-            self.pte_not_present = pte_not_present;
-        }
+        self.pte_not_present = pte_not_present;
         assert!(self.pe4kib().is_none());
         assert!(self.pte_not_present().is_some());
     }
