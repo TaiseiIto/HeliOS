@@ -51,32 +51,43 @@ impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
 }
 
 /// # Page Map Level 4 Table Entry Interface
-enum Pml4teInterface<'a> {
+enum Pml4teInterface {
     Pml4e {
-        pml4e: &'a Pml4e,
         pdpt: Box<Pdpt>,
+        vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface>,
     },
-    Pml4teNotPresent {
-        pml4te_not_present: &'a Pml4teNotPresent,
-    },
+    Pml4teNotPresent,
 }
 
-impl<'a> Pml4teInterface<'a> {
-    fn copy(source: &'a Pml4te, destination: &'a mut Pml4te) -> Self {
+impl Pml4teInterface {
+    fn copy(source: &Pml4te, destination: &mut Pml4te, vaddr: Vaddr) -> Self {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
-                let pdpt: Box<Pdpt> = Box::new(Pdpt::default());
-                let pml4e: &Pml4e = destination.set_pml4e(*pml4e, pdpt.as_ref());
+                let source: &Pdpt = pml4e.into();
+                let mut pdpt: Box<Pdpt> = Box::new(Pdpt::default());
+                destination.set_pml4e(*pml4e, pdpt.as_ref());
+                let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = source.pdpte
+                    .as_slice()
+                    .iter()
+                    .zip(pdpt
+                        .as_mut()
+                        .pdpte
+                        .as_mut_slice()
+                        .iter_mut())
+                    .enumerate()
+                    .map(|(pdpi, (source, destination))| {
+                        let vaddr: Vaddr = vaddr.with_pdpi(pdpi as u16);
+                        (vaddr, PdpteInterface::copy(source, destination, vaddr))
+                    })
+                    .collect();
                 Self::Pml4e {
-                    pml4e,
                     pdpt,
+                    vaddr2pdpte_interface,
                 }
             },
             (None, Some(pml4te_not_present)) => {
-                let pml4te_not_present: &Pml4teNotPresent = destination.set_pml4te_not_present(*pml4te_not_present);
-                Self::Pml4teNotPresent {
-                    pml4te_not_present
-                }
+                destination.set_pml4te_not_present(*pml4te_not_present);
+                Self::Pml4teNotPresent
             },
             _ => panic!("Can't get a page map level 4 table entry."),
         }
@@ -125,22 +136,24 @@ impl Pml4te {
         }
     }
 
-    fn set_pml4e(&mut self, pml4e: Pml4e, pdpt: &Pdpt) -> &Pml4e {
+    fn set_pml4e(&mut self, pml4e: Pml4e, pdpt: &Pdpt) {
         let pdpt: *const Pdpt = pdpt as *const Pdpt;
         let pdpt: u64 = pdpt as u64;
         let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
         unsafe {
             self.pml4e = pml4e;
             self.pml4e.set_address_of_pdpt(pdpt);
-            &self.pml4e
         }
+        assert!(self.pml4e().is_some());
+        assert!(self.pml4te_not_present().is_none());
     }
 
-    fn set_pml4te_not_present(&mut self, pml4te_not_present: Pml4teNotPresent) -> &Pml4teNotPresent {
+    fn set_pml4te_not_present(&mut self, pml4te_not_present: Pml4teNotPresent) {
         unsafe {
             self.pml4te_not_present = pml4te_not_present;
-            &self.pml4te_not_present
         }
+        assert!(self.pml4e().is_none());
+        assert!(self.pml4te_not_present().is_some());
     }
 }
 
