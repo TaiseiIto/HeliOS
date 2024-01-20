@@ -306,6 +306,54 @@ union Pdpte {
     pdpte_not_present: PdpteNotPresent,
 }
 
+impl fmt::Debug for Pdpte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => {
+                formatter
+                    .debug_struct("Pe1Gib")
+                    .field("p", &pe1gib.p())
+                    .field("rw", &pe1gib.rw())
+                    .field("us", &pe1gib.us())
+                    .field("pwt", &pe1gib.pwt())
+                    .field("pcd", &pe1gib.pcd())
+                    .field("a", &pe1gib.a())
+                    .field("d", &pe1gib.d())
+                    .field("is_page_1gib", &pe1gib.is_page_1gib())
+                    .field("g", &pe1gib.g())
+                    .field("r", &pe1gib.r())
+                    .field("pat", &pe1gib.pat())
+                    .field("page_1gib", &pe1gib.page_1gib())
+                    .field("prot_key", &pe1gib.prot_key())
+                    .field("xd", &pe1gib.xd())
+                    .finish()
+            },
+            (None, Some(pdpe), None) => {
+                formatter
+                    .debug_struct("Pdpe")
+                    .field("p", &pdpe.p())
+                    .field("rw", &pdpe.rw())
+                    .field("us", &pdpe.us())
+                    .field("pwt", &pdpe.pwt())
+                    .field("pcd", &pdpe.pcd())
+                    .field("a", &pdpe.a())
+                    .field("is_page_1gib", &pdpe.is_page_1gib())
+                    .field("r", &pdpe.r())
+                    .field("pdt", &pdpe.pdt())
+                    .field("xd", &pdpe.xd())
+                    .finish()
+            },
+            (None, None, Some(pdpte_not_present)) => {
+                formatter
+                    .debug_struct("PdpteNotPresent")
+                    .field("p", &pdpte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page directory pointer table entry."),
+        }
+    }
+}
+
 impl Pdpte {
     fn pe1gib(&self) -> Option<&Pe1Gib> {
         let pe1gib: &Pe1Gib = unsafe {
@@ -405,6 +453,14 @@ struct Pe1Gib {
     prot_key: u8,
     xd: bool,
 }
+
+impl Pe1Gib {
+    fn page_1gib(&self) -> *const Page1Gib {
+        (self.address_of_1gib_page_frame() << Self::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET) as *const Page1Gib
+    }
+}
+
+type Page1Gib = [u8; 1 << Pe1Gib::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET];
 
 /// # Page Directory Pointer Entry
 /// ## References
