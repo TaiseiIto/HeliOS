@@ -723,6 +723,38 @@ union Pte {
     pte_not_present: PteNotPresent,
 }
 
+impl fmt::Debug for Pte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe4kib(), self.pte_not_present()) {
+            (Some(pe4kib), None) => {
+                formatter
+                    .debug_struct("Pe4Kib")
+                    .field("p", &pe4kib.p())
+                    .field("rw", &pe4kib.rw())
+                    .field("us", &pe4kib.us())
+                    .field("pwt", &pe4kib.pwt())
+                    .field("pcd", &pe4kib.pcd())
+                    .field("a", &pe4kib.a())
+                    .field("d", &pe4kib.d())
+                    .field("pat", &pe4kib.pat())
+                    .field("g", &pe4kib.g())
+                    .field("r", &pe4kib.r())
+                    .field("address_of_4mib_page_frame", &pe4kib.address_of_4mib_page_frame())
+                    .field("prot_key", &pe4kib.prot_key())
+                    .field("xd", &pe4kib.xd())
+                    .finish()
+            },
+            (None, Some(pte_not_present)) => {
+                formatter
+                    .debug_struct("PteNotPresent")
+                    .field("p", &pte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format Pte."),
+        }
+    }
+}
+
 impl Pte {
     fn pe4kib(&self) -> Option<&Pe4Kib> {
         let pe4kib: &Pe4Kib = unsafe {
