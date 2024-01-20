@@ -422,7 +422,7 @@ enum PdteInterface<'a> {
     Pde {
         pde: &'a Pde,
         pt: Box<Pt>,
-        vaddr2pte_interface: BTreeMap<Vaddr, PteInterface<'a>>,
+        vaddr2pte_interface: BTreeMap<Vaddr, PteInterface>,
     },
     PdteNotPresent {
         pdte_not_present: &'a PdteNotPresent,
@@ -640,29 +640,21 @@ impl<'a> From<&'a Pde> for &'a Pt {
 }
 
 /// # Page Table Entry Interface
-enum PteInterface<'a> {
-    Pe4Kib {
-        pe4kib: &'a Pe4Kib,
-    },
-    PteNotPresent {
-        pte_not_present: &'a PteNotPresent,
-    },
+enum PteInterface {
+    Pe4Kib,
+    PteNotPresent,
 }
 
-impl<'a> PteInterface<'a> {
-    fn copy(source: &'a Pte, destination: &'a mut Pte) -> Self {
+impl PteInterface {
+    fn copy(source: &Pte, destination: &mut Pte) -> Self {
         match (source.pe4kib(), source.pte_not_present()) {
             (Some(pe4kib), None) => {
-                let pe4kib: &Pe4Kib = destination.set_pe4kib(*pe4kib);
-                Self::Pe4Kib {
-                    pe4kib,
-                }
+                destination.set_pe4kib(*pe4kib);
+                Self::Pe4Kib
             },
             (None, Some(pte_not_present)) => {
-                let pte_not_present: &PteNotPresent = destination.set_pte_not_present(*pte_not_present);
-                Self::PteNotPresent {
-                    pte_not_present,
-                }
+                destination.set_pte_not_present(*pte_not_present);
+                Self::PteNotPresent
             },
             _ => panic!("Can't get a page table entry."),
         }
@@ -702,18 +694,18 @@ impl Pte {
         }
     }
 
-    fn set_pe4kib(&mut self, pe4kib: Pe4Kib) -> &Pe4Kib {
+    fn set_pe4kib(&mut self, pe4kib: Pe4Kib) {
         unsafe {
             self.pe4kib = pe4kib;
-            &self.pe4kib
         }
+        assert!(self.pe4kib().is_some());
     }
 
-    fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) -> &PteNotPresent {
+    fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) {
         unsafe {
             self.pte_not_present = pte_not_present;
-            &self.pte_not_present
         }
+        assert!(self.pte_not_present().is_some());
     }
 }
 
