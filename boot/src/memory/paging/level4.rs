@@ -751,7 +751,7 @@ impl fmt::Debug for Pte {
                     .field("pat", &pe4kib.pat())
                     .field("g", &pe4kib.g())
                     .field("r", &pe4kib.r())
-                    .field("address_of_4mib_page_frame", &pe4kib.address_of_4mib_page_frame())
+                    .field("page4kib", &pe4kib.page4kib())
                     .field("prot_key", &pe4kib.prot_key())
                     .field("xd", &pe4kib.xd())
                     .finish()
@@ -834,13 +834,21 @@ struct Pe4Kib {
     reserved0: u8,
     r: bool,
     #[bits(36)]
-    address_of_4mib_page_frame: u64,
+    address_of_4kib_page_frame: u64,
     #[bits(11, access = RO)]
     reserved1: u16,
     #[bits(4)]
     prot_key: u8,
     xd: bool,
 }
+
+impl Pe4Kib {
+    fn page4kib(&self) -> *const Page4Mib {
+        (self.address_of_4kib_page_frame() << Self::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as *const Page4Mib
+    }
+}
+
+type Page4Mib = [u8; 1 << Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET];
 
 /// # Page Table Entry Not Present
 /// ## References
