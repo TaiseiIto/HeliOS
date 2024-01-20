@@ -23,6 +23,40 @@ const PDPT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdpte>();
 const PDT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdte>();
 const PT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pte>();
 
+struct Interface {
+    cr3: x64::control::Register3,
+    pml4t: Box<Pml4t>,
+    vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface>,
+}
+
+impl Interface {
+    fn copy(cr3: &x64::control::Register3) -> Self {
+        let source: &Pml4t = cr3.get_paging_structure();
+        let mut pml4t: Box<Pml4t> = Box::new(Pml4t::default());
+        let mut cr3: x64::control::Register3 = cr3.clone();
+        cr3.set_paging_structure(pml4t.as_ref());
+        let vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface> = source.pml4te
+            .as_slice()
+            .iter()
+            .zip(pml4t
+                .as_mut()
+                .pml4te
+                .as_mut_slice()
+                .iter_mut())
+            .enumerate()
+            .map(|(pml4i, (source, destination))| {
+                let vaddr = Vaddr::create(pml4i, 0, 0, 0, 0);
+                (vaddr, Pml4teInterface::copy(source, destination, vaddr))
+            })
+            .collect();
+        Self {
+            cr3,
+            pml4t,
+            vaddr2pml4te_interface,
+        }
+    }
+}
+
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -42,11 +76,7 @@ impl Default for Pml4t {
 
 impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
     fn from(cr3: &'a x64::control::Register3) -> Self {
-        let pml4te: usize = cr3.get_page_directory_base();
-        let pml4te: *const Pml4t = pml4te as *const Pml4t;
-        unsafe {
-            &*pml4te
-        }
+        cr3.get_paging_structure()
     }
 }
 

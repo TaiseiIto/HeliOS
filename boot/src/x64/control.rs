@@ -92,8 +92,19 @@ impl Register3 {
         cr3.into()
     }
 
-    pub fn get_page_directory_base(&self) -> usize {
-        (self.page_directory_base() << Self::PAGE_DIRECTORY_BASE_OFFSET) as usize
+    pub fn get_paging_structure<T>(&self) -> &T {
+        let page_directory_base: u64 = self.page_directory_base() << Self::PAGE_DIRECTORY_BASE_OFFSET;
+        let page_directory_base: *const T = page_directory_base as *const T;
+        unsafe {
+            &*page_directory_base
+        }
+    }
+
+    pub fn set_paging_structure<T>(&mut self, page_directory_base: &T) {
+        let page_directory_base: *const T = page_directory_base as *const T;
+        let page_directory_base: u64 = page_directory_base as u64;
+        let page_directory_base: u64 = page_directory_base >> Self::PAGE_DIRECTORY_BASE_OFFSET;
+        self.set_page_directory_base(page_directory_base);
     }
 }
 
