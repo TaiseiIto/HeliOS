@@ -534,6 +534,56 @@ union Pdte {
     pdte_not_present: PdteNotPresent,
 }
 
+impl fmt::Debug for Pdte {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
+            (Some(pe2mib), None, None) => {
+                formatter
+                    .debug_struct("Pe2Mib")
+                    .field("p", &pe2mib.p())
+                    .field("rw", &pe2mib.rw())
+                    .field("us", &pe2mib.us())
+                    .field("pwt", &pe2mib.pwt())
+                    .field("pcd", &pe2mib.pcd())
+                    .field("a", &pe2mib.a())
+                    .field("d", &pe2mib.d())
+                    .field("page_2mib", &pe2mib.page_2mib())
+                    .field("g", &pe2mib.g())
+                    .field("r", &pe2mib.r())
+                    .field("pat", &pe2mib.pat())
+                    .field("reserved1", &pe2mib.reserved1())
+                    .field("page2mib", &pe2mib.page2mib())
+                    .field("prot_key", &pe2mib.prot_key())
+                    .field("xd", &pe2mib.xd())
+                    .finish()
+            },
+            (None, Some(pde), None) => {
+                formatter
+                    .debug_struct("Pde")
+                    .field("p", &pde.p())
+                    .field("rw", &pde.rw())
+                    .field("us", &pde.us())
+                    .field("pwt", &pde.pwt())
+                    .field("pcd", &pde.pcd())
+                    .field("a", &pde.a())
+                    .field("page_2mib", &pde.page_2mib())
+                    .field("reserved1", &pde.reserved1())
+                    .field("r", &pde.r())
+                    .field("pt", &pde.pt())
+                    .field("xd", &pde.xd())
+                    .finish()
+            },
+            (None, None, Some(pdte_not_present)) => {
+                formatter
+                    .debug_struct("PdteNotPresent")
+                    .field("p", &pdte_not_present.p())
+                    .finish()
+            },
+            _ => panic!("Can't format a page directory table entry."),
+        }
+    }
+}
+
 impl Pdte {
     fn pe2mib(&self) -> Option<&Pe2Mib> {
         let pe2mib: &Pe2Mib = unsafe {
@@ -638,6 +688,14 @@ struct Pe2Mib {
     xd: bool,
 }
 
+impl Pe2Mib {
+    fn page2mib(&self) -> *const Page2Mib {
+        (self.address_of_2mib_page_frame() << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) as *const Page2Mib
+    }
+}
+
+type Page2Mib = [u8; 1 << Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET];
+
 /// # Page Directory Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -681,6 +739,7 @@ struct PdteNotPresent {
 /// # Page Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+#[derive(Debug)]
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
@@ -762,7 +821,7 @@ impl fmt::Debug for Pte {
                     .field("p", &pte_not_present.p())
                     .finish()
             },
-            _ => panic!("Can't format Pte."),
+            _ => panic!("Can't format a page table entry."),
         }
     }
 }
