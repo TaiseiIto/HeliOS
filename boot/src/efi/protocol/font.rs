@@ -215,11 +215,13 @@ impl<'a> Iterator for FontIterator<'a> {
         let mut string_info_out: Self::Item = null();
         let string = String::null();
         let result: Result<(), Status> = (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string).into();
-        result.map(|_| if self.handle.is_null() {
-            None
-        } else {
-            Some(string_info_out)
-        }).unwrap()
+        result
+            .ok()
+            .and_then(|_| if self.handle.is_null() {
+                None
+            } else {
+                Some(string_info_out)
+            })
     }
 }
 
