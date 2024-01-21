@@ -1,3 +1,4 @@
+pub mod font;
 pub mod graphics_output;
 pub mod mp_services;
 pub mod simple_text;
