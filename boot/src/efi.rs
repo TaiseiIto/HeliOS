@@ -5,6 +5,7 @@
 mod allocator;
 mod boot_services;
 mod char16;
+mod char8;
 mod configuration;
 mod event;
 mod guid;
@@ -21,6 +22,7 @@ mod void;
 pub use {
     boot_services::BootServices,
     char16::Char16,
+    char8::Char8,
     event::Event,
     guid::Guid,
     handle::Handle,
@@ -35,6 +37,7 @@ pub use {
         null,
     },
     protocol::{
+        database,
         font,
         graphics_output,
         mp_services,
