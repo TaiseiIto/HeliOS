@@ -35,8 +35,9 @@ pub use {
         null,
     },
     protocol::{
-        simple_text,
+        graphics_output,
         mp_services,
+        simple_text,
     },
 };
 

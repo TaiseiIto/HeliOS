@@ -29,6 +29,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     system_table.set();
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
+    let graphics_output_protocol = efi::graphics_output::Protocol::get();
+    com2_println!("graphics_output_protocol = {:#x?}", graphics_output_protocol);
     let mp_services_protocol = efi::mp_services::Protocol::get();
     com2_println!("mp_services_protocol = {:#x?}", mp_services_protocol);
     let my_processor_number = mp_services_protocol
