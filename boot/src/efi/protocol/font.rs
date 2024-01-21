@@ -79,23 +79,21 @@ impl Protocol {
         let font_iterator: FontIterator = self.into();
         font_iterator
             .enumerate()
-            .map(|(font_number, display_info)| (font_number, {
-                let character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>> = ('!'..='~')
-                    .filter_map(|character| {
-                        let mut blt: &ImageOutput = null();
-                        let mut base_line: usize = 0;
-                        let result: Result<(), Status> = (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line).into();
-                        result
-                            .ok()
-                            .map(|_| (character, (0..blt.width)
-                                .flat_map(|x| (0..blt.height)
-                                    .map(move |y| graphics_output::Coordinates::new(x as usize, y as usize)))
-                                .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y())))
-                                .collect()))
-                    })
-                    .collect();
-                Font::new(display_info, character2coordinates2color)
-            }))
+            .map(|(font_number, display_info)| (font_number, Font::new(display_info, ('!'..='~')
+                .filter_map(|character| {
+                    let mut blt: &ImageOutput = null();
+                    let mut base_line: usize = 0;
+                    let result: Result<(), Status> = (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line).into();
+                    result
+                        .ok()
+                        .map(|_| (character, (0..blt.width)
+                            .flat_map(|x| (0..blt.height)
+                                .map(move |y| graphics_output::Coordinates::new(x as usize, y as usize)))
+                            .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y())))
+                            .collect()))
+                })
+                .collect())
+            ))
             .collect()
     }
 }
