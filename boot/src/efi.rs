@@ -39,7 +39,7 @@ pub use {
     },
     protocol::{
         font,
-        font::FontIterator,
+        font::Font,
         graphics_output,
         mp_services,
         simple_text,
