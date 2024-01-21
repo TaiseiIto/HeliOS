@@ -4,6 +4,7 @@ use {
         fmt,
         iter,
     },
+    super::null,
 };
 
 /// # CHAR16
@@ -15,6 +16,12 @@ pub type Char16 = u16;
 #[derive(Clone)]
 #[repr(C)]
 pub struct NullTerminatedString<'a>(&'a Char16);
+
+impl NullTerminatedString<'static> {
+    pub fn null() -> Self {
+        Self(null())
+    }
+}
 
 impl fmt::Debug for NullTerminatedString<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -192,3 +192,34 @@ pub struct Info<'a> {
     name: char16::NullTerminatedString<'a>,
 }
 
+pub struct FontIterator<'a> {
+    protocol: &'a Protocol,
+    handle: Handle<'a>,
+}
+
+impl<'a> From<&'a Protocol> for FontIterator<'a> {
+    fn from(protocol: &'a Protocol) -> Self {
+        let handle: Handle<'a> = null();
+        Self {
+            protocol,
+            handle,
+        }
+    }
+}
+
+impl<'a> Iterator for FontIterator<'a> {
+    type Item = &'a DisplayInfo<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let string_info_in: Self::Item = null();
+        let mut string_info_out: Self::Item = null();
+        let string = String::null();
+        let result: Result<(), Status> = (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string).into();
+        result.map(|_| if self.handle.is_null() {
+            None
+        } else {
+            Some(string_info_out)
+        }).unwrap()
+    }
+}
+
