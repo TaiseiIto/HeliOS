@@ -10,6 +10,7 @@ mod configuration;
 mod event;
 mod guid;
 mod handle;
+mod hii;
 pub mod memory;
 mod protocol;
 mod runtime_services;
@@ -37,7 +38,6 @@ pub use {
         null,
     },
     protocol::{
-        database,
         font,
         graphics_output,
         mp_services,

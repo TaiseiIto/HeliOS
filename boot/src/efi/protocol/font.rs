@@ -11,8 +11,8 @@ use {
         SystemTable,
         Void,
         char16,
-        database,
         graphics_output,
+        hii,
         null,
     },
 };
@@ -108,7 +108,7 @@ pub struct RowInfo {
 /// # EFI_HII_STRING_ID_TO_IMAGE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type StringIdToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* PackageList */ database::HiiHandle, /* StringId */ StringId, /* Language */ &Char8, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize*/ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
+type StringIdToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* PackageList */ hii::Handle, /* StringId */ StringId, /* Language */ &Char8, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize*/ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
 
 /// # EFI_FONT_DISPLAY_INFO
 /// ## References
