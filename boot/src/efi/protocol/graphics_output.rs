@@ -104,7 +104,7 @@ type SetMode = extern "efiapi" fn(/* This */ &Protocol, /* ModeNumber */ u32) ->
 /// # EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct BltPixel {
     blue: u8,
@@ -130,4 +130,27 @@ pub enum BltOperation {
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
 type Blt = extern "efiapi" fn(/* This */ &Protocol, /* BltBuffer */ &mut BltPixel, /* BltOperation */ BltOperation, /* SourceX */ usize, /* SourceY */ usize, /* DestinationX */ usize, /* DestinationY */ usize, /* Width */ usize, /* Height */ usize, /* Delta */ usize) -> Status;
+
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub struct Coordinates {
+    x: usize,
+    y: usize,
+}
+
+impl Coordinates {
+    pub fn new(x: usize, y: usize) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
+
+    pub fn x(&self) -> usize {
+        self.x
+    }
+
+    pub fn y(&self) -> usize {
+        self.y
+    }
+}
 

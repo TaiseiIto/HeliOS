@@ -3,9 +3,15 @@
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
 
 use {
-    alloc::string::String,
+    alloc::{
+        collections::BTreeMap,
+        string::String,
+    },
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        slice,
+    },
     super::super::{
         Char16,
         Char8,
@@ -67,6 +73,30 @@ impl Protocol {
         unsafe {
             &*protocol
         }
+    }
+
+    pub fn fonts(&self) -> BTreeMap<usize, Font> {
+        let font_iterator: FontIterator = self.into();
+        font_iterator
+            .enumerate()
+            .map(|(font_number, display_info)| (font_number, {
+                let character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>> = ('!'..='~')
+                    .filter_map(|character| {
+                        let mut blt: &ImageOutput = null();
+                        let mut base_line: usize = 0;
+                        let result: Result<(), Status> = (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line).into();
+                        result
+                            .ok()
+                            .map(|_| (character, (0..blt.width)
+                                .flat_map(|x| (0..blt.height)
+                                    .map(move |y| graphics_output::Coordinates::new(x as usize, y as usize)))
+                                .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y())))
+                                .collect()))
+                    })
+                    .collect();
+                Font::new(display_info, character2coordinates2color)
+            }))
+            .collect()
     }
 }
 
@@ -202,6 +232,22 @@ pub struct ImageOutput<'a> {
     image: Image<'a>,
 }
 
+impl ImageOutput<'_> {
+    fn bitmap(&self) -> &[graphics_output::BltPixel] {
+        let bitmap: *const graphics_output::BltPixel = unsafe {
+            self.image.bitmap
+        } as *const graphics_output::BltPixel;
+        let length: usize = self.width as usize * self.height as usize;
+        unsafe {
+            slice::from_raw_parts(bitmap, length)
+        }
+    }
+
+    fn pixel(&self, x: usize, y: usize) -> graphics_output::BltPixel {
+        self.bitmap()[self.width as usize * y + x].clone()
+    }
+}
+
 #[repr(C)]
 union Image<'a> {
     bitmap: &'a graphics_output::BltPixel,
@@ -216,6 +262,21 @@ pub struct Info<'a> {
     style: Style,
     size: u16,
     name: char16::NullTerminatedString<'a>,
+}
+
+#[derive(Debug)]
+pub struct Font<'a> {
+    display_info: &'a DisplayInfo<'a>,
+    character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>>,
+}
+
+impl<'a> Font<'a> {
+    pub fn new(display_info: &'a DisplayInfo<'a>, character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>>) -> Self {
+        Self {
+            display_info,
+            character2coordinates2color,
+        }
+    }
 }
 
 pub struct FontIterator<'a> {
