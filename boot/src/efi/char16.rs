@@ -1,5 +1,8 @@
 use {
-    alloc::vec::Vec,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
     core::{
         fmt,
         iter,
@@ -35,6 +38,12 @@ impl fmt::Debug for NullTerminatedString<'_> {
 impl<'a> From<&'a Vec<u16>> for NullTerminatedString<'a> {
     fn from(string: &'a Vec<u16>) -> Self {
         Self(&string[0])
+    }
+}
+
+impl From<NullTerminatedString<'_>> for String {
+    fn from(string: NullTerminatedString<'_>) -> Self {
+        string.collect()
     }
 }
 

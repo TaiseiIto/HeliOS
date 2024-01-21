@@ -3,7 +3,9 @@
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
 
 use {
+    alloc::string::String,
     bitfield_struct::bitfield,
+    core::fmt,
     super::super::{
         Char16,
         Char8,
@@ -71,7 +73,7 @@ impl Protocol {
 /// # EFI_HII_STRING_TO_IMAGE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type StringToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* String */ String<'_>, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize */ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
+type StringToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* String */ EfiString<'_>, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize */ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
 
 /// # EFI_HII_OUT_FLAGS
 /// ## References
@@ -93,7 +95,7 @@ pub struct OutFlags {
 /// # EFI_STRING
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-pub type String<'a> = char16::NullTerminatedString<'a>;
+pub type EfiString<'a> = char16::NullTerminatedString<'a>;
 
 /// # EFI_HII_ROW_INFO
 /// ## References
@@ -121,7 +123,7 @@ type GetGlyph = extern "efiapi" fn(/* This */ &Protocol, /* Char */ Char16, /* S
 /// # EFI_HII_GET_FONT_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type GetFontInfo = extern "efiapi" fn(/* This */ &Protocol, /* FontHandle */ &mut Handle<'_>, /* StringInfoIn */ &DisplayInfo, /* StringInfoOut */ &mut &DisplayInfo, /* String */ String<'_>) -> Status;
+type GetFontInfo = extern "efiapi" fn(/* This */ &Protocol, /* FontHandle */ &mut Handle<'_>, /* StringInfoIn */ &DisplayInfo, /* StringInfoOut */ &mut &DisplayInfo, /* String */ EfiString<'_>) -> Status;
 
 /// # EFI_FONT_HANDLE
 /// ## References
@@ -131,13 +133,38 @@ pub type Handle<'a> = &'a Void;
 /// # EFI_FONT_DISPLAY_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.2.1 Code Definitions
-#[derive(Debug)]
 #[repr(C)]
 pub struct DisplayInfo<'a> {
     foreground_color: graphics_output::BltPixel,
     background_color: graphics_output::BltPixel,
     info_mask: InfoMask,
     info: Info<'a>,
+}
+
+impl DisplayInfo<'_> {
+    fn name(&self) -> Option<String> {
+        if self.info_mask.sys_font() {
+            None
+        } else {
+            Some(self.info.name
+                .clone()
+                .into())
+        }
+    }
+}
+
+impl fmt::Debug for DisplayInfo<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DisplayInfo")
+            .field("foreground_color", &self.foreground_color)
+            .field("background_color", &self.background_color)
+            .field("info_mask", &self.info_mask)
+            .field("info.style", &self.info.style)
+            .field("info.size", &self.info.size)
+            .field("info.name", &self.name())
+            .finish()
+    }
 }
 
 /// # EFI_FONT_INFO_MASK
@@ -184,7 +211,6 @@ union Image<'a> {
 /// # EFI_FONT_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.3 String Protocol
-#[derive(Debug)]
 #[repr(C)]
 pub struct Info<'a> {
     style: Style,
@@ -213,7 +239,7 @@ impl<'a> Iterator for FontIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let string_info_in: Self::Item = null();
         let mut string_info_out: Self::Item = null();
-        let string = String::null();
+        let string = EfiString::null();
         let result: Result<(), Status> = (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string).into();
         result
             .ok()
