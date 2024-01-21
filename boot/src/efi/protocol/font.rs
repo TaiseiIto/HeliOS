@@ -5,6 +5,7 @@
 use {
     bitfield_struct::bitfield,
     super::super::{
+        Char16,
         Char8,
         Guid,
         Status,
@@ -48,6 +49,8 @@ pub type StringId = u16;
 pub struct Protocol {
     string_to_image: StringToImage,
     string_id_to_image: StringIdToImage,
+    get_glyph: GetGlyph,
+    get_font_info: GetFontInfo,
 }
 
 impl Protocol {
@@ -109,6 +112,21 @@ pub struct RowInfo {
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
 type StringIdToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* PackageList */ hii::Handle, /* StringId */ StringId, /* Language */ &Char8, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize*/ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
+
+/// # EFI_HII_GET_GLYPH
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
+type GetGlyph = extern "efiapi" fn(/* This */ &Protocol, /* Char */ Char16, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BaseLine */ &mut usize) -> Status;
+
+/// # EFI_HII_GET_FONT_INFO
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
+type GetFontInfo = extern "efiapi" fn(/* This */ &Protocol, /* FontHandle */ &mut Handle<'_>, /* StringInfoIn */ &DisplayInfo, /* StringInfoOut */ &mut &DisplayInfo, /* String */ String<'_>) -> Status;
+
+/// # EFI_FONT_HANDLE
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
+pub type Handle<'a> = &'a Void;
 
 /// # EFI_FONT_DISPLAY_INFO
 /// ## References
