@@ -20,6 +20,11 @@ BOOT_DIRECTORY=boot
 BOOTLOADER_SOURCE=$(shell make target -C $(BOOT_DIRECTORY) -s)
 BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
 
+# A kernel file path
+KERNEL_DIRECTORY=kernel
+KERNEL_SOURCE=$(shell make target -C $(KERNEL_DIRECTORY) -s)
+KERNEL_DESTINATION=$(MOUNT_DIRECTORY)/HeliOS/kernel.elf
+
 # VNC port to interact with QEMU running on development environment.
 VNC_PORT=5900
 
@@ -31,7 +36,7 @@ TELNET_PORT=23
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
-$(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -39,20 +44,31 @@ $(TARGET): $(BOOTLOADER_SOURCE) $(shell find . -type f | grep -v ^.*/\.git/.*$ |
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
 	mount -o loop $@ $(MOUNT_DIRECTORY)
-	mkdir -p $(shell dirname $(BOOTLOADER_DESTINATION))
-	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
+	make $(BOOTLOADER_DESTINATION)
+	make $(KERNEL_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(MOUNT_DIRECTORY): $(BOOTLOADER_SOURCE) $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(MOUNT_DIRECTORY): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
-	mkdir -p $(shell dirname $(BOOTLOADER_DESTINATION))
-	cp $(BOOTLOADER_SOURCE) $(BOOTLOADER_DESTINATION)
+	make $(BOOTLOADER_DESTINATION)
+	make $(KERNEL_DESTINATION)
+
+$(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
+	mkdir -p $(shell dirname $@)
+	cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(BOOT_DIRECTORY)
+
+$(KERNEL_DESTINATION): $(KERNEL_SOURCE)
+	mkdir -p $(shell dirname $@)
+	cp $^ $@
+
+$(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+	make -C $(KERNEL_DIRECTORY)
 
 # Run the OS on QEMU.
 # Usage: make run
