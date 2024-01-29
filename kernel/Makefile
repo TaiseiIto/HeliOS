@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 PRODUCT=$(shell basename $$(pwd))
-TARGET=target/debug/$(PRODUCT).elf
+TARGET=target/$(shell ls | grep ^.*\.json$$ | awk -F '.' '{print $$1}')/debug/$(PRODUCT).elf
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a kernel.
