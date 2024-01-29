@@ -4,7 +4,7 @@
 	"disable-redzone": true,
 	"executables": true,
 	"exe-suffix": ".elf",
-	"features": "-mmx,-sse",
+	"features": "-mmx,-sse,+soft-float",
 	"linker": "ld.lld",
 	"linker-flavor": "ld.lld",
 	"llvm-target": "x86_64-elf",

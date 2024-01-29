@@ -1,6 +1,6 @@
-SHELL=/bin/sh
+SHELL=/bin/bash
 PRODUCT=$(shell basename $$(pwd))
-TARGET=target/debug/$(PRODUCT)
+TARGET=target/debug/$(PRODUCT).elf
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a kernel.

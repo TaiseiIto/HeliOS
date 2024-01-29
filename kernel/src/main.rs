@@ -15,7 +15,7 @@ fn main() {
 
 /// # A panic handler of the kernel
 #[panic_handler]
-fn panic(panic: &PanicInfo) -> ! {
+fn panic(_panic: &PanicInfo) -> ! {
     loop {
         unsafe {
             asm!("hlt");
