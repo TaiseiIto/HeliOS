@@ -104,7 +104,7 @@ type SetMode = extern "efiapi" fn(/* This */ &Protocol, /* ModeNumber */ u32) ->
 /// # EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[repr(C)]
 pub struct BltPixel {
     blue: u8,

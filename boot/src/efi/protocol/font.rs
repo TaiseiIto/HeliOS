@@ -89,7 +89,7 @@ impl Protocol {
                         .map(|_| (character, (0..blt.width)
                             .flat_map(|x| (0..blt.height)
                                 .map(move |y| graphics_output::Coordinates::new(x as usize, y as usize)))
-                            .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y())))
+                            .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y()) == display_info.foreground_color))
                             .collect()))
                 })
                 .collect())
@@ -265,14 +265,14 @@ pub struct Info<'a> {
 #[derive(Debug)]
 pub struct Font<'a> {
     display_info: &'a DisplayInfo<'a>,
-    character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>>,
+    character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>,
 }
 
 impl<'a> Font<'a> {
-    pub fn new(display_info: &'a DisplayInfo<'a>, character2coordinates2color: BTreeMap<char, BTreeMap<graphics_output::Coordinates, graphics_output::BltPixel>>) -> Self {
+    pub fn new(display_info: &'a DisplayInfo<'a>, character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>) -> Self {
         Self {
             display_info,
-            character2coordinates2color,
+            character2coordinates2is_foreground,
         }
     }
 }
