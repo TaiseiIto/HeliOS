@@ -40,6 +40,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
+    let simple_file_system_protocol = efi::simple_file_system::Protocol::get();
+    com2_println!("simple_file_system_protocol = {:#x?}", simple_file_system_protocol);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
