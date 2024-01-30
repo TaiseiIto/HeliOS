@@ -9,6 +9,7 @@ use {
     },
     bitfield_struct::bitfield,
     super::super::{
+        Char16,
         Event,
         Guid,
         Status,
@@ -42,7 +43,7 @@ pub struct Protocol {
 }
 
 impl Protocol {
-    pub fn info(&self) -> Information {
+    pub fn information(&self) -> Information {
         let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
         let mut buffer_size: usize = 0;
         let mut buffer = Void;
@@ -184,7 +185,7 @@ type Flush = extern "efiapi" fn(/* This */ &Protocol) -> Status;
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
 #[derive(Debug)]
 #[repr(C)]
-pub struct Info<'a> {
+pub struct Info {
     size: u64,
     file_size: u64,
     physical_size: u64,
@@ -192,7 +193,7 @@ pub struct Info<'a> {
     last_access_time: Time,
     modification_time: Time,
     attributes: Attributes,
-    file_name: char16::NullTerminatedString<'a>,
+    file_name: Char16,
 }
 
 #[derive(Debug)]
@@ -207,8 +208,8 @@ pub struct Information {
     file_name: String,
 }
 
-impl From<&Info<'_>> for Information {
-    fn from(info: &Info<'_>) -> Self {
+impl From<&Info> for Information {
+    fn from(info: &Info) -> Self {
         let Info {
             size,
             file_size,
@@ -226,7 +227,8 @@ impl From<&Info<'_>> for Information {
         let last_access_time: Time = last_access_time.clone();
         let modification_time: Time = modification_time.clone();
         let attributes: Attributes = *attributes;
-        let file_name: String = file_name.clone().into();
+        let file_name: char16::NullTerminatedString = file_name.into();
+        let file_name: String = file_name.into();
         Self {
             size,
             file_size,

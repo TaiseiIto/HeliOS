@@ -35,6 +35,12 @@ impl fmt::Debug for NullTerminatedString<'_> {
     }
 }
 
+impl<'a> From<&'a Char16> for NullTerminatedString<'a> {
+    fn from(string: &'a Char16) -> Self {
+        Self(string)
+    }
+}
+
 impl<'a> From<&'a Vec<u16>> for NullTerminatedString<'a> {
     fn from(string: &'a Vec<u16>) -> Self {
         Self(&string[0])
