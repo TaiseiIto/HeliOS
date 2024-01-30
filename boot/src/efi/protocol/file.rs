@@ -42,38 +42,6 @@ pub struct Protocol {
     flush_ex: FlushEx,
 }
 
-impl Protocol {
-    pub fn information(&self) -> Result<Information, Status> {
-        let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
-        let mut buffer_size: usize = 0;
-        let mut buffer = Void;
-        let status: Status = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer)
-            .result()
-            .unwrap_err();
-        assert!(status == Status::BUFFER_TOO_SMALL);
-        let mut buffer: Vec<u8> = (0..buffer_size)
-            .map(|_| 0)
-            .collect();
-        let buffer: &mut u8 = &mut buffer[0];
-        let buffer: *mut u8 = buffer as *mut u8;
-        let buffer: *mut Void = buffer as *mut Void;
-        let buffer: &mut Void = unsafe {
-            &mut *buffer
-        };
-        (self.get_info)(self, &information_type, &mut buffer_size, buffer)
-            .result()
-            .map(|_| {
-                let buffer: &Void = &buffer;
-                let buffer: *const Void = buffer as *const Void;
-                let buffer: *const Info = buffer as *const Info;
-                let buffer: &Info = unsafe {
-                    &*buffer
-                };
-                buffer.into()
-            })
-    }
-}
-
 /// # EFI_FILE_OPEN
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
@@ -241,6 +209,53 @@ impl From<&Info> for Information {
             modification_time,
             attributes,
             file_name,
+        }
+    }
+}
+
+impl From<&Protocol> for Information {
+    fn from(protocol: &Protocol) -> Information {
+        let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
+        let mut buffer_size: usize = 0;
+        let mut buffer = Void;
+        let status: Status = (protocol.get_info)(protocol, &information_type, &mut buffer_size, &mut buffer)
+            .result()
+            .unwrap_err();
+        assert!(status == Status::BUFFER_TOO_SMALL);
+        let mut buffer: Vec<u8> = (0..buffer_size)
+            .map(|_| 0)
+            .collect();
+        let buffer: &mut u8 = &mut buffer[0];
+        let buffer: *mut u8 = buffer as *mut u8;
+        let buffer: *mut Void = buffer as *mut Void;
+        let buffer: &mut Void = unsafe {
+            &mut *buffer
+        };
+        (protocol.get_info)(protocol, &information_type, &mut buffer_size, buffer)
+            .result()
+            .unwrap();
+        let buffer: &Void = &buffer;
+        let buffer: *const Void = buffer as *const Void;
+        let buffer: *const Info = buffer as *const Info;
+        let buffer: &Info = unsafe {
+            &*buffer
+        };
+        buffer.into()
+    }
+}
+
+#[derive(Debug)]
+pub struct Node<'a> {
+    information: Information,
+    protocol: &'a Protocol,
+}
+
+impl<'a> From<&'a Protocol> for Node<'a> {
+    fn from(protocol: &'a Protocol) -> Self {
+        let information: Information = protocol.into();
+        Self {
+            information,
+            protocol,
         }
     }
 }
