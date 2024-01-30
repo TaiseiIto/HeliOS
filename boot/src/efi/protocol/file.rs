@@ -8,6 +8,7 @@ use {
         Event,
         Guid,
         Status,
+        Time,
         Void,
         char16,
     },
@@ -34,6 +35,22 @@ pub struct Protocol {
     read_ex: ReadEx,
     write_ex: WriteEx,
     flush_ex: FlushEx,
+}
+
+impl Protocol {
+    pub fn info(&self) -> &Info {
+        let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
+        let mut buffer_size: usize = 0;
+        let mut buffer = Void;
+        let result: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer).into();
+        result.unwrap();
+        let buffer: &Void = &buffer;
+        let buffer: *const Void = buffer as *const Void;
+        let buffer: *const Info = buffer as *const Info;
+        unsafe {
+            &*buffer
+        }
+    }
 }
 
 /// # EFI_FILE_OPEN
@@ -144,4 +161,20 @@ type SetInfo = extern "efiapi" fn(/* This */ &Protocol, /* InformationType */ &G
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
 type Flush = extern "efiapi" fn(/* This */ &Protocol) -> Status;
+
+/// # EFI_FILE_INFO
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
+#[derive(Debug)]
+#[repr(C)]
+pub struct Info<'a> {
+    size: u64,
+    file_size: u64,
+    physical_size: u64,
+    create_time: Time,
+    last_access_time: Time,
+    modification_time: Time,
+    attributes: Attributes,
+    file_name: char16::NullTerminatedString<'a>,
+}
 
