@@ -58,18 +58,15 @@ impl Iterator for NullTerminatedString<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let output = *self.0;
-        match output {
-            0 => None,
-            output => {
-                let output = Self::Item::from_u32(output as u32);
-                if output.is_some() {
+        (output != 0)
+            .then(|| Self::Item::from_u32(output as u32)
+                .map(|output| {
                     self.0 = unsafe {
                         &*(self.0 as *const Char16).add(1)
                     };
-                }
-                output
-            },
-        }
+                    output
+                }))
+            .flatten()
     }
 }
 
