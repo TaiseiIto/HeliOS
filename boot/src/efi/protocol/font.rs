@@ -171,13 +171,11 @@ pub struct DisplayInfo<'a> {
 
 impl DisplayInfo<'_> {
     fn name(&self) -> Option<String> {
-        if self.info_mask.sys_font() {
-            None
-        } else {
-            Some(self.info.name
+        (!self.info_mask.sys_font()).then(|| {
+            self.info.name
                 .clone()
-                .into())
-        }
+                .into()
+        })
     }
 }
 
@@ -302,11 +300,7 @@ impl<'a> Iterator for FontIterator<'a> {
         (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string)
             .result()
             .ok()
-            .and_then(|_| if self.handle.is_null() {
-                None
-            } else {
-                Some(string_info_out)
-            })
+            .and_then(|_| (!self.handle.is_null()).then_some(string_info_out))
     }
 }
 
