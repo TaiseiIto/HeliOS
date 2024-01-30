@@ -266,42 +266,38 @@ impl Iterator for Node<'_> {
     type Item = Information;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.is_directory() {
-            let mut buffer_size: usize = 0;
-            let mut buffer = Void;
-            (self.protocol.read)(self.protocol, &mut buffer_size, &mut buffer)
-                .result()
-                .err()
-                .and_then(|status| {
-                    assert!(status == Status::BUFFER_TOO_SMALL);
-                    let mut buffer: Vec<u8> = (0..buffer_size)
-                        .map(|_| 0)
-                        .collect();
-                    let buffer: &mut u8 = &mut buffer[0];
-                    let buffer: *mut u8 = buffer as *mut u8;
-                    let buffer: *mut Void = buffer as *mut Void;
-                    let buffer: &mut Void = unsafe {
-                        &mut *buffer
-                    };
-                    (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
-                        .result()
-                        .unwrap();
-                    match buffer_size {
-                        0 => None,
-                        _ => {
+        self.is_directory()
+            .then(|| {
+                let mut buffer_size: usize = 0;
+                let mut buffer = Void;
+                (self.protocol.read)(self.protocol, &mut buffer_size, &mut buffer)
+                    .result()
+                    .err()
+                    .and_then(|status| {
+                        assert!(status == Status::BUFFER_TOO_SMALL);
+                        let mut buffer: Vec<u8> = (0..buffer_size)
+                            .map(|_| 0)
+                            .collect();
+                        let buffer: &mut u8 = &mut buffer[0];
+                        let buffer: *mut u8 = buffer as *mut u8;
+                        let buffer: *mut Void = buffer as *mut Void;
+                        let buffer: &mut Void = unsafe {
+                            &mut *buffer
+                        };
+                        (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
+                            .result()
+                            .unwrap();
+                        (buffer_size != 0).then(|| {
                             let buffer: &Void = buffer;
                             let buffer: *const Void = buffer as *const Void;
                             let buffer: *const Info = buffer as *const Info;
                             let buffer: &Info = unsafe {
                                 &*buffer
                             };
-                            Some(buffer.into())
-                        },
-                    }
-                })
-        } else {
-            None
-        }
+                            buffer.into()
+                        })
+                    })
+            }).flatten()
     }
 }
 
