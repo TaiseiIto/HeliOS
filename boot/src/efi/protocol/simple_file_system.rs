@@ -2,11 +2,15 @@
 //! ## References
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.4 Simple File System Protocol
 
-use super::super::{
-    Guid,
-    SystemTable,
-    Void,
-    null,
+use super::{
+    file,
+    super::{
+        Guid,
+        Status,
+        SystemTable,
+        Void,
+        null,
+    },
 };
 
 /// # EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
@@ -16,6 +20,7 @@ use super::super::{
 #[repr(C)]
 pub struct Protocol {
     revision: u64,
+    open_volume: OpenVolume,
 }
 
 impl Protocol {
@@ -31,5 +36,17 @@ impl Protocol {
             &*protocol
         }
     }
+
+    pub fn open_volume(&self) -> &file::Protocol {
+        let mut root: &file::Protocol = null();
+        let result: Result<(), Status> = (self.open_volume)(self, &mut root).into();
+        result.unwrap();
+        root
+    }
 }
+
+/// # EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME
+/// ## References
+/// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.4 Simple File System Protocol
+type OpenVolume = extern "efiapi" fn(/* This */ &Protocol, &mut &file::Protocol) -> Status;
 
