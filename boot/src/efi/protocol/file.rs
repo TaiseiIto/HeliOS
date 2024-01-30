@@ -3,6 +3,10 @@
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
 
 use {
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
     bitfield_struct::bitfield,
     super::super::{
         Event,
@@ -38,18 +42,31 @@ pub struct Protocol {
 }
 
 impl Protocol {
-    pub fn info(&self) -> &Info {
+    pub fn info(&self) -> Information {
         let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
         let mut buffer_size: usize = 0;
         let mut buffer = Void;
-        let result: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer).into();
-        result.unwrap();
+        let status: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer).into();
+        let status: Status = status.unwrap_err();
+        assert!(status == Status::BUFFER_TOO_SMALL);
+        let mut buffer: Vec<u8> = (0..buffer_size)
+            .map(|_| 0)
+            .collect();
+        let buffer: &mut u8 = &mut buffer[0];
+        let buffer: *mut u8 = buffer as *mut u8;
+        let buffer: *mut Void = buffer as *mut Void;
+        let buffer: &mut Void = unsafe {
+            &mut *buffer
+        };
+        let status: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, buffer).into();
+        status.unwrap();
         let buffer: &Void = &buffer;
         let buffer: *const Void = buffer as *const Void;
         let buffer: *const Info = buffer as *const Info;
-        unsafe {
+        let buffer: &Info = unsafe {
             &*buffer
-        }
+        };
+        buffer.into()
     }
 }
 
@@ -176,5 +193,50 @@ pub struct Info<'a> {
     modification_time: Time,
     attributes: Attributes,
     file_name: char16::NullTerminatedString<'a>,
+}
+
+#[derive(Debug)]
+pub struct Information {
+    size: u64,
+    file_size: u64,
+    physical_size: u64,
+    create_time: Time,
+    last_access_time: Time,
+    modification_time: Time,
+    attributes: Attributes,
+    file_name: String,
+}
+
+impl From<&Info<'_>> for Information {
+    fn from(info: &Info<'_>) -> Self {
+        let Info {
+            size,
+            file_size,
+            physical_size,
+            create_time,
+            last_access_time,
+            modification_time,
+            attributes,
+            file_name,
+        } = info;
+        let size: u64 = *size;
+        let file_size: u64 = *file_size;
+        let physical_size: u64 = *physical_size;
+        let create_time: Time = create_time.clone();
+        let last_access_time: Time = last_access_time.clone();
+        let modification_time: Time = modification_time.clone();
+        let attributes: Attributes = *attributes;
+        let file_name: String = file_name.clone().into();
+        Self {
+            size,
+            file_size,
+            physical_size,
+            create_time,
+            last_access_time,
+            modification_time,
+            attributes,
+            file_name,
+        }
+    }
 }
 
