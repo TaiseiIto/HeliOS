@@ -47,7 +47,7 @@ pub struct Interface {
 
 impl From<&Descriptor> for Option<Interface> {
     fn from(descriptor: &Descriptor) -> Self {
-        if descriptor.p() {
+        descriptor.p().then(|| {
             let offset0: usize = descriptor.offset0() as usize;
             let offset1: usize = descriptor.offset1() as usize;
             let offset: usize = offset0 + (offset1 << Descriptor::OFFSET0_OFFSET);
@@ -56,16 +56,14 @@ impl From<&Descriptor> for Option<Interface> {
             let descriptor_type: u8 = descriptor.descriptor_type();
             let descriptor_type = Type::new(descriptor_type, false, false, false);
             let dpl: u8 = descriptor.dpl();
-            Some(Interface {
+            Interface {
                 offset,
                 segment_selector,
                 interrupt_stack_table,
                 descriptor_type,
                 dpl,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 
