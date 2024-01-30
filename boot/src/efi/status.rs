@@ -22,6 +22,10 @@ impl Status {
     /// ## References
     /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) Appendix D - Status Codes, Table D-1 EFI_STATUS Code Ranges
     const ERROR: usize = 1 << (usize::BITS - 1);
+
+    pub fn result(self) -> Result<(), Status> {
+        self.into()
+    }
 }
 
 impl From<Status> for Result<(), Status> {

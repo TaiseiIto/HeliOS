@@ -43,12 +43,13 @@ pub struct Protocol {
 }
 
 impl Protocol {
-    pub fn information(&self) -> Information {
+    pub fn information(&self) -> Result<Information, Status> {
         let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
         let mut buffer_size: usize = 0;
         let mut buffer = Void;
-        let status: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer).into();
-        let status: Status = status.unwrap_err();
+        let status: Status = (self.get_info)(self, &information_type, &mut buffer_size, &mut buffer)
+            .result()
+            .unwrap_err();
         assert!(status == Status::BUFFER_TOO_SMALL);
         let mut buffer: Vec<u8> = (0..buffer_size)
             .map(|_| 0)
@@ -59,15 +60,17 @@ impl Protocol {
         let buffer: &mut Void = unsafe {
             &mut *buffer
         };
-        let status: Result<(), Status> = (self.get_info)(self, &information_type, &mut buffer_size, buffer).into();
-        status.unwrap();
-        let buffer: &Void = &buffer;
-        let buffer: *const Void = buffer as *const Void;
-        let buffer: *const Info = buffer as *const Info;
-        let buffer: &Info = unsafe {
-            &*buffer
-        };
-        buffer.into()
+        (self.get_info)(self, &information_type, &mut buffer_size, buffer)
+            .result()
+            .map(|_| {
+                let buffer: &Void = &buffer;
+                let buffer: *const Void = buffer as *const Void;
+                let buffer: *const Info = buffer as *const Info;
+                let buffer: &Info = unsafe {
+                    &*buffer
+                };
+                buffer.into()
+            })
     }
 }
 

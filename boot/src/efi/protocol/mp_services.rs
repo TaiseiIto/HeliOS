@@ -61,24 +61,27 @@ impl Protocol {
 
     pub fn get_processor_information(&self, processor_number: usize) -> Result<ProcessorInformation, Status> {
         let mut processor_information = ProcessorInformation::default();
-        let result: Result<(), Status> = (self.get_processor_info)(self, processor_number, &mut processor_information).into();
-        result.map(|_| processor_information)
+        (self.get_processor_info)(self, processor_number, &mut processor_information)
+            .result()
+            .map(|_| processor_information)
     }
 
     pub fn my_processor_number(&self) -> Result<usize, Status> {
         let mut my_processor_number: usize = 0;
-        let result: Result<(), Status> = (self.who_am_i)(self, &mut my_processor_number).into();
-        result.map(|_| my_processor_number)
+        (self.who_am_i)(self, &mut my_processor_number)
+            .result()
+            .map(|_| my_processor_number)
     }
 
     pub fn number_of_processors(&self) -> Result<NumberOfProcessors, Status> {
         let mut all: usize = 0;
         let mut enabled: usize = 0;
-        let result: Result<(), Status> = (self.get_number_of_processors)(self, &mut all, &mut enabled).into();
-        result.map(|_| NumberOfProcessors {
-            all,
-            enabled,
-        })
+        (self.get_number_of_processors)(self, &mut all, &mut enabled)
+            .result()
+            .map(|_| NumberOfProcessors {
+                all,
+                enabled,
+            })
     }
 }
 

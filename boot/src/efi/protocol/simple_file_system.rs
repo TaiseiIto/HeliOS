@@ -37,11 +37,11 @@ impl Protocol {
         }
     }
 
-    pub fn open_volume(&self) -> &file::Protocol {
+    pub fn open_volume(&self) -> Result<&file::Protocol, Status> {
         let mut root: &file::Protocol = null();
-        let result: Result<(), Status> = (self.open_volume)(self, &mut root).into();
-        result.unwrap();
-        root
+        (self.open_volume)(self, &mut root)
+            .result()
+            .map(|_| root)
     }
 }
 

@@ -42,9 +42,9 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let simple_file_system_protocol = efi::simple_file_system::Protocol::get();
     com2_println!("simple_file_system_protocol = {:#x?}", simple_file_system_protocol);
-    let root_directory: &efi::file::Protocol = simple_file_system_protocol.open_volume();
+    let root_directory: &efi::file::Protocol = simple_file_system_protocol.open_volume().unwrap();
     com2_println!("root_directory = {:#x?}", root_directory);
-    let root_directory_information: efi::file::Information = root_directory.information();
+    let root_directory_information: efi::file::Information = root_directory.information().unwrap();
     com2_println!("root_directory_information = {:#x?}", root_directory_information);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);

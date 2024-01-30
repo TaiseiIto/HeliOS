@@ -83,8 +83,8 @@ impl Protocol {
                 .filter_map(|character| {
                     let mut blt: &ImageOutput = null();
                     let mut base_line: usize = 0;
-                    let result: Result<(), Status> = (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line).into();
-                    result
+                    (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line)
+                        .result()
                         .ok()
                         .map(|_| (character, (0..blt.width)
                             .flat_map(|x| (0..blt.height)
@@ -299,8 +299,8 @@ impl<'a> Iterator for FontIterator<'a> {
         let string_info_in: Self::Item = null();
         let mut string_info_out: Self::Item = null();
         let string = EfiString::null();
-        let result: Result<(), Status> = (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string).into();
-        result
+        (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string)
+            .result()
             .ok()
             .and_then(|_| if self.handle.is_null() {
                 None

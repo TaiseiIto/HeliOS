@@ -74,23 +74,26 @@ impl BootServices {
         let allocate_type = memory::AllocateType::AllocateAnyPages;
         let memory_type = memory::Type::LoaderData;
         let mut physical_address: memory::PhysicalAddress = 0;
-        let result: Result<(), Status> = (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address).into();
-        result.map(|_| physical_address)
+        (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address)
+            .result()
+            .map(|_| physical_address)
     }
 
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
         let memory_type = memory::Type::LoaderData;
         let mut pool: &Void = null();
-        let result: Result<(), Status> = (self.allocate_pool)(memory_type, size, &mut pool).into();
-        result.map(|_| pool)
+        (self.allocate_pool)(memory_type, size, &mut pool)
+            .result()
+            .map(|_| pool)
     }
 
     pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
         let memory_map: memory::Map = self
             .memory_map()
             .unwrap();
-        let result: Result<(), Status> = (self.exit_boot_services)(image, memory_map.key()).into();
-        result.map(|_| memory_map)
+        (self.exit_boot_services)(image, memory_map.key())
+            .result()
+            .map(|_| memory_map)
     }
 
     pub fn free_pages(&self, physical_address: memory::PhysicalAddress, pages: usize) -> Result<(), Status> {
@@ -103,8 +106,9 @@ impl BootServices {
 
     pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
         let mut protocol: &Void = null();
-        let result: Result<(), Status> = (self.locate_protocol)(&guid, registration, &mut protocol).into();
-        result.map(|_| protocol)
+        (self.locate_protocol)(&guid, registration, &mut protocol)
+            .result()
+            .map(|_| protocol)
     }
 
     pub fn memory_map(&self) -> Result<memory::Map, Status> {
@@ -117,14 +121,14 @@ impl BootServices {
         let mut key: usize = 0;
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
-        let status: Result<(), Status> = (self.get_memory_map)(
+        let status: Status = (self.get_memory_map)(
             &mut size,
             descriptor,
             &mut key,
             &mut descriptor_size,
-            &mut descriptor_version
-        ).into();
-        let status: Status = status.unwrap_err();
+            &mut descriptor_version)
+            .result()
+            .unwrap_err();
         assert!(status == Status::BUFFER_TOO_SMALL);
         size += 2 * descriptor_size;
         let mut descriptors: Vec<u8> = (0..size)
@@ -136,14 +140,14 @@ impl BootServices {
         let descriptor: &mut memory::Descriptor = unsafe {
             &mut *descriptor
         };
-        let status: Result<(), Status> = (self.get_memory_map)(
+        (self.get_memory_map)(
             &mut size,
             descriptor,
             &mut key,
             &mut descriptor_size,
-            &mut descriptor_version
-        ).into();
-        status.map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
+            &mut descriptor_version)
+            .result()
+            .map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
     }
 }
 
