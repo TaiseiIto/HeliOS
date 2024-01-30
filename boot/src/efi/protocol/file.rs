@@ -179,6 +179,12 @@ pub struct Information {
     file_name: String,
 }
 
+impl Information {
+    fn is_directory(&self) -> bool {
+        self.attributes.directory()
+    }
+}
+
 impl From<&Info> for Information {
     fn from(info: &Info) -> Self {
         let Info {
@@ -234,7 +240,7 @@ impl From<&Protocol> for Information {
         (protocol.get_info)(protocol, &information_type, &mut buffer_size, buffer)
             .result()
             .unwrap();
-        let buffer: &Void = &buffer;
+        let buffer: &Void = buffer;
         let buffer: *const Void = buffer as *const Void;
         let buffer: *const Info = buffer as *const Info;
         let buffer: &Info = unsafe {
@@ -248,6 +254,55 @@ impl From<&Protocol> for Information {
 pub struct Node<'a> {
     information: Information,
     protocol: &'a Protocol,
+}
+
+impl Node<'_> {
+    fn is_directory(&self) -> bool {
+        self.information.is_directory()
+    }
+}
+
+impl Iterator for Node<'_> {
+    type Item = Information;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.is_directory() {
+            let mut buffer_size: usize = 0;
+            let mut buffer = Void;
+            (self.protocol.read)(self.protocol, &mut buffer_size, &mut buffer)
+                .result()
+                .err()
+                .and_then(|status| {
+                    assert!(status == Status::BUFFER_TOO_SMALL);
+                    let mut buffer: Vec<u8> = (0..buffer_size)
+                        .map(|_| 0)
+                        .collect();
+                    let buffer: &mut u8 = &mut buffer[0];
+                    let buffer: *mut u8 = buffer as *mut u8;
+                    let buffer: *mut Void = buffer as *mut Void;
+                    let buffer: &mut Void = unsafe {
+                        &mut *buffer
+                    };
+                    (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
+                        .result()
+                        .unwrap();
+                    match buffer_size {
+                        0 => None,
+                        _ => {
+                            let buffer: &Void = buffer;
+                            let buffer: *const Void = buffer as *const Void;
+                            let buffer: *const Info = buffer as *const Info;
+                            let buffer: &Info = unsafe {
+                                &*buffer
+                            };
+                            Some(buffer.into())
+                        },
+                    }
+                })
+        } else {
+            None
+        }
+    }
 }
 
 impl<'a> From<&'a Protocol> for Node<'a> {
