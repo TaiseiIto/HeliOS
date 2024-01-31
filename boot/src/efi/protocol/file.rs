@@ -8,10 +8,6 @@ use {
         vec::Vec,
     },
     bitfield_struct::bitfield,
-    crate::{
-        com2_print,
-        com2_println,
-    },
     super::super::{
         Char16,
         Event,
@@ -310,7 +306,6 @@ impl<'a> Iterator for Node<'a> {
                 let mut protocol: &Protocol = null();
                 let file_name: Vec<u16> = char16::NullTerminatedString::string2vec(&information.file_name);
                 let file_name: char16::NullTerminatedString = (&file_name).into();
-                com2_println!("file_name = {:#x?}", file_name);
                 let open_mode = OpenMode::default()
                     .with_read(true);
                 let attributes = Attributes::default();
