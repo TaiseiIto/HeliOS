@@ -300,7 +300,7 @@ impl<'a> Iterator for FontIterator<'a> {
         (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string)
             .result()
             .ok()
-            .and_then(|_| (!self.handle.is_null()).then_some(string_info_out))
+            .and_then(|_| (!self.handle .is_null()).then_some(string_info_out))
     }
 }
 

@@ -31,14 +31,13 @@ impl Ia32Efer {
     pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
         cpuid
             .as_ref()
-            .and_then(|cpuid| if cpuid.ia32_efer_is_supported() {
-                let ecx: u32 = 0xc0000080;
-                let ia32_efer: u64 = rdmsr(ecx);
-                let ia32_efer: Self = ia32_efer.into();
-                Some(ia32_efer)
-            } else {
-                None
-            })
+            .and_then(|cpuid| cpuid
+                .ia32_efer_is_supported()
+                .then(|| {
+                    let ecx: u32 = 0xc0000080;
+                    let ia32_efer: u64 = rdmsr(ecx);
+                    ia32_efer.into()
+                }))
     }
 
     pub fn pae_paging_is_used(&self) -> bool {
