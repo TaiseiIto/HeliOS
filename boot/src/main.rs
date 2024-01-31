@@ -42,6 +42,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     com2_println!("directory_tree = {:#x?}", directory_tree);
+    let kernel: &efi::file::Node = directory_tree.get("HeliOS/kernel.elf").unwrap();
+    com2_println!("kernel = {:#x?}", kernel);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();

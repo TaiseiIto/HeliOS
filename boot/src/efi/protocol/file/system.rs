@@ -64,6 +64,26 @@ pub struct Tree<'a> {
     children: Vec<Self>,
 }
 
+impl<'a> Tree<'a> {
+    pub fn get(&self, path: &'a str) -> Option<&file::Node<'a>> {
+        self.get_by_iter(path.split('/'))
+    }
+
+    fn get_by_iter<I>(&self, mut path: I) -> Option<&file::Node<'a>> where I: Iterator<Item = &'a str> {
+        match path.next() {
+            Some(name) => self.children
+                .iter()
+                .find(|child| child.name() == name)
+                .and_then(|child| child.get_by_iter(path)),
+            None => Some(&self.node),
+        }
+    }
+
+    fn name(&self) -> &str {
+        self.node.name()
+    }
+}
+
 impl<'a> From<file::Node<'a>> for Tree<'a> {
     fn from(node: file::Node<'a>) -> Self {
         let children: Vec<Self> = node
