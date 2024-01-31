@@ -268,6 +268,27 @@ impl Node<'_> {
         self.information.name()
     }
 
+    pub fn read(&self) -> Vec<u8> {
+        self.is_directory()
+            .then(|| {
+                let mut bytes: Vec<u8> = (0..self.information.file_size)
+                    .map(|_| 0)
+                    .collect();
+                let buffer: &mut u8 = &mut bytes[0];
+                let buffer: *mut u8 = buffer as *mut u8;
+                let buffer: *mut Void = buffer as *mut Void;
+                let buffer: &mut Void = unsafe {
+                    &mut *buffer
+                };
+                let mut buffer_size: usize = bytes.len();
+                (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
+                    .result()
+                    .unwrap();
+                bytes
+            })
+            .unwrap_or_default()
+    }
+
     fn is_directory(&self) -> bool {
         self.information.is_directory()
     }
