@@ -24,6 +24,14 @@ impl NullTerminatedString<'static> {
     pub fn null() -> Self {
         Self(null())
     }
+
+    pub fn string2vec(string: &str) -> Vec<u16> {
+        string
+            .chars()
+            .map(|character| character as u16)
+            .chain(iter::once(0))
+            .collect()
+    }
 }
 
 impl fmt::Debug for NullTerminatedString<'_> {
