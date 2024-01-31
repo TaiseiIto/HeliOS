@@ -33,15 +33,15 @@ impl Eax0x00000012 {
         (eax <= eax0x00000000.max_eax()).then(|| {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let ecx0x00000001 = Ecx0x00000001::get(eax);
-            let ecx2ecxn: BTreeMap<u32, EcxN> = if eax0x00000007.as_ref().map_or(false, |eax0x00000007| eax0x00000007.sgx()) {
-                (2..)
+            let ecx2ecxn: BTreeMap<u32, EcxN> = eax0x00000007
+                .as_ref()
+                .map_or(false, |eax0x00000007| eax0x00000007.sgx())
+                .then(|| (2..)
                     .map(|ecx| EcxN::get(eax, ecx).map(|ecxn| (ecx, ecxn)))
                     .take_while(|ecx_and_ecxn| ecx_and_ecxn.is_some())
                     .flatten()
-                    .collect()
-            } else {
-                BTreeMap::<u32, EcxN>::new()
-            };
+                    .collect())
+                .unwrap_or_default();
             Self {
                 ecx0x00000000,
                 ecx0x00000001,
