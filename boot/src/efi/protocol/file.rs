@@ -168,7 +168,7 @@ pub struct Info {
     file_name: Char16,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Information {
     size: u64,
     file_size: u64,
@@ -251,7 +251,7 @@ impl From<&Protocol> for Information {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Node<'a> {
     information: Information,
     protocol: &'a Protocol,
@@ -326,6 +326,25 @@ impl<'a> From<&'a Protocol> for Node<'a> {
         Self {
             information,
             protocol,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Tree<'a> {
+    node: Node<'a>,
+    children: Vec<Self>,
+}
+
+impl<'a> From<Node<'a>> for Tree<'a> {
+    fn from(node: Node<'a>) -> Self {
+        let children: Vec<Self> = node
+            .clone()
+            .map(|child| child.into())
+            .collect();
+        Self {
+            node,
+            children,
         }
     }
 }
