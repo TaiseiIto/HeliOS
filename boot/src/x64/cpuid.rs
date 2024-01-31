@@ -154,7 +154,7 @@ pub struct Cpuid {
 
 impl Cpuid {
     pub fn get() -> Option<Self> {
-        if Rflags::cpuid_is_supported() {
+        Rflags::cpuid_is_supported().then(|| {
             let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
             let eax0x00000001: Option<Eax0x00000001> = Eax0x00000001::get(&eax0x00000000);
             let eax0x00000002: Option<Eax0x00000002> = Eax0x00000002::get(&eax0x00000000);
@@ -202,7 +202,7 @@ impl Cpuid {
             let eax0x80000006: Option<Eax0x80000006> = Eax0x80000006::get(&eax0x80000000);
             let eax0x80000007: Option<Eax0x80000007> = Eax0x80000007::get(&eax0x80000000);
             let eax0x80000008: Option<Eax0x80000008> = Eax0x80000008::get(&eax0x80000000);
-            Some(Self {
+            Self {
                 eax0x00000000,
                 eax0x00000001,
                 eax0x00000002,
@@ -237,10 +237,8 @@ impl Cpuid {
                 eax0x80000006,
                 eax0x80000007,
                 eax0x80000008,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 
     /// # GEt IA32_EFER availability.
