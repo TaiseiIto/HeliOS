@@ -42,7 +42,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let root_directory = efi::simple_file_system::Protocol::get().root();
     com2_println!("root_directory = {:#x?}", root_directory);
-    let directories: Vec<efi::file::Information> = root_directory.collect();
+    let directories: Vec<efi::file::Node> = root_directory.collect();
     com2_println!("directories = {:#x?}", directories);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);

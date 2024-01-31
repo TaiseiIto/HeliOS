@@ -16,6 +16,7 @@ use {
         Time,
         Void,
         char16,
+        null,
     },
 };
 
@@ -262,8 +263,8 @@ impl Node<'_> {
     }
 }
 
-impl Iterator for Node<'_> {
-    type Item = Information;
+impl<'a> Iterator for Node<'a> {
+    type Item = Node<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.is_directory()
@@ -297,8 +298,27 @@ impl Iterator for Node<'_> {
                     let buffer: &Info = unsafe {
                         &*buffer
                     };
-                    buffer.into()
+                    let buffer: Information = buffer.into();
+                    buffer
                 })
+            })
+            .map(|information| {
+                let mut protocol: &Protocol = null();
+                let file_name: Vec<u16> = information.file_name
+                    .chars()
+                    .map(|character| character as u16)
+                    .collect();
+                let file_name: char16::NullTerminatedString = (&file_name).into();
+                let open_mode = OpenMode::default()
+                    .with_read(true);
+                let attributes = Attributes::default();
+                (self.protocol.open)(self.protocol, &mut protocol, file_name, open_mode, attributes)
+                    .result()
+                    .unwrap();
+                Self {
+                    information,
+                    protocol,
+                }
             })
     }
 }
