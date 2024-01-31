@@ -55,18 +55,17 @@ pub struct Interface {
 
 impl From<&Descriptor> for Option<Interface> {
     fn from(descriptor: &Descriptor) -> Self {
-        if descriptor.p() {
+        descriptor.p().then(|| {
             let base0: usize = descriptor.base0() as usize;
             let base1: usize = descriptor.base1() as usize;
             let base: usize = base0 + (base1 << Descriptor::BASE0_BITS);
             let limit0: usize = descriptor.limit0() as usize;
             let limit1: usize = descriptor.limit1() as usize;
             let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
-            let size: usize = limit + 1;
-            let size: usize = if descriptor.g() {
-                memory::PAGE_SIZE * size
+            let size: usize = (limit + 1) * if descriptor.g() {
+                memory::PAGE_SIZE
             } else {
-                size
+                1
             };
             let dpl: u8 = descriptor.dpl();
             let avl: bool = descriptor.avl();
@@ -75,16 +74,14 @@ impl From<&Descriptor> for Option<Interface> {
             let db: bool = descriptor.db();
             let l: bool = descriptor.l();
             let segment_type = Type::new(segment_type, s, db, l);
-            Some(Interface {
+            Interface {
                 base,
                 size,
                 dpl,
                 avl,
                 segment_type,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 
