@@ -332,22 +332,3 @@ impl<'a> From<&'a Protocol> for Node<'a> {
     }
 }
 
-#[derive(Debug)]
-pub struct Tree<'a> {
-    node: Node<'a>,
-    children: Vec<Self>,
-}
-
-impl<'a> From<Node<'a>> for Tree<'a> {
-    fn from(node: Node<'a>) -> Self {
-        let children: Vec<Self> = node
-            .clone()
-            .map(|child| child.into())
-            .collect();
-        Self {
-            node,
-            children,
-        }
-    }
-}
-
