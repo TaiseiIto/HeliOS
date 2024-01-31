@@ -186,6 +186,10 @@ impl Information {
     fn is_directory(&self) -> bool {
         self.attributes.directory()
     }
+
+    fn name(&self) -> &str {
+        &self.file_name
+    }
 }
 
 impl From<&Info> for Information {
@@ -260,6 +264,10 @@ pub struct Node<'a> {
 }
 
 impl Node<'_> {
+    pub fn name(&self) -> &str {
+        self.information.name()
+    }
+
     fn is_directory(&self) -> bool {
         self.information.is_directory()
     }

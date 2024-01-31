@@ -68,6 +68,9 @@ impl<'a> From<file::Node<'a>> for Tree<'a> {
     fn from(node: file::Node<'a>) -> Self {
         let children: Vec<Self> = node
             .clone()
+            .filter(|child| [".", ".."]
+                .into_iter()
+                .all(|reserved_name| child.name() != reserved_name))
             .map(|child| child.into())
             .collect();
         Self {
