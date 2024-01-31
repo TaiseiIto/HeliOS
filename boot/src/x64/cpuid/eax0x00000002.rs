@@ -20,7 +20,7 @@ impl Eax0x00000002 {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000002;
         let ecx: u32 = 0x00000000;
-        if eax <= eax0x00000000.max_eax() {
+        (eax <= eax0x00000000.max_eax()).then(|| {
             let eax0x00000002 = Return::get(eax, ecx);
             let eax: u32 = eax0x00000002.eax() & 0xffffff00;
             let ebx: u32 = eax0x00000002.ebx();
@@ -34,12 +34,10 @@ impl Eax0x00000002 {
                     .into_iter()
                     .filter(|byte| *byte != 0))
                 .collect();
-            Some(Self {
+            Self {
                 cache_and_tlb_information,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

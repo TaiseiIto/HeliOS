@@ -24,7 +24,7 @@ pub struct Eax0x00000017 {
 impl Eax0x00000017 {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000017;
-        if eax <= eax0x00000000.max_eax() {
+        (eax <= eax0x00000000.max_eax()).then(|| {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let soc_vendor_brand_string = String::from_utf8((1..=3)
                 .flat_map(|ecx| Return::get(eax, ecx)
@@ -34,13 +34,11 @@ impl Eax0x00000017 {
                         .to_le_bytes()
                         .into_iter()))
                 .collect()).ok();
-            Some(Self {
+            Self {
                 ecx0x00000000,
                 soc_vendor_brand_string,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

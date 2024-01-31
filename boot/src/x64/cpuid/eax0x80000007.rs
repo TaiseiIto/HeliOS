@@ -20,15 +20,13 @@ impl Eax0x80000007 {
     pub fn get(eax0x80000000: &Eax0x80000000) -> Option<Self> {
         let eax: u32 = 0x80000007;
         let ecx: u32 = 0x00000000;
-        if eax <= eax0x80000000.max_eax() {
+        (eax <= eax0x80000000.max_eax()).then(|| {
             let eax0x80000007 = Return::get(eax, ecx);
             let edx: Edx = eax0x80000007.edx().into();
-            Some(Self {
+            Self {
                 edx,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

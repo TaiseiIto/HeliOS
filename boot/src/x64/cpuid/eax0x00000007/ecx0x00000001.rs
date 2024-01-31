@@ -23,19 +23,17 @@ pub struct Ecx0x00000001 {
 impl Ecx0x00000001 {
     pub fn get(eax: u32, ecx0x00000000: &Ecx0x00000000) -> Option<Self> {
         let ecx: u32 = 0x00000001;
-        if ecx <= ecx0x00000000.max_ecx() {
+        (ecx <= ecx0x00000000.max_ecx()).then(|| {
             let ecx0x00000001 = Return::get(eax, ecx);
             let eax: Eax = ecx0x00000001.eax().into();
             let ebx: Ebx = ecx0x00000001.ebx().into();
             let edx: Edx = ecx0x00000001.edx().into();
-            Some(Self {
+            Self {
                 eax,
                 ebx,
                 edx,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

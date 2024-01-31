@@ -19,15 +19,13 @@ pub struct Ecx0x00000002 {
 impl Ecx0x00000002 {
     pub fn get(eax: u32, ecx0x00000000: &Ecx0x00000000) -> Option<Self> {
         let ecx: u32 = 0x00000002;
-        if ecx <= ecx0x00000000.max_ecx() {
+        (ecx <= ecx0x00000000.max_ecx()).then(|| {
             let ecx0x00000002 = Return::get(eax, ecx);
             let edx: Edx = ecx0x00000002.edx().into();
-            Some(Self {
+            Self {
                 edx,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

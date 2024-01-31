@@ -27,7 +27,7 @@ pub struct Eax0x0000000d {
 impl Eax0x0000000d {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x0000000d;
-        if eax <= eax0x00000000.max_eax() {
+        (eax <= eax0x00000000.max_eax()).then(|| {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let ecx0x00000001 = Ecx0x00000001::get(eax);
             let ecx2ecxn = (0..2 * u32::BITS)
@@ -35,14 +35,12 @@ impl Eax0x0000000d {
                 .map(|n| n + 2)
                 .map(|ecx| (ecx, EcxN::get(eax, ecx)))
                 .collect();
-            Some(Self {
+            Self {
                 ecx0x00000000,
                 ecx0x00000001,
                 ecx2ecxn,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

@@ -23,18 +23,16 @@ pub struct Eax0x00000018 {
 impl Eax0x00000018 {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000018;
-        if eax <= eax0x00000000.max_eax() {
+        (eax <= eax0x00000000.max_eax()).then(|| {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let ecxn: BTreeMap<u32, EcxN> = (1..=ecx0x00000000.max_ecx())
                 .filter_map(|ecx| EcxN::get(eax, ecx).map(|ecxn| (ecx, ecxn)))
                 .collect();
-            Some(Self {
+            Self {
                 ecx0x00000000,
                 ecxn,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 

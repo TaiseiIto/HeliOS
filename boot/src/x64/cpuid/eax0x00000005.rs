@@ -26,21 +26,19 @@ impl Eax0x00000005 {
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000005;
         let ecx: u32 = 0x00000000;
-        if eax <= eax0x00000000.max_eax() {
+        (eax <= eax0x00000000.max_eax()).then(|| {
             let eax0x00000005 = Return::get(eax, ecx);
             let eax: Eax = eax0x00000005.eax().into();
             let ebx: Ebx = eax0x00000005.ebx().into();
             let ecx: Ecx = eax0x00000005.ecx().into();
             let edx: Edx = eax0x00000005.edx().into();
-            Some(Self {
+            Self {
                 eax,
                 ebx,
                 ecx,
                 edx,
-            })
-        } else {
-            None
-        }
+            }
+        })
     }
 }
 
