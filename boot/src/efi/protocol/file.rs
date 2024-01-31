@@ -269,7 +269,7 @@ impl Node<'_> {
     }
 
     pub fn read(&self) -> Vec<u8> {
-        self.is_directory()
+        (!self.is_directory())
             .then(|| {
                 let mut bytes: Vec<u8> = (0..self.information.file_size)
                     .map(|_| 0)

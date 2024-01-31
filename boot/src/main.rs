@@ -46,7 +46,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .get("HeliOS/kernel.elf")
         .unwrap()
         .read();
-    com2_println!("kernel = {:#x?}", kernel);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
