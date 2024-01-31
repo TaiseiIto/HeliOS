@@ -40,7 +40,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let root_directory = efi::simple_file_system::Protocol::get().root();
+    let root_directory = efi::file::system::Protocol::get().root();
     com2_println!("root_directory = {:#x?}", root_directory);
     let directories: Vec<efi::file::Node> = root_directory.collect();
     com2_println!("directories = {:#x?}", directories);

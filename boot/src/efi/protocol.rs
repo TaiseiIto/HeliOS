@@ -2,7 +2,6 @@ pub mod file;
 pub mod font;
 pub mod graphics_output;
 pub mod mp_services;
-pub mod simple_file_system;
 pub mod simple_text;
 
 use super::Handle;
