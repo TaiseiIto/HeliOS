@@ -180,22 +180,14 @@ impl Pml4te {
         let pml4e: &Pml4e = unsafe {
             &self.pml4e
         };
-        if pml4e.p() {
-            Some(pml4e)
-        } else {
-            None
-        }
+        pml4e.p().then_some(pml4e)
     }
 
     fn pml4te_not_present(&self) -> Option<&Pml4teNotPresent> {
         let pml4te_not_present: &Pml4teNotPresent = unsafe {
             &self.pml4te_not_present
         };
-        if pml4te_not_present.p() {
-            None
-        } else {
-            Some(pml4te_not_present)
-        }
+        (!pml4te_not_present.p()).then_some(pml4te_not_present)
     }
 
     fn set_pml4e(&mut self, mut pml4e: Pml4e, pdpt: &Pdpt) {
@@ -398,33 +390,21 @@ impl Pdpte {
         let pe1gib: &Pe1Gib = unsafe {
             &self.pe1gib
         };
-        if pe1gib.p() && pe1gib.is_page_1gib() {
-            Some(pe1gib)
-        } else {
-            None
-        }
+        (pe1gib.p() && pe1gib.is_page_1gib()).then_some(pe1gib)
     }
 
     fn pdpe(&self) -> Option<&Pdpe> {
         let pdpe: &Pdpe = unsafe {
             &self.pdpe
         };
-        if pdpe.p() && !pdpe.is_page_1gib() {
-            Some(pdpe)
-        } else {
-            None
-        }
+        (pdpe.p() && !pdpe.is_page_1gib()).then_some(pdpe)
     }
 
     fn pdpte_not_present(&self) -> Option<&PdpteNotPresent> {
         let pdpte_not_present: &PdpteNotPresent = unsafe {
             &self.pdpte_not_present
         };
-        if pdpte_not_present.p() {
-            None
-        } else {
-            Some(pdpte_not_present)
-        }
+        (!pdpte_not_present.p()).then_some(pdpte_not_present)
     }
 
     fn set_pe1gib(&mut self, pe1gib: Pe1Gib) {
@@ -691,33 +671,21 @@ impl Pdte {
         let pe2mib: &Pe2Mib = unsafe {
             &self.pe2mib
         };
-        if pe2mib.p() && pe2mib.is_page_2mib() {
-            Some(pe2mib)
-        } else {
-            None
-        }
+        (pe2mib.p() && pe2mib.is_page_2mib()).then_some(pe2mib)
     }
 
     fn pde(&self) -> Option<&Pde> {
         let pde: &Pde = unsafe {
             &self.pde
         };
-        if pde.p() && !pde.is_page_2mib() {
-            Some(pde)
-        } else {
-            None
-        }
+        (pde.p() && !pde.is_page_2mib()).then_some(pde)
     }
 
     fn pdte_not_present(&self) -> Option<&PdteNotPresent> {
         let pdte_not_present: &PdteNotPresent = unsafe {
             &self.pdte_not_present
         };
-        if pdte_not_present.p() {
-            None
-        } else {
-            Some(pdte_not_present)
-        }
+        (!pdte_not_present.p()).then_some(pdte_not_present)
     }
 
     fn set_pe2mib(&mut self, pe2mib: Pe2Mib) {
@@ -938,22 +906,14 @@ impl Pte {
         let pe4kib: &Pe4Kib = unsafe {
             &self.pe4kib
         };
-        if pe4kib.p() {
-            Some(pe4kib)
-        } else {
-            None
-        }
+        pe4kib.p().then_some(pe4kib)
     }
 
     fn pte_not_present(&self) -> Option<&PteNotPresent> {
         let pte_not_present: &PteNotPresent = unsafe {
             &self.pte_not_present
         };
-        if pte_not_present.p() {
-            None
-        } else {
-            Some(pte_not_present)
-        }
+        (!pte_not_present.p()).then_some(pte_not_present)
     }
 
     fn set_pe4kib(&mut self, pe4kib: Pe4Kib) {
