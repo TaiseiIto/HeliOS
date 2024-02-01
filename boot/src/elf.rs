@@ -1,6 +1,6 @@
 //! # ELF file
 //! ## References
-//! * [Tool Interface Standard (TIS) Executable and Linking Format (ELF) Specification](https://refspecs.linuxfoundation.org/elf/elf.pdf)
+//! * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 mod header;
@@ -13,7 +13,7 @@ use {
 
 /// # ELF file
 /// ## References
-/// * [Tool Interface Standard (TIS) Executable and Linking Format (ELF) Specification](https://refspecs.linuxfoundation.org/elf/elf.pdf)
+/// * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 /// * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 pub struct File {
     bytes: Vec<u8>,
@@ -47,10 +47,12 @@ impl From<Vec<u8>> for File {
     }
 }
 
-type Addr = u32;
+type Addr = u64;
+type Off = u64;
 type Half = u16;
-type Off = u32;
-type Sword = i32;
 type Word = u32;
+type Sword = i32;
+type Xword = u64;
+type Sxword = i64;
 type UnsignedChar = u8;
 
