@@ -49,12 +49,10 @@ type Sword = i32;
 type Word = u32;
 type UnsignedChar = u8;
 
-const EI_NIDENT: usize = 16;
-
 #[derive(Debug)]
 #[repr(C)]
 struct Header {
-    e_ident: [UnsignedChar; EI_NIDENT],
+    e_ident: Ei,
     e_type: Et,
     e_machine: Half,
     e_version: Word,
@@ -68,6 +66,32 @@ struct Header {
     e_shentsize: Half,
     e_shnum: Half,
     e_shstrndx: Half,
+}
+
+#[derive(Debug)]
+#[repr(C)]
+struct Ei {
+    mag: [UnsignedChar; 4],
+    class: Class,
+    data: Data,
+    version: UnsignedChar,
+    pad: [UnsignedChar; 9],
+}
+
+#[derive(Debug)]
+#[repr(u8)]
+enum Class {
+    Invalid = 0,
+    Bit32 = 1,
+    Bit64 = 2,
+}
+
+#[derive(Debug)]
+#[repr(u8)]
+enum Data {
+    None = 0,
+    LittleEndian = 1,
+    BigEndian = 2,
 }
 
 #[derive(Debug)]
