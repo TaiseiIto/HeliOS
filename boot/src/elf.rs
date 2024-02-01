@@ -1,6 +1,7 @@
 //! # ELF file
 //! ## References
 //! * [Tool Interface Standard (TIS) Executable and Linking Format (ELF) Specification](https://refspecs.linuxfoundation.org/elf/elf.pdf)
+//! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
     alloc::vec::Vec,
@@ -75,9 +76,12 @@ struct Ei {
     class: Class,
     data: Data,
     version: UnsignedChar,
-    pad: [UnsignedChar; 9],
+    osabi: Osabi,
+    abiversion: UnsignedChar,
+    pad: [UnsignedChar; 7],
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(u8)]
 enum Class {
@@ -86,6 +90,7 @@ enum Class {
     Bit64 = 2,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(u8)]
 enum Data {
@@ -94,6 +99,31 @@ enum Data {
     BigEndian = 2,
 }
 
+#[allow(dead_code)]
+#[derive(Debug)]
+#[repr(u8)]
+enum Osabi {
+    SystemV = 0x00,
+    HpUx = 0x01,
+    NetBsd = 0x02,
+    Linux = 0x03,
+    GnuHurd = 0x04,
+    Solaris = 0x06,
+    Aix = 0x07,
+    Irix = 0x08,
+    FreeBsd = 0x09,
+    Tru64 = 0x0a,
+    NovellModesto = 0x0b,
+    OpenBsd = 0x0c,
+    OpenVms = 0x0d,
+    NonStopKernel = 0x0e,
+    Aros = 0x0f,
+    FenixOs =   0x10,
+    NuxiCloudAbi = 0x11,
+    StratusTechnologiesOpenVos = 0x12,
+}
+
+#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(u16)]
 enum Et {
