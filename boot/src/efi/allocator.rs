@@ -23,7 +23,7 @@ unsafe impl GlobalAlloc for Allocator {
             // "All allocations are eight-byte aligned."
             SystemTable::get().allocate_pool(size)
         } else if (1..=memory::PAGE_SIZE).contains(&align) {
-            let pages: usize = size / memory::PAGE_SIZE;
+            let pages: usize = (size + memory::PAGE_SIZE - 1) / memory::PAGE_SIZE;
             SystemTable::get().allocate_pages(pages)
         } else {
             panic!("Can't allocate memory.")
