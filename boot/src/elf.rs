@@ -56,7 +56,7 @@ struct Header {
     e_ident: Ei,
     e_type: Et,
     e_machine: Em,
-    e_version: Word,
+    e_version: Ev,
     e_entry: Addr,
     e_phoff: Off,
     e_shoff: Off,
@@ -210,5 +210,13 @@ enum Em {
     RiscV = 0xF3,
     BerkeleyPacketFilter = 0xF7,
     WDC65C816 = 0x101,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[repr(u32)]
+enum Ev {
+    None = 0,
+    Current = 1,
 }
 
