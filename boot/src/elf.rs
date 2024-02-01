@@ -55,7 +55,7 @@ const EI_NIDENT: usize = 16;
 #[repr(C)]
 struct Header {
     e_ident: [UnsignedChar; EI_NIDENT],
-    e_type: Half,
+    e_type: Et,
     e_machine: Half,
     e_version: Word,
     e_entry: Addr,
@@ -68,5 +68,17 @@ struct Header {
     e_shentsize: Half,
     e_shnum: Half,
     e_shstrndx: Half,
+}
+
+#[derive(Debug)]
+#[repr(u16)]
+enum Et {
+    None = 0,
+    Rel = 1,
+    Exec = 2,
+    Dyn = 3,
+    Core = 4,
+    Loproc = 0xff00,
+    Hiproc = 0xffff,
 }
 
