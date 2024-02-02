@@ -4,6 +4,7 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 mod header;
+mod section;
 
 use {
     alloc::vec::Vec,
@@ -32,9 +33,14 @@ impl File {
 
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let header: &Header = self.header();
+        let section_headers: Vec<&section::Header> = header
+            .section_headers()
+            .collect();
         formatter
             .debug_struct("File")
-            .field("header", self.header())
+            .field("header", header)
+            .field("section_headers", &section_headers)
             .finish()
     }
 }

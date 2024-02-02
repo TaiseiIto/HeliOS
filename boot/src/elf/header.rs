@@ -7,8 +7,9 @@ use super::{
     Addr,
     Half,
     Off,
-    Word,
     UnsignedChar,
+    Word,
+    section,
 };
 
 /// # ELF Header
@@ -32,6 +33,26 @@ pub struct Header {
     e_shentsize: Half,
     e_shnum: Half,
     e_shstrndx: Half,
+}
+
+impl Header {
+    pub fn section_headers<'a>(&'a self) -> impl Iterator<Item = &section::Header> + 'a {
+        let header: *const Header = self as *const Header;
+        let header: *const u8 = header as *const u8;
+        let section_header: *const u8 = unsafe {
+            header.add(self.e_shoff as usize)
+        };
+        (0..self.e_shnum)
+            .map(move |index| {
+                let section_header: *const u8 = unsafe {
+                    section_header.add((index * self.e_shentsize) as usize)
+                };
+                let section_header: *const section::Header = section_header as *const section::Header;
+                unsafe {
+                    &*section_header
+                }
+            })
+    }
 }
 
 #[derive(Debug)]
