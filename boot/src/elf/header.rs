@@ -36,7 +36,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn section_headers<'a>(&'a self) -> impl Iterator<Item = &section::Header> + 'a {
+    pub fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
         let section_header: *const u8 = unsafe {
