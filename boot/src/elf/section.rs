@@ -6,6 +6,10 @@
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
+    core::{
+        fmt,
+        str,
+    },
     super::{
         Addr,
         Off,
@@ -90,5 +94,13 @@ struct Flags {
     #[bits(4)]
     maskproc: u8,
     reserved2: u32,
+}
+
+struct Name<'a>(&'a [u8]);
+
+impl fmt::Debug for Name<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{:#x?}", str::from_utf8(self.0))
+    }
 }
 
