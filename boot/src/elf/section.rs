@@ -4,6 +4,7 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     super::{
         Addr,
@@ -17,7 +18,7 @@ use {
 /// ## References
 /// * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 /// * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
 pub struct Header {
     sh_name: Word,
@@ -32,8 +33,16 @@ pub struct Header {
     sh_entsize: Xword,
 }
 
+impl Header {
+    pub fn bytes<'a>(&'a self, elf: &'a Vec<u8>) -> &[u8] {
+        let begin: usize = self.sh_offset as usize;
+        let end: usize = begin + self.sh_size as usize;
+        &elf[begin..end]
+    }
+}
+
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 enum Sht {
     Null = 0x0,
@@ -61,6 +70,7 @@ enum Sht {
 }
 
 #[bitfield(u64)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 struct Flags {
     write: bool,
     alloc: bool,

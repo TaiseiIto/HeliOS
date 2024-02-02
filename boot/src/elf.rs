@@ -7,7 +7,10 @@ mod header;
 mod section;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     core::fmt,
     header::Header,
 };
@@ -29,18 +32,24 @@ impl File {
             &*header
         }
     }
+
+    fn sections(&self) -> BTreeMap<&section::Header, &[u8]> {
+        self
+            .header()
+            .section_headers()
+            .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
+            .collect()
+    }
 }
 
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
-        let section_headers: Vec<&section::Header> = header
-            .section_headers()
-            .collect();
+        let sections: BTreeMap<&section::Header, &[u8]> = self.sections();
         formatter
             .debug_struct("File")
             .field("header", header)
-            .field("section_headers", &section_headers)
+            .field("sections", &sections)
             .finish()
     }
 }
