@@ -4,10 +4,14 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     bitfield_struct::bitfield,
     core::{
         fmt,
+        iter,
         str,
     },
     super::{
@@ -42,6 +46,24 @@ impl Header {
         let begin: usize = self.sh_offset as usize;
         let end: usize = begin + self.sh_size as usize;
         &elf[begin..end]
+    }
+
+    pub fn string_table<'a>(&'a self, elf: &'a Vec<u8>) -> Option<BTreeMap<usize, &'a str>> {
+        let bytes: &[u8] = self.bytes(elf);
+        (self.sh_type == Sht::Strtab)
+            .then(|| iter::once(0)
+                .chain(bytes
+                    .iter()
+                    .enumerate()
+                    .filter(|(_index, byte)| **byte == 0)
+                    .map(|(index, _byte)| index + 1))
+                .zip(bytes
+                    .split(|byte| *byte == 0)
+                    .map(|bytes| str::from_utf8(bytes)))
+                .filter_map(|(index, string)| string
+                    .map(|string| (index, string))
+                    .ok())
+                .collect())
     }
 }
 

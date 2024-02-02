@@ -172,8 +172,7 @@ pub struct DisplayInfo<'a> {
 impl DisplayInfo<'_> {
     fn name(&self) -> Option<String> {
         (!self.info_mask.sys_font()).then(|| {
-            self.info.name
-                .clone()
+            (&self.info.name)
                 .into()
         })
     }

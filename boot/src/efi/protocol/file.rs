@@ -212,7 +212,7 @@ impl From<&Info> for Information {
         let modification_time: Time = modification_time.clone();
         let attributes: Attributes = *attributes;
         let file_name: char16::NullTerminatedString = file_name.into();
-        let file_name: String = file_name.into();
+        let file_name: String = (&file_name).into();
         Self {
             size,
             file_size,

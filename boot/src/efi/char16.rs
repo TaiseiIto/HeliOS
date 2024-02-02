@@ -6,6 +6,7 @@ use {
     core::{
         fmt,
         iter,
+        slice,
     },
     super::null,
 };
@@ -16,7 +17,6 @@ use {
 pub type Char16 = u16;
 
 /// # Null terminated string
-#[derive(Clone)]
 #[repr(C)]
 pub struct NullTerminatedString<'a>(&'a Char16);
 
@@ -36,10 +36,8 @@ impl NullTerminatedString<'static> {
 
 impl fmt::Debug for NullTerminatedString<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        iter::once('"')
-            .chain(self.clone())
-            .chain(iter::once('"'))
-            .fold(Ok(()), |result, character| result.and(write!(formatter, "{}", character)))
+        let string: String = self.into();
+        write!(formatter, "{:#x?}", string)
     }
 }
 
@@ -55,26 +53,32 @@ impl<'a> From<&'a Vec<u16>> for NullTerminatedString<'a> {
     }
 }
 
-impl From<NullTerminatedString<'_>> for String {
-    fn from(string: NullTerminatedString<'_>) -> Self {
-        string.collect()
+impl From<&NullTerminatedString<'_>> for String {
+    fn from(string: &NullTerminatedString<'_>) -> Self {
+        Self::from_utf16(string.into()).unwrap()
     }
 }
 
-impl Iterator for NullTerminatedString<'_> {
-    type Item = char;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let output = *self.0;
-        (output != 0)
-            .then(|| Self::Item::from_u32(output as u32)
-                .map(|output| {
-                    self.0 = unsafe {
-                        &*(self.0 as *const Char16).add(1)
-                    };
-                    output
-                }))
-            .flatten()
+impl<'a> From<&'a NullTerminatedString<'a>> for &'a [u16] {
+    fn from(string: &'a NullTerminatedString<'a>) -> Self {
+        let string: &u16 = string.0;
+        let string: *const u16 = string as *const u16;
+        let length: usize = (0..)
+            .take_while(|index| {
+                let string: *const u16 = unsafe {
+                    string.add(*index)
+                };
+                let string: &u16 = unsafe {
+                    &*string
+                };
+                *string != 0
+            })
+            .max()
+            .map(|max_index| max_index + 1)
+            .unwrap_or_default();
+        unsafe {
+            slice::from_raw_parts(string, length)
+        }
     }
 }
 

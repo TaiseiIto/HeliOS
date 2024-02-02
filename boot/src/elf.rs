@@ -33,10 +33,13 @@ impl File {
         }
     }
 
-    fn sections(&self) -> BTreeMap<&section::Header, &[u8]> {
-        self
-            .header()
+    fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
+        self.header()
             .section_headers()
+    }
+
+    fn sections(&self) -> BTreeMap<&section::Header, &[u8]> {
+        self.section_headers()
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
             .collect()
     }
@@ -45,11 +48,13 @@ impl File {
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
-        let sections: BTreeMap<&section::Header, &[u8]> = self.sections();
+        let section_headers: Vec<&section::Header> = self
+            .section_headers()
+            .collect();
         formatter
             .debug_struct("File")
             .field("header", header)
-            .field("sections", &sections)
+            .field("section_headers", &section_headers)
             .finish()
     }
 }
