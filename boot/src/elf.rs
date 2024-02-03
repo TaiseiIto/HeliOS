@@ -36,6 +36,21 @@ impl File {
         }
     }
 
+    fn section_bytes<'a>(&'a self, section_header: &'a section::Header) -> &'a [u8] {
+        section_header.bytes(&self.bytes)
+    }
+
+    fn section_header(&self, section_name: &str) -> &section::Header {
+        let sh_name: Word = self.shstrtab()
+            .into_iter()
+            .find_map(|(offset, string)| (string == section_name)
+                .then_some(offset))
+            .unwrap() as Word;
+        self.section_headers()
+            .find(|section_header| section_header.sh_name() == sh_name)
+            .unwrap()
+    }
+
     fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
         self.header()
             .section_headers()
@@ -71,6 +86,15 @@ impl File {
                 .string_table(bytes)
                 .map(|string_table| (section_header, string_table)))
     }
+
+    fn strtab(&self) -> BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str> {
+        let strtab_section_header: &section::Header = self.section_header(".strtab");
+        let strtab_section_bytes: &[u8] = self.section_bytes(strtab_section_header);
+        strtab_section_header
+            .string_table(strtab_section_bytes)
+            .unwrap()
+            .collect()
+    }
 }
 
 impl fmt::Debug for File {
@@ -80,11 +104,13 @@ impl fmt::Debug for File {
             .section_headers()
             .collect();
         let shstrtab: BTreeMap<usize, &str> = self.shstrtab();
+        let strtab: BTreeMap<usize, &str> = self.strtab();
         formatter
             .debug_struct("File")
             .field("header", header)
             .field("section_headers", &section_headers)
             .field("shstrtab", &shstrtab)
+            .field("strtab", &strtab)
             .finish()
     }
 }
