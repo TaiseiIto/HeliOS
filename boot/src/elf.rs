@@ -41,19 +41,16 @@ impl File {
             .section_headers()
     }
 
-    fn sections(&self) -> BTreeMap<&section::Header, &[u8]> {
+    fn sections(&self) -> impl Iterator<Item = (&section::Header, &[u8])> {
         self.section_headers()
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
-            .collect()
     }
 
-    fn string_tables(&self) -> BTreeMap<&section::Header, BTreeMap<usize, &str>> {
+    fn string_tables(&self) -> impl Iterator<Item = (&section::Header, BTreeMap<usize, &str>)> {
         self.sections()
-            .into_iter()
             .filter_map(|(section_header, bytes)| section_header
                 .string_table(bytes)
                 .map(|string_table| (section_header, string_table)))
-            .collect()
     }
 }
 
@@ -63,7 +60,9 @@ impl fmt::Debug for File {
         let section_headers: Vec<&section::Header> = self
             .section_headers()
             .collect();
-        let string_tables: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self.string_tables();
+        let string_tables: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self
+            .string_tables()
+            .collect();
         formatter
             .debug_struct("File")
             .field("header", header)
