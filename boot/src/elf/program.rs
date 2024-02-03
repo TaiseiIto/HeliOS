@@ -3,11 +3,14 @@
 //! * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
-use super::{
-    Addr,
-    Off,
-    Word,
-    Xword,
+use {
+    bitfield_struct::bitfield,
+    super::{
+        Addr,
+        Off,
+        Word,
+        Xword,
+    },
 };
 
 /// # ELF Program Header
@@ -18,7 +21,7 @@ use super::{
 #[repr(C)]
 pub struct Header {
     p_type: Pt,
-    p_flags: Word,
+    p_flags: Pf,
     p_offset: Off,
     p_vaddr: Addr,
     p_paddr: Addr,
@@ -42,5 +45,16 @@ enum Pt {
     HiOs = 0x6fffffff,
     LoProc = 0x70000000,
     HiProc = 0x7fffffff,
+}
+
+#[bitfield(u32)]
+struct Pf {
+    x: bool,
+    w: bool,
+    r: bool,
+    #[bits(13, access = RO)]
+    reserved0: u16,
+    maskos: u8,
+    mascproc: u8,
 }
 
