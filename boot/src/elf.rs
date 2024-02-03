@@ -46,6 +46,25 @@ impl File {
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
     }
 
+    fn shstrtab(&self) -> BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str> {
+        let section_header2offset2string: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self
+            .string_tables()
+            .map(|(section_header, offset2string)| (section_header, offset2string.collect()))
+            .collect();
+        let shstrtab_section_sh_name: Word = *section_header2offset2string
+            .values()
+            .find_map(|offset2string| offset2string
+                .iter()
+                .find_map(|(offset, string)| (*string == ".shstrtab")
+                    .then_some(offset)))
+            .unwrap() as Word;
+        let shstrtab_section_header: &section::Header = section_header2offset2string
+            .keys()
+            .find(|section_header| section_header.sh_name() == shstrtab_section_sh_name)
+            .unwrap();
+        section_header2offset2string[shstrtab_section_header].clone()
+    }
+
     fn string_tables(&self) -> impl Iterator<Item = (&section::Header, impl Iterator<Item = (/* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str)>)> {
         self.sections()
             .filter_map(|(section_header, bytes)| section_header
@@ -60,15 +79,12 @@ impl fmt::Debug for File {
         let section_headers: Vec<&section::Header> = self
             .section_headers()
             .collect();
-        let string_tables: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self
-            .string_tables()
-            .map(|(section_header, offset2string)| (section_header, offset2string.collect()))
-            .collect();
+        let shstrtab: BTreeMap<usize, &str> = self.shstrtab();
         formatter
             .debug_struct("File")
             .field("header", header)
             .field("section_headers", &section_headers)
-            .field("string_tables", &string_tables)
+            .field("shstrtab", &shstrtab)
             .finish()
     }
 }
