@@ -48,16 +48,15 @@ impl Header {
         &elf[begin..end]
     }
 
-    pub fn string_table<'a>(&'a self, elf: &'a [u8]) -> Option<BTreeMap<usize, &'a str>> {
-        let bytes: &[u8] = self.bytes(elf);
+    pub fn string_table<'a>(&'a self, section: &'a [u8]) -> Option<BTreeMap<usize, &'a str>> {
         (self.sh_type == Sht::Strtab)
             .then(|| iter::once(0)
-                .chain(bytes
+                .chain(section
                     .iter()
                     .enumerate()
                     .filter(|(_index, byte)| **byte == 0)
                     .map(|(index, _byte)| index + 1))
-                .zip(bytes
+                .zip(section
                     .split(|byte| *byte == 0)
                     .map(|bytes| str::from_utf8(bytes)))
                 .filter_map(|(index, string)| string
