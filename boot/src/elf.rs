@@ -110,6 +110,16 @@ impl File {
             .unwrap()
     }
 
+    fn symbol_name2symbol_entry(&self) -> BTreeMap<&str, &symbol::table::Entry> {
+        let offset2string: BTreeMap<usize, &str> = self.strtab();
+        self.symtab()
+            .into_iter()
+            .filter_map(|symbol_entry| offset2string
+                .get(&(symbol_entry.st_name() as usize))
+                .map(|symbol_name| (*symbol_name, symbol_entry)))
+            .collect()
+    }
+
     fn symtab(&self) -> symbol::Table {
         let symtab_section_header: &section::Header = self
             .section_header(".symtab")
@@ -123,14 +133,12 @@ impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
         let section_name2section_header: BTreeMap<&str, &section::Header> = self.section_name2section_header();
-        let strtab: BTreeMap<usize, &str> = self.strtab();
-        let symtab: symbol::Table = self.symtab();
+        let symbol_name2symbol_entry: BTreeMap<&str, &symbol::table::Entry> = self.symbol_name2symbol_entry();
         formatter
             .debug_struct("File")
             .field("header", header)
             .field("section_name2section_header", &section_name2section_header)
-            .field("strtab", &strtab)
-            .field("symtab", &symtab)
+            .field("symbol_name2symbol_entry", &symbol_name2symbol_entry)
             .finish()
     }
 }

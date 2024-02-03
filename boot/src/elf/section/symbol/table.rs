@@ -24,6 +24,15 @@ use {
 #[derive(Debug)]
 pub struct Table<'a>(&'a [Entry]);
 
+impl<'a> IntoIterator for Table<'a> {
+    type Item = &'a Entry;
+    type IntoIter = slice::Iter<'a, Entry>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
 impl<'a> From<&'a [u8]> for Table<'a> {
     fn from(bytes: &'a [u8]) -> Self {
         let len: usize = bytes.len() / mem::size_of::<Entry>();
@@ -52,5 +61,11 @@ pub struct Entry {
     st_shndx: Half,
     st_value: Addr,
     st_size: Xword,
+}
+
+impl Entry {
+    pub fn st_name(&self) -> Word {
+        self.st_name
+    }
 }
 
