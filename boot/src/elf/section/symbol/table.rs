@@ -57,7 +57,7 @@ impl<'a> From<&'a [u8]> for Table<'a> {
 #[repr(C)]
 pub struct Entry {
     st_name: Word,
-    st_info: UnsignedChar,
+    st_info: Info,
     st_other: UnsignedChar,
     st_shndx: Half,
     st_value: Addr,
@@ -94,17 +94,7 @@ enum Stt{
 
 impl Stt {
     const fn from_bits(bits: u8) -> Self {
-        bits.into()
-    }
-
-    const fn into_bits(self) -> u8 {
-        self.into()
-    }
-}
-
-impl From<u8> for Stt {
-    fn from(byte: u8) -> Self {
-        match byte {
+        match bits {
             0 => Self::Notype ,
             1 => Self::Object ,
             2 => Self::Func ,
@@ -117,11 +107,9 @@ impl From<u8> for Stt {
             _ => panic!("Invalid Stt!"),
         }
     }
-}
 
-impl From<Stt> for u8 {
-    fn from(stt: Stt) -> Self {
-        match stt {
+    const fn into_bits(self) -> u8 {
+        match self {
             Stt::Notype  => 0,
             Stt::Object  => 1,
             Stt::Func  => 2,
@@ -149,17 +137,7 @@ enum Stb {
 
 impl Stb {
     const fn from_bits(bits: u8) -> Self {
-        bits.into()
-    }
-
-    const fn into_bits(self) -> u8 {
-        self.into()
-    }
-}
-
-impl From<u8> for Stb {
-    fn from(byte: u8) -> Self {
-        match byte {
+        match bits {
             0 => Self::Local ,
             1 => Self::Global ,
             2 => Self::Weak ,
@@ -170,11 +148,9 @@ impl From<u8> for Stb {
             _ => panic!("Invalid Stb!"),
         }
     }
-}
 
-impl From<Stb> for u8 {
-    fn from(stb: Stb) -> Self {
-        match stb {
+    const fn into_bits(self) -> u8 {
+        match self {
             Stb::Local  => 0,
             Stb::Global  => 1,
             Stb::Weak  => 2,
