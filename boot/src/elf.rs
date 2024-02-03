@@ -56,10 +56,20 @@ impl File {
             .section_headers()
     }
 
-    fn section2bytes(&self) -> BTreeMap<&section::Header, &[u8]> {
+    fn section_header2bytes(&self) -> BTreeMap<&section::Header, &[u8]> {
         self.section_headers()
             .into_iter()
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
+            .collect()
+    }
+
+    fn section_name2section_header(&self) -> BTreeMap<&str, &section::Header> {
+        let offset2string: BTreeMap<usize, &str> = self.shstrtab();
+        self.section_headers()
+            .into_iter()
+            .filter_map(|section_header| offset2string
+                .get(&(section_header.sh_name() as usize))
+                .map(|section_name| (*section_name, section_header)))
             .collect()
     }
 
@@ -80,7 +90,7 @@ impl File {
     }
 
     fn string_tables(&self) -> BTreeMap<&section::Header, BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str>> {
-        self.section2bytes()
+        self.section_header2bytes()
             .into_iter()
             .filter_map(|(section_header, bytes)| section_header
                 .string_table(bytes)
@@ -102,14 +112,12 @@ impl File {
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
-        let section_headers: Vec<&section::Header> = self.section_headers();
-        let shstrtab: BTreeMap<usize, &str> = self.shstrtab();
+        let section_name2section_header: BTreeMap<&str, &section::Header> = self.section_name2section_header();
         let strtab: BTreeMap<usize, &str> = self.strtab();
         formatter
             .debug_struct("File")
             .field("header", header)
-            .field("section_headers", &section_headers)
-            .field("shstrtab", &shstrtab)
+            .field("section_name2section_header", &section_name2section_header)
             .field("strtab", &strtab)
             .finish()
     }
