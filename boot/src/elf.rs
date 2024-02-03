@@ -40,7 +40,7 @@ impl File {
         section_header.bytes(&self.bytes)
     }
 
-    fn section_header(&self, section_name: &str) -> &section::Header {
+    fn section_header(&self, section_name: &str) -> Option<&section::Header> {
         let sh_name: Word = self.shstrtab()
             .into_iter()
             .find_map(|(offset, string)| (string == section_name)
@@ -48,7 +48,6 @@ impl File {
             .unwrap() as Word;
         self.section_headers()
             .find(|section_header| section_header.sh_name() == sh_name)
-            .unwrap()
     }
 
     fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
@@ -88,7 +87,9 @@ impl File {
     }
 
     fn strtab(&self) -> BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str> {
-        let strtab_section_header: &section::Header = self.section_header(".strtab");
+        let strtab_section_header: &section::Header = self
+            .section_header(".strtab")
+            .unwrap();
         let strtab_section_bytes: &[u8] = self.section_bytes(strtab_section_header);
         strtab_section_header
             .string_table(strtab_section_bytes)
