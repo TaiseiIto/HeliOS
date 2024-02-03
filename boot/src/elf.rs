@@ -160,11 +160,9 @@ impl From<Vec<u8>> for File {
 }
 
 type Addr = u64;
-type Off = u64;
 type Half = u16;
-type Word = u32;
-type Sword = i32;
-type Xword = u64;
-type Sxword = i64;
+type Off = u64;
 type UnsignedChar = u8;
+type Word = u32;
+type Xword = u64;
 

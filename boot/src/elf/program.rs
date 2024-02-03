@@ -8,7 +8,6 @@ use {
     super::{
         Addr,
         Off,
-        Word,
         Xword,
     },
 };
