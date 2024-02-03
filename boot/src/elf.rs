@@ -4,6 +4,7 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 mod header;
+mod program;
 mod section;
 
 pub use section::symbol;
@@ -36,6 +37,11 @@ impl File {
         unsafe {
             &*header
         }
+    }
+
+    fn program_headers(&self) -> Vec<&program::Header> {
+        self.header()
+            .program_headers()
     }
 
     fn section_bytes<'a>(&'a self, section_header: &'a section::Header) -> &'a [u8] {
@@ -132,11 +138,13 @@ impl File {
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
+        let program_headers: Vec<&program::Header> = self.program_headers();
         let section_name2section_header: BTreeMap<&str, &section::Header> = self.section_name2section_header();
         let symbol_name2symbol_entry: BTreeMap<&str, &symbol::table::Entry> = self.symbol_name2symbol_entry();
         formatter
             .debug_struct("File")
             .field("header", header)
+            .field("program_headers", &program_headers)
             .field("section_name2section_header", &section_name2section_header)
             .field("symbol_name2symbol_entry", &symbol_name2symbol_entry)
             .finish()

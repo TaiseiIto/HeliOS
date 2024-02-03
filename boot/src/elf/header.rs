@@ -11,6 +11,7 @@ use {
         Off,
         UnsignedChar,
         Word,
+        program,
         section,
     },
 };
@@ -39,6 +40,25 @@ pub struct Header {
 }
 
 impl Header {
+    pub fn program_headers(&self) -> Vec<&program::Header> {
+        let header: *const Header = self as *const Header;
+        let header: *const u8 = header as *const u8;
+        let program_header: *const u8 = unsafe {
+            header.add(self.e_phoff as usize)
+        };
+        (0..self.e_phnum)
+            .map(move |index| {
+                let program_header: *const u8 = unsafe {
+                    program_header.add((index * self.e_phentsize) as usize)
+                };
+                let program_header: *const program::Header = program_header as *const program::Header;
+                unsafe {
+                    &*program_header
+                }
+            })
+            .collect()
+    }
+
     pub fn section_headers(&self) -> Vec<&section::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
