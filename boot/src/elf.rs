@@ -11,7 +11,10 @@ use {
         collections::BTreeMap,
         vec::Vec,
     },
-    core::fmt,
+    core::{
+        fmt,
+        str,
+    },
     header::Header,
 };
 
@@ -43,6 +46,15 @@ impl File {
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
             .collect()
     }
+
+    fn string_tables(&self) -> BTreeMap<&section::Header, BTreeMap<usize, &str>> {
+        self.sections()
+            .into_iter()
+            .filter_map(|(section_header, bytes)| section_header
+                .string_table(bytes)
+                .map(|string_table| (section_header, string_table)))
+            .collect()
+    }
 }
 
 impl fmt::Debug for File {
@@ -51,10 +63,12 @@ impl fmt::Debug for File {
         let section_headers: Vec<&section::Header> = self
             .section_headers()
             .collect();
+        let string_tables: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self.string_tables();
         formatter
             .debug_struct("File")
             .field("header", header)
             .field("section_headers", &section_headers)
+            .field("string_tables", &string_tables)
             .finish()
     }
 }
