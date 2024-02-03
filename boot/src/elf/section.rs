@@ -3,11 +3,10 @@
 //! * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
+pub mod symbol;
+
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
+    alloc::collections::BTreeMap,
     bitfield_struct::bitfield,
     core::{
         fmt,

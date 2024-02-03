@@ -6,6 +6,8 @@
 mod header;
 mod section;
 
+pub use section::symbol;
+
 use {
     alloc::{
         collections::BTreeMap,
@@ -107,6 +109,14 @@ impl File {
             .string_table(strtab_section_bytes)
             .unwrap()
     }
+
+    fn symtab(&self) -> symbol::Table {
+        let symtab_section_header: &section::Header = self
+            .section_header(".symtab")
+            .unwrap();
+        let symtab_section_bytes: &[u8] = self.section_bytes(symtab_section_header);
+        symtab_section_bytes.into()
+    }
 }
 
 impl fmt::Debug for File {
@@ -114,11 +124,13 @@ impl fmt::Debug for File {
         let header: &Header = self.header();
         let section_name2section_header: BTreeMap<&str, &section::Header> = self.section_name2section_header();
         let strtab: BTreeMap<usize, &str> = self.strtab();
+        let symtab: symbol::Table = self.symtab();
         formatter
             .debug_struct("File")
             .field("header", header)
             .field("section_name2section_header", &section_name2section_header)
             .field("strtab", &strtab)
+            .field("symtab", &symtab)
             .finish()
     }
 }

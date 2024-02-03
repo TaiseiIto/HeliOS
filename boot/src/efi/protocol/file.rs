@@ -172,11 +172,16 @@ pub struct Info {
 
 #[derive(Clone, Debug)]
 pub struct Information {
+    #[allow(dead_code)]
     size: u64,
     file_size: u64,
+    #[allow(dead_code)]
     physical_size: u64,
+    #[allow(dead_code)]
     create_time: Time,
+    #[allow(dead_code)]
     last_access_time: Time,
+    #[allow(dead_code)]
     modification_time: Time,
     attributes: Attributes,
     file_name: String,
