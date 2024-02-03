@@ -52,7 +52,7 @@ impl Header {
         self.sh_name
     }
 
-    pub fn string_table<'a>(&'a self, section: &'a [u8]) -> Option<impl Iterator<Item = (/* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &'a str)>> {
+    pub fn string_table<'a>(&'a self, section: &'a [u8]) -> Option<BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &'a str>> {
         (self.sh_type == Sht::Strtab)
             .then(|| iter::once(0)
                 .chain(section
@@ -65,7 +65,8 @@ impl Header {
                     .map(|bytes| str::from_utf8(bytes)))
                 .filter_map(|(index, string)| string
                     .map(|string| (index, string))
-                    .ok()))
+                    .ok())
+                .collect())
     }
 }
 

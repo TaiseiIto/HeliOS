@@ -3,13 +3,16 @@
 //! * [ELF-64 Object File Format](https://uclibc.org/docs/elf-64-gen.pdf)
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
-use super::{
-    Addr,
-    Half,
-    Off,
-    UnsignedChar,
-    Word,
-    section,
+use {
+    alloc::vec::Vec,
+    super::{
+        Addr,
+        Half,
+        Off,
+        UnsignedChar,
+        Word,
+        section,
+    },
 };
 
 /// # ELF Header
@@ -36,7 +39,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
+    pub fn section_headers(&self) -> Vec<&section::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
         let section_header: *const u8 = unsafe {
@@ -52,6 +55,7 @@ impl Header {
                     &*section_header
                 }
             })
+            .collect()
     }
 }
 

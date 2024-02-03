@@ -47,24 +47,24 @@ impl File {
                 .then_some(offset))
             .unwrap() as Word;
         self.section_headers()
+            .into_iter()
             .find(|section_header| section_header.sh_name() == sh_name)
     }
 
-    fn section_headers(&self) -> impl Iterator<Item = &section::Header> {
+    fn section_headers(&self) -> Vec<&section::Header> {
         self.header()
             .section_headers()
     }
 
-    fn sections(&self) -> impl Iterator<Item = (&section::Header, &[u8])> {
+    fn section2bytes(&self) -> BTreeMap<&section::Header, &[u8]> {
         self.section_headers()
+            .into_iter()
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
+            .collect()
     }
 
     fn shstrtab(&self) -> BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str> {
-        let section_header2offset2string: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self
-            .string_tables()
-            .map(|(section_header, offset2string)| (section_header, offset2string.collect()))
-            .collect();
+        let section_header2offset2string: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self.string_tables();
         let shstrtab_section_sh_name: Word = *section_header2offset2string
             .values()
             .find_map(|offset2string| offset2string
@@ -79,11 +79,13 @@ impl File {
         section_header2offset2string[shstrtab_section_header].clone()
     }
 
-    fn string_tables(&self) -> impl Iterator<Item = (&section::Header, impl Iterator<Item = (/* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str)>)> {
-        self.sections()
+    fn string_tables(&self) -> BTreeMap<&section::Header, BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str>> {
+        self.section2bytes()
+            .into_iter()
             .filter_map(|(section_header, bytes)| section_header
                 .string_table(bytes)
                 .map(|string_table| (section_header, string_table)))
+            .collect()
     }
 
     fn strtab(&self) -> BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str> {
@@ -94,16 +96,13 @@ impl File {
         strtab_section_header
             .string_table(strtab_section_bytes)
             .unwrap()
-            .collect()
     }
 }
 
 impl fmt::Debug for File {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: &Header = self.header();
-        let section_headers: Vec<&section::Header> = self
-            .section_headers()
-            .collect();
+        let section_headers: Vec<&section::Header> = self.section_headers();
         let shstrtab: BTreeMap<usize, &str> = self.shstrtab();
         let strtab: BTreeMap<usize, &str> = self.strtab();
         formatter
