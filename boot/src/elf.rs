@@ -46,7 +46,7 @@ impl File {
             .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
     }
 
-    fn string_tables(&self) -> impl Iterator<Item = (&section::Header, BTreeMap<usize, &str>)> {
+    fn string_tables(&self) -> impl Iterator<Item = (&section::Header, impl Iterator<Item = (/* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str)>)> {
         self.sections()
             .filter_map(|(section_header, bytes)| section_header
                 .string_table(bytes)
@@ -62,6 +62,7 @@ impl fmt::Debug for File {
             .collect();
         let string_tables: BTreeMap<&section::Header, BTreeMap<usize, &str>> = self
             .string_tables()
+            .map(|(section_header, offset2string)| (section_header, offset2string.collect()))
             .collect();
         formatter
             .debug_struct("File")
