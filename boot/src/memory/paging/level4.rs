@@ -62,7 +62,15 @@ impl Interface {
     }
 
     pub fn set_page(&mut self, vaddr: usize, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}), writable = {:#x?}, executable = {:#x?}", vaddr, paddr, readable, writable, executable);
+        let vaddr: Vaddr = vaddr.into();
+        self.vaddr2pml4te_interface
+            .get_mut(&vaddr
+                .with_pdpi(0)
+                .with_pdi(0)
+                .with_pi(0)
+                .with_offset(0))
+            .unwrap()
+            .set_page(vaddr, paddr, readable, writable, executable);
     }
 }
 
@@ -146,6 +154,10 @@ impl Pml4teInterface {
             },
             _ => panic!("Can't get a page map level 4 table entry."),
         }
+    }
+
+    fn set_page(&mut self, vaddr: Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?}", vaddr, paddr, readable, writable, executable);
     }
 }
 
@@ -1058,6 +1070,13 @@ impl Vaddr {
                 0 => 0,
                 _ => 0xffff,
             })
+    }
+}
+
+impl From<usize> for Vaddr {
+    fn from(vaddr: usize) -> Self {
+        let vaddr: u64 = vaddr as u64;
+        vaddr.into()
     }
 }
 
