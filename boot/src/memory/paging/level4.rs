@@ -68,12 +68,10 @@ impl Interface {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
-        let pml4t: &mut Box<Pml4t> = &mut self.pml4t;
-        let vaddr2pml4te_interface: &mut BTreeMap<Vaddr, Pml4teInterface> = &mut self.vaddr2pml4te_interface;
-        let pml4te: &mut Pml4te = pml4t
+        let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
             .pml4te(&vaddr);
-        vaddr2pml4te_interface
+        self.vaddr2pml4te_interface
             .get_mut(&pml4vaddr)
             .unwrap()
             .set_page(pml4te, &vaddr, paddr, readable, writable, executable);
