@@ -63,14 +63,19 @@ impl Interface {
 
     pub fn set_page(&mut self, vaddr: usize, paddr: usize, readable: bool, writable: bool, executable: bool) {
         let vaddr: Vaddr = vaddr.into();
-        self.vaddr2pml4te_interface
-            .get_mut(&vaddr
+        let pml4vaddr = vaddr
                 .with_pdpi(0)
                 .with_pdi(0)
                 .with_pi(0)
-                .with_offset(0))
+                .with_offset(0);
+        let (pml4t, vaddr2pml4te_interface): (&mut Box<Pml4t>, &mut BTreeMap<Vaddr, Pml4teInterface>) = (&mut self.pml4t, &mut self.vaddr2pml4te_interface);
+        let pml4te: &mut Pml4te = pml4t
+            .as_mut()
+            .pml4te(&vaddr);
+        vaddr2pml4te_interface
+            .get_mut(&pml4vaddr)
             .unwrap()
-            .set_page(vaddr, paddr, readable, writable, executable);
+            .set_page(pml4te, &vaddr, paddr, readable, writable, executable);
     }
 }
 
@@ -96,6 +101,12 @@ impl fmt::Debug for Interface {
 #[repr(align(4096))]
 struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],
+}
+
+impl Pml4t {
+    fn pml4te(&mut self, vaddr: &Vaddr) -> &mut Pml4te {
+        &mut self.pml4te[vaddr.pml4i() as usize]
+    }
 }
 
 impl Default for Pml4t {
@@ -156,8 +167,8 @@ impl Pml4teInterface {
         }
     }
 
-    fn set_page(&mut self, vaddr: Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?}", vaddr, paddr, readable, writable, executable);
+    fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(pml4te = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pml4te, vaddr, paddr, readable, writable, executable);
     }
 }
 
