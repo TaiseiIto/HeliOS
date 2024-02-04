@@ -11,6 +11,7 @@ pub use section::symbol;
 
 use {
     alloc::{
+        boxed::Box,
         collections::{
             BTreeMap,
             BTreeSet,
@@ -24,6 +25,7 @@ use {
     crate::{
         com2_print,
         com2_println,
+        memory,
     },
     header::Header,
 };
@@ -45,7 +47,11 @@ impl File {
                 .pages()
                 .into_iter())
             .collect();
-        com2_println!("pages = {:#x?}", pages);
+        let vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = pages
+            .into_iter()
+            .map(|vaddr| (vaddr, Box::default()))
+            .collect();
+        com2_println!("vaddr2frame = {:#x?}", vaddr2frame);
     }
 
     fn header(&self) -> &Header {
