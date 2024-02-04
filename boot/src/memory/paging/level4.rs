@@ -168,6 +168,39 @@ impl Pml4teInterface {
 
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
         com2_println!("set_page(pml4te = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pml4te, vaddr, paddr, readable, writable, executable);
+        if let Self::Pml4teNotPresent = self {
+            let pdpt: Box<Pdpt> = Box::default();
+            let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = pdpt
+                .as_ref()
+                .pdpte
+                .as_slice()
+                .iter()
+                .enumerate()
+                .map(|(pdpi, pdpte)| {
+                    let vaddr: Vaddr = vaddr
+                        .with_pdpi(pdpi as u16)
+                        .with_pdi(0)
+                        .with_pi(0)
+                        .with_offset(0);
+                    let pdpte_interface: PdpteInterface = PdpteInterface::default();
+                    (vaddr, pdpte_interface)
+                })
+                .collect();
+            let pml4e: Pml4e = Pml4e::default()
+                .with_p(true)
+                .with_rw(writable)
+                .with_us(false)
+                .with_pwt(false)
+                .with_pcd(false)
+                .with_a(false)
+                .with_r(false)
+                .with_xd(executable);
+            pml4te.set_pml4e(pml4e, pdpt.as_ref());
+            *self = Self::Pml4e{
+                pdpt,
+                vaddr2pdpte_interface,
+            };
+        }
     }
 }
 
@@ -222,6 +255,7 @@ impl Pml4te {
         let pdpt: *const Pdpt = pdpt as *const Pdpt;
         let pdpt: u64 = pdpt as u64;
         let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
+        pml4e.set_p(true);
         pml4e.set_address_of_pdpt(pdpt);
         self.pml4e = pml4e;
         assert!(self.pml4e().is_some());
@@ -376,6 +410,12 @@ impl PdpteInterface {
             },
             _ => panic!("Can't get a page directory pointer table entry."),
         }
+    }
+}
+
+impl Default for PdpteInterface {
+    fn default() -> Self {
+        Self::PdpteNotPresent
     }
 }
 
