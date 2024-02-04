@@ -63,14 +63,14 @@ impl Interface {
 
     pub fn set_page(&mut self, vaddr: usize, paddr: usize, readable: bool, writable: bool, executable: bool) {
         let vaddr: Vaddr = vaddr.into();
-        let pml4vaddr = vaddr
+        let pml4vaddr: Vaddr = vaddr
                 .with_pdpi(0)
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
-            .pml4te(&vaddr);
+            .pml4te(&pml4vaddr);
         self.vaddr2pml4te_interface
             .get_mut(&pml4vaddr)
             .unwrap()
@@ -167,7 +167,6 @@ impl Pml4teInterface {
     }
 
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(pml4te = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pml4te, vaddr, paddr, readable, writable, executable);
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
             let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = pdpt
@@ -176,7 +175,7 @@ impl Pml4teInterface {
                 .as_slice()
                 .iter()
                 .enumerate()
-                .map(|(pdpi, pdpte)| {
+                .map(|(pdpi, _pdpte)| {
                     let vaddr: Vaddr = vaddr
                         .with_pdpi(pdpi as u16)
                         .with_pdi(0)
@@ -201,6 +200,24 @@ impl Pml4teInterface {
                 vaddr2pdpte_interface,
             };
         }
+        if let Self::Pml4e {
+            pdpt,
+            vaddr2pdpte_interface,
+        } = self {
+            let pdpvaddr: Vaddr = vaddr
+                .with_pdi(0)
+                .with_pi(0)
+                .with_offset(0);
+            let pdpte: &mut Pdpte = pdpt
+                .as_mut()
+                .pdpte(&pdpvaddr);
+            vaddr2pdpte_interface
+                .get_mut(&pdpvaddr)
+                .unwrap()
+                .set_page(pdpte, vaddr, paddr, readable, writable, executable);
+        } else {
+            panic!("Can't set a page!")
+        };
     }
 }
 
@@ -347,6 +364,12 @@ struct Pdpt {
     pdpte: [Pdpte; PDPT_LENGTH],
 }
 
+impl Pdpt {
+    fn pdpte(&mut self, vaddr: &Vaddr) -> &mut Pdpte {
+        &mut self.pdpte[vaddr.pdpi() as usize]
+    }
+}
+
 impl Default for Pdpt {
     fn default() -> Self {
         let pdpte = [Pdpte::default(); PDPT_LENGTH];
@@ -410,6 +433,10 @@ impl PdpteInterface {
             },
             _ => panic!("Can't get a page directory pointer table entry."),
         }
+    }
+
+    fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(pdpte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdpte, vaddr, paddr, readable, writable, executable);
     }
 }
 
