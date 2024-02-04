@@ -4,13 +4,10 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::ops::Range,
-    crate::{
-        memory,
-        com2_print,
-        com2_println,
-    },
+    crate::memory,
     super::{
         Addr,
         Off,
@@ -42,9 +39,10 @@ impl Header {
         &elf[begin..end]
     }
 
-    pub fn deploy<'a>(&'a self, bytes: &'a [u8]) {
-        let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
-        com2_println!("{:#x?}..{:#x?}", vaddr_range_in_pages.start, vaddr_range_in_pages.end);
+    pub fn pages(&self) -> Vec<usize> {
+        self.vaddr_range_in_pages()
+            .filter(|vaddr| vaddr % memory::PAGE_SIZE == 0)
+            .collect()
     }
 
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
