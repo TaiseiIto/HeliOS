@@ -11,7 +11,10 @@ pub use section::symbol;
 
 use {
     alloc::{
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+        },
         vec::Vec,
     },
     core::{
@@ -36,7 +39,7 @@ pub struct File {
 impl File {
     pub fn deploy(&self) {
         com2_println!("Deploy kernel.elf");
-        let pages: Vec<usize> = self.program_headers()
+        let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
             .flat_map(|program_header| program_header
                 .pages()
