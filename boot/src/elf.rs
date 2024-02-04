@@ -36,6 +36,9 @@ pub struct File {
 impl File {
     pub fn deploy(&self) {
         com2_println!("Deploy kernel.elf");
+        self.program_headers()
+            .into_iter()
+            .for_each(|program_header| program_header.deploy(program_header.bytes(&self.bytes)));
     }
 
     fn header(&self) -> &Header {
@@ -57,7 +60,8 @@ impl File {
     }
 
     fn section_header(&self, section_name: &str) -> Option<&section::Header> {
-        let sh_name: Word = self.shstrtab()
+        let sh_name: Word = self
+            .shstrtab()
             .into_iter()
             .find_map(|(offset, string)| (string == section_name)
                 .then_some(offset))

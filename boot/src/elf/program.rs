@@ -5,6 +5,12 @@
 
 use {
     bitfield_struct::bitfield,
+    core::ops::Range,
+    crate::{
+        memory,
+        com2_print,
+        com2_println,
+    },
     super::{
         Addr,
         Off,
@@ -27,6 +33,35 @@ pub struct Header {
     p_filesz: Xword,
     p_memsz: Xword,
     p_align: Xword,
+}
+
+impl Header {
+    pub fn bytes<'a>(&'a self, elf: &'a [u8]) -> &'a [u8] {
+        let begin: usize = self.p_offset as usize;
+        let end: usize = begin + self.p_filesz as usize;
+        &elf[begin..end]
+    }
+
+    pub fn deploy<'a>(&'a self, bytes: &'a [u8]) {
+        let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
+        com2_println!("{:#x?}..{:#x?}", vaddr_range_in_pages.start, vaddr_range_in_pages.end);
+    }
+
+    fn vaddr_range_in_bytes(&self) -> Range<usize> {
+        let begin: usize = self.p_vaddr as usize;
+        let end: usize = begin + self.p_memsz as usize;
+        begin..end
+    }
+
+    fn vaddr_range_in_pages(&self) -> Range<usize> {
+        let Range::<usize> {
+            start,
+            end,
+        } = self.vaddr_range_in_bytes();
+        let start = (start / memory::PAGE_SIZE) * memory::PAGE_SIZE;
+        let end = ((end + memory::PAGE_SIZE - 1) / memory::PAGE_SIZE) * memory::PAGE_SIZE;
+        start..end
+    }
 }
 
 #[allow(dead_code)]
