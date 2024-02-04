@@ -216,7 +216,7 @@ impl Pml4teInterface {
                 .unwrap()
                 .set_page(pdpte, vaddr, paddr, readable, writable, executable);
         } else {
-            panic!("Can't set a page!")
+            panic!("Can't set a page!");
         };
     }
 }
@@ -436,7 +436,6 @@ impl PdpteInterface {
     }
 
     fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(pdpte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdpte, vaddr, paddr, readable, writable, executable);
         match self {
             Self::Pe1Gib => {
                 let pe1gib: Pe1Gib = *pdpte
@@ -527,6 +526,23 @@ impl PdpteInterface {
                 };
             },
             _ => {},
+        }
+        if let Self::Pdpe {
+            pdt,
+            vaddr2pdte_interface,
+        } = self {
+            let pdvaddr: Vaddr = vaddr
+                .with_pi(0)
+                .with_offset(0);
+            let pdte: &mut Pdte = pdt
+                .as_mut()
+                .pdte(&pdvaddr);
+            vaddr2pdte_interface
+                .get_mut(&pdvaddr)
+                .unwrap()
+                .set_page(pdte, vaddr, paddr, readable, writable, executable);
+        } else {
+            panic!("Can't set a page!");
         }
     }
 }
@@ -755,6 +771,12 @@ struct Pdt {
     pdte: [Pdte; PDT_LENGTH],
 }
 
+impl Pdt {
+    fn pdte(&mut self, vaddr: &Vaddr) -> &mut Pdte {
+        &mut self.pdte[vaddr.pdi() as usize]
+    }
+}
+
 impl Default for Pdt {
     fn default() -> Self {
         let pdte = [Pdte::default(); PDT_LENGTH];
@@ -815,6 +837,10 @@ impl PdteInterface {
             },
             _ => panic!("Can't get a page directory table entry."),
         }
+    }
+
+    fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(pdte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdte, vaddr, paddr, readable, writable, executable);
     }
 }
 
@@ -1041,6 +1067,12 @@ struct PdteNotPresent {
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
+}
+
+impl Pt {
+    fn pte(&mut self, vaddr: &Vaddr) -> &mut Pte {
+        &mut self.pte[vaddr.pi() as usize]
+    }
 }
 
 impl Default for Pt {
