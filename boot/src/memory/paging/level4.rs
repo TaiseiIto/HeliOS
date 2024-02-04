@@ -437,6 +437,44 @@ impl PdpteInterface {
 
     fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
         com2_println!("set_page(pdpte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdpte, vaddr, paddr, readable, writable, executable);
+        match self {
+            Self::Pe1Gib => {
+            },
+            Self::PdpteNotPresent => {
+                let pdt: Box<Pdt> = Box::default();
+                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = pdt
+                    .as_ref()
+                    .pdte
+                    .as_slice()
+                    .iter()
+                    .enumerate()
+                    .map(|(pdi, _pdte)| {
+                        let vaddr: Vaddr = vaddr
+                            .with_pdi(pdi as u16)
+                            .with_pi(0)
+                            .with_offset(0);
+                        let pdte_interface: PdteInterface = PdteInterface::default();
+                        (vaddr, pdte_interface)
+                    })
+                    .collect();
+                let pdpe: Pdpe = Pdpe::default()
+                    .with_p(true)
+                    .with_rw(writable)
+                    .with_us(false)
+                    .with_pwt(false)
+                    .with_pcd(false)
+                    .with_a(false)
+                    .with_is_page_1gib(false)
+                    .with_r(false)
+                    .with_xd(executable);
+                pdpte.set_pdpe(pdpe, pdt.as_ref());
+                *self = Self::Pdpe {
+                    pdt,
+                    vaddr2pdte_interface,
+                };
+            },
+            _ => {},
+        }
     }
 }
 
@@ -727,6 +765,12 @@ impl PdteInterface {
     }
 }
 
+impl Default for PdteInterface {
+    fn default() -> Self {
+        Self::PdteNotPresent
+    }
+}
+
 impl fmt::Debug for PdteInterface {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -983,6 +1027,12 @@ impl PteInterface {
             },
             _ => panic!("Can't get a page table entry."),
         }
+    }
+}
+
+impl Default for PteInterface {
+    fn default() -> Self {
+        Self::PteNotPresent
     }
 }
 
