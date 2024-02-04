@@ -16,13 +16,19 @@ pub struct Frame {
     bytes: [u8; PAGE_SIZE],
 }
 
-impl fmt::Debug for Frame {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Frame {
+    pub fn paddr(&self) -> usize {
         let physical_address: &u8 = &self.bytes[0];
         let physical_address: *const u8 = physical_address as *const u8;
+        physical_address as usize
+    }
+}
+
+impl fmt::Debug for Frame {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Frame")
-            .field("physical_address", &physical_address)
+            .field("paddr", &self.paddr())
             .finish()
     }
 }

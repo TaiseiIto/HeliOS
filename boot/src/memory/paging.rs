@@ -53,5 +53,19 @@ impl Paging {
             Self::Level5 => {},
         }
     }
+
+    pub fn set_page(&mut self, vaddr: usize, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        match self {
+            Self::Disable => {},
+            Self::Bit32 => {},
+            Self::Pae => {},
+            Self::Level4 {
+                interface
+            } => {
+                interface.set_page(vaddr, paddr, readable, writable, executable)
+            },
+            Self::Level5 => {},
+        }
+    }
 }
 

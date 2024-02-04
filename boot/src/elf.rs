@@ -39,7 +39,7 @@ pub struct File {
 }
 
 impl File {
-    pub fn deploy(&self) {
+    pub fn deploy(&self, paging: &mut memory::Paging) {
         com2_println!("Deploy kernel.elf");
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
@@ -52,6 +52,14 @@ impl File {
             .map(|vaddr| (vaddr, Box::default()))
             .collect();
         com2_println!("vaddr2frame = {:#x?}", vaddr2frame);
+        vaddr2frame
+            .iter()
+            .for_each(|(vaddr, frame)| {
+                let readable: bool = true;
+                let writable: bool = true;
+                let executable: bool = false;
+                paging.set_page(*vaddr, frame.paddr(), readable, writable, executable)
+            });
     }
 
     fn header(&self) -> &Header {

@@ -13,6 +13,8 @@ use {
         mem,
     },
     crate::{
+        com2_print,
+        com2_println,
         memory,
         x64,
     },
@@ -57,6 +59,10 @@ impl Interface {
 
     pub fn set(&self) {
         self.cr3.set()
+    }
+
+    pub fn set_page(&mut self, vaddr: usize, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}), writable = {:#x?}, executable = {:#x?}", vaddr, paddr, readable, writable, executable);
     }
 }
 
