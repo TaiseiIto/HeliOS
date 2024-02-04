@@ -138,7 +138,7 @@ impl Pml4teInterface {
             (Some(pml4e), None) => {
                 let source: &Pdpt = pml4e.into();
                 let mut pdpt: Box<Pdpt> = Box::default();
-                destination.set_pml4e(*pml4e, pdpt.as_ref());
+                destination.set_pml4e(pml4e.p(), pml4e.rw(), pml4e.us(), pml4e.pwt(), pml4e.pcd(), pml4e.a(), pml4e.r(), pdpt.as_ref(), pml4e.xd());
                 let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = source.pdpte
                     .as_slice()
                     .iter()
@@ -186,16 +186,15 @@ impl Pml4teInterface {
                     (vaddr, pdpte_interface)
                 })
                 .collect();
-            let pml4e: Pml4e = Pml4e::default()
-                .with_p(true)
-                .with_rw(writable)
-                .with_us(false)
-                .with_pwt(false)
-                .with_pcd(false)
-                .with_a(false)
-                .with_r(false)
-                .with_xd(executable);
-            pml4te.set_pml4e(pml4e, pdpt.as_ref());
+            let p: bool = true;
+            let rw: bool = writable;
+            let us: bool = false;
+            let pwt: bool = false;
+            let pcd: bool = false;
+            let a: bool = false;
+            let r: bool = false;
+            let xd: bool = executable;
+            pml4te.set_pml4e(p, rw, us, pwt, pcd, a, r, pdpt.as_ref(), xd);
             *self = Self::Pml4e{
                 pdpt,
                 vaddr2pdpte_interface,
@@ -251,13 +250,20 @@ impl Pml4te {
         (!pml4te_not_present.p()).then_some(pml4te_not_present)
     }
 
-    fn set_pml4e(&mut self, mut pml4e: Pml4e, pdpt: &Pdpt) {
+    fn set_pml4e(&mut self, p: bool, rw: bool, us: bool, pwt: bool, pcd: bool, a: bool, r: bool, pdpt: &Pdpt, xd: bool) {
         let pdpt: *const Pdpt = pdpt as *const Pdpt;
         let pdpt: u64 = pdpt as u64;
         let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
-        pml4e.set_p(true);
-        pml4e.set_address_of_pdpt(pdpt);
-        self.pml4e = pml4e;
+        self.pml4e = Pml4e::default()
+            .with_p(p)
+            .with_rw(rw)
+            .with_us(us)
+            .with_pwt(pwt)
+            .with_pcd(pcd)
+            .with_a(a)
+            .with_r(r)
+            .with_address_of_pdpt(pdpt)
+            .with_xd(xd);
         assert!(self.pml4e().is_some());
         assert!(self.pml4te_not_present().is_none());
     }
