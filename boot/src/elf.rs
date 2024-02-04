@@ -18,6 +18,10 @@ use {
         fmt,
         str,
     },
+    crate::{
+        com2_print,
+        com2_println,
+    },
     header::Header,
 };
 
@@ -30,6 +34,10 @@ pub struct File {
 }
 
 impl File {
+    pub fn deploy(&self) {
+        com2_println!("Deploy kernel.elf");
+    }
+
     fn header(&self) -> &Header {
         let header: &u8 = &self.bytes[0];
         let header: *const u8 = header as *const u8;

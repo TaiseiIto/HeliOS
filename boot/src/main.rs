@@ -41,14 +41,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
-    com2_println!("directory_tree = {:#x?}", directory_tree);
-    let kernel: elf::File = directory_tree
-        .get("HeliOS/kernel.elf")
-        .unwrap()
-        .read()
-        .into();
-    com2_println!("kernel = {:#x?}", kernel);
     let gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
@@ -80,6 +72,15 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("cpuid = {:#x?}", cpuid);
     let paging = memory::Paging::get(&cpuid);
     paging.set();
+    let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
+    com2_println!("directory_tree = {:#x?}", directory_tree);
+    let kernel: elf::File = directory_tree
+        .get("HeliOS/kernel.elf")
+        .unwrap()
+        .read()
+        .into();
+    com2_println!("kernel = {:#x?}", kernel);
+    kernel.deploy();
     efi_println!("Hello, World!");
     let _memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
