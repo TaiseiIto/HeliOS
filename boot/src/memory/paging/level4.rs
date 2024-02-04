@@ -439,6 +439,59 @@ impl PdpteInterface {
         com2_println!("set_page(pdpte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdpte, vaddr, paddr, readable, writable, executable);
         match self {
             Self::Pe1Gib => {
+                let pe1gib: Pe1Gib = *pdpte
+                    .clone()
+                    .pe1gib()
+                    .unwrap();
+                let page_1gib_paddr: usize = pe1gib.page_1gib() as usize;
+                let mut pdt: Box<Pdt> = Box::default();
+                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = pdt
+                    .as_mut()
+                    .pdte
+                    .as_mut_slice()
+                    .iter_mut()
+                    .enumerate()
+                    .map(|(pdi, pdte)| {
+                        let vaddr: Vaddr = vaddr
+                            .with_pdi(pdi as u16)
+                            .with_pi(0)
+                            .with_offset(0);
+                        let pdte_interface: PdteInterface = PdteInterface::Pe2Mib;
+                        let page_2mib_paddr: usize = page_1gib_paddr + (pdi << Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET);
+                        let pe2mib: Pe2Mib = Pe2Mib::default()
+                            .with_p(true)
+                            .with_rw(pe1gib.rw())
+                            .with_us(pe1gib.us())
+                            .with_pwt(pe1gib.pwt())
+                            .with_pcd(pe1gib.pcd())
+                            .with_a(false)
+                            .with_d(pe1gib.d())
+                            .with_is_page_2mib(true)
+                            .with_g(pe1gib.g())
+                            .with_r(pe1gib.r())
+                            .with_pat(pe1gib.pat())
+                            .with_address_of_2mib_page_frame((page_2mib_paddr >> Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) as u32)
+                            .with_prot_key(pe1gib.prot_key())
+                            .with_xd(pe1gib.xd());
+                        pdte.set_pe2mib(pe2mib);
+                        (vaddr, pdte_interface)
+                    })
+                    .collect();
+                let pdte: Pdpe = Pdpe::default()
+                    .with_p(true)
+                    .with_rw(pe1gib.rw() || writable)
+                    .with_us(pe1gib.us())
+                    .with_pwt(pe1gib.pwt())
+                    .with_pcd(pe1gib.pcd())
+                    .with_a(pe1gib.a())
+                    .with_is_page_1gib(false)
+                    .with_r(pe1gib.r())
+                    .with_xd(pe1gib.xd() || executable);
+                pdpte.set_pdpe(pdte, pdt.as_ref());
+                *self = Self::Pdpe {
+                    pdt,
+                    vaddr2pdte_interface,
+                };
             },
             Self::PdpteNotPresent => {
                 let pdt: Box<Pdt> = Box::default();
