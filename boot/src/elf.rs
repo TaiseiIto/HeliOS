@@ -51,7 +51,8 @@ impl File {
             .for_each(|(vaddr, frame)| {
                 let writable: bool = true;
                 let executable: bool = false;
-                paging.set_page(*vaddr, frame.paddr(), writable, executable)
+                let paddr: usize = frame.paddr();
+                paging.set_page(*vaddr, paddr, writable, executable)
             });
         self.program_headers()
             .into_iter()
@@ -66,6 +67,10 @@ impl File {
                 program_header.set_page(paging, vaddr2paddr);
             });
         vaddr2frame
+    }
+
+    pub fn run(&self, stack_floor: usize) {
+        self.header().run(stack_floor)
     }
 
     fn header(&self) -> &Header {

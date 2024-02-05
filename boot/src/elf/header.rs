@@ -5,6 +5,7 @@
 
 use {
     alloc::vec::Vec,
+    core::arch::asm,
     super::{
         Addr,
         Half,
@@ -57,6 +58,19 @@ impl Header {
                 }
             })
             .collect()
+    }
+
+    #[inline(never)]
+    pub fn run(&self, stack_floor: usize) {
+        let entry: usize = self.e_entry as usize;
+        unsafe {
+            asm!(
+                "mov rsp, {0}",
+                "call {1}",
+                in(reg) stack_floor,
+                in(reg) entry,
+            );
+        }
     }
 
     pub fn section_headers(&self) -> Vec<&section::Header> {

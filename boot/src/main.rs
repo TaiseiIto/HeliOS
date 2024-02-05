@@ -85,22 +85,24 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("kernel = {:#x?}", kernel);
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
     com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
-    let stack_pages: usize = 0x10;
-    let stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..stack_pages)
-        .map(|stack_page_index| (usize::MAX - (stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
+    let kernel_stack_pages: usize = 0x10;
+    let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
+        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
         .collect();
-    stack_vaddr2frame
+    kernel_stack_vaddr2frame
         .iter()
         .for_each(|(vaddr, frame)| {
             let writable: bool = true;
             let executable: bool = false;
             paging.set_page(*vaddr, frame.paddr(), writable, executable);
         });
-    com2_println!("stack_vaddr2frame = {:#x?}", stack_vaddr2frame);
+    com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
+    let kernel_stack_floor: usize = 0;
     efi_println!("Hello, World!");
     let _memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
+    kernel.run(kernel_stack_floor);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
 }
