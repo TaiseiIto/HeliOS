@@ -13,6 +13,8 @@ use {
         mem,
     },
     crate::{
+        com2_print,
+        com2_println,
         memory,
         x64,
     },
@@ -938,7 +940,7 @@ impl PdteInterface {
             vaddr2pte_interface
                 .get_mut(&pvaddr)
                 .unwrap()
-                .set_page(pte, paddr, writable, executable);
+                .set_page(pte, vaddr, paddr, writable, executable);
         } else {
             panic!("Can't set a page!");
         }
@@ -1215,7 +1217,7 @@ impl PteInterface {
         }
     }
 
-    fn set_page(&mut self, pte: &mut Pte, paddr: usize, writable: bool, executable: bool) {
+    fn set_page(&mut self, pte: &mut Pte, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
         let pe4kib: Pe4Kib = Pe4Kib::default()
             .with_p(true)
             .with_rw(writable)
@@ -1232,6 +1234,10 @@ impl PteInterface {
             .with_xd(!executable);
         pte.set_pe4kib(pe4kib);
         *self = Self::Pe4Kib;
+        let vaddr: u64 = (*vaddr).into();
+        com2_println!("set_page");
+        com2_println!("vaddr = {:#x?}", vaddr);
+        com2_println!("pte = {:#x?}", pte);
     }
 }
 
