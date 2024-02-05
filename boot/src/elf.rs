@@ -56,6 +56,15 @@ impl File {
         self.program_headers()
             .into_iter()
             .for_each(|program_header| program_header.deploy(&self.bytes));
+        self.program_headers()
+            .into_iter()
+            .for_each(|program_header| {
+                let vaddr2paddr: BTreeMap<usize, usize> = vaddr2frame
+                    .iter()
+                    .map(|(vaddr, frame)| (*vaddr, frame.paddr()))
+                    .collect();
+                program_header.set_page(paging, vaddr2paddr);
+            });
         vaddr2frame
     }
 

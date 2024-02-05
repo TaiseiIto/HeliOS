@@ -4,7 +4,10 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     bitfield_struct::bitfield,
     core::{
         ops::Range,
@@ -53,6 +56,19 @@ impl Header {
         self.vaddr_range_in_pages()
             .filter(|vaddr| vaddr % memory::PAGE_SIZE == 0)
             .collect()
+    }
+
+    pub fn set_page(&self, paging: &mut memory::Paging, vaddr2paddr: BTreeMap<usize, usize>) {
+        let writable: bool = self.p_flags.w();
+        let executable: bool = self.p_flags.x();
+        self.pages()
+            .into_iter()
+            .for_each(|vaddr| {
+                let paddr: usize = *vaddr2paddr
+                    .get(&vaddr)
+                    .unwrap();
+                paging.set_page(vaddr, paddr, writable, executable);
+            });
     }
 
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
