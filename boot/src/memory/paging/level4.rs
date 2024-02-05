@@ -193,7 +193,7 @@ impl Pml4teInterface {
                 .with_pcd(false)
                 .with_a(false)
                 .with_r(false)
-                .with_xd(executable);
+                .with_xd(!executable);
             pml4te.set_pml4e(pml4e, pdpt.as_ref());
             *self = Self::Pml4e{
                 pdpt,
@@ -476,7 +476,7 @@ impl PdpteInterface {
                         (vaddr, pdte_interface)
                     })
                     .collect();
-                let pdte: Pdpe = Pdpe::default()
+                let pdpe: Pdpe = Pdpe::default()
                     .with_p(true)
                     .with_rw(pe1gib.rw() || writable)
                     .with_us(pe1gib.us())
@@ -485,8 +485,8 @@ impl PdpteInterface {
                     .with_a(pe1gib.a())
                     .with_is_page_1gib(false)
                     .with_r(pe1gib.r())
-                    .with_xd(pe1gib.xd() || executable);
-                pdpte.set_pdpe(pdte, pdt.as_ref());
+                    .with_xd(pe1gib.xd() && !executable);
+                pdpte.set_pdpe(pdpe, pdt.as_ref());
                 *self = Self::Pdpe {
                     pdt,
                     vaddr2pdte_interface,
@@ -518,7 +518,7 @@ impl PdpteInterface {
                     .with_a(false)
                     .with_is_page_1gib(false)
                     .with_r(false)
-                    .with_xd(executable);
+                    .with_xd(!executable);
                 pdpte.set_pdpe(pdpe, pdt.as_ref());
                 *self = Self::Pdpe {
                     pdt,
@@ -841,6 +841,64 @@ impl PdteInterface {
 
     fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
         com2_println!("set_page(pdte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdte, vaddr, paddr, readable, writable, executable);
+        match self {
+            Self::Pe2Mib => {
+                let pe2mib: Pe2Mib = *pdte
+                    .clone()
+                    .pe2mib()
+                    .unwrap();
+                let page_2mib_paddr: usize = pe2mib.page_2mib() as usize;
+                let mut pt: Box<Pt> = Box::default();
+                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = pt
+                    .as_mut()
+                    .pte
+                    .as_mut_slice()
+                    .iter_mut()
+                    .enumerate()
+                    .map(|(pi, pte)| {
+                        let vaddr: Vaddr = vaddr
+                            .with_pi(pi as u16)
+                            .with_offset(0);
+                        let pte_interface: PteInterface = PteInterface::Pe4Kib;
+                        let page_4kib_paddr: usize = page_2mib_paddr + (pi << Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET);
+                        let pe4kib: Pe4Kib = Pe4Kib::default()
+                            .with_p(true)
+                            .with_rw(pe2mib.rw())
+                            .with_us(pe2mib.us())
+                            .with_pwt(pe2mib.pwt())
+                            .with_pcd(pe2mib.pcd())
+                            .with_a(false)
+                            .with_d(pe2mib.d())
+                            .with_pat(pe2mib.pat())
+                            .with_g(pe2mib.g())
+                            .with_r(pe2mib.r())
+                            .with_address_of_4kib_page_frame((page_4kib_paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
+                            .with_prot_key(pe2mib.prot_key())
+                            .with_xd(pe2mib.xd());
+                        pte.set_pe4kib(pe4kib);
+                        (vaddr, pte_interface)
+                    })
+                    .collect();
+                let pde: Pde = Pde::default()
+                    .with_p(true)
+                    .with_rw(writable)
+                    .with_us(false)
+                    .with_pwt(false)
+                    .with_pcd(false)
+                    .with_a(false)
+                    .with_is_page_2mib(false)
+                    .with_r(false)
+                    .with_xd(pe2mib.xd() && !executable);
+                pdte.set_pde(pde, pt.as_ref());
+                *self = Self::Pde {
+                    pt,
+                    vaddr2pte_interface,
+                }
+            },
+            Self::PdteNotPresent => {
+            },
+            _ => {},
+        }
     }
 }
 
