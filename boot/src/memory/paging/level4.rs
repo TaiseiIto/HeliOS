@@ -896,6 +896,36 @@ impl PdteInterface {
                 }
             },
             Self::PdteNotPresent => {
+                let pt: Box<Pt> = Box::default();
+                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = pt
+                    .as_ref()
+                    .pte
+                    .as_slice()
+                    .iter()
+                    .enumerate()
+                    .map(|(pi, _pte)| {
+                        let vaddr: Vaddr = vaddr
+                            .with_pi(pi as u16)
+                            .with_offset(0);
+                        let pte_interface: PteInterface = PteInterface::default();
+                        (vaddr, pte_interface)
+                    })
+                    .collect();
+                let pde: Pde = Pde::default()
+                    .with_p(true)
+                    .with_rw(writable)
+                    .with_us(false)
+                    .with_pwt(false)
+                    .with_pcd(false)
+                    .with_a(false)
+                    .with_is_page_2mib(false)
+                    .with_r(false)
+                    .with_xd(!executable);
+                pdte.set_pde(pde, pt.as_ref());
+                *self = Self::Pde {
+                    pt,
+                    vaddr2pte_interface,
+                };
             },
             _ => {},
         }
