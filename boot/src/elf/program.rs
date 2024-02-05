@@ -36,24 +36,16 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn bytes_in_file<'a>(&'a self, elf: &'a [u8]) -> &'a [u8] {
-        let begin: usize = self.p_offset as usize;
-        let end: usize = begin + self.p_filesz as usize;
-        &elf[begin..end]
-    }
-
-    pub fn bytes_in_memory_mut(&mut self) -> &mut [u8] {
+    pub fn deploy(&self, elf: &[u8]) {
         let begin: usize = self.p_vaddr as usize;
         let begin: *mut u8 = begin as *mut u8;
         let length: usize = self.p_memsz as usize;
-        unsafe {
+        let bytes_in_memory: &mut [u8] = unsafe {
             slice::from_raw_parts_mut(begin, length)
-        }
-    }
-
-    pub fn deploy(&mut self, elf: &[u8]) {
-        let bytes_in_file: &[u8] = self.bytes_in_file(elf);
-        let bytes_in_memory: &mut [u8] = self.bytes_in_memory_mut();
+        };
+        let begin: usize = self.p_offset as usize;
+        let end: usize = begin + self.p_filesz as usize;
+        let bytes_in_file: &[u8] = &elf[begin..end];
         bytes_in_memory.copy_from_slice(bytes_in_file);
     }
 
