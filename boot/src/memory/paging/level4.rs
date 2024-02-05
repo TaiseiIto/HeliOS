@@ -1219,6 +1219,22 @@ impl PteInterface {
 
     fn set_page(&mut self, pte: &mut Pte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
         com2_println!("set_page(pte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pte, vaddr, paddr, readable, writable, executable);
+        let pe4kib: Pe4Kib = Pe4Kib::default()
+            .with_p(true)
+            .with_rw(writable)
+            .with_us(false)
+            .with_pwt(false)
+            .with_pcd(false)
+            .with_a(false)
+            .with_d(false)
+            .with_pat(false)
+            .with_g(false)
+            .with_r(false)
+            .with_address_of_4kib_page_frame((paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
+            .with_prot_key(0)
+            .with_xd(!executable);
+        pte.set_pe4kib(pe4kib);
+        *self = Self::Pe4Kib;
     }
 }
 
