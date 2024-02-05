@@ -92,10 +92,9 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     stack_vaddr2frame
         .iter()
         .for_each(|(vaddr, frame)| {
-            let readable: bool = true;
             let writable: bool = true;
             let executable: bool = false;
-            paging.set_page(*vaddr, frame.paddr(), readable, writable, executable);
+            paging.set_page(*vaddr, frame.paddr(), writable, executable);
         });
     com2_println!("stack_vaddr2frame = {:#x?}", stack_vaddr2frame);
     efi_println!("Hello, World!");
