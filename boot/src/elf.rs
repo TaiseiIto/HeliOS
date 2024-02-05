@@ -60,6 +60,9 @@ impl File {
                 let executable: bool = false;
                 paging.set_page(*vaddr, frame.paddr(), readable, writable, executable)
             });
+        self.program_headers()
+            .into_iter()
+            .for_each(|program_header| program_header.deploy(&self.bytes));
     }
 
     fn header(&self) -> &Header {
