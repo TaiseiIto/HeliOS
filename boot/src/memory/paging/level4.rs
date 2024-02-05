@@ -13,8 +13,6 @@ use {
         mem,
     },
     crate::{
-        com2_print,
-        com2_println,
         memory,
         x64,
     },
@@ -1218,7 +1216,6 @@ impl PteInterface {
     }
 
     fn set_page(&mut self, pte: &mut Pte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(pte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pte, vaddr, paddr, readable, writable, executable);
         let pe4kib: Pe4Kib = Pe4Kib::default()
             .with_p(true)
             .with_rw(writable)

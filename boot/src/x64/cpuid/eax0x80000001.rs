@@ -20,6 +20,10 @@ pub struct Eax0x80000001 {
 }
 
 impl Eax0x80000001 {
+    pub fn execute_disable_bit_available(&self) -> bool {
+        self.edx.execute_disable_bit_available()
+    }
+
     pub fn get(eax0x80000000: &Eax0x80000000) -> Option<Self> {
         let eax: u32 = 0x80000001;
         let ecx: u32 = 0x00000000;

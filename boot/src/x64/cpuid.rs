@@ -153,6 +153,12 @@ pub struct Cpuid {
 }
 
 impl Cpuid {
+    pub fn execute_disable_bit_available(&self) -> bool {
+        self.eax0x80000001
+            .as_ref()
+            .map_or(false, |eax0x80000001| eax0x80000001.execute_disable_bit_available())
+    }
+
     pub fn get() -> Option<Self> {
         Rflags::cpuid_is_supported().then(|| {
             let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
