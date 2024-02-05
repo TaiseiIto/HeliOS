@@ -840,7 +840,6 @@ impl PdteInterface {
     }
 
     fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
-        com2_println!("set_page(pdte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pdte, vaddr, paddr, readable, writable, executable);
         match self {
             Self::Pe2Mib => {
                 let pe2mib: Pe2Mib = *pdte
@@ -928,6 +927,22 @@ impl PdteInterface {
                 };
             },
             _ => {},
+        }
+        if let Self::Pde {
+            pt,
+            vaddr2pte_interface,
+        } = self {
+            let pvaddr: Vaddr = vaddr
+                .with_offset(0);
+            let pte: &mut Pte = pt
+                .as_mut()
+                .pte(&pvaddr);
+            vaddr2pte_interface
+                .get_mut(&pvaddr)
+                .unwrap()
+                .set_page(pte, vaddr, paddr, readable, writable, executable);
+        } else {
+            panic!("Can't set a page!");
         }
     }
 }
@@ -1200,6 +1215,10 @@ impl PteInterface {
             },
             _ => panic!("Can't get a page table entry."),
         }
+    }
+
+    fn set_page(&mut self, pte: &mut Pte, vaddr: &Vaddr, paddr: usize, readable: bool, writable: bool, executable: bool) {
+        com2_println!("set_page(pte = {:#x?}, vaddr = {:#x?}, paddr = {:#x?}, readable = {:#x?}, writable = {:#x?}, executable = {:#x?})", pte, vaddr, paddr, readable, writable, executable);
     }
 }
 
