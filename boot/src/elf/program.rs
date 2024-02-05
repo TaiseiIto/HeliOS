@@ -46,7 +46,7 @@ impl Header {
         let begin: usize = self.p_offset as usize;
         let end: usize = begin + self.p_filesz as usize;
         let bytes_in_file: &[u8] = &elf[begin..end];
-        bytes_in_memory[0..self.p_filesz as usize].copy_from_slice(bytes_in_file);
+        bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
     }
 
     pub fn pages(&self) -> Vec<usize> {
