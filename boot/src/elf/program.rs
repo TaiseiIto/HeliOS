@@ -6,7 +6,10 @@
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::ops::Range,
+    core::{
+        ops::Range,
+        slice,
+    },
     crate::memory,
     super::{
         Addr,
@@ -37,6 +40,21 @@ impl Header {
         let begin: usize = self.p_offset as usize;
         let end: usize = begin + self.p_filesz as usize;
         &elf[begin..end]
+    }
+
+    pub fn bytes_in_memory_mut(&mut self) -> &mut [u8] {
+        let begin: usize = self.p_vaddr as usize;
+        let begin: *mut u8 = begin as *mut u8;
+        let length: usize = self.p_memsz as usize;
+        unsafe {
+            slice::from_raw_parts_mut(begin, length)
+        }
+    }
+
+    pub fn deploy(&mut self, elf: &[u8]) {
+        let bytes_in_file: &[u8] = self.bytes_in_file(elf);
+        let bytes_in_memory: &mut [u8] = self.bytes_in_memory_mut();
+        bytes_in_memory.copy_from_slice(bytes_in_file);
     }
 
     pub fn pages(&self) -> Vec<usize> {
