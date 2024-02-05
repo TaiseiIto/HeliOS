@@ -76,8 +76,8 @@ impl File {
             .program_headers()
     }
 
-    fn section_bytes<'a>(&'a self, section_header: &'a section::Header) -> &'a [u8] {
-        section_header.bytes(&self.bytes)
+    fn section_bytes_in_file<'a>(&'a self, section_header: &'a section::Header) -> &'a [u8] {
+        section_header.bytes_in_file(&self.bytes)
     }
 
     fn section_header(&self, section_name: &str) -> Option<&section::Header> {
@@ -97,10 +97,10 @@ impl File {
             .section_headers()
     }
 
-    fn section_header2bytes(&self) -> BTreeMap<&section::Header, &[u8]> {
+    fn section_header2bytes_in_file(&self) -> BTreeMap<&section::Header, &[u8]> {
         self.section_headers()
             .into_iter()
-            .map(|section_header| (section_header, section_header.bytes(&self.bytes)))
+            .map(|section_header| (section_header, section_header.bytes_in_file(&self.bytes)))
             .collect()
     }
 
@@ -131,7 +131,7 @@ impl File {
     }
 
     fn string_tables(&self) -> BTreeMap<&section::Header, BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &str>> {
-        self.section_header2bytes()
+        self.section_header2bytes_in_file()
             .into_iter()
             .filter_map(|(section_header, bytes)| section_header
                 .string_table(bytes)
@@ -143,7 +143,7 @@ impl File {
         let strtab_section_header: &section::Header = self
             .section_header(".strtab")
             .unwrap();
-        let strtab_section_bytes: &[u8] = self.section_bytes(strtab_section_header);
+        let strtab_section_bytes: &[u8] = self.section_bytes_in_file(strtab_section_header);
         strtab_section_header
             .string_table(strtab_section_bytes)
             .unwrap()
@@ -163,7 +163,7 @@ impl File {
         let symtab_section_header: &section::Header = self
             .section_header(".symtab")
             .unwrap();
-        let symtab_section_bytes: &[u8] = self.section_bytes(symtab_section_header);
+        let symtab_section_bytes: &[u8] = self.section_bytes_in_file(symtab_section_header);
         symtab_section_bytes.into()
     }
 }

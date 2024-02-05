@@ -41,7 +41,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn bytes<'a>(&'a self, elf: &'a [u8]) -> &'a [u8] {
+    pub fn bytes_in_file<'a>(&'a self, elf: &'a [u8]) -> &'a [u8] {
         let begin: usize = self.sh_offset as usize;
         let end: usize = begin + self.sh_size as usize;
         &elf[begin..end]

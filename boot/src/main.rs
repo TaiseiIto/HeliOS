@@ -70,7 +70,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
     com2_println!("cpuid = {:#x?}", cpuid);
-    com2_println!("execute_disable_bit_available = {:#x?}", cpuid.as_ref().map_or(false, |cpuid| cpuid.execute_disable_bit_available()));
+    let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
+    com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
