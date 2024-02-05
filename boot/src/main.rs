@@ -9,6 +9,7 @@ extern crate alloc;
 
 use {
     alloc::{
+        boxed::Box,
         collections::BTreeMap,
         vec::Vec,
     },
@@ -82,7 +83,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .read()
         .into();
     com2_println!("kernel = {:#x?}", kernel);
-    kernel.deploy(&mut paging);
+    let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
+    com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
     efi_println!("Hello, World!");
     let _memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)

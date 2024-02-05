@@ -22,11 +22,7 @@ use {
         fmt,
         str,
     },
-    crate::{
-        com2_print,
-        com2_println,
-        memory,
-    },
+    crate::memory,
     header::Header,
 };
 
@@ -39,8 +35,7 @@ pub struct File {
 }
 
 impl File {
-    pub fn deploy(&self, paging: &mut memory::Paging) {
-        com2_println!("Deploy kernel.elf");
+    pub fn deploy(&self, paging: &mut memory::Paging) -> BTreeMap<usize, Box<memory::Frame>> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
             .flat_map(|program_header| program_header
@@ -51,7 +46,6 @@ impl File {
             .into_iter()
             .map(|vaddr| (vaddr, Box::default()))
             .collect();
-        com2_println!("vaddr2frame = {:#x?}", vaddr2frame);
         vaddr2frame
             .iter()
             .for_each(|(vaddr, frame)| {
@@ -63,6 +57,7 @@ impl File {
         self.program_headers()
             .into_iter()
             .for_each(|program_header| program_header.deploy(&self.bytes));
+        vaddr2frame
     }
 
     fn header(&self) -> &Header {
