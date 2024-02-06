@@ -244,6 +244,13 @@ impl Pml4teInterface {
             pdpt,
             vaddr2pdpte_interface,
         } = self {
+            let old_pml4e: Pml4e = *pml4te
+                .pml4e()
+                .unwrap();
+            let new_pml4e: Pml4e = old_pml4e
+                .with_rw(old_pml4e.rw() || writable)
+                .with_xd(old_pml4e.xd() && !executable);
+            pml4te.set_pml4e(new_pml4e, pdpt.as_ref());
             let pdpvaddr: Vaddr = vaddr
                 .with_pdi(0)
                 .with_pi(0)
