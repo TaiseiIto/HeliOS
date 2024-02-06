@@ -7,6 +7,14 @@
 
 extern crate alloc;
 
+mod efi;
+mod elf;
+mod interrupt;
+mod kernel;
+mod memory;
+mod rs232c;
+mod x64;
+
 use {
     alloc::{
         boxed::Box,
@@ -15,14 +23,6 @@ use {
     },
     core::panic::PanicInfo,
 };
-
-mod efi;
-mod elf;
-mod interrupt;
-mod kernel;
-mod memory;
-mod rs232c;
-mod x64;
 
 /// # The entry point of the OS
 /// ## References
