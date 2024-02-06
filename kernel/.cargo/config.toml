@@ -2,5 +2,6 @@
 target = "./target.json"
 
 [unstable]
+build-std-features = ["compiler-builtins-mem"]
 build-std = ["alloc", "core"]
 

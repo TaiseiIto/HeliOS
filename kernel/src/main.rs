@@ -25,12 +25,14 @@ fn main(argument: &'static mut Argument<'static>) {
         com2
     } = argument;
     rs232c::set_com2(com2);
-    com2_println!("Hello, kernel.elf!");
+    panic!("Hello, kernel.elf!");
 }
 
 /// # A panic handler of the kernel
 #[panic_handler]
-fn panic(_panic: &PanicInfo) -> ! {
+fn panic(panic: &PanicInfo) -> ! {
+    com2_println!("KERNEL PANIC!!!");
+    com2_println!("{}", panic);
     loop {
         unsafe {
             asm!("hlt");
