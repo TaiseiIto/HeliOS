@@ -44,9 +44,9 @@ impl Interface {
             .as_ref()
             .pml4te(&pml4vaddr);
         com2_println!("pml4te = {:#x?}", pml4te);
-        self.vaddr2pml4te_interface
-            .get(&pml4vaddr)
-            .map(|pml4te_interface| pml4te_interface.debug(&vaddr));
+        if let Some(pml4te_interface) = self.vaddr2pml4te_interface.get(&pml4vaddr) {
+            pml4te_interface.debug(&vaddr);
+        }
     }
 
     pub fn get(cr3: x64::control::Register3) -> Self {
@@ -200,9 +200,9 @@ impl Pml4teInterface {
                 .as_ref()
                 .pdpte(&pdpvaddr);
             com2_println!("pdpte = {:#x?}", pdpte);
-            vaddr2pdpte_interface
-                .get(&pdpvaddr)
-                .map(|pdpte_interface| pdpte_interface.debug(vaddr));
+            if let Some(pdpte_interface) = vaddr2pdpte_interface.get(&pdpvaddr) {
+                pdpte_interface.debug(vaddr);
+            }
         }
     }
 
@@ -491,9 +491,9 @@ impl PdpteInterface {
                 .as_ref()
                 .pdte(&pdvaddr);
             com2_println!("pdte = {:#x?}", pdte);
-            vaddr2pdte_interface
-                .get(&pdvaddr)
-                .map(|pdte_interface| pdte_interface.debug(vaddr));
+            if let Some(pdte_interface) = vaddr2pdte_interface.get(&pdvaddr) {
+                pdte_interface.debug(vaddr);
+            }
         }
     }
 
