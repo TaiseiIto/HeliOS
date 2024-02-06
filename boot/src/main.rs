@@ -19,6 +19,7 @@ use {
 mod efi;
 mod elf;
 mod interrupt;
+mod kernel;
 mod memory;
 mod rs232c;
 mod x64;
@@ -105,7 +106,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     kernel_vaddr2frame
         .keys()
         .for_each(|vaddr| paging.debug(*vaddr));
-    kernel.run(kernel_stack_floor);
+    let kernel_argument = kernel::Argument::new(rs232c::get_com2());
+    kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
 }

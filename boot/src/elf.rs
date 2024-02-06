@@ -69,8 +69,8 @@ impl File {
         vaddr2frame
     }
 
-    pub fn run(&self, stack_floor: usize) {
-        self.header().run(stack_floor)
+    pub fn run<T>(&self, stack_floor: usize, argument: &T) {
+        self.header().run(stack_floor, argument)
     }
 
     fn header(&self) -> &Header {

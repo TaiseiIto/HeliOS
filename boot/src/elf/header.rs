@@ -61,14 +61,17 @@ impl Header {
     }
 
     #[inline(never)]
-    pub fn run(&self, stack_floor: usize) {
+    pub fn run<T>(&self, stack_floor: usize, argument: &T) {
         let entry: usize = self.e_entry as usize;
+        let argument: *const T = argument as *const T;
+        let argument: usize = argument as usize;
         unsafe {
             asm!(
                 "mov rsp, {0}",
                 "call {1}",
                 in(reg) stack_floor,
                 in(reg) entry,
+                in("rdi") argument,
             );
         }
     }

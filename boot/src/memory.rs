@@ -14,10 +14,6 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn as_slice(&self) -> &[u8] {
-        self.bytes.as_slice()
-    }
-
     pub fn paddr(&self) -> usize {
         let physical_address: &u8 = &self.bytes[0];
         let physical_address: *const u8 = physical_address as *const u8;

@@ -1041,7 +1041,7 @@ impl PdteInterface {
             vaddr2pte_interface
                 .get_mut(&pvaddr)
                 .unwrap()
-                .set_page(pte, vaddr, paddr, writable, executable);
+                .set_page(pte, paddr, writable, executable);
         } else {
             panic!("Can't set a page!");
         }
@@ -1322,7 +1322,7 @@ impl PteInterface {
         }
     }
 
-    fn set_page(&mut self, pte: &mut Pte, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
+    fn set_page(&mut self, pte: &mut Pte, paddr: usize, writable: bool, executable: bool) {
         let pe4kib: Pe4Kib = Pe4Kib::default()
             .with_p(true)
             .with_rw(writable)
