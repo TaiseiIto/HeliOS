@@ -600,6 +600,13 @@ impl PdpteInterface {
             pdt,
             vaddr2pdte_interface,
         } = self {
+            let old_pdpe: Pdpe = *pdpte
+                .pdpe()
+                .unwrap();
+            let new_pdpe: Pdpe = old_pdpe
+                .with_rw(old_pdpe.rw() || writable)
+                .with_xd(old_pdpe.xd() && !executable);
+            pdpte.set_pdpe(new_pdpe, pdt.as_ref());
             let pdvaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
@@ -1019,6 +1026,13 @@ impl PdteInterface {
             pt,
             vaddr2pte_interface,
         } = self {
+            let old_pde: Pde = *pdte
+                .pde()
+                .unwrap();
+            let new_pde: Pde = old_pde
+                .with_rw(old_pde.rw() || writable)
+                .with_xd(old_pde.xd() && !executable);
+            pdte.set_pde(new_pde, pt.as_ref());
             let pvaddr: Vaddr = vaddr
                 .with_offset(0);
             let pte: &mut Pte = pt
@@ -1325,10 +1339,6 @@ impl PteInterface {
             .with_xd(!executable);
         pte.set_pe4kib(pe4kib);
         *self = Self::Pe4Kib;
-        let vaddr: u64 = (*vaddr).into();
-        com2_println!("set_page");
-        com2_println!("vaddr = {:#x?}", vaddr);
-        com2_println!("pte = {:#x?}", pte);
     }
 }
 
