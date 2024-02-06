@@ -84,9 +84,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .into();
     com2_println!("kernel = {:#x?}", kernel);
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
-    kernel_vaddr2frame
-        .iter()
-        .for_each(|(vaddr, frame)| com2_println!("frame({:#x?}) = {:#x?}", vaddr, frame.as_slice()));
     com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
     let kernel_stack_pages: usize = 0x10;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
