@@ -200,6 +200,9 @@ impl Pml4teInterface {
                 .as_ref()
                 .pdpte(&pdpvaddr);
             com2_println!("pdpte = {:#x?}", pdpte);
+            vaddr2pdpte_interface
+                .get(&pdpvaddr)
+                .map(|pdpte_interface| pdpte_interface.debug(vaddr));
         }
     }
 
@@ -476,6 +479,21 @@ impl PdpteInterface {
         }
     }
 
+    fn debug(&self, vaddr: &Vaddr) {
+        if let Self::Pdpe {
+            pdt,
+            vaddr2pdte_interface,
+        } = self {
+            let pdvaddr: Vaddr = vaddr
+                .with_pi(0)
+                .with_offset(0);
+            let pdte: &Pdte = pdt
+                .as_ref()
+                .pdte(&pdvaddr);
+            com2_println!("pdte = {:#x?}", pdte);
+        }
+    }
+
     fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
         match self {
             Self::Pe1Gib => {
@@ -577,7 +595,7 @@ impl PdpteInterface {
                 .with_offset(0);
             let pdte: &mut Pdte = pdt
                 .as_mut()
-                .pdte(&pdvaddr);
+                .pdte_mut(&pdvaddr);
             vaddr2pdte_interface
                 .get_mut(&pdvaddr)
                 .unwrap()
@@ -813,7 +831,11 @@ struct Pdt {
 }
 
 impl Pdt {
-    fn pdte(&mut self, vaddr: &Vaddr) -> &mut Pdte {
+    fn pdte(&self, vaddr: &Vaddr) -> &Pdte {
+        &self.pdte[vaddr.pdi() as usize]
+    }
+
+    fn pdte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdte {
         &mut self.pdte[vaddr.pdi() as usize]
     }
 }
@@ -977,7 +999,7 @@ impl PdteInterface {
                 .with_offset(0);
             let pte: &mut Pte = pt
                 .as_mut()
-                .pte(&pvaddr);
+                .pte_mut(&pvaddr);
             vaddr2pte_interface
                 .get_mut(&pvaddr)
                 .unwrap()
@@ -1214,7 +1236,11 @@ struct Pt {
 }
 
 impl Pt {
-    fn pte(&mut self, vaddr: &Vaddr) -> &mut Pte {
+    fn pte(&self, vaddr: &Vaddr) -> &Pte {
+        &self.pte[vaddr.pi() as usize]
+    }
+
+    fn pte_mut(&mut self, vaddr: &Vaddr) -> &mut Pte {
         &mut self.pte[vaddr.pi() as usize]
     }
 }
