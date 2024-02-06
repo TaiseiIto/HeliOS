@@ -32,6 +32,20 @@ pub struct Interface {
 }
 
 impl Interface {
+    pub fn debug(&self, vaddr: usize) {
+        com2_println!("cr3 = {:#x?}", self.cr3);
+        let vaddr: Vaddr = vaddr.into();
+        let pml4vaddr: Vaddr = vaddr
+                .with_pdpi(0)
+                .with_pdi(0)
+                .with_pi(0)
+                .with_offset(0);
+        let pml4te: &Pml4te = self.pml4t
+            .as_ref()
+            .pml4te(&pml4vaddr);
+        com2_println!("pml4te = {:#x?}", pml4te);
+    }
+
     pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
         let mut pml4t: Box<Pml4t> = Box::default();
@@ -70,7 +84,7 @@ impl Interface {
                 .with_offset(0);
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
-            .pml4te(&pml4vaddr);
+            .pml4te_mut(&pml4vaddr);
         self.vaddr2pml4te_interface
             .get_mut(&pml4vaddr)
             .unwrap()
@@ -103,7 +117,11 @@ struct Pml4t {
 }
 
 impl Pml4t {
-    fn pml4te(&mut self, vaddr: &Vaddr) -> &mut Pml4te {
+    fn pml4te(&self, vaddr: &Vaddr) -> &Pml4te {
+        &self.pml4te[vaddr.pml4i() as usize]
+    }
+
+    fn pml4te_mut(&mut self, vaddr: &Vaddr) -> &mut Pml4te {
         &mut self.pml4te[vaddr.pml4i() as usize]
     }
 }

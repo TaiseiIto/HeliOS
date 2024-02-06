@@ -98,7 +98,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let writable: bool = true;
             let executable: bool = false;
             paging.set_page(*vaddr, frame.paddr(), writable, executable);
-            com2_println!("frame({:#x?}) = {:#x?}", vaddr, frame.as_slice());
         });
     com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
@@ -106,6 +105,9 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let _memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
+    kernel_vaddr2frame
+        .keys()
+        .for_each(|vaddr| paging.debug(*vaddr));
     kernel.run(kernel_stack_floor);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

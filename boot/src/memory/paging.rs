@@ -1,6 +1,10 @@
 mod level4;
 
-use crate::x64;
+use crate::{
+    com2_print,
+    com2_println,
+    x64,
+};
 
 /// # Paging
 /// ## References
@@ -17,6 +21,22 @@ pub enum Paging {
 }
 
 impl Paging {
+    pub fn debug(&self, vaddr: usize) {
+        com2_println!("Begin paging information vaddr {:#x?}", vaddr);
+        match self {
+            Self::Disable => {},
+            Self::Bit32 => {},
+            Self::Pae => {},
+            Self::Level4 {
+                interface
+            } => {
+                interface.debug(vaddr)
+            },
+            Self::Level5 => {},
+        }
+        com2_println!("End paging information vaddr {:#x?}", vaddr);
+    }
+
     pub fn get(cpuid: &Option<x64::Cpuid>) -> Self {
         let ia32_efer: Option<x64::msr::Ia32Efer> = x64::msr::Ia32Efer::get(cpuid);
         let cr0 = x64::control::Register0::get();
