@@ -491,6 +491,9 @@ impl PdpteInterface {
                 .as_ref()
                 .pdte(&pdvaddr);
             com2_println!("pdte = {:#x?}", pdte);
+            vaddr2pdte_interface
+                .get(&pdvaddr)
+                .map(|pdte_interface| pdte_interface.debug(vaddr));
         }
     }
 
@@ -899,6 +902,20 @@ impl PdteInterface {
                 Self::PdteNotPresent
             },
             _ => panic!("Can't get a page directory table entry."),
+        }
+    }
+
+    fn debug(&self, vaddr: &Vaddr) {
+        if let Self::Pde {
+            pt,
+            vaddr2pte_interface: _,
+        } = self {
+            let pvaddr: Vaddr = vaddr
+                .with_offset(0);
+            let pte: &Pte = pt
+                .as_ref()
+                .pte(&pvaddr);
+            com2_println!("pte = {:#x?}", pte);
         }
     }
 
