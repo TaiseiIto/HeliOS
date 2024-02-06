@@ -44,6 +44,9 @@ impl Interface {
             .as_ref()
             .pml4te(&pml4vaddr);
         com2_println!("pml4te = {:#x?}", pml4te);
+        self.vaddr2pml4te_interface
+            .get(&pml4vaddr)
+            .map(|pml4te_interface| pml4te_interface.debug(&vaddr));
     }
 
     pub fn get(cr3: x64::control::Register3) -> Self {
@@ -184,6 +187,22 @@ impl Pml4teInterface {
         }
     }
 
+    fn debug(&self, vaddr: &Vaddr) {
+        if let Self::Pml4e {
+            pdpt,
+            vaddr2pdpte_interface,
+        } = self {
+            let pdpvaddr: Vaddr = vaddr
+                .with_pdi(0)
+                .with_pi(0)
+                .with_offset(0);
+            let pdpte: &Pdpte = pdpt
+                .as_ref()
+                .pdpte(&pdpvaddr);
+            com2_println!("pdpte = {:#x?}", pdpte);
+        }
+    }
+
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
@@ -213,7 +232,7 @@ impl Pml4teInterface {
                 .with_r(false)
                 .with_xd(!executable);
             pml4te.set_pml4e(pml4e, pdpt.as_ref());
-            *self = Self::Pml4e{
+            *self = Self::Pml4e {
                 pdpt,
                 vaddr2pdpte_interface,
             };
@@ -228,7 +247,7 @@ impl Pml4teInterface {
                 .with_offset(0);
             let pdpte: &mut Pdpte = pdpt
                 .as_mut()
-                .pdpte(&pdpvaddr);
+                .pdpte_mut(&pdpvaddr);
             vaddr2pdpte_interface
                 .get_mut(&pdpvaddr)
                 .unwrap()
@@ -383,7 +402,11 @@ struct Pdpt {
 }
 
 impl Pdpt {
-    fn pdpte(&mut self, vaddr: &Vaddr) -> &mut Pdpte {
+    fn pdpte(&self, vaddr: &Vaddr) -> &Pdpte {
+        &self.pdpte[vaddr.pdpi() as usize]
+    }
+
+    fn pdpte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdpte {
         &mut self.pdpte[vaddr.pdpi() as usize]
     }
 }
