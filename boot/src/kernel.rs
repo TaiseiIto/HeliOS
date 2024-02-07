@@ -1,4 +1,5 @@
 use crate::{
+    memory,
     rs232c,
     x64,
 };
@@ -7,14 +8,16 @@ use crate::{
 #[derive(Debug)]
 pub struct Argument<'a> {
     com: &'a mut rs232c::Com,
-    cpuid: Option<x64::Cpuid>
+    cpuid: Option<x64::Cpuid>,
+    gdt: memory::segment::descriptor::Table,
 }
 
 impl<'a> Argument<'a> {
-    pub fn new(com: &'a mut rs232c::Com, cpuid: Option<x64::Cpuid>) -> Self {
+    pub fn new(com: &'a mut rs232c::Com, cpuid: Option<x64::Cpuid>, gdt: memory::segment::descriptor::Table) -> Self {
         Self {
             com,
             cpuid,
+            gdt,
         }
     }
 }

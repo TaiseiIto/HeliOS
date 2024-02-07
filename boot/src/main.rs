@@ -44,7 +44,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let gdt = memory::segment::descriptor::Table::get();
-    com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     com2_println!("gdtr = {:#x?}", gdtr);
     gdtr.set();
@@ -105,7 +104,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     kernel_vaddr2frame
         .keys()
         .for_each(|vaddr| paging.debug(*vaddr));
-    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid);
+    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid, gdt);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
