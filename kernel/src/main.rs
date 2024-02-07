@@ -17,15 +17,18 @@ use core::{
 #[derive(Debug)]
 pub struct Argument<'a> {
     com2: &'a mut rs232c::Com,
+    cpuid: Option<x64::Cpuid>,
 }
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
-        com2
+        com2,
+        cpuid,
     } = argument;
     rs232c::set_com2(com2);
-    panic!("Hello, kernel.elf!");
+    com2_println!("cpuid = {:#x?}", cpuid);
+    panic!("End of kernel.elf");
 }
 
 /// # A panic handler of the kernel

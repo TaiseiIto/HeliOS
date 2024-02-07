@@ -52,8 +52,8 @@ pub fn get_com2() -> &'static mut Com {
 
 pub fn set_com2(com2: &'static mut Com) {
     unsafe {
-        COM2.set(com2);
-    }
+        COM2.set(com2)
+    }.unwrap();
 }
 
 static mut COM2: OnceCell<&'static mut Com> = OnceCell::new();

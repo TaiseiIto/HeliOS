@@ -71,7 +71,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .into();
     com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
-    com2_println!("cpuid = {:#x?}", cpuid);
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
@@ -106,7 +105,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     kernel_vaddr2frame
         .keys()
         .for_each(|vaddr| paging.debug(*vaddr));
-    let kernel_argument = kernel::Argument::new(rs232c::get_com2());
+    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
