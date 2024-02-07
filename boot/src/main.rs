@@ -105,7 +105,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     kernel_vaddr2frame
         .keys()
         .for_each(|vaddr| paging.debug(*vaddr));
-    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid, gdt, idt);
+    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid, gdt, idt, paging);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

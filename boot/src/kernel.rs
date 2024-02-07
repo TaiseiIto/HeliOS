@@ -12,15 +12,17 @@ pub struct Argument<'a> {
     cpuid: Option<x64::Cpuid>,
     gdt: memory::segment::descriptor::Table,
     idt: interrupt::descriptor::Table,
+    paging: memory::Paging,
 }
 
 impl<'a> Argument<'a> {
-    pub fn new(com: &'a mut rs232c::Com, cpuid: Option<x64::Cpuid>, gdt: memory::segment::descriptor::Table, idt: interrupt::descriptor::Table) -> Self {
+    pub fn new(com: &'a mut rs232c::Com, cpuid: Option<x64::Cpuid>, gdt: memory::segment::descriptor::Table, idt: interrupt::descriptor::Table, paging: memory::Paging) -> Self {
         Self {
             com,
             cpuid,
             gdt,
             idt,
+            paging,
         }
     }
 }

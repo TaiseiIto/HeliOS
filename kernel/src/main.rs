@@ -22,6 +22,7 @@ pub struct Argument<'a> {
     cpuid: Option<x64::Cpuid>,
     gdt: memory::segment::descriptor::Table,
     idt: interrupt::descriptor::Table,
+    paging: memory::Paging,
 }
 
 #[no_mangle]
@@ -31,6 +32,7 @@ fn main(argument: &'static mut Argument<'static>) {
         cpuid,
         gdt,
         idt,
+        paging,
     } = argument;
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
