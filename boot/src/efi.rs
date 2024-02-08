@@ -5,10 +5,12 @@
 mod allocator;
 mod boot_services;
 mod char16;
+mod char8;
 mod configuration;
 mod event;
 mod guid;
 mod handle;
+mod hii;
 pub mod memory;
 mod protocol;
 mod runtime_services;
@@ -21,6 +23,7 @@ mod void;
 pub use {
     boot_services::BootServices,
     char16::Char16,
+    char8::Char8,
     event::Event,
     guid::Guid,
     handle::Handle,
@@ -35,8 +38,12 @@ pub use {
         null,
     },
     protocol::{
-        simple_text,
+        file,
+        font,
+        font::Font,
+        graphics_output,
         mp_services,
+        simple_text,
     },
 };
 

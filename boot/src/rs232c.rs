@@ -43,7 +43,7 @@ pub fn com2_print(args: fmt::Arguments) {
         .unwrap()
 }
 
-fn get_com2() -> &'static mut Com {
+pub fn get_com2() -> &'static mut Com {
     unsafe {
         COM2.get_or_init(|| Com::new(COM2_PORT, COM2_BAUD_RATE));
         COM2.get_mut()
@@ -55,7 +55,8 @@ static mut COM2: OnceCell<Com> = OnceCell::new();
 const COM2_PORT: u16 = 0x02f8;
 const COM2_BAUD_RATE: u32 = 9600;
 
-struct Com {
+#[derive(Debug)]
+pub struct Com {
     port: u16,
 }
 

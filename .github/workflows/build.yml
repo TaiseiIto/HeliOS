@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubunt-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
         run: actions/checkout@main
@@ -16,5 +16,5 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: An OS raw image
-          path: helios.img
+          path: $(make target)
 
