@@ -49,7 +49,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(MOUNT_DIRECTORY): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
