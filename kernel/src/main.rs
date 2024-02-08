@@ -6,6 +6,7 @@
 extern crate alloc;
 
 mod allocator;
+mod efi;
 mod interrupt;
 mod memory;
 mod rs232c;
@@ -20,6 +21,7 @@ use core::{
 pub struct Argument<'a> {
     com2: &'a mut rs232c::Com,
     cpuid: Option<x64::Cpuid>,
+    efi_system_table: &'a mut efi::SystemTable<'a>,
     gdt: memory::segment::descriptor::Table,
     idt: interrupt::descriptor::Table,
     paging: memory::Paging,
@@ -30,12 +32,15 @@ fn main(argument: &'static mut Argument<'static>) {
     let Argument {
         com2,
         cpuid,
+        efi_system_table,
         gdt,
         idt,
         paging,
     } = argument;
+    efi_system_table.set();
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
+    efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
 
