@@ -53,6 +53,8 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
+    com2_println!("my_processor_number = {:#x?}", my_processor_number);
+    com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
