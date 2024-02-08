@@ -34,12 +34,12 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let font_protocol = efi::font::Protocol::get();
     com2_println!("font_protocol = {:#x?}", font_protocol);
-    let _fonts: BTreeMap<usize, efi::Font> = font_protocol.fonts();
+    let fonts: BTreeMap<usize, efi::Font> = font_protocol.fonts();
     let graphics_output_protocol = efi::graphics_output::Protocol::get();
     com2_println!("graphics_output_protocol = {:#x?}", graphics_output_protocol);
     let mp_services_protocol = efi::mp_services::Protocol::get();
     com2_println!("mp_services_protocol = {:#x?}", mp_services_protocol);
-    let my_processor_number = mp_services_protocol.my_processor_number();
+    let my_processor_number: Option<usize> = mp_services_protocol.my_processor_number().ok();
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
@@ -98,13 +98,24 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
     efi_println!("Hello, World!");
-    let _memory_map: efi::memory::Map = efi::SystemTable::get()
+    let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
     kernel_vaddr2frame
         .keys()
         .for_each(|vaddr| paging.debug(*vaddr));
-    let kernel_argument = kernel::Argument::new(rs232c::get_com2(), cpuid, efi::SystemTable::get(), gdt, idt, paging);
+    let kernel_argument = kernel::Argument::new(
+        rs232c::get_com2(),
+        cpuid,
+        efi::SystemTable::get(),
+        fonts,
+        gdt,
+        graphics_output_protocol,
+        idt,
+        memory_map,
+        my_processor_number,
+        processor_informations,
+        paging);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
