@@ -110,7 +110,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let writable: bool = false;
             let executable: bool = false;
             paging.set_page(vaddr, paddr, writable, executable);
-            com2_println!("heap page address = {:#x?}", vaddr);
         });
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
@@ -125,6 +124,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         fonts,
         gdt,
         graphics_output_protocol,
+        kernel_heap_base,
         idt,
         memory_map,
         my_processor_number,

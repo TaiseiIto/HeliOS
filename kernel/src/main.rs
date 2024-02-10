@@ -28,6 +28,7 @@ pub struct Argument<'a> {
     fonts: BTreeMap<usize, efi::Font<'a>>,
     gdt: memory::segment::descriptor::Table,
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
+    heap_base: usize,
     idt: interrupt::descriptor::Table,
     memory_map: efi::memory::Map,
     my_processor_number: Option<usize>,
@@ -44,6 +45,7 @@ fn main(argument: &'static mut Argument<'static>) {
         fonts,
         gdt,
         graphics_output_protocol,
+        heap_base,
         idt,
         memory_map,
         my_processor_number,
@@ -53,6 +55,7 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
+    com2_println!("heap_base = {:#x?}", heap_base);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
