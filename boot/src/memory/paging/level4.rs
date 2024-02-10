@@ -1323,22 +1323,28 @@ impl PteInterface {
     }
 
     fn set_page(&mut self, pte: &mut Pte, paddr: usize, present: bool, writable: bool, executable: bool) {
-        let pe4kib: Pe4Kib = Pe4Kib::default()
-            .with_p(present)
-            .with_rw(writable)
-            .with_us(false)
-            .with_pwt(false)
-            .with_pcd(false)
-            .with_a(false)
-            .with_d(false)
-            .with_pat(false)
-            .with_g(false)
-            .with_r(false)
-            .with_address_of_4kib_page_frame((paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
-            .with_prot_key(0)
-            .with_xd(!executable);
-        pte.set_pe4kib(pe4kib);
-        *self = Self::Pe4Kib;
+        if present {
+            let pe4kib: Pe4Kib = Pe4Kib::default()
+                .with_p(true)
+                .with_rw(writable)
+                .with_us(false)
+                .with_pwt(false)
+                .with_pcd(false)
+                .with_a(false)
+                .with_d(false)
+                .with_pat(false)
+                .with_g(false)
+                .with_r(false)
+                .with_address_of_4kib_page_frame((paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
+                .with_prot_key(0)
+                .with_xd(!executable);
+            pte.set_pe4kib(pe4kib);
+            *self = Self::Pe4Kib;
+        } else {
+            let pte_not_present = PteNotPresent::default();
+            pte.set_pte_not_present(pte_not_present);
+            *self = Self::PteNotPresent;
+        }
     }
 }
 
