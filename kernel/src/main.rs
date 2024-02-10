@@ -55,8 +55,9 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
+    let heap_start: usize = *heap_start;
     com2_println!("heap_start = {:#x?}", heap_start);
-    let heap_end: usize = memory_map
+    let available_heap_end: usize = memory_map
         .iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
         .flat_map(|memory_descriptor| memory_descriptor
@@ -64,7 +65,7 @@ fn main(argument: &'static mut Argument<'static>) {
             .step_by(memory::PAGE_SIZE))
         .enumerate()
         .map(|(index, paddr)| {
-            let vaddr: usize = *heap_start + index * memory::PAGE_SIZE;
+            let vaddr: usize = heap_start + index * memory::PAGE_SIZE;
             let present: bool = true;
             let writable: bool = true;
             let executable: bool = false;
@@ -73,6 +74,12 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .max()
         .unwrap() + memory::PAGE_SIZE;
+    com2_println!("available_heap_end = {:#x?}", available_heap_end);
+    let available_heap_size: usize = available_heap_end - heap_start;
+    com2_println!("available_heap_size = {:#x?}", available_heap_size);
+    let heap_size: usize = available_heap_size.next_power_of_two();
+    com2_println!("heap_size = {:#x?}", heap_size);
+    let heap_end: usize = heap_start + heap_size;
     com2_println!("heap_end = {:#x?}", heap_end);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
