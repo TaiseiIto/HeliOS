@@ -80,16 +80,16 @@ impl Descriptor {
         self.memory_type.is_available()
     }
 
-    pub fn physical_begin(&self) -> usize {
+    pub fn physical_start(&self) -> usize {
         self.physical_start as usize
     }
 
     pub fn physical_end(&self) -> usize {
-        self.physical_begin() + (self.number_of_pages as usize) * memory::PAGE_SIZE
+        self.physical_start() + (self.number_of_pages as usize) * memory::PAGE_SIZE
     }
 
     pub fn physical_range(&self) -> Range<usize> {
-        (self.physical_begin()..self.physical_end())
+        (self.physical_start()..self.physical_end())
     }
 }
 

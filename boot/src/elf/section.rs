@@ -42,9 +42,9 @@ pub struct Header {
 
 impl Header {
     pub fn bytes_in_file<'a>(&'a self, elf: &'a [u8]) -> &'a [u8] {
-        let begin: usize = self.sh_offset as usize;
-        let end: usize = begin + self.sh_size as usize;
-        &elf[begin..end]
+        let start: usize = self.sh_offset as usize;
+        let end: usize = start + self.sh_size as usize;
+        &elf[start..end]
     }
 
     pub fn sh_name(&self) -> Word {

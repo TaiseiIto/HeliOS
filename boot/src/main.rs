@@ -98,7 +98,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .memory_map()
         .unwrap()
         .into();
-    let kernel_heap_base: usize = 0xffffc00000000000;
+    let kernel_heap_start: usize = 0xffffc00000000000;
     let kernel_heap_pages: usize = memory_map
         .into_iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
@@ -106,7 +106,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .sum();
     (0..kernel_heap_pages)
         .for_each(|heap_page_index| {
-            let vaddr: usize = kernel_heap_base + heap_page_index * memory::PAGE_SIZE;
+            let vaddr: usize = kernel_heap_start + heap_page_index * memory::PAGE_SIZE;
             let paddr: usize = 0;
             let present: bool = false;
             let writable: bool = false;
@@ -126,7 +126,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         fonts,
         gdt,
         graphics_output_protocol,
-        kernel_heap_base,
+        kernel_heap_start,
         idt,
         memory_map,
         my_processor_number,
