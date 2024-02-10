@@ -97,10 +97,12 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .memory_map()
         .unwrap()
         .into();
-    memory_map
+    let heap_pages: usize = memory_map
         .into_iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
-        .for_each(|memory_descriptor| com2_println!("Available memory = {:#x?}", memory_descriptor));
+        .map(|memory_descriptor| memory_descriptor.number_of_pages())
+        .sum();
+    com2_println!("heap_pages = {:#x?}", heap_pages);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();

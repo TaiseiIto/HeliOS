@@ -77,6 +77,10 @@ impl Descriptor {
     pub fn is_available(&self) -> bool {
         self.memory_type.is_available()
     }
+
+    pub fn number_of_pages(&self) -> usize {
+        self.number_of_pages as usize
+    }
 }
 
 #[derive(Debug)]
