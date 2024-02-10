@@ -8,8 +8,10 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - name: Install ld.lld
+        run: sudo apt-get install lld -y
       - name: Checkout the repository
-        run: actions/checkout@main
+        uses: actions/checkout@main
       - name: Build the OS
         run: make
       - name: Upload the OS
