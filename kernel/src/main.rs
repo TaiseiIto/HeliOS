@@ -62,7 +62,15 @@ fn main(argument: &'static mut Argument<'static>) {
         .flat_map(|memory_descriptor| memory_descriptor
             .physical_range()
             .step_by(memory::PAGE_SIZE))
-        .for_each(|heap_frame_address| com2_println!("heap_frame_address = {:#x?}", heap_frame_address));
+        .enumerate()
+        .for_each(|(index, paddr)| {
+            let vaddr: usize = *heap_base + index * memory::PAGE_SIZE;
+            let present: bool = true;
+            let writable: bool = true;
+            let executable: bool = false;
+            paging.set_page(vaddr, paddr, present, writable, executable);
+            com2_println!("vaddr = {:#x?}, paddr = {:#x?}", vaddr, paddr);
+        });
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
