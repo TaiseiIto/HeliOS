@@ -65,11 +65,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     com2_println!("idtr = {:#x?}", idtr);
     idtr.set();
-    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
-        .memory_map()
-        .unwrap()
-        .into();
-    com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
@@ -98,6 +93,14 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
     efi_println!("Hello, World!");
+    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
+        .memory_map()
+        .unwrap()
+        .into();
+    memory_map
+        .into_iter()
+        .filter(|memory_descriptor| memory_descriptor.is_available())
+        .for_each(|memory_descriptor| com2_println!("Available memory = {:#x?}", memory_descriptor));
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
