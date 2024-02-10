@@ -86,9 +86,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     kernel_stack_vaddr2frame
         .iter()
         .for_each(|(vaddr, frame)| {
+            let present: bool = true;
             let writable: bool = true;
             let executable: bool = false;
-            paging.set_page(*vaddr, frame.paddr(), writable, executable);
+            paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
         });
     com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
@@ -107,9 +108,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .for_each(|heap_page_index| {
             let vaddr: usize = kernel_heap_base + heap_page_index * memory::PAGE_SIZE;
             let paddr: usize = 0;
+            let present: bool = false;
             let writable: bool = false;
             let executable: bool = false;
-            paging.set_page(vaddr, paddr, writable, executable);
+            paging.set_page(vaddr, paddr, present, writable, executable);
         });
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)

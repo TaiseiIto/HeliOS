@@ -59,6 +59,7 @@ impl Header {
     }
 
     pub fn set_page(&self, paging: &mut memory::Paging, vaddr2paddr: BTreeMap<usize, usize>) {
+        let present: bool = true;
         let writable: bool = self.p_flags.w();
         let executable: bool = self.p_flags.x();
         self.pages()
@@ -67,7 +68,7 @@ impl Header {
                 let paddr: usize = *vaddr2paddr
                     .get(&vaddr)
                     .unwrap();
-                paging.set_page(vaddr, paddr, writable, executable);
+                paging.set_page(vaddr, paddr, present, writable, executable);
             });
     }
 
