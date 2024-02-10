@@ -97,12 +97,21 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .memory_map()
         .unwrap()
         .into();
-    let heap_pages: usize = memory_map
+    let kernel_heap_base: usize = 0xffffc00000000000;
+    let kernel_heap_pages: usize = memory_map
         .into_iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
         .map(|memory_descriptor| memory_descriptor.number_of_pages())
         .sum();
-    com2_println!("heap_pages = {:#x?}", heap_pages);
+    (0..kernel_heap_pages)
+        .for_each(|heap_page_index| {
+            let vaddr: usize = kernel_heap_base + heap_page_index * memory::PAGE_SIZE;
+            let paddr: usize = 0;
+            let writable: bool = false;
+            let executable: bool = false;
+            paging.set_page(vaddr, paddr, writable, executable);
+            com2_println!("heap page address = {:#x?}", vaddr);
+        });
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
