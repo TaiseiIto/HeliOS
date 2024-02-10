@@ -56,10 +56,13 @@ fn main(argument: &'static mut Argument<'static>) {
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("heap_base = {:#x?}", heap_base);
-    (0..)
-        .map_while(|index| memory_map.get_descriptor(index))
+    memory_map
+        .iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
-        .for_each(|memory_descriptor| com2_println!("memory_descriptor = {:#x?}", memory_descriptor));
+        .flat_map(|memory_descriptor| memory_descriptor
+            .physical_range()
+            .step_by(memory::PAGE_SIZE))
+        .for_each(|heap_frame_address| com2_println!("heap_frame_address = {:#x?}", heap_frame_address));
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();

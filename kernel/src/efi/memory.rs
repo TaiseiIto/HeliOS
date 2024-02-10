@@ -1,5 +1,7 @@
 use {
     alloc::vec::Vec,
+    core::ops::Range,
+    crate::memory,
     super::Void,
 };
 
@@ -77,6 +79,18 @@ impl Descriptor {
     pub fn is_available(&self) -> bool {
         self.memory_type.is_available()
     }
+
+    pub fn physical_begin(&self) -> usize {
+        self.physical_start as usize
+    }
+
+    pub fn physical_end(&self) -> usize {
+        self.physical_begin() + (self.number_of_pages as usize) * memory::PAGE_SIZE
+    }
+
+    pub fn physical_range(&self) -> Range<usize> {
+        (self.physical_begin()..self.physical_end())
+    }
 }
 
 #[derive(Debug)]
@@ -100,6 +114,11 @@ impl Map {
                     &*descriptor
                 }
             })
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Descriptor> {
+        (0..)
+            .map_while(|index| self.get_descriptor(index))
     }
 
     pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
