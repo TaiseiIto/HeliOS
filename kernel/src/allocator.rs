@@ -107,6 +107,10 @@ impl Node {
         }
     }
 
+    fn divide(&mut self) {
+        self.state.divide();
+    }
+
     fn initialize(&mut self, start: usize, end: usize, available_start: usize, available_end: usize) {
         let state = State::Free;
         let max_length: usize = available_end - available_start;
@@ -118,6 +122,9 @@ impl Node {
             available_end,
             max_length,
         };
+        if start != available_start {
+            self.divide();
+        }
     }
 }
 
@@ -127,5 +134,12 @@ enum State {
     Divided,
     Free,
     NotExist,
+}
+
+impl State {
+    fn divide(&mut self) {
+        assert!(matches!(self, Self::Free));
+        *self = Self::Divided;
+    }
 }
 
