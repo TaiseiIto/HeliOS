@@ -156,6 +156,19 @@ impl Node {
             higher_half_node.initialize(higher_half_range, higher_half_available_range);
             self.state = State::Divided
         }
+        if self.state == State::Divided {
+            let lower_half_max_length: Option<usize> = self
+                .get_lower_half_node()
+                .map(|lower_half_node| lower_half_node.max_length);
+            let higher_half_max_length: Option<usize> = self
+                .get_higher_half_node()
+                .map(|higher_half_node| higher_half_node.max_length);
+            self.max_length = [lower_half_max_length, higher_half_max_length]
+                .into_iter()
+                .filter_map(|max_length| max_length)
+                .max()
+                .unwrap();
+        }
         self.state == State::Divided
     }
 
