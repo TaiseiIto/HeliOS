@@ -35,9 +35,15 @@ struct Allocator<'a> {
 
 impl<'a> Allocator<'a> {
     pub fn initialize(&'a mut self, available_range: Range<usize>) {
-        let available_range: Range<usize> = available_range.start..available_range.end - memory::PAGE_SIZE;
+        let available_start: usize = available_range.start;
+        let end: usize = available_range.end;
+        let available_end: usize = end - memory::PAGE_SIZE;
+        let size: usize = (end - available_start).next_power_of_two();
+        let start: usize = end - size;
+        let range: Range<usize> = start..end;
+        let available_range: Range<usize> = available_start..available_end;
         self.root_node_list
-            .set(NodeList::new(available_range))
+            .set(NodeList::new(range, available_range))
             .unwrap()
     }
 }
@@ -60,12 +66,7 @@ struct NodeList {
 const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
-    fn new<'a>(available_range: Range<usize>) -> &'a mut Self {
-        let available_size: usize = available_range.len();
-        let size: usize = available_size.next_power_of_two();
-        let end: usize = ((available_range.end + size - 1) / size) * size;
-        let start: usize = end - size;
-        let range: Range<usize> = start..end;
+    fn new<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
@@ -116,8 +117,8 @@ impl Node {
         if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
             Some(self.node_list_mut()
                 .node_mut(higher_half_node_index_in_list))
-        } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
-            Some(NodeList::new(higher_half_available_range).node_mut(0))
+        } else if let (Some(higher_half_range), Some(higher_half_available_range)) = (self.higher_half_range(), self.higher_half_available_range()) {
+            Some(NodeList::new(higher_half_range, higher_half_available_range).node_mut(0))
         } else {
             None
         }
@@ -127,8 +128,8 @@ impl Node {
         if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
             Some(self.node_list_mut()
                 .node_mut(lower_half_node_index_in_list))
-        } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
-            Some(NodeList::new(lower_half_available_range).node_mut(0))
+        } else if let (Some(lower_half_range), Some(lower_half_available_range)) = (self.lower_half_range(), self.lower_half_available_range()) {
+            Some(NodeList::new(lower_half_range, lower_half_available_range).node_mut(0))
         } else {
             None
         }
