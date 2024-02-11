@@ -20,9 +20,9 @@ static mut ALLOCATOR: Allocator<'static> = Allocator {
     root_node_list: OnceCell::new(),
 };
 
-pub fn initialize(heap_start: usize, heap_end: usize) {
+pub fn initialize(available_range: Range<usize>) {
     unsafe {
-        ALLOCATOR.initialize(heap_start, heap_end);
+        ALLOCATOR.initialize(available_range);
     }
 }
 
@@ -32,9 +32,9 @@ struct Allocator<'a> {
 }
 
 impl<'a> Allocator<'a> {
-    pub fn initialize(&'a mut self, heap_start: usize, heap_end: usize) {
+    pub fn initialize(&'a mut self, available_range: Range<usize>) {
         self.root_node_list
-            .set(NodeList::new(heap_start..heap_end))
+            .set(NodeList::new(available_range))
             .unwrap()
     }
 }
@@ -59,12 +59,20 @@ const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
     fn new<'a>(available_range: Range<usize>) -> &'a mut Self {
+        com2_println!("available_range = {:#x?}", available_range);
         let available_size: usize = available_range.len();
+        com2_println!("available_size = {:#x?}", available_size);
         let size: usize = available_size.next_power_of_two();
+        com2_println!("size = {:#x?}", size);
         let end: usize = available_range.end;
+        com2_println!("end = {:#x?}", end);
         let start: usize = end - size;
+        com2_println!("start = {:#x?}", start);
         let range: Range<usize> = start..end;
+        let available_range: Range<usize> = available_range.start..available_range.end - memory::PAGE_SIZE;
+        com2_println!("range = {:#x?}", range);
         let node_list: usize = available_range.end;
+        com2_println!("node_list = {:#x?}", node_list);
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
             &mut *node_list

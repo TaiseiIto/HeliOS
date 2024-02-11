@@ -73,7 +73,7 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .min()
         .unwrap();
-    allocator::initialize(heap_start, heap_end);
+    allocator::initialize(heap_start..heap_end);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
