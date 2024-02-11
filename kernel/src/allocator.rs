@@ -164,22 +164,30 @@ impl Node {
     }
 
     fn get_higher_half_node(&self) -> Option<&Self> {
-        if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
-            Some(self.node_list()
-                .node(higher_half_node_index_in_list))
-        } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
-            None
+        if matches!(self.state, State::Divided) {
+            if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
+                Some(self.node_list()
+                    .node(higher_half_node_index_in_list))
+            } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
+                None
+            } else {
+                None
+            }
         } else {
             None
         }
     }
 
     fn get_lower_half_node(&self) -> Option<&Self> {
-        if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
-            Some(self.node_list()
-                .node(lower_half_node_index_in_list))
-        } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
-            None
+        if matches!(self.state, State::Divided) {
+            if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
+                Some(self.node_list()
+                    .node(lower_half_node_index_in_list))
+            } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
+                None
+            } else {
+                None
+            }
         } else {
             None
         }
