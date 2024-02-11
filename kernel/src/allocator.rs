@@ -75,6 +75,7 @@ impl NodeList {
             &mut *node_list
         };
         *node_list = Self::default();
+        node_list.nodes[0] = Some(Node::new(0, heap_start, heap_end, available_heap_start, available_heap_end));
         com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
@@ -99,6 +100,22 @@ struct Node {
     available_end: usize,
     max_length: usize,
     index_in_list: usize,
+}
+
+impl Node {
+    fn new(index_in_list: usize, start: usize, end: usize, available_start: usize, available_end: usize) -> Self {
+        let state = State::Free;
+        let max_length: usize = available_end - available_start;
+        Self {
+            state,
+            start,
+            end,
+            available_start,
+            available_end,
+            max_length,
+            index_in_list,
+        }
+    }
 }
 
 #[derive(Debug)]
