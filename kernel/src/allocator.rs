@@ -30,18 +30,11 @@ struct Allocator<'a> {
     root_node_list: OnceCell::<&'a mut NodeList>,
 }
 
-impl Allocator<'_> {
-    pub fn initialize(&mut self, available_heap_start: usize, available_heap_end: usize) {
-        let available_heap_size: usize = available_heap_end - available_heap_start;
-        let heap_size: usize = available_heap_size.next_power_of_two();
-        let heap_end: usize = available_heap_end;
-        let heap_start: usize = heap_end - heap_size;
-        com2_println!("available_heap_start = {:#x?}", available_heap_start);
-        com2_println!("available_heap_size = {:#x?}", available_heap_size);
-        com2_println!("available_heap_end = {:#x?}", available_heap_end);
-        com2_println!("heap_start = {:#x?}", heap_start);
-        com2_println!("heap_size = {:#x?}", heap_size);
-        com2_println!("heap_end = {:#x?}", heap_end);
+impl<'a> Allocator<'a> {
+    pub fn initialize(&'a mut self, heap_start: usize, heap_end: usize) {
+        self.root_node_list
+            .set(NodeList::new(heap_start, heap_end))
+            .unwrap()
     }
 }
 
@@ -63,10 +56,31 @@ struct NodeList {
 
 const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Option<Node>>();
 
+impl NodeList {
+    fn new<'a>(available_heap_start: usize, available_heap_end: usize) -> &'a mut Self {
+        let available_heap_size: usize = available_heap_end - available_heap_start;
+        let heap_size: usize = available_heap_size.next_power_of_two();
+        let heap_end: usize = available_heap_end;
+        let heap_start: usize = heap_end - heap_size;
+        let available_heap_end: usize = heap_end - memory::PAGE_SIZE;
+        com2_println!("available_heap_start = {:#x?}", available_heap_start);
+        com2_println!("available_heap_size = {:#x?}", available_heap_size);
+        com2_println!("available_heap_end = {:#x?}", available_heap_end);
+        com2_println!("heap_start = {:#x?}", heap_start);
+        com2_println!("heap_size = {:#x?}", heap_size);
+        com2_println!("heap_end = {:#x?}", heap_end);
+        let node_list: usize = available_heap_end;
+        let node_list: *mut Self = node_list as *mut Self;
+        unsafe {
+            &mut *node_list
+        }
+    }
+}
+
 impl Default for NodeList {
     fn default() -> Self {
-        const none: Option<Node> = None;
-        let nodes: [Option<Node>; NODE_LIST_LENGTH] = [none; NODE_LIST_LENGTH];
+        const NONE: Option<Node> = None;
+        let nodes: [Option<Node>; NODE_LIST_LENGTH] = [NONE; NODE_LIST_LENGTH];
         Self {
             nodes,
         }
@@ -81,6 +95,7 @@ struct Node {
     available_start: usize,
     available_end: usize,
     max_length: usize,
+    index_in_list: usize,
 }
 
 #[derive(Debug)]
