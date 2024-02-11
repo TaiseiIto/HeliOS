@@ -102,20 +102,24 @@ struct Node {
 
 impl Node {
     fn add_higher_half_node(&mut self) -> Option<&mut Self> {
-        match self.higher_half_node_index_in_list() {
-            Some(index) => Some(self
-                .node_list_mut()
-                .node_mut(index)),
-            None => None,
+        if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
+            Some(self.node_list_mut()
+                .node_mut(higher_half_node_index_in_list))
+        } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
+            Some(NodeList::new(higher_half_available_range).node_mut(0))
+        } else {
+            None
         }
     }
 
     fn add_lower_half_node(&mut self) -> Option<&mut Self> {
-        match self.lower_half_node_index_in_list() {
-            Some(index) => Some(self
-                .node_list_mut()
-                .node_mut(index)),
-            None => None,
+        if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
+            Some(self.node_list_mut()
+                .node_mut(lower_half_node_index_in_list))
+        } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
+            Some(NodeList::new(lower_half_available_range).node_mut(0))
+        } else {
+            None
         }
     }
 
