@@ -63,7 +63,7 @@ impl NodeList {
     fn new<'a>(available_range: Range<usize>) -> &'a mut Self {
         let available_size: usize = available_range.len();
         let size: usize = available_size.next_power_of_two();
-        let end: usize = available_range.end;
+        let end: usize = ((available_range.end + size - 1) / size) * size;
         let start: usize = end - size;
         let range: Range<usize> = start..end;
         let node_list: usize = available_range.end;
