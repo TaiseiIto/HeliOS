@@ -21,6 +21,7 @@ static mut ALLOCATOR: Allocator<'static> = Allocator {
 };
 
 pub fn initialize(available_range: Range<usize>) {
+    com2_println!("NODE_LIST_LENGTH = {:#x?}", NODE_LIST_LENGTH);
     unsafe {
         ALLOCATOR.initialize(available_range);
     }
@@ -59,20 +60,13 @@ const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
     fn new<'a>(available_range: Range<usize>) -> &'a mut Self {
-        com2_println!("available_range = {:#x?}", available_range);
         let available_size: usize = available_range.len();
-        com2_println!("available_size = {:#x?}", available_size);
         let size: usize = available_size.next_power_of_two();
-        com2_println!("size = {:#x?}", size);
         let end: usize = available_range.end;
-        com2_println!("end = {:#x?}", end);
         let start: usize = end - size;
-        com2_println!("start = {:#x?}", start);
         let range: Range<usize> = start..end;
         let available_range: Range<usize> = available_range.start..available_range.end - memory::PAGE_SIZE;
-        com2_println!("range = {:#x?}", range);
         let node_list: usize = available_range.end;
-        com2_println!("node_list = {:#x?}", node_list);
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
             &mut *node_list
@@ -108,13 +102,11 @@ struct Node {
 
 impl Node {
     fn add_lower_half_node(&mut self) -> &mut Self {
-        let lower_half_node_index_in_list: usize = self.lower_half_node_index_in_list();
-        if lower_half_node_index_in_list < NODE_LIST_LENGTH {
-            self
+        match self.lower_half_node_index_in_list() {
+            Some(index) => self
                 .node_list_mut()
-                .node_mut(lower_half_node_index_in_list)
-        } else {
-            panic!("Add a node list.")
+                .node_mut(index),
+            None => panic!("Add a node list."),
         }
     }
 
@@ -130,22 +122,35 @@ impl Node {
     fn divide(&mut self) {
         self.state.divide();
         let lower_half_node: &mut Self = self.add_lower_half_node();
-        let higher_half_range: Range<usize> = self.higher_half_range();
-        let lower_half_range: Range<usize> = self.lower_half_range();
+        let higher_half_range: Option<Range<usize>> = self.higher_half_range();
+        let lower_half_range: Option<Range<usize>> = self.lower_half_range();
+        let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
+        let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         com2_println!("higher_half_range = {:#x?}", higher_half_range);
         com2_println!("lower_half_range = {:#x?}", lower_half_range);
+        com2_println!("higher_half_available_range = {:#x?}", higher_half_available_range);
+        com2_println!("lower_half_available_range = {:#x?}", lower_half_available_range);
     }
 
     fn divide_point(&self) -> usize {
         self.range.end / 2 + self.range.start / 2
     }
 
-    fn higher_half_node_index_in_list(&self) -> usize {
-        2 * self.index_in_list() + 2
+    fn higher_half_node_index_in_list(&self) -> Option<usize> {
+        let index: usize = 2 * self.index_in_list() + 2;
+        (index < NODE_LIST_LENGTH).then_some(index)
     }
 
-    fn higher_half_range(&self) -> Range<usize> {
-        self.divide_point()..self.range.end
+    fn higher_half_available_range(&self) -> Option<Range<usize>> {
+        let range: Range<usize> = self.divide_point()..self.available_range.end - self
+            .higher_half_node_index_in_list()
+            .map_or(memory::PAGE_SIZE, |_| 0);
+        (!range.is_empty()).then_some(range)
+    }
+
+    fn higher_half_range(&self) -> Option<Range<usize>> {
+        let range: Range<usize> = self.divide_point()..self.range.end;
+        (!range.is_empty()).then_some(range)
     }
 
     fn index_in_list(&self) -> usize {
@@ -169,12 +174,21 @@ impl Node {
         }
     }
 
-    fn lower_half_node_index_in_list(&self) -> usize {
-        2 * self.index_in_list() + 1
+    fn lower_half_node_index_in_list(&self) -> Option<usize> {
+        let index: usize = 2 * self.index_in_list() + 1;
+        (index < NODE_LIST_LENGTH).then_some(index)
     }
 
-    fn lower_half_range(&self) -> Range<usize> {
-        self.range.start..self.divide_point()
+    fn lower_half_available_range(&self) -> Option<Range<usize>> {
+        let range: Range<usize> = self.available_range.start..self.divide_point() - self
+            .lower_half_node_index_in_list()
+            .map_or(memory::PAGE_SIZE, |_| 0);
+        (!range.is_empty()).then_some(range)
+    }
+
+    fn lower_half_range(&self) -> Option<Range<usize>> {
+        let range: Range<usize> = self.range.start..self.divide_point();
+        (!range.is_empty()).then_some(range)
     }
 
     fn node_list_mut(&mut self) -> &mut NodeList {
