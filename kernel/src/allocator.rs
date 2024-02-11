@@ -119,17 +119,22 @@ impl Node {
         }
     }
 
-    fn divide(&mut self) {
-        self.state.divide();
-        let lower_half_node: &mut Self = self.add_lower_half_node();
-        let higher_half_range: Option<Range<usize>> = self.higher_half_range();
+    fn divide(&mut self) -> bool {
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
-        let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
-        com2_println!("higher_half_range = {:#x?}", higher_half_range);
-        com2_println!("lower_half_range = {:#x?}", lower_half_range);
-        com2_println!("higher_half_available_range = {:#x?}", higher_half_available_range);
-        com2_println!("lower_half_available_range = {:#x?}", lower_half_available_range);
+        let higher_half_range: Option<Range<usize>> = self.higher_half_range();
+        let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
+        if let (Some(lower_half_range), Some(lower_half_available_range), Some(higher_half_range), Some(higher_half_available_range)) = (lower_half_range, lower_half_available_range, higher_half_range, higher_half_available_range) {
+            com2_println!("{:#x?} = lower_half_range", lower_half_range);
+            com2_println!("{:#x?} = lower_half_available_range", lower_half_available_range);
+            com2_println!("{:#x?} = higher_half_range", higher_half_range);
+            com2_println!("{:#x?} = higher_half_available_range", higher_half_available_range);
+            self.state.divide();
+            let lower_half_node: &mut Self = self.add_lower_half_node();
+            true
+        } else {
+            false
+        }
     }
 
     fn divide_point(&self) -> usize {
