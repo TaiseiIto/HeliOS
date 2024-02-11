@@ -51,10 +51,10 @@ unsafe impl GlobalAlloc for Allocator<'_> {
 #[derive(Debug)]
 #[repr(align(4096))]
 struct NodeList {
-    nodes: [Option<Node>; NODE_LIST_LENGTH],
+    nodes: [Node; NODE_LIST_LENGTH],
 }
 
-const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Option<Node>>();
+const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
     fn new<'a>(available_heap_start: usize, available_heap_end: usize) -> &'a mut Self {
@@ -75,7 +75,6 @@ impl NodeList {
             &mut *node_list
         };
         *node_list = Self::default();
-        node_list.nodes[0] = Some(Node::new(0, heap_start, heap_end, available_heap_start, available_heap_end));
         com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
@@ -83,8 +82,8 @@ impl NodeList {
 
 impl Default for NodeList {
     fn default() -> Self {
-        const NONE: Option<Node> = None;
-        let nodes: [Option<Node>; NODE_LIST_LENGTH] = [NONE; NODE_LIST_LENGTH];
+        const NODE: Node = Node::default();
+        let nodes = [NODE; NODE_LIST_LENGTH];
         Self {
             nodes,
         }
@@ -103,17 +102,15 @@ struct Node {
 }
 
 impl Node {
-    fn new(index_in_list: usize, start: usize, end: usize, available_start: usize, available_end: usize) -> Self {
-        let state = State::Free;
-        let max_length: usize = available_end - available_start;
+    const fn default() -> Self {
         Self {
-            state,
-            start,
-            end,
-            available_start,
-            available_end,
-            max_length,
-            index_in_list,
+            state: State::NotExist,
+            start: 0,
+            end: 0,
+            available_start: 0,
+            available_end: 0,
+            max_length: 0,
+            index_in_list: 0,
         }
     }
 }
@@ -123,5 +120,6 @@ enum State {
     Allocated,
     Divided,
     Free,
+    NotExist,
 }
 
