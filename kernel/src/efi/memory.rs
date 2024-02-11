@@ -89,7 +89,7 @@ impl Descriptor {
     }
 
     pub fn physical_range(&self) -> Range<usize> {
-        (self.physical_start()..self.physical_end())
+        self.physical_start()..self.physical_end()
     }
 }
 
