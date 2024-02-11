@@ -101,6 +101,15 @@ struct Node {
 }
 
 impl Node {
+    fn add_higher_half_node(&mut self) -> &mut Self {
+        match self.higher_half_node_index_in_list() {
+            Some(index) => self
+                .node_list_mut()
+                .node_mut(index),
+            None => panic!("Add a node list."),
+        }
+    }
+
     fn add_lower_half_node(&mut self) -> &mut Self {
         match self.lower_half_node_index_in_list() {
             Some(index) => self
@@ -120,6 +129,7 @@ impl Node {
     }
 
     fn divide(&mut self) -> bool {
+        com2_println!("divide");
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         let higher_half_range: Option<Range<usize>> = self.higher_half_range();
@@ -130,7 +140,10 @@ impl Node {
             com2_println!("{:#x?} = higher_half_range", higher_half_range);
             com2_println!("{:#x?} = higher_half_available_range", higher_half_available_range);
             self.state.divide();
-            let lower_half_node: &mut Self = self.add_lower_half_node();
+            self.add_lower_half_node()
+                .initialize(lower_half_range, lower_half_available_range);
+            self.add_higher_half_node()
+                .initialize(higher_half_range, higher_half_available_range);
             true
         } else {
             false
