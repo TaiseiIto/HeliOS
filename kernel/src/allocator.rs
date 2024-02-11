@@ -35,6 +35,7 @@ struct Allocator<'a> {
 
 impl<'a> Allocator<'a> {
     pub fn initialize(&'a mut self, available_range: Range<usize>) {
+        let available_range: Range<usize> = available_range.start..available_range.end - memory::PAGE_SIZE;
         self.root_node_list
             .set(NodeList::new(available_range))
             .unwrap()
@@ -65,7 +66,6 @@ impl NodeList {
         let end: usize = available_range.end;
         let start: usize = end - size;
         let range: Range<usize> = start..end;
-        let available_range: Range<usize> = available_range.start..available_range.end - memory::PAGE_SIZE;
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
