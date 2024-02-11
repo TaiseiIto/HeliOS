@@ -299,6 +299,10 @@ impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Node")
+            .field("state", &self.state)
+            .field("range", &self.range)
+            .field("available_range", &self.available_range)
+            .field("max_length", &self.max_length)
             .field("lower", &self.get_lower_half_node())
             .field("higher", &self.get_higher_half_node())
             .finish()
