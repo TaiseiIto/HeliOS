@@ -63,18 +63,13 @@ impl NodeList {
         let heap_end: usize = available_heap_end;
         let heap_start: usize = heap_end - heap_size;
         let available_heap_end: usize = heap_end - memory::PAGE_SIZE;
-        com2_println!("available_heap_start = {:#x?}", available_heap_start);
-        com2_println!("available_heap_size = {:#x?}", available_heap_size);
-        com2_println!("available_heap_end = {:#x?}", available_heap_end);
-        com2_println!("heap_start = {:#x?}", heap_start);
-        com2_println!("heap_size = {:#x?}", heap_size);
-        com2_println!("heap_end = {:#x?}", heap_end);
         let node_list: usize = available_heap_end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
             &mut *node_list
         };
         *node_list = Self::default();
+        node_list.nodes[0].initialize(heap_start, heap_end, available_heap_start, available_heap_end);
         com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
@@ -98,7 +93,6 @@ struct Node {
     available_start: usize,
     available_end: usize,
     max_length: usize,
-    index_in_list: usize,
 }
 
 impl Node {
@@ -110,8 +104,20 @@ impl Node {
             available_start: 0,
             available_end: 0,
             max_length: 0,
-            index_in_list: 0,
         }
+    }
+
+    fn initialize(&mut self, start: usize, end: usize, available_start: usize, available_end: usize) {
+        let state = State::Free;
+        let max_length: usize = available_end - available_start;
+        *self = Self {
+            state,
+            start,
+            end,
+            available_start,
+            available_end,
+            max_length,
+        };
     }
 }
 
