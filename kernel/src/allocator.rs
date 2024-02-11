@@ -76,6 +76,10 @@ impl NodeList {
         node_list
     }
 
+    fn node(&self, index: usize) -> &Node {
+        &self.nodes[index]
+    }
+
     fn node_mut(&mut self, index: usize) -> &mut Node {
         &mut self.nodes[index]
     }
@@ -100,7 +104,6 @@ impl Default for NodeList {
     }
 }
 
-#[derive(Debug)]
 struct Node {
     state: State,
     range: Range<usize>,
@@ -158,6 +161,28 @@ impl Node {
 
     fn divide_point(&self) -> usize {
         self.range.end / 2 + self.range.start / 2
+    }
+
+    fn get_higher_half_node(&self) -> Option<&Self> {
+        if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
+            Some(self.node_list()
+                .node(higher_half_node_index_in_list))
+        } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
+            None
+        } else {
+            None
+        }
+    }
+
+    fn get_lower_half_node(&self) -> Option<&Self> {
+        if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
+            Some(self.node_list()
+                .node(lower_half_node_index_in_list))
+        } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
+            None
+        } else {
+            None
+        }
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
@@ -229,6 +254,16 @@ impl Node {
         (!range.is_empty()).then_some(range)
     }
 
+    fn node_list(&self) -> &NodeList {
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let address: usize = (address / memory::PAGE_SIZE) * memory::PAGE_SIZE;
+        let address: *const NodeList = address as *const NodeList;
+        unsafe {
+            &*address
+        }
+    }
+
     fn node_list_mut(&mut self) -> &mut NodeList {
         let address: *mut Self = self as *mut Self;
         let address: usize = address as usize;
@@ -237,6 +272,16 @@ impl Node {
         unsafe {
             &mut *address
         }
+    }
+}
+
+impl fmt::Debug for Node {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Node")
+            .field("lower", &self.get_lower_half_node())
+            .field("higher", &self.get_higher_half_node())
+            .finish()
     }
 }
 
