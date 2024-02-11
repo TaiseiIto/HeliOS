@@ -167,7 +167,10 @@ impl Node {
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let start: usize = self.divide_point();
+        let start: usize = [self.available_range.start, self.divide_point()]
+            .into_iter()
+            .max()
+            .unwrap();
         let end: usize = self.available_range.end - self
             .higher_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
@@ -210,7 +213,10 @@ impl Node {
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
         let start: usize = self.available_range.start;
-        let end: usize = self.divide_point() - self
+        let end: usize = [self.divide_point(), self.available_range.end]
+            .into_iter()
+            .min()
+            .unwrap() - self
             .lower_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
         let range: Range<usize> = start..end;
