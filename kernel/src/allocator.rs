@@ -134,19 +134,24 @@ impl Node {
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         let higher_half_range: Option<Range<usize>> = self.higher_half_range();
         let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
-        if let (Some(lower_half_range), Some(lower_half_available_range), Some(higher_half_range), Some(higher_half_available_range)) = (lower_half_range, lower_half_available_range, higher_half_range, higher_half_available_range) {
-            com2_println!("{:#x?} = lower_half_range", lower_half_range);
-            com2_println!("{:#x?} = lower_half_available_range", lower_half_available_range);
-            com2_println!("{:#x?} = higher_half_range", higher_half_range);
-            com2_println!("{:#x?} = higher_half_available_range", higher_half_available_range);
-            self.state.divide();
-            self.add_lower_half_node()
-                .initialize(lower_half_range, lower_half_available_range);
-            self.add_higher_half_node()
-                .initialize(higher_half_range, higher_half_available_range);
-            true
-        } else {
-            false
+        match (lower_half_available_range, higher_half_available_range) {
+            (None, None) => false,
+            (lower_half_available_range, higher_half_available_range) => {
+                self.state.divide();
+                if let (Some(lower_half_range), Some(lower_half_available_range)) = (lower_half_range, lower_half_available_range) {
+                    com2_println!("{:#x?} = lower_half_range", lower_half_range);
+                    com2_println!("{:#x?} = lower_half_available_range", lower_half_available_range);
+                    self.add_lower_half_node()
+                        .initialize(lower_half_range, lower_half_available_range);
+                }
+                if let (Some(higher_half_range), Some(higher_half_available_range)) = (higher_half_range, higher_half_available_range) {
+                    com2_println!("{:#x?} = higher_half_range", higher_half_range);
+                    com2_println!("{:#x?} = higher_half_available_range", higher_half_available_range);
+                    self.add_higher_half_node()
+                        .initialize(higher_half_range, higher_half_available_range);
+                }
+                true
+            },
         }
     }
 
