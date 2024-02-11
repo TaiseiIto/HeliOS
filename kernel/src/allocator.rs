@@ -34,7 +34,7 @@ struct Allocator<'a> {
 impl<'a> Allocator<'a> {
     pub fn initialize(&'a mut self, heap_start: usize, heap_end: usize) {
         self.root_node_list
-            .set(NodeList::new(heap_start, heap_end))
+            .set(NodeList::new(heap_start..heap_end))
             .unwrap()
     }
 }
@@ -58,19 +58,19 @@ struct NodeList {
 const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
-    fn new<'a>(available_heap_start: usize, available_heap_end: usize) -> &'a mut Self {
-        let available_heap_size: usize = available_heap_end - available_heap_start;
-        let heap_size: usize = available_heap_size.next_power_of_two();
-        let heap_end: usize = available_heap_end;
-        let heap_start: usize = heap_end - heap_size;
-        let available_heap_end: usize = heap_end - memory::PAGE_SIZE;
-        let node_list: usize = available_heap_end;
+    fn new<'a>(available_range: Range<usize>) -> &'a mut Self {
+        let available_size: usize = available_range.len();
+        let size: usize = available_size.next_power_of_two();
+        let end: usize = available_range.end;
+        let start: usize = end - size;
+        let range: Range<usize> = start..end;
+        let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe {
             &mut *node_list
         };
         *node_list = Self::default();
-        node_list.nodes[0].initialize(heap_start, heap_end, available_heap_start, available_heap_end);
+        node_list.nodes[0].initialize(range, available_range);
         com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
@@ -93,10 +93,8 @@ impl Default for NodeList {
 #[derive(Debug)]
 struct Node {
     state: State,
-    start: usize,
-    end: usize,
-    available_start: usize,
-    available_end: usize,
+    range: Range<usize>,
+    available_range: Range<usize>,
     max_length: usize,
 }
 
@@ -115,10 +113,8 @@ impl Node {
     const fn default() -> Self {
         Self {
             state: State::NotExist,
-            start: 0,
-            end: 0,
-            available_start: 0,
-            available_end: 0,
+            range: 0..0,
+            available_range: 0..0,
             max_length: 0,
         }
     }
@@ -133,7 +129,7 @@ impl Node {
     }
 
     fn divide_point(&self) -> usize {
-        self.end / 2 + self.start / 2
+        self.range.end / 2 + self.range.start / 2
     }
 
     fn higher_half_node_index_in_list(&self) -> usize {
@@ -141,7 +137,7 @@ impl Node {
     }
 
     fn higher_half_range(&self) -> Range<usize> {
-        self.divide_point()..self.end
+        self.divide_point()..self.range.end
     }
 
     fn index_in_list(&self) -> usize {
@@ -151,18 +147,16 @@ impl Node {
         offset / mem::size_of::<Self>()
     }
 
-    fn initialize(&mut self, start: usize, end: usize, available_start: usize, available_end: usize) {
+    fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
         let state = State::Free;
-        let max_length: usize = available_end - available_start;
+        let max_length: usize = available_range.len();
         *self = Self {
             state,
-            start,
-            end,
-            available_start,
-            available_end,
+            range,
+            available_range,
             max_length,
         };
-        if start != available_start {
+        if self.range.start != self.available_range.start {
             self.divide();
         }
     }
@@ -172,7 +166,7 @@ impl Node {
     }
 
     fn lower_half_range(&self) -> Range<usize> {
-        self.start..self.divide_point()
+        self.range.start..self.divide_point()
     }
 
     fn node_list_mut(&mut self) -> &mut NodeList {
