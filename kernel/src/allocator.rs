@@ -101,21 +101,21 @@ struct Node {
 }
 
 impl Node {
-    fn add_higher_half_node(&mut self) -> &mut Self {
+    fn add_higher_half_node(&mut self) -> Option<&mut Self> {
         match self.higher_half_node_index_in_list() {
-            Some(index) => self
+            Some(index) => Some(self
                 .node_list_mut()
-                .node_mut(index),
-            None => panic!("Add a node list."),
+                .node_mut(index)),
+            None => None,
         }
     }
 
-    fn add_lower_half_node(&mut self) -> &mut Self {
+    fn add_lower_half_node(&mut self) -> Option<&mut Self> {
         match self.lower_half_node_index_in_list() {
-            Some(index) => self
+            Some(index) => Some(self
                 .node_list_mut()
-                .node_mut(index),
-            None => panic!("Add a node list."),
+                .node_mut(index)),
+            None => None,
         }
     }
 
@@ -140,21 +140,15 @@ impl Node {
         com2_println!("lower_half_available_range = {:#x?}", lower_half_available_range);
         com2_println!("higher_half_range = {:#x?}", higher_half_range);
         com2_println!("higher_half_available_range = {:#x?}", higher_half_available_range);
-        match (lower_half_available_range, higher_half_available_range) {
-            (None, None) => false,
-            (lower_half_available_range, higher_half_available_range) => {
-                self.state.divide();
-                if let (Some(lower_half_range), Some(lower_half_available_range)) = (lower_half_range, lower_half_available_range) {
-                    self.add_lower_half_node()
-                        .initialize(lower_half_range, lower_half_available_range);
-                }
-                if let (Some(higher_half_range), Some(higher_half_available_range)) = (higher_half_range, higher_half_available_range) {
-                    self.add_higher_half_node()
-                        .initialize(higher_half_range, higher_half_available_range);
-                }
-                true
-            },
+        if let (Some(lower_half_range), Some(lower_half_available_range), Some(lower_half_node)) = (lower_half_range, lower_half_available_range, self.add_lower_half_node()) {
+            lower_half_node.initialize(lower_half_range, lower_half_available_range);
+            self.state = State::Divided
         }
+        if let (Some(higher_half_range), Some(higher_half_available_range), Some(higher_half_node)) = (higher_half_range, higher_half_available_range, self.add_higher_half_node()) {
+            higher_half_node.initialize(higher_half_range, higher_half_available_range);
+            self.state = State::Divided
+        }
+        self.state == State::Divided
     }
 
     fn divide_point(&self) -> usize {
@@ -241,18 +235,11 @@ impl Node {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 enum State {
     Allocated,
     Divided,
     Free,
     NotExist,
-}
-
-impl State {
-    fn divide(&mut self) {
-        assert!(matches!(self, Self::Free));
-        *self = Self::Divided;
-    }
 }
 
