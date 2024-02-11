@@ -56,8 +56,7 @@ fn main(argument: &'static mut Argument<'static>) {
     rs232c::set_com2(com2);
     com2_println!("cpuid = {:#x?}", cpuid);
     let heap_end: usize = *heap_end;
-    com2_println!("heap_end = {:#x?}", heap_end);
-    let available_heap_start: usize = memory_map
+    let heap_start: usize = memory_map
         .iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
         .flat_map(|memory_descriptor| memory_descriptor
@@ -74,13 +73,7 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .min()
         .unwrap();
-    com2_println!("available_heap_start = {:#x?}", available_heap_start);
-    let available_heap_size: usize = heap_end - available_heap_start;
-    com2_println!("available_heap_size = {:#x?}", available_heap_size);
-    let heap_size: usize = available_heap_size.next_power_of_two();
-    com2_println!("heap_size = {:#x?}", heap_size);
-    let heap_start: usize = heap_end - heap_size;
-    com2_println!("heap_start = {:#x?}", heap_start);
+    allocator::initialize(heap_start, heap_end);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
