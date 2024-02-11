@@ -71,9 +71,12 @@ impl NodeList {
         com2_println!("heap_end = {:#x?}", heap_end);
         let node_list: usize = available_heap_end;
         let node_list: *mut Self = node_list as *mut Self;
-        unsafe {
+        let node_list: &mut Self = unsafe {
             &mut *node_list
-        }
+        };
+        *node_list = Self::default();
+        com2_println!("node_list = {:#x?}", node_list);
+        node_list
     }
 }
 
