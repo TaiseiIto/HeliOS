@@ -5,6 +5,7 @@ use {
     core::{
         alloc::GlobalAlloc,
         cell::OnceCell,
+        fmt,
         mem,
         ops::Range,
     },
@@ -21,9 +22,9 @@ static mut ALLOCATOR: Allocator<'static> = Allocator {
 };
 
 pub fn initialize(available_range: Range<usize>) {
-    com2_println!("NODE_LIST_LENGTH = {:#x?}", NODE_LIST_LENGTH);
     unsafe {
         ALLOCATOR.initialize(available_range);
+        com2_println!("ALLOCATOR = {:#x?}", ALLOCATOR);
     }
 }
 
@@ -50,7 +51,6 @@ unsafe impl GlobalAlloc for Allocator<'_> {
     }
 }
 
-#[derive(Debug)]
 #[repr(align(4096))]
 struct NodeList {
     nodes: [Node; NODE_LIST_LENGTH],
@@ -73,12 +73,20 @@ impl NodeList {
         };
         *node_list = Self::default();
         node_list.nodes[0].initialize(range, available_range);
-        com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
 
     fn node_mut(&mut self, index: usize) -> &mut Node {
         &mut self.nodes[index]
+    }
+}
+
+impl fmt::Debug for NodeList {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("NodeList")
+            .field("root", &self.nodes[0])
+            .finish()
     }
 }
 
@@ -137,13 +145,6 @@ impl Node {
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         let higher_half_range: Option<Range<usize>> = self.higher_half_range();
         let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
-        com2_println!("divide");
-        com2_println!("self.range = {:#x?}", self.range);
-        com2_println!("self.available_range = {:#x?}", self.available_range);
-        com2_println!("lower_half_range = {:#x?}", lower_half_range);
-        com2_println!("lower_half_available_range = {:#x?}", lower_half_available_range);
-        com2_println!("higher_half_range = {:#x?}", higher_half_range);
-        com2_println!("higher_half_available_range = {:#x?}", higher_half_available_range);
         if let (Some(lower_half_range), Some(lower_half_available_range), Some(lower_half_node)) = (lower_half_range, lower_half_available_range, self.add_lower_half_node()) {
             lower_half_node.initialize(lower_half_range, lower_half_available_range);
             self.state = State::Divided
