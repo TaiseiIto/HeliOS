@@ -73,6 +73,10 @@ impl NodeList {
         com2_println!("node_list = {:#x?}", node_list);
         node_list
     }
+
+    fn node_mut(&mut self, index: usize) -> &mut Node {
+        &mut self.nodes[index]
+    }
 }
 
 impl Default for NodeList {
@@ -96,6 +100,17 @@ struct Node {
 }
 
 impl Node {
+    fn add_lower_half_node(&mut self) -> &mut Self {
+        let lower_half_node_index_in_list: usize = self.lower_half_node_index_in_list();
+        if lower_half_node_index_in_list < NODE_LIST_LENGTH {
+            self
+                .node_list_mut()
+                .node_mut(lower_half_node_index_in_list)
+        } else {
+            panic!("Add a node list.")
+        }
+    }
+
     const fn default() -> Self {
         Self {
             state: State::NotExist,
@@ -109,10 +124,7 @@ impl Node {
 
     fn divide(&mut self) {
         self.state.divide();
-        let lower_half_node_index_in_list: usize = self.lower_half_node_index_in_list();
-        let higher_half_node_index_in_list: usize = self.higher_half_node_index_in_list();
-        com2_println!("lower_half_node_index_in_list = {:#x?}", lower_half_node_index_in_list);
-        com2_println!("higher_half_node_index_in_list = {:#x?}", higher_half_node_index_in_list);
+        let lower_half_node: &mut Self = self.add_lower_half_node();
     }
 
     fn higher_half_node_index_in_list(&self) -> usize {
@@ -144,6 +156,16 @@ impl Node {
 
     fn lower_half_node_index_in_list(&self) -> usize {
         2 * self.index_in_list() + 1
+    }
+
+    fn node_list_mut(&mut self) -> &mut NodeList {
+        let address: *mut Self = self as *mut Self;
+        let address: usize = address as usize;
+        let address: usize = (address / memory::PAGE_SIZE) * memory::PAGE_SIZE;
+        let address: *mut NodeList = address as *mut NodeList;
+        unsafe {
+            &mut *address
+        }
     }
 }
 
