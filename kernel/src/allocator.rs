@@ -109,6 +109,21 @@ impl Node {
 
     fn divide(&mut self) {
         self.state.divide();
+        let lower_half_node_index_in_list: usize = self.lower_half_node_index_in_list();
+        let higher_half_node_index_in_list: usize = self.higher_half_node_index_in_list();
+        com2_println!("lower_half_node_index_in_list = {:#x?}", lower_half_node_index_in_list);
+        com2_println!("higher_half_node_index_in_list = {:#x?}", higher_half_node_index_in_list);
+    }
+
+    fn higher_half_node_index_in_list(&self) -> usize {
+        2 * self.index_in_list() + 2
+    }
+
+    fn index_in_list(&self) -> usize {
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let offset: usize = address % memory::PAGE_SIZE;
+        offset / mem::size_of::<Self>()
     }
 
     fn initialize(&mut self, start: usize, end: usize, available_start: usize, available_end: usize) {
@@ -125,6 +140,10 @@ impl Node {
         if start != available_start {
             self.divide();
         }
+    }
+
+    fn lower_half_node_index_in_list(&self) -> usize {
+        2 * self.index_in_list() + 1
     }
 }
 
