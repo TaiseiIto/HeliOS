@@ -129,24 +129,26 @@ impl Node {
     }
 
     fn divide(&mut self) -> bool {
-        com2_println!("divide");
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         let higher_half_range: Option<Range<usize>> = self.higher_half_range();
         let higher_half_available_range: Option<Range<usize>> = self.higher_half_available_range();
+        com2_println!("divide");
+        com2_println!("self.range = {:#x?}", self.range);
+        com2_println!("self.available_range = {:#x?}", self.available_range);
+        com2_println!("lower_half_range = {:#x?}", lower_half_range);
+        com2_println!("lower_half_available_range = {:#x?}", lower_half_available_range);
+        com2_println!("higher_half_range = {:#x?}", higher_half_range);
+        com2_println!("higher_half_available_range = {:#x?}", higher_half_available_range);
         match (lower_half_available_range, higher_half_available_range) {
             (None, None) => false,
             (lower_half_available_range, higher_half_available_range) => {
                 self.state.divide();
                 if let (Some(lower_half_range), Some(lower_half_available_range)) = (lower_half_range, lower_half_available_range) {
-                    com2_println!("{:#x?} = lower_half_range", lower_half_range);
-                    com2_println!("{:#x?} = lower_half_available_range", lower_half_available_range);
                     self.add_lower_half_node()
                         .initialize(lower_half_range, lower_half_available_range);
                 }
                 if let (Some(higher_half_range), Some(higher_half_available_range)) = (higher_half_range, higher_half_available_range) {
-                    com2_println!("{:#x?} = higher_half_range", higher_half_range);
-                    com2_println!("{:#x?} = higher_half_available_range", higher_half_available_range);
                     self.add_higher_half_node()
                         .initialize(higher_half_range, higher_half_available_range);
                 }
@@ -165,14 +167,18 @@ impl Node {
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let range: Range<usize> = self.divide_point()..self.available_range.end - self
+        let start: usize = self.divide_point();
+        let end: usize = self.available_range.end - self
             .higher_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
+        let range: Range<usize> = start..end;
         (!range.is_empty()).then_some(range)
     }
 
     fn higher_half_range(&self) -> Option<Range<usize>> {
-        let range: Range<usize> = self.divide_point()..self.range.end;
+        let start: usize = self.divide_point();
+        let end: usize = self.range.end;
+        let range: Range<usize> = start..end;
         (!range.is_empty()).then_some(range)
     }
 
@@ -203,14 +209,18 @@ impl Node {
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
-        let range: Range<usize> = self.available_range.start..self.divide_point() - self
+        let start: usize = self.available_range.start;
+        let end: usize = self.divide_point() - self
             .lower_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
+        let range: Range<usize> = start..end;
         (!range.is_empty()).then_some(range)
     }
 
     fn lower_half_range(&self) -> Option<Range<usize>> {
-        let range: Range<usize> = self.range.start..self.divide_point();
+        let start: usize = self.range.start;
+        let end: usize = self.divide_point();
+        let range: Range<usize> = start..end;
         (!range.is_empty()).then_some(range)
     }
 
