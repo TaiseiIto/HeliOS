@@ -71,7 +71,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
-    com2_println!("directory_tree = {:#x?}", directory_tree);
     let kernel: elf::File = directory_tree
         .get("HeliOS/kernel.elf")
         .unwrap()
@@ -79,7 +78,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .into();
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
     com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
-    let kernel_stack_pages: usize = 0x10;
+    let kernel_stack_pages: usize = 0x20;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
         .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
         .collect();
@@ -116,9 +115,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
-    kernel_vaddr2frame
-        .keys()
-        .for_each(|vaddr| paging.debug(*vaddr));
     let kernel_argument = kernel::Argument::new(
         rs232c::get_com2(),
         cpuid,
