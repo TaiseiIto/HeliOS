@@ -125,10 +125,30 @@ impl Node {
     fn divide(&mut self) {
         self.state.divide();
         let lower_half_node: &mut Self = self.add_lower_half_node();
+        let lower_half_start: usize = self.lower_half_start();
+        com2_println!("lower_half_start = {:#x?}", lower_half_start);
+        let lower_half_end: usize = self.lower_half_end();
+        com2_println!("lower_half_end = {:#x?}", lower_half_end);
+        let higher_half_start: usize = self.higher_half_start();
+        com2_println!("higher_half_start = {:#x?}", higher_half_start);
+        let higher_half_end: usize = self.higher_half_end();
+        com2_println!("higher_half_end = {:#x?}", higher_half_end);
+    }
+
+    fn divide_point(&self) -> usize {
+        self.end / 2 + self.start / 2
+    }
+
+    fn higher_half_end(&self) -> usize {
+        self.end
     }
 
     fn higher_half_node_index_in_list(&self) -> usize {
         2 * self.index_in_list() + 2
+    }
+
+    fn higher_half_start(&self) -> usize {
+        self.divide_point()
     }
 
     fn index_in_list(&self) -> usize {
@@ -154,8 +174,16 @@ impl Node {
         }
     }
 
+    fn lower_half_end(&self) -> usize {
+        self.divide_point()
+    }
+
     fn lower_half_node_index_in_list(&self) -> usize {
         2 * self.index_in_list() + 1
+    }
+
+    fn lower_half_start(&self) -> usize {
+        self.start
     }
 
     fn node_list_mut(&mut self) -> &mut NodeList {
