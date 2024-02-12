@@ -254,6 +254,13 @@ impl Node {
     }
 
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
+        assert!(!range.is_empty());
+        assert!(!available_range.is_empty());
+        assert!(range.start <= available_range.start);
+        assert!(available_range.end <= range.end);
+        assert!(range.len().is_power_of_two());
+        assert_eq!((range.start / range.len()) * range.len(), range.start);
+        assert_eq!((range.end / range.len()) * range.len(), range.end);
         let state = State::Free;
         let max_length: usize = available_range.len();
         *self = Self {
