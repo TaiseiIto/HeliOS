@@ -180,9 +180,10 @@ impl Node {
     fn get_higher_half_node(&self) -> Option<&Self> {
         if matches!(self.state, State::Divided) {
             if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
-                Some(self
+                let higher_half_node: &Self = self
                     .node_list()
-                    .node(higher_half_node_index_in_list))
+                    .node(higher_half_node_index_in_list);
+                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
             } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
@@ -202,9 +203,10 @@ impl Node {
     fn get_lower_half_node(&self) -> Option<&Self> {
         if matches!(self.state, State::Divided) {
             if let Some(lower_half_node_index_in_list) = self.lower_half_node_index_in_list() {
-                Some(self
+                let lower_half_node: &Self = self
                     .node_list()
-                    .node(lower_half_node_index_in_list))
+                    .node(lower_half_node_index_in_list);
+                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
             } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
