@@ -5,6 +5,7 @@ use {
     core::{
         alloc::GlobalAlloc,
         cell::OnceCell,
+        cmp,
         fmt,
         mem,
         ops::Range,
@@ -51,11 +52,11 @@ impl<'a> Allocator<'a> {
 
 unsafe impl GlobalAlloc for Allocator<'_> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        panic!("Global allocator is not implemented!");
+        panic!("Unimplemented!");
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
-        panic!("Global allocator is not implemented!");
+        panic!("Unimplemented!");
     }
 }
 
@@ -67,6 +68,19 @@ struct NodeList {
 const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
+    fn alloc(&mut self, layout: Layout) -> Option<&mut [u8]> {
+        let align: usize = layout.align();
+        let size: usize = layout.size();
+        let size: usize = size.next_power_of_two();
+        let size: usize = cmp::max(align, size);
+        self.nodes[0].divide_before_alloc(size);
+        self.nodes[0].alloc(size)
+    }
+
+    fn dealloc(&mut self, address: usize, layout: Layout) {
+        panic!("Unimplemented!")
+    }
+
     fn new<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
@@ -183,6 +197,10 @@ impl Node {
             self.state = State::Divided
         }
         self.update_max_length();
+    }
+
+    fn divide_before_alloc(&mut self, size: usize) {
+        panic!("Unimplemented!")
     }
 
     fn divide_point(&self) -> usize {
