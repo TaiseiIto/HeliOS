@@ -166,7 +166,7 @@ impl Node {
                 .map(|higher_half_node| higher_half_node.max_length);
             self.max_length = [lower_half_max_length, higher_half_max_length]
                 .into_iter()
-                .filter_map(|max_length| max_length)
+                .flatten()
                 .max()
                 .unwrap();
         }
