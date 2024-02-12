@@ -274,26 +274,6 @@ impl Node {
         }
     }
 
-    fn is_higher_half(&self) -> bool {
-        let range: &Range<usize> = &self.range;
-        let start: usize = range.start;
-        let end: usize = range.end;
-        let size: usize = range.len();
-        let parent_size: usize = 2 * size;
-        let parent_end: usize = ((end + parent_size - 1) / parent_size) * parent_size;
-        end == parent_end
-    }
-
-    fn is_lower_half(&self) -> bool {
-        let range: &Range<usize> = &self.range;
-        let start: usize = range.start;
-        let end: usize = range.end;
-        let size: usize = range.len();
-        let parent_size: usize = 2 * size;
-        let parent_start: usize = (start / parent_size) * parent_size;
-        start == parent_start
-    }
-
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
         let index: usize = 2 * self.index_in_list() + 1;
         (index < NODE_LIST_LENGTH).then_some(index)
@@ -343,14 +323,12 @@ impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Node")
-            .field("is_lower_half", &self.is_lower_half())
-            .field("is_higher_half", &self.is_higher_half())
             .field("state", &self.state)
             .field("range", &self.range)
             .field("available_range", &self.available_range)
             .field("max_length", &self.max_length)
-            .field("lower", &self.get_lower_half_node())
-            .field("higher", &self.get_higher_half_node())
+            .field("lower_half", &self.get_lower_half_node())
+            .field("higher_half", &self.get_higher_half_node())
             .finish()
     }
 }
