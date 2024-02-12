@@ -139,22 +139,22 @@ impl Node {
     fn alloc(&mut self, size: usize) -> Option<&mut [u8]> {
         match self.state {
             State::Allocated | State::NotExist => None,
-            State::Divided => {
-                self.get_lower_half_available_size()
-                    .filter(|lower_half_available_size| size <= *lower_half_available_size)
-                    .and_then(|_| self
-                        .get_mut_lower_half_node()
-                        .and_then(|lower_half_node| lower_half_node.alloc(size)))
-                    .or_else(|| self
-                        .get_higher_half_available_size()
-                        .filter(|higher_half_available_size| size <= *higher_half_available_size)
-                        .and_then(|_| self
-                            .get_mut_higher_half_node()
-                            .and_then(|higher_half_node| higher_half_node.alloc(size))))
-            },
-            State::Free => {
+            State::Divided => if self
+                .get_lower_half_available_size()
+                .filter(|lower_half_available_size| size <= *lower_half_available_size)
+                .is_some() {
+                self.get_mut_lower_half_node()
+                    .and_then(|lower_half_node| lower_half_node.alloc(size))
+            } else if self
+                .get_higher_half_available_size()
+                .filter(|higher_half_available_size| size <= *higher_half_available_size)
+                .is_some() {
+                self.get_mut_higher_half_node()
+                    .and_then(|higher_half_node| higher_half_node.alloc(size))
+            } else {
                 None
             },
+            State::Free => self.get_mut_slice(),
         }
     }
 
