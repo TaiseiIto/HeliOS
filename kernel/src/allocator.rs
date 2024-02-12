@@ -200,7 +200,32 @@ impl Node {
     }
 
     fn divide_before_alloc(&mut self, size: usize) {
-        panic!("Unimplemented!")
+        match self.state {
+            State::Allocated | State::NotExist => panic!("Can't allocate memory!"),
+            State::Divided => if self
+                .get_lower_half_node()
+                .map(|lower_half_node| lower_half_node.max_length)
+                .filter(|lower_half_max_length| size <= *lower_half_max_length)
+                .is_some() {
+                if let Some(lower_half_node) = self.get_mut_lower_half_node() {
+                    lower_half_node.divide_before_alloc(size);
+                }
+            } else if self
+                .get_higher_half_node()
+                .map(|higher_half_node| higher_half_node.max_length)
+                .filter(|higher_half_max_length| size <= *higher_half_max_length)
+                .is_some() {
+                if let Some(higher_half_node) = self.get_mut_higher_half_node() {
+                    higher_half_node.divide_before_alloc(size);
+                }
+            } else {
+                panic!("Can't allocate memory!");
+            },
+            State::Free => {
+                panic!("Unimplemented!");
+            },
+        }
+        self.update_max_length();
     }
 
     fn divide_point(&self) -> usize {
@@ -316,10 +341,7 @@ impl Node {
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let start: usize = [self.available_range.start, self.divide_point()]
-            .into_iter()
-            .max()
-            .unwrap();
+        let start: usize = cmp::max(self.available_range.start, self.divide_point());
         let end: usize = self.available_range.end - self
             .higher_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
@@ -369,10 +391,7 @@ impl Node {
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
         let start: usize = self.available_range.start;
-        let end: usize = [self.divide_point(), self.available_range.end]
-            .into_iter()
-            .min()
-            .unwrap() - self
+        let end: usize = cmp::min(self.divide_point(), self.available_range.end) - self
             .lower_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
         let range: Range<usize> = start..end;
