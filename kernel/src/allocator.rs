@@ -189,7 +189,8 @@ impl Node {
                 let node_list: &NodeList = unsafe {
                     &*node_list
                 };
-                Some(&node_list.nodes[0])
+                let higher_half_node: &Self = &node_list.nodes[0];
+                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
             } else {
                 None
             }
@@ -210,7 +211,8 @@ impl Node {
                 let node_list: &NodeList = unsafe {
                     &*node_list
                 };
-                Some(&node_list.nodes[0])
+                let lower_half_node: &Self = &node_list.nodes[0];
+                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
             } else {
                 None
             }
