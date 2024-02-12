@@ -140,14 +140,16 @@ impl Node {
         match self.state {
             State::Allocated | State::NotExist => None,
             State::Divided => if self
-                .get_lower_half_available_size()
-                .filter(|lower_half_available_size| size <= *lower_half_available_size)
+                .get_lower_half_node()
+                .map(|lower_half_node| lower_half_node.max_length)
+                .filter(|lower_half_max_length| size <= *lower_half_max_length)
                 .is_some() {
                 self.get_mut_lower_half_node()
                     .and_then(|lower_half_node| lower_half_node.alloc(size))
             } else if self
-                .get_higher_half_available_size()
-                .filter(|higher_half_available_size| size <= *higher_half_available_size)
+                .get_higher_half_node()
+                .map(|higher_half_node| higher_half_node.max_length)
+                .filter(|higher_half_max_length| size <= *higher_half_max_length)
                 .is_some() {
                 self.get_mut_higher_half_node()
                     .and_then(|higher_half_node| higher_half_node.alloc(size))
@@ -199,11 +201,6 @@ impl Node {
         self.range.end / 2 + self.range.start / 2
     }
 
-    fn get_higher_half_available_size(&self) -> Option<usize> {
-        self.get_higher_half_node()
-            .map(|higher_half_node| higher_half_node.available_range.len())
-    }
-
     fn get_higher_half_node(&self) -> Option<&Self> {
         if matches!(self.state, State::Divided) {
             if let Some(higher_half_node_index_in_list) = self.higher_half_node_index_in_list() {
@@ -248,11 +245,6 @@ impl Node {
         } else {
             None
         }
-    }
-
-    fn get_lower_half_available_size(&self) -> Option<usize> {
-        self.get_lower_half_node()
-            .map(|lower_half_node| lower_half_node.available_range.len())
     }
 
     fn get_lower_half_node(&self) -> Option<&Self> {
