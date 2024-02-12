@@ -144,7 +144,7 @@ impl Node {
         }
     }
 
-    fn divide(&mut self) -> bool {
+    fn try_to_divide(&mut self) {
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
         let higher_half_range: Option<Range<usize>> = self.higher_half_range();
@@ -170,7 +170,6 @@ impl Node {
                 .max()
                 .unwrap();
         }
-        self.state == State::Divided
     }
 
     fn divide_point(&self) -> usize {
@@ -264,8 +263,28 @@ impl Node {
             max_length,
         };
         if self.range.start != self.available_range.start {
-            self.divide();
+            self.try_to_divide();
         }
+    }
+
+    fn is_higher_half(&self) -> bool {
+        let range: &Range<usize> = &self.range;
+        let start: usize = range.start;
+        let end: usize = range.end;
+        let size: usize = range.len();
+        let parent_size: usize = 2 * size;
+        let parent_end: usize = ((end + parent_size - 1) / parent_size) * parent_size;
+        end == parent_end
+    }
+
+    fn is_lower_half(&self) -> bool {
+        let range: &Range<usize> = &self.range;
+        let start: usize = range.start;
+        let end: usize = range.end;
+        let size: usize = range.len();
+        let parent_size: usize = 2 * size;
+        let parent_start: usize = (start / parent_size) * parent_size;
+        start == parent_start
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
@@ -317,6 +336,8 @@ impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Node")
+            .field("is_lower_half", &self.is_lower_half())
+            .field("is_higher_half", &self.is_higher_half())
             .field("state", &self.state)
             .field("range", &self.range)
             .field("available_range", &self.available_range)
