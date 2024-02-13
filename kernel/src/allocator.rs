@@ -68,12 +68,11 @@ struct NodeList {
 const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
-    fn alloc(&mut self, layout: Layout) -> Option<&mut [u8]> {
+    fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
         let align: usize = layout.align();
         let size: usize = layout.size();
         let size: usize = size.next_power_of_two();
         let size: usize = cmp::max(align, size);
-        self.nodes[0].divide_before_alloc(size);
         self.nodes[0].alloc(size)
     }
 
@@ -150,8 +149,8 @@ impl Node {
         }
     }
 
-    fn alloc(&mut self, size: usize) -> Option<&mut [u8]> {
-        match self.state {
+    fn alloc(&mut self, size: usize) -> Option<*mut u8> {
+        let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::NotExist => None,
             State::Divided => if self
                 .get_lower_half_node()
@@ -170,8 +169,21 @@ impl Node {
             } else {
                 None
             },
-            State::Free => self.get_mut_slice(),
-        }
+            State::Free => {
+                self.divide();
+                if matches!(self.state, State::Divided) && size <= self.max_length {
+                    self.alloc(size)
+                } else {
+                    if matches!(self.state, State::Divided) {
+                        self.merge();
+                    }
+                    self.state = State::Allocated;
+                    self.get_mut()
+                }
+            },
+        };
+        self.update_max_length();
+        allocated
     }
 
     const fn default() -> Self {
@@ -195,40 +207,6 @@ impl Node {
         if let (Some(higher_half_range), Some(higher_half_available_range), Some(higher_half_node)) = (higher_half_range, higher_half_available_range, self.add_higher_half_node()) {
             higher_half_node.initialize(higher_half_range, higher_half_available_range);
             self.state = State::Divided
-        }
-        self.update_max_length();
-    }
-
-    fn divide_before_alloc(&mut self, size: usize) {
-        match self.state {
-            State::Allocated | State::NotExist => panic!("Can't allocate memory!"),
-            State::Divided => if self
-                .get_lower_half_node()
-                .map(|lower_half_node| lower_half_node.max_length)
-                .filter(|lower_half_max_length| size <= *lower_half_max_length)
-                .is_some() {
-                if let Some(lower_half_node) = self.get_mut_lower_half_node() {
-                    lower_half_node.divide_before_alloc(size);
-                }
-            } else if self
-                .get_higher_half_node()
-                .map(|higher_half_node| higher_half_node.max_length)
-                .filter(|higher_half_max_length| size <= *higher_half_max_length)
-                .is_some() {
-                if let Some(higher_half_node) = self.get_mut_higher_half_node() {
-                    higher_half_node.divide_before_alloc(size);
-                }
-            } else {
-                panic!("Can't allocate memory!");
-            },
-            State::Free => {
-                self.divide();
-                if size <= self.max_length {
-                    self.divide_before_alloc(size);
-                } else {
-                    self.merge();
-                }
-            },
         }
         self.update_max_length();
     }
@@ -331,13 +309,6 @@ impl Node {
 
     fn get_mut(&mut self) -> Option<*mut u8> {
         matches!(self.state, State::Free).then(|| self.available_range.start as *mut u8)
-    }
-
-    fn get_mut_slice(&mut self) -> Option<&mut [u8]> {
-        self.get_mut()
-            .map(|start| unsafe {
-                slice::from_raw_parts_mut(start, self.available_range.len())
-            })
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
