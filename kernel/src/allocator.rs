@@ -55,7 +55,7 @@ unsafe impl GlobalAlloc for Allocator<'_> {
         panic!("Unimplemented!");
     }
 
-    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
+    unsafe fn dealloc(&self, address: *mut u8, layout: Layout) {
         panic!("Unimplemented!");
     }
 }
@@ -182,6 +182,35 @@ impl Node {
         };
         self.update_max_length();
         allocated
+    }
+
+    fn dealloc(&mut self, address: *mut u8) {
+        match self.state {
+            State::Allocated => {
+                assert_eq!(self.get_mut(), Some(address));
+                self.state = State::Free;
+            },
+            State::Divided => if self
+                .get_lower_half_node()
+                .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize)))
+                .is_some() {
+                if let Some(lower_half_node) = self.get_mut_lower_half_node() {
+                    lower_half_node.dealloc(address);
+                }
+            } else if self
+                .get_higher_half_node()
+                .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize)))
+                .is_some() {
+                if let Some(higher_half_node) = self.get_mut_higher_half_node() {
+                    higher_half_node.dealloc(address);
+                }
+            } else {
+                panic!("Can't deallocate memory!");
+            },
+            State::Free => panic!("Double free!"),
+            State::NotExist => panic!("Can't deallocate memory!"),
+        }
+        self.update_max_length();
     }
 
     const fn default() -> Self {
