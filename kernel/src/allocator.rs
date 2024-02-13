@@ -152,18 +152,14 @@ impl Node {
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
         let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::NotExist => None,
-            State::Divided => if self
-                .get_lower_half_node()
-                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_length)
-                .is_some() {
-                self.get_mut_lower_half_node()
-                    .and_then(|lower_half_node| lower_half_node.alloc(size))
-            } else if self
-                .get_higher_half_node()
-                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_length)
-                .is_some() {
-                self.get_mut_higher_half_node()
-                    .and_then(|higher_half_node| higher_half_node.alloc(size))
+            State::Divided => if let Some(lower_half_node) = self
+                .get_mut_lower_half_node()
+                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_length) {
+                lower_half_node.alloc(size)
+            } else if let Some(higher_half_node) = self
+                .get_mut_higher_half_node()
+                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_length) {
+                higher_half_node.alloc(size)
             } else {
                 None
             },
@@ -190,20 +186,14 @@ impl Node {
                 assert_eq!(self.get_mut(), Some(address));
                 self.state = State::Free;
             },
-            State::Divided => if self
-                .get_lower_half_node()
-                .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize)))
-                .is_some() {
-                if let Some(lower_half_node) = self.get_mut_lower_half_node() {
-                    lower_half_node.dealloc(address);
-                }
-            } else if self
-                .get_higher_half_node()
-                .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize)))
-                .is_some() {
-                if let Some(higher_half_node) = self.get_mut_higher_half_node() {
-                    higher_half_node.dealloc(address);
-                }
+            State::Divided => if let Some(lower_half_node) = self
+                .get_mut_lower_half_node()
+                .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize))) {
+                lower_half_node.dealloc(address);
+            } else if let Some(higher_half_node) = self
+                .get_mut_higher_half_node()
+                .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize))) {
+                higher_half_node.dealloc(address);
             } else {
                 panic!("Can't deallocate memory!");
             },
