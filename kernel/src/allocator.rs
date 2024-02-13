@@ -76,8 +76,8 @@ impl NodeList {
         self.nodes[0].alloc(size)
     }
 
-    fn dealloc(&mut self, address: usize, layout: Layout) {
-        panic!("Unimplemented!")
+    fn dealloc(&mut self, address: *mut u8, layout: Layout) {
+        self.nodes[0].dealloc(address);
     }
 
     fn new<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
