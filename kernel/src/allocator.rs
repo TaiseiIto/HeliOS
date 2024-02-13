@@ -222,7 +222,12 @@ impl Node {
                 panic!("Can't allocate memory!");
             },
             State::Free => {
-                panic!("Unimplemented!");
+                self.divide();
+                if size <= self.max_length {
+                    self.divide_before_alloc(size);
+                } else {
+                    self.merge();
+                }
             },
         }
         self.update_max_length();
@@ -403,6 +408,13 @@ impl Node {
         let end: usize = self.divide_point();
         let range: Range<usize> = start..end;
         (!range.is_empty()).then_some(range)
+    }
+
+    fn merge(&mut self) {
+        if matches!(self.state, State::Divided) {
+            self.state = State::Free;
+            self.max_length = self.available_range.len();
+        }
     }
 
     fn mut_node_list(&mut self) -> &mut NodeList {
