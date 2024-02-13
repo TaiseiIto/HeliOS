@@ -30,12 +30,22 @@ pub fn initialize(available_range: Range<usize>) {
     }
 }
 
-#[derive(Debug)]
 struct Allocator {
     root_node_list: UnsafeCell::<*mut NodeList>,
 }
 
 impl Allocator {
+    pub fn get_root_node_list(&self) -> &NodeList {
+        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
+        let root_node_list: *mut NodeList = unsafe {
+            *root_node_list
+        };
+        let root_node_list: *const NodeList = root_node_list as *const NodeList;
+        unsafe {
+            &*root_node_list
+        }
+    }
+
     pub fn initialize(&mut self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
         let end: usize = available_range.end;
@@ -49,6 +59,15 @@ impl Allocator {
         *unsafe {
             &mut *self.root_node_list.get()
         } = node_list;
+    }
+}
+
+impl fmt::Debug for Allocator {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Allocator")
+            .field("root_node_list", self.get_root_node_list())
+            .finish()
     }
 }
 
