@@ -4,7 +4,7 @@ use {
     alloc::alloc::Layout,
     core::{
         alloc::GlobalAlloc,
-        cell::OnceCell,
+        cell::UnsafeCell,
         cmp,
         fmt,
         mem,
@@ -19,8 +19,8 @@ use {
 };
 
 #[global_allocator]
-static mut ALLOCATOR: Allocator<'static> = Allocator {
-    root_node_list: OnceCell::new(),
+static mut ALLOCATOR: Allocator = Allocator {
+    root_node_list: UnsafeCell::new(0 as *mut NodeList),
 };
 
 pub fn initialize(available_range: Range<usize>) {
@@ -30,13 +30,13 @@ pub fn initialize(available_range: Range<usize>) {
     }
 }
 
-#[derive(Debug, Default)]
-struct Allocator<'a> {
-    root_node_list: OnceCell::<&'a mut NodeList>,
+#[derive(Debug)]
+struct Allocator {
+    root_node_list: UnsafeCell::<*mut NodeList>,
 }
 
-impl<'a> Allocator<'a> {
-    pub fn initialize(&'a mut self, available_range: Range<usize>) {
+impl Allocator {
+    pub fn initialize(&mut self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
         let end: usize = available_range.end;
         let available_end: usize = end - memory::PAGE_SIZE;
@@ -44,13 +44,15 @@ impl<'a> Allocator<'a> {
         let start: usize = end - size;
         let range: Range<usize> = start..end;
         let available_range: Range<usize> = available_start..available_end;
-        self.root_node_list
-            .set(NodeList::new(range, available_range))
-            .unwrap()
+        let node_list: &mut NodeList = NodeList::new(range, available_range);
+        let node_list: *mut NodeList = node_list as *mut NodeList;
+        *unsafe {
+            &mut *self.root_node_list.get()
+        } = node_list;
     }
 }
 
-unsafe impl GlobalAlloc for Allocator<'_> {
+unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         panic!("Unimplemented!");
     }
