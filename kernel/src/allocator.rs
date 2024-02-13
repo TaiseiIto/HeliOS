@@ -154,15 +154,13 @@ impl Node {
             State::Allocated | State::NotExist => None,
             State::Divided => if self
                 .get_lower_half_node()
-                .map(|lower_half_node| lower_half_node.max_length)
-                .filter(|lower_half_max_length| size <= *lower_half_max_length)
+                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_length)
                 .is_some() {
                 self.get_mut_lower_half_node()
                     .and_then(|lower_half_node| lower_half_node.alloc(size))
             } else if self
                 .get_higher_half_node()
-                .map(|higher_half_node| higher_half_node.max_length)
-                .filter(|higher_half_max_length| size <= *higher_half_max_length)
+                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_length)
                 .is_some() {
                 self.get_mut_higher_half_node()
                     .and_then(|higher_half_node| higher_half_node.alloc(size))
