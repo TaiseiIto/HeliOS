@@ -73,11 +73,19 @@ impl fmt::Debug for Allocator {
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        panic!("Unimplemented!");
+        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
+        let root_node_list: *mut NodeList = *root_node_list;
+        let root_node_list: &mut NodeList = &mut *root_node_list;
+        root_node_list
+            .alloc(layout)
+            .unwrap()
     }
 
     unsafe fn dealloc(&self, address: *mut u8, layout: Layout) {
-        panic!("Unimplemented!");
+        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
+        let root_node_list: *mut NodeList = *root_node_list;
+        let root_node_list: &mut NodeList = &mut *root_node_list;
+        root_node_list.dealloc(address);
     }
 }
 
@@ -97,7 +105,7 @@ impl NodeList {
         self.nodes[0].alloc(size)
     }
 
-    fn dealloc(&mut self, address: *mut u8, layout: Layout) {
+    fn dealloc(&mut self, address: *mut u8) {
         self.nodes[0].dealloc(address);
     }
 
