@@ -206,11 +206,14 @@ impl Node {
             State::Free => {
                 self.divide();
                 if matches!(self.state, State::Divided) && size <= self.max_length {
+                    com2_println!("divided");
                     self.alloc(size)
                 } else {
                     if matches!(self.state, State::Divided) {
+                        com2_println!("merge");
                         self.merge();
                     }
+                    com2_println!("not divided");
                     self.state = State::Allocated;
                     self.get_mut()
                 }
@@ -375,7 +378,7 @@ impl Node {
     }
 
     fn get_mut(&mut self) -> Option<*mut u8> {
-        matches!(self.state, State::Free).then(|| self.available_range.start as *mut u8)
+        matches!(self.state, State::Allocated).then(|| self.available_range.start as *mut u8)
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
