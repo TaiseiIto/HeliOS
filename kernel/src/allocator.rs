@@ -189,7 +189,6 @@ impl Node {
 
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
         com2_println!("Node::alloc");
-        com2_println!("self = {:#x?}", self);
         let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::NotExist => None,
             State::Divided => if let Some(lower_half_node) = self
@@ -206,14 +205,11 @@ impl Node {
             State::Free => {
                 self.divide();
                 if matches!(self.state, State::Divided) && size <= self.max_length {
-                    com2_println!("divided");
                     self.alloc(size)
                 } else {
                     if matches!(self.state, State::Divided) {
-                        com2_println!("merge");
                         self.merge();
                     }
-                    com2_println!("not divided");
                     self.state = State::Allocated;
                     self.get_mut()
                 }

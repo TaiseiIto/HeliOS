@@ -78,8 +78,23 @@ fn main(argument: &'static mut Argument<'static>) {
         .unwrap();
     allocator::initialize(heap_start..heap_end);
     {
-        let vec: Vec<u8> = (u8::MIN..=u8::MAX).collect();
-        com2_println!("vec = {:#x?}", vec);
+        let a: Vec<u8> = (u8::MIN..=u8::MAX).collect();
+        let b: Vec<u8> = a
+            .iter()
+            .filter_map(|n| (*n % 2 == 0).then_some(*n))
+            .collect();
+        let c: Vec<u8> = a
+            .iter()
+            .filter_map(|n| (*n % 3 == 0).then_some(*n))
+            .collect();
+        let d: Vec<u8> = a
+            .iter()
+            .filter_map(|n| (*n % 4 == 0).then_some(*n))
+            .collect();
+        com2_println!("a = {:#x?}", a);
+        com2_println!("b = {:#x?}", a);
+        com2_println!("c = {:#x?}", a);
+        com2_println!("d = {:#x?}", a);
     }
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
