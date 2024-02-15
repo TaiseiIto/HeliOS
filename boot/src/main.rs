@@ -77,7 +77,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .read()
         .into();
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
-    com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
     let kernel_stack_pages: usize = 0x20;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
         .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
@@ -90,7 +89,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
         });
-    com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
     efi_println!("Hello, World!");
     let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()

@@ -76,9 +76,12 @@ unsafe impl GlobalAlloc for Allocator {
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
-        root_node_list
+        let allocated: *mut u8 = root_node_list
             .alloc(layout)
-            .unwrap()
+            .unwrap();
+        com2_println!("alloc");
+        com2_println!("ALLOCATOR = {:#x?}", self);
+        allocated
     }
 
     unsafe fn dealloc(&self, address: *mut u8, layout: Layout) {
@@ -86,6 +89,8 @@ unsafe impl GlobalAlloc for Allocator {
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
         root_node_list.dealloc(address);
+        com2_println!("dealloc");
+        com2_println!("ALLOCATOR = {:#x?}", self);
     }
 }
 
@@ -215,16 +220,25 @@ impl Node {
                 assert_eq!(self.get_mut(), Some(address));
                 self.state = State::Free;
             },
-            State::Divided => if let Some(lower_half_node) = self
-                .get_mut_lower_half_node()
-                .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize))) {
-                lower_half_node.dealloc(address);
-            } else if let Some(higher_half_node) = self
-                .get_mut_higher_half_node()
-                .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize))) {
-                higher_half_node.dealloc(address);
-            } else {
-                panic!("Can't deallocate memory!");
+            State::Divided => {
+                if let Some(lower_half_node) = self
+                    .get_mut_lower_half_node()
+                    .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize))) {
+                    lower_half_node.dealloc(address);
+                } else if let Some(higher_half_node) = self
+                    .get_mut_higher_half_node()
+                    .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize))) {
+                    higher_half_node.dealloc(address);
+                } else {
+                    panic!("Can't deallocate memory!");
+                }
+                if self
+                    .get_lower_half_node()
+                    .map_or(false, |lower_half_node| lower_half_node.state == State::Free) && self
+                    .get_higher_half_node()
+                    .map_or(false, |higher_half_node| higher_half_node.state == State::Free) {
+                    self.merge();
+                }
             },
             State::Free => panic!("Double free!"),
             State::NotExist => panic!("Can't deallocate memory!"),

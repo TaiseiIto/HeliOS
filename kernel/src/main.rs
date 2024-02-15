@@ -13,7 +13,10 @@ mod rs232c;
 mod x64;
 
 use {
-    alloc::collections::BTreeMap,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     core::{
         arch::asm,
         panic::PanicInfo,
@@ -74,6 +77,10 @@ fn main(argument: &'static mut Argument<'static>) {
         .min()
         .unwrap();
     allocator::initialize(heap_start..heap_end);
+    {
+        let vec: Vec<u8> = (u8::MIN..=u8::MAX).collect();
+        com2_println!("vec = {:#x?}", vec);
+    }
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();
