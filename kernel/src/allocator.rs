@@ -77,12 +77,10 @@ unsafe impl GlobalAlloc for Allocator {
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
-        com2_println!("start alloc");
-        com2_println!("root_node_list = {:#x?}", root_node_list);
         let allocated: *mut u8 = root_node_list
             .alloc(layout)
             .unwrap();
-        com2_println!("end alloc");
+        com2_println!("alloc");
         com2_println!("root_node_list = {:#x?}", self);
         allocated
     }
@@ -191,6 +189,7 @@ impl Node {
 
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
         com2_println!("Node::alloc");
+        com2_println!("self = {:#x?}", self);
         let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::NotExist => None,
             State::Divided => if let Some(lower_half_node) = self
