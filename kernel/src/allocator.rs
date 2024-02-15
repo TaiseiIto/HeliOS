@@ -478,15 +478,17 @@ impl Node {
         if self.state == State::Divided {
             let lower_half_max_length: Option<usize> = self
                 .get_lower_half_node()
+                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free))
                 .map(|lower_half_node| lower_half_node.max_length);
             let higher_half_max_length: Option<usize> = self
                 .get_higher_half_node()
+                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free))
                 .map(|higher_half_node| higher_half_node.max_length);
             self.max_length = [lower_half_max_length, higher_half_max_length]
                 .into_iter()
                 .flatten()
                 .max()
-                .unwrap();
+                .unwrap_or(0);
         }
     }
 }
