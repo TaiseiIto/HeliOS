@@ -49,10 +49,11 @@ impl File {
         vaddr2frame
             .iter()
             .for_each(|(vaddr, frame)| {
+                let present: bool = true;
                 let writable: bool = true;
                 let executable: bool = false;
                 let paddr: usize = frame.paddr();
-                paging.set_page(*vaddr, paddr, writable, executable)
+                paging.set_page(*vaddr, paddr, present, writable, executable)
             });
         self.program_headers()
             .into_iter()

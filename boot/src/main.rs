@@ -65,45 +65,54 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     com2_println!("idtr = {:#x?}", idtr);
     idtr.set();
-    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
-        .memory_map()
-        .unwrap()
-        .into();
-    com2_println!("memory_map = {:#x?}", memory_map);
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
-    com2_println!("directory_tree = {:#x?}", directory_tree);
     let kernel: elf::File = directory_tree
         .get("HeliOS/kernel.elf")
         .unwrap()
         .read()
         .into();
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
-    com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
-    let kernel_stack_pages: usize = 0x10;
+    let kernel_stack_pages: usize = 0x20;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
         .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
         .collect();
     kernel_stack_vaddr2frame
         .iter()
         .for_each(|(vaddr, frame)| {
+            let present: bool = true;
             let writable: bool = true;
             let executable: bool = false;
-            paging.set_page(*vaddr, frame.paddr(), writable, executable);
+            paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
         });
-    com2_println!("kernel_stack_vaddr2frame = {:#x?}", kernel_stack_vaddr2frame);
     let kernel_stack_floor: usize = 0;
     efi_println!("Hello, World!");
+    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
+        .memory_map()
+        .unwrap()
+        .into();
+    let kernel_heap_end: usize = 0xffffc00000000000;
+    let kernel_heap_pages: usize = memory_map
+        .into_iter()
+        .filter(|memory_descriptor| memory_descriptor.is_available())
+        .map(|memory_descriptor| memory_descriptor.number_of_pages())
+        .sum();
+    (0..kernel_heap_pages)
+        .for_each(|heap_page_index| {
+            let vaddr: usize = kernel_heap_end - (heap_page_index + 1) * memory::PAGE_SIZE;
+            let paddr: usize = 0;
+            let present: bool = false;
+            let writable: bool = false;
+            let executable: bool = false;
+            paging.set_page(vaddr, paddr, present, writable, executable);
+        });
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
-    kernel_vaddr2frame
-        .keys()
-        .for_each(|vaddr| paging.debug(*vaddr));
     let kernel_argument = kernel::Argument::new(
         rs232c::get_com2(),
         cpuid,
@@ -111,6 +120,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         fonts,
         gdt,
         graphics_output_protocol,
+        kernel_heap_end,
         idt,
         memory_map,
         my_processor_number,

@@ -78,7 +78,7 @@ impl Interface {
         self.cr3.set()
     }
 
-    pub fn set_page(&mut self, vaddr: usize, paddr: usize, writable: bool, executable: bool) {
+    pub fn set_page(&mut self, vaddr: usize, paddr: usize, present: bool, writable: bool, executable: bool) {
         let vaddr: Vaddr = vaddr.into();
         let pml4vaddr: Vaddr = vaddr
                 .with_pdpi(0)
@@ -91,7 +91,7 @@ impl Interface {
         self.vaddr2pml4te_interface
             .get_mut(&pml4vaddr)
             .unwrap()
-            .set_page(pml4te, &vaddr, paddr, writable, executable);
+            .set_page(pml4te, &vaddr, paddr, present, writable, executable);
     }
 }
 
@@ -206,7 +206,7 @@ impl Pml4teInterface {
         }
     }
 
-    fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
+    fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
             let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = pdpt
@@ -261,7 +261,7 @@ impl Pml4teInterface {
             vaddr2pdpte_interface
                 .get_mut(&pdpvaddr)
                 .unwrap()
-                .set_page(pdpte, vaddr, paddr, writable, executable);
+                .set_page(pdpte, vaddr, paddr, present, writable, executable);
         } else {
             panic!("Can't set a page!");
         };
@@ -504,7 +504,7 @@ impl PdpteInterface {
         }
     }
 
-    fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
+    fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe1Gib => {
                 let pe1gib: Pe1Gib = *pdpte
@@ -616,7 +616,7 @@ impl PdpteInterface {
             vaddr2pdte_interface
                 .get_mut(&pdvaddr)
                 .unwrap()
-                .set_page(pdte, vaddr, paddr, writable, executable);
+                .set_page(pdte, vaddr, paddr, present, writable, executable);
         } else {
             panic!("Can't set a page!");
         }
@@ -933,7 +933,7 @@ impl PdteInterface {
         }
     }
 
-    fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, writable: bool, executable: bool) {
+    fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe2Mib => {
                 let pe2mib: Pe2Mib = *pdte
@@ -1041,7 +1041,7 @@ impl PdteInterface {
             vaddr2pte_interface
                 .get_mut(&pvaddr)
                 .unwrap()
-                .set_page(pte, paddr, writable, executable);
+                .set_page(pte, paddr, present, writable, executable);
         } else {
             panic!("Can't set a page!");
         }
@@ -1322,23 +1322,28 @@ impl PteInterface {
         }
     }
 
-    fn set_page(&mut self, pte: &mut Pte, paddr: usize, writable: bool, executable: bool) {
-        let pe4kib: Pe4Kib = Pe4Kib::default()
-            .with_p(true)
-            .with_rw(writable)
-            .with_us(false)
-            .with_pwt(false)
-            .with_pcd(false)
-            .with_a(false)
-            .with_d(false)
-            .with_pat(false)
-            .with_g(false)
-            .with_r(false)
-            .with_address_of_4kib_page_frame((paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
-            .with_prot_key(0)
-            .with_xd(!executable);
-        pte.set_pe4kib(pe4kib);
-        *self = Self::Pe4Kib;
+    fn set_page(&mut self, pte: &mut Pte, paddr: usize, present: bool, writable: bool, executable: bool) {
+        if present {
+            let pe4kib: Pe4Kib = Pe4Kib::default()
+                .with_p(present)
+                .with_rw(writable)
+                .with_us(false)
+                .with_pwt(false)
+                .with_pcd(false)
+                .with_a(false)
+                .with_d(false)
+                .with_pat(false)
+                .with_g(false)
+                .with_r(false)
+                .with_address_of_4kib_page_frame((paddr >> Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as u64)
+                .with_prot_key(0)
+                .with_xd(!executable);
+            pte.set_pe4kib(pe4kib);
+            *self = Self::Pe4Kib;
+        } else {
+            let pte_not_present = PteNotPresent::default();
+            *self = Self::PteNotPresent;
+        }
     }
 }
 

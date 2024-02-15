@@ -42,6 +42,12 @@ pub enum Type {
     MaxMemory,
 }
 
+impl Type {
+    fn is_available(&self) -> bool {
+        matches!(self, Self::BootServicesCode | Self::BootServicesData | Self::ConventionalMemory)
+    }
+}
+
 /// # EFI_PHYSICAL_ADDRESS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
@@ -65,6 +71,16 @@ pub struct Descriptor {
     virtual_start: VirtualAddress,
     number_of_pages: u64,
     attribute: u64,
+}
+
+impl Descriptor {
+    pub fn is_available(&self) -> bool {
+        self.memory_type.is_available()
+    }
+
+    pub fn number_of_pages(&self) -> usize {
+        self.number_of_pages as usize
+    }
 }
 
 #[derive(Debug)]

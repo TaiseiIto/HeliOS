@@ -40,15 +40,15 @@ pub struct Header {
 
 impl Header {
     pub fn deploy(&self, elf: &[u8]) {
-        let begin: usize = self.p_vaddr as usize;
-        let begin: *mut u8 = begin as *mut u8;
+        let start: usize = self.p_vaddr as usize;
+        let start: *mut u8 = start as *mut u8;
         let length: usize = self.p_memsz as usize;
         let bytes_in_memory: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(begin, length)
+            slice::from_raw_parts_mut(start, length)
         };
-        let begin: usize = self.p_offset as usize;
-        let end: usize = begin + self.p_filesz as usize;
-        let bytes_in_file: &[u8] = &elf[begin..end];
+        let start: usize = self.p_offset as usize;
+        let end: usize = start + self.p_filesz as usize;
+        let bytes_in_file: &[u8] = &elf[start..end];
         bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
     }
 
@@ -59,6 +59,7 @@ impl Header {
     }
 
     pub fn set_page(&self, paging: &mut memory::Paging, vaddr2paddr: BTreeMap<usize, usize>) {
+        let present: bool = true;
         let writable: bool = self.p_flags.w();
         let executable: bool = self.p_flags.x();
         self.pages()
@@ -67,14 +68,14 @@ impl Header {
                 let paddr: usize = *vaddr2paddr
                     .get(&vaddr)
                     .unwrap();
-                paging.set_page(vaddr, paddr, writable, executable);
+                paging.set_page(vaddr, paddr, present, writable, executable);
             });
     }
 
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
-        let begin: usize = self.p_vaddr as usize;
-        let end: usize = begin + self.p_memsz as usize;
-        begin..end
+        let start: usize = self.p_vaddr as usize;
+        let end: usize = start + self.p_memsz as usize;
+        start..end
     }
 
     fn vaddr_range_in_pages(&self) -> Range<usize> {

@@ -1,5 +1,7 @@
 use {
     alloc::vec::Vec,
+    core::ops::Range,
+    crate::memory,
     super::Void,
 };
 
@@ -42,6 +44,12 @@ pub enum Type {
     MaxMemory,
 }
 
+impl Type {
+    fn is_available(&self) -> bool {
+        matches!(self, Self::BootServicesCode | Self::BootServicesData | Self::ConventionalMemory)
+    }
+}
+
 /// # EFI_PHYSICAL_ADDRESS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
@@ -67,6 +75,24 @@ pub struct Descriptor {
     attribute: u64,
 }
 
+impl Descriptor {
+    pub fn is_available(&self) -> bool {
+        self.memory_type.is_available()
+    }
+
+    pub fn physical_start(&self) -> usize {
+        self.physical_start as usize
+    }
+
+    pub fn physical_end(&self) -> usize {
+        self.physical_start() + (self.number_of_pages as usize) * memory::PAGE_SIZE
+    }
+
+    pub fn physical_range(&self) -> Range<usize> {
+        self.physical_start()..self.physical_end()
+    }
+}
+
 #[derive(Debug)]
 pub struct Map {
     descriptors: Vec<u8>,
@@ -77,6 +103,24 @@ pub struct Map {
 }
 
 impl Map {
+    pub fn get_descriptor(&self, index: usize) -> Option<&Descriptor> {
+        (index < self.descriptors.len() / self.descriptor_size)
+            .then(|| {
+                let offset: usize = index * self.descriptor_size;
+                let descriptor: &u8 = &self.descriptors[offset];
+                let descriptor: *const u8 = descriptor as *const u8;
+                let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                unsafe {
+                    &*descriptor
+                }
+            })
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Descriptor> {
+        (0..)
+            .map_while(|index| self.get_descriptor(index))
+    }
+
     pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
         Self {
             descriptors,
