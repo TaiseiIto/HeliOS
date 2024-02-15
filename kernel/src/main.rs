@@ -57,7 +57,6 @@ fn main(argument: &'static mut Argument<'static>) {
     } = argument;
     efi_system_table.set();
     rs232c::set_com2(com2);
-    com2_println!("cpuid = {:#x?}", cpuid);
     let heap_end: usize = *heap_end;
     let heap_start: usize = memory_map
         .iter()
@@ -77,25 +76,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .min()
         .unwrap();
     allocator::initialize(heap_start..heap_end);
-    {
-        let a: Vec<u8> = (u8::MIN..=u8::MAX).collect();
-        let b: Vec<u8> = a
-            .iter()
-            .filter_map(|n| (*n % 2 == 0).then_some(*n))
-            .collect();
-        let c: Vec<u8> = a
-            .iter()
-            .filter_map(|n| (*n % 3 == 0).then_some(*n))
-            .collect();
-        let d: Vec<u8> = a
-            .iter()
-            .filter_map(|n| (*n % 4 == 0).then_some(*n))
-            .collect();
-        com2_println!("a = {:#x?}", a);
-        com2_println!("b = {:#x?}", b);
-        com2_println!("c = {:#x?}", c);
-        com2_println!("d = {:#x?}", d);
-    }
+    com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     efi::SystemTable::get().shutdown();

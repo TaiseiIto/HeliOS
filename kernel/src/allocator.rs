@@ -11,11 +11,7 @@ use {
         ops::Range,
         slice,
     },
-    crate::{
-        com2_print,
-        com2_println,
-        memory,
-    },
+    crate::memory,
 };
 
 #[global_allocator]
@@ -26,7 +22,6 @@ static mut ALLOCATOR: Allocator = Allocator {
 pub fn initialize(available_range: Range<usize>) {
     unsafe {
         ALLOCATOR.initialize(available_range);
-        com2_println!("ALLOCATOR = {:#x?}", ALLOCATOR);
     }
 }
 
@@ -73,26 +68,19 @@ impl fmt::Debug for Allocator {
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        com2_println!("Allocator::alloc");
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
-        let allocated: *mut u8 = root_node_list
+        root_node_list
             .alloc(layout)
-            .unwrap();
-        com2_println!("alloc");
-        com2_println!("root_node_list = {:#x?}", self);
-        allocated
+            .unwrap()
     }
 
     unsafe fn dealloc(&self, address: *mut u8, layout: Layout) {
-        com2_println!("Allocator::dealloc");
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
         root_node_list.dealloc(address);
-        com2_println!("dealloc");
-        com2_println!("ALLOCATOR = {:#x?}", self);
     }
 }
 
@@ -105,7 +93,6 @@ const NODE_LIST_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Node>();
 
 impl NodeList {
     fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
-        com2_println!("NodeList::alloc");
         let align: usize = layout.align();
         let size: usize = layout.size();
         let size: usize = size.next_power_of_two();
@@ -114,7 +101,6 @@ impl NodeList {
     }
 
     fn dealloc(&mut self, address: *mut u8) {
-        com2_println!("NodeList::dealloc");
         self.nodes[0].dealloc(address);
     }
 
@@ -188,7 +174,6 @@ impl Node {
     }
 
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
-        com2_println!("Node::alloc");
         let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::NotExist => None,
             State::Divided => if let Some(lower_half_node) = self
@@ -220,7 +205,6 @@ impl Node {
     }
 
     fn dealloc(&mut self, address: *mut u8) {
-        com2_println!("Node::dealloc");
         match self.state {
             State::Allocated => {
                 assert_eq!(self.get_mut(), Some(address));
