@@ -28,7 +28,7 @@ pub struct Argument<'a> {
     fonts: BTreeMap<usize, efi::Font<'a>>,
     gdt: memory::segment::descriptor::Table,
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
-    heap_end: usize,
+    heap_start: usize,
     idt: interrupt::descriptor::Table,
     memory_map: efi::memory::Map,
     my_processor_number: Option<usize>,
@@ -45,7 +45,7 @@ fn main(argument: &'static mut Argument<'static>) {
         fonts,
         gdt,
         graphics_output_protocol,
-        heap_end,
+        heap_start,
         idt,
         memory_map,
         my_processor_number,
@@ -54,8 +54,8 @@ fn main(argument: &'static mut Argument<'static>) {
     } = argument;
     efi_system_table.set();
     rs232c::set_com2(com2);
-    let heap_end: usize = *heap_end;
-    let heap_start: usize = memory_map
+    let heap_start: usize = *heap_start;
+    let heap_end: usize = memory_map
         .iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
         .flat_map(|memory_descriptor| memory_descriptor
@@ -63,16 +63,19 @@ fn main(argument: &'static mut Argument<'static>) {
             .step_by(memory::PAGE_SIZE))
         .enumerate()
         .map(|(index, paddr)| {
-            let vaddr: usize = heap_end - (index + 1) * memory::PAGE_SIZE;
+            let vaddr: usize = heap_start + index * memory::PAGE_SIZE;
             let present: bool = true;
             let writable: bool = true;
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
-            vaddr
+            vaddr + memory::PAGE_SIZE
         })
-        .min()
+        .max()
         .unwrap();
-    allocator::initialize(heap_start..heap_end);
+    com2_println!("heap_start = {:#x?}", heap_start);
+    com2_println!("heap_end = {:#x?}", heap_end);
+    efi::SystemTable::get().shutdown();
+    allocator::initialize(heap_start..heap_start);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
