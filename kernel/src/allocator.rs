@@ -43,12 +43,13 @@ impl Allocator {
 
     pub fn initialize(&mut self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
-        let end: usize = available_range.end;
-        let available_end: usize = end - memory::PAGE_SIZE;
-        let size: usize = (end - available_start).next_power_of_two();
-        let start: usize = end - size;
-        let range: Range<usize> = start..end;
+        let available_end: usize = available_range.end - memory::PAGE_SIZE;
         let available_range: Range<usize> = available_start..available_end;
+        let available_size: usize = available_range.len();
+        let size: usize = available_size.next_power_of_two();
+        let start: usize = available_start;
+        let end: usize = start + size;
+        let range: Range<usize> = start..end;
         let node_list: &mut NodeList = NodeList::new(range, available_range);
         let node_list: *mut NodeList = node_list as *mut NodeList;
         *unsafe {
@@ -405,9 +406,6 @@ impl Node {
             available_range,
             max_size,
         };
-        if self.range.start != self.available_range.start {
-            self.divide();
-        }
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
