@@ -17,10 +17,7 @@ use {
         collections::BTreeMap,
         vec::Vec,
     },
-    core::{
-        arch::asm,
-        panic::PanicInfo,
-    },
+    core::panic::PanicInfo,
 };
 
 #[derive(Debug)]

@@ -16,6 +16,7 @@ pub struct Selector {
 }
 
 impl Selector {
+    #[inline(never)]
     pub fn cs() -> Self {
         let cs: u16;
         unsafe {
@@ -27,6 +28,7 @@ impl Selector {
         cs.into()
     }
 
+    #[inline(never)]
     pub fn ds() -> Self {
         let ds: u16;
         unsafe {
@@ -38,6 +40,7 @@ impl Selector {
         ds.into()
     }
 
+    #[inline(never)]
     pub fn es() -> Self {
         let es: u16;
         unsafe {
@@ -49,6 +52,7 @@ impl Selector {
         es.into()
     }
 
+    #[inline(never)]
     pub fn fs() -> Self {
         let fs: u16;
         unsafe {
@@ -60,6 +64,7 @@ impl Selector {
         fs.into()
     }
 
+    #[inline(never)]
     pub fn gs() -> Self {
         let gs: u16;
         unsafe {
@@ -71,6 +76,7 @@ impl Selector {
         gs.into()
     }
 
+    #[inline(never)]
     pub fn ss() -> Self {
         let ss: u16;
         unsafe {

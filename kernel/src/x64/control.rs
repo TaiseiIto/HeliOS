@@ -100,6 +100,7 @@ impl Register3 {
         }
     }
 
+    #[inline(never)]
     pub fn set(&self) {
         let cr3: u64 = (*self).into();
         unsafe {

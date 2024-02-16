@@ -21,6 +21,7 @@ impl Register {
         self.base as *const Descriptor
     }
 
+    #[inline(never)]
     pub fn get() -> Self {
         let mut register = Register::default();
         unsafe {
@@ -36,6 +37,7 @@ impl Register {
         (self.limit as usize + 1) / mem::size_of::<Descriptor>()
     }
 
+    #[inline(never)]
     pub fn set(&self) {
         unsafe {
             asm!(
