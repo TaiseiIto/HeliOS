@@ -43,7 +43,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
-	mount -o loop $@ $(MOUNT_DIRECTORY)
+	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
