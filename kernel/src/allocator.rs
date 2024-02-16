@@ -147,7 +147,7 @@ struct Node {
     state: State,
     range: Range<usize>,
     available_range: Range<usize>,
-    max_length: usize,
+    max_size: usize,
 }
 
 impl Node {
@@ -178,18 +178,18 @@ impl Node {
             State::Allocated | State::NotExist => None,
             State::Divided => if let Some(lower_half_node) = self
                 .get_mut_lower_half_node()
-                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_length) {
+                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_size) {
                 lower_half_node.alloc(size)
             } else if let Some(higher_half_node) = self
                 .get_mut_higher_half_node()
-                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_length) {
+                .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_size) {
                 higher_half_node.alloc(size)
             } else {
                 None
             },
             State::Free => {
                 self.divide();
-                if matches!(self.state, State::Divided) && size <= self.max_length {
+                if matches!(self.state, State::Divided) && size <= self.max_size {
                     self.alloc(size)
                 } else {
                     if matches!(self.state, State::Divided) {
@@ -200,7 +200,7 @@ impl Node {
                 }
             },
         };
-        self.update_max_length();
+        self.update_max_size();
         allocated
     }
 
@@ -233,7 +233,7 @@ impl Node {
             State::Free => panic!("Double free!"),
             State::NotExist => panic!("Can't deallocate memory!"),
         }
-        self.update_max_length();
+        self.update_max_size();
     }
 
     const fn default() -> Self {
@@ -241,7 +241,7 @@ impl Node {
             state: State::NotExist,
             range: 0..0,
             available_range: 0..0,
-            max_length: 0,
+            max_size: 0,
         }
     }
 
@@ -258,7 +258,7 @@ impl Node {
             higher_half_node.initialize(higher_half_range, higher_half_available_range);
             self.state = State::Divided
         }
-        self.update_max_length();
+        self.update_max_size();
     }
 
     fn divide_point(&self) -> usize {
@@ -398,12 +398,12 @@ impl Node {
         assert_eq!((range.start / range.len()) * range.len(), range.start);
         assert_eq!((range.end / range.len()) * range.len(), range.end);
         let state = State::Free;
-        let max_length: usize = available_range.len();
+        let max_size: usize = available_range.len();
         *self = Self {
             state,
             range,
             available_range,
-            max_length,
+            max_size,
         };
         if self.range.start != self.available_range.start {
             self.divide();
@@ -434,7 +434,7 @@ impl Node {
     fn merge(&mut self) {
         if matches!(self.state, State::Divided) {
             self.state = State::Free;
-            self.max_length = self.available_range.len();
+            self.max_size = self.available_range.len();
         }
     }
 
@@ -458,17 +458,17 @@ impl Node {
         }
     }
 
-    fn update_max_length(&mut self) {
+    fn update_max_size(&mut self) {
         if self.state == State::Divided {
-            let lower_half_max_length: Option<usize> = self
+            let lower_half_max_size: Option<usize> = self
                 .get_lower_half_node()
                 .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free))
-                .map(|lower_half_node| lower_half_node.max_length);
-            let higher_half_max_length: Option<usize> = self
+                .map(|lower_half_node| lower_half_node.max_size);
+            let higher_half_max_size: Option<usize> = self
                 .get_higher_half_node()
                 .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free))
-                .map(|higher_half_node| higher_half_node.max_length);
-            self.max_length = [lower_half_max_length, higher_half_max_length]
+                .map(|higher_half_node| higher_half_node.max_size);
+            self.max_size = [lower_half_max_size, higher_half_max_size]
                 .into_iter()
                 .flatten()
                 .max()
@@ -484,7 +484,7 @@ impl fmt::Debug for Node {
             .field("state", &self.state)
             .field("range", &self.range)
             .field("available_range", &self.available_range)
-            .field("max_length", &self.max_length)
+            .field("max_size", &self.max_size)
             .field("lower_half", &self.get_lower_half_node())
             .field("higher_half", &self.get_higher_half_node())
             .finish()
