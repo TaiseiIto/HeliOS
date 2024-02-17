@@ -87,5 +87,19 @@ impl Paging {
             Self::Level5 => {},
         }
     }
+
+    pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
+        match self {
+            Self::Disable => None,
+            Self::Bit32 => None,
+            Self::Pae => None,
+            Self::Level4 {
+                interface
+            } => {
+                interface.vaddr2paddr(vaddr)
+            },
+            Self::Level5 => None,
+        }
+    }
 }
 
