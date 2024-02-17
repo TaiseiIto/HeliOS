@@ -72,12 +72,12 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .max()
         .unwrap();
-    com2_println!("heap_start = {:#x?}", heap_start);
-    com2_println!("heap_end = {:#x?}", heap_end);
     allocator::initialize(heap_start..heap_end);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
+    let task_register = x64::task::Register::get();
+    com2_println!("task_register = {:#x?}", task_register);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
