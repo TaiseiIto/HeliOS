@@ -176,7 +176,7 @@ impl Node {
 
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
         let allocated: Option<*mut u8> = match self.state {
-            State::Allocated | State::NotExist => None,
+            State::Allocated | State::Invalid => None,
             State::Divided => if let Some(lower_half_node) = self
                 .get_mut_lower_half_node()
                 .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_size) {
@@ -232,14 +232,14 @@ impl Node {
                 }
             },
             State::Free => panic!("Double free!"),
-            State::NotExist => panic!("Can't deallocate memory!"),
+            State::Invalid => panic!("Can't deallocate memory!"),
         }
         self.update_max_size();
     }
 
     const fn default() -> Self {
         Self {
-            state: State::NotExist,
+            state: State::Invalid,
             range: 0..0,
             available_range: 0..0,
             max_size: 0,
@@ -272,7 +272,7 @@ impl Node {
                 let higher_half_node: &Self = self
                     .node_list()
                     .node(higher_half_node_index_in_list);
-                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
+                (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
@@ -280,7 +280,7 @@ impl Node {
                     &*node_list
                 };
                 let higher_half_node: &Self = &node_list.nodes[0];
-                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
+                (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
             }
@@ -295,7 +295,7 @@ impl Node {
                 let higher_half_node: &mut Self = self
                     .mut_node_list()
                     .mut_node(higher_half_node_index_in_list);
-                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
+                (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else if let Some(higher_half_available_range) = self.higher_half_available_range() {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
@@ -303,7 +303,7 @@ impl Node {
                     &mut *node_list
                 };
                 let higher_half_node: &mut Self = &mut node_list.nodes[0];
-                (higher_half_node.state != State::NotExist).then_some(higher_half_node)
+                (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
             }
@@ -318,7 +318,7 @@ impl Node {
                 let lower_half_node: &Self = self
                     .node_list()
                     .node(lower_half_node_index_in_list);
-                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
+                (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
@@ -326,7 +326,7 @@ impl Node {
                     &*node_list
                 };
                 let lower_half_node: &Self = &node_list.nodes[0];
-                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
+                (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
             }
@@ -341,7 +341,7 @@ impl Node {
                 let lower_half_node: &mut Self = self
                     .mut_node_list()
                     .mut_node(lower_half_node_index_in_list);
-                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
+                (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else if let Some(lower_half_available_range) = self.lower_half_available_range() {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
@@ -349,7 +349,7 @@ impl Node {
                     &mut *node_list
                 };
                 let lower_half_node: &mut Self = &mut node_list.nodes[0];
-                (lower_half_node.state != State::NotExist).then_some(lower_half_node)
+                (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
             }
@@ -494,6 +494,6 @@ enum State {
     Allocated,
     Divided,
     Free,
-    NotExist,
+    Invalid,
 }
 
