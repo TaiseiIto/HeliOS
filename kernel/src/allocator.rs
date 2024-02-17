@@ -177,14 +177,14 @@ impl Node {
     fn alloc(&mut self, size: usize) -> Option<*mut u8> {
         let allocated: Option<*mut u8> = match self.state {
             State::Allocated | State::Invalid => None,
-            State::Divided => if let Some(lower_half_node) = self
-                .get_mut_lower_half_node()
-                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_size) {
-                lower_half_node.alloc(size)
-            } else if let Some(higher_half_node) = self
+            State::Divided => if let Some(higher_half_node) = self
                 .get_mut_higher_half_node()
                 .filter(|higher_half_node| matches!(higher_half_node.state, State::Divided | State::Free) && size <= higher_half_node.max_size) {
                 higher_half_node.alloc(size)
+            } else if let Some(lower_half_node) = self
+                .get_mut_lower_half_node()
+                .filter(|lower_half_node| matches!(lower_half_node.state, State::Divided | State::Free) && size <= lower_half_node.max_size) {
+                lower_half_node.alloc(size)
             } else {
                 None
             },
@@ -212,14 +212,14 @@ impl Node {
                 self.state = State::Free;
             },
             State::Divided => {
-                if let Some(lower_half_node) = self
-                    .get_mut_lower_half_node()
-                    .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize))) {
-                    lower_half_node.dealloc(address);
-                } else if let Some(higher_half_node) = self
+                if let Some(higher_half_node) = self
                     .get_mut_higher_half_node()
                     .filter(|higher_half_node| higher_half_node.available_range.contains(&(address as usize))) {
                     higher_half_node.dealloc(address);
+                } else if let Some(lower_half_node) = self
+                    .get_mut_lower_half_node()
+                    .filter(|lower_half_node| lower_half_node.available_range.contains(&(address as usize))) {
+                    lower_half_node.dealloc(address);
                 } else {
                     panic!("Can't deallocate memory!");
                 }
@@ -263,7 +263,7 @@ impl Node {
     }
 
     fn divide_point(&self) -> usize {
-        self.range.end / 2 + self.range.start / 2
+        ((self.range.end as u128 + self.range.start as u128) / 2) as usize
     }
 
     fn get_higher_half_node(&self) -> Option<&Self> {
@@ -364,7 +364,7 @@ impl Node {
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
         let index: usize = 2 * self.index_in_list() + 2;
-        (index < NODE_LIST_LENGTH).then_some(index)
+        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
@@ -372,15 +372,13 @@ impl Node {
         let end: usize = self.available_range.end - self
             .higher_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
-        let range: Range<usize> = start..end;
-        (!range.is_empty()).then_some(range)
+        Some(start..end).filter(|range| !range.is_empty())
     }
 
     fn higher_half_range(&self) -> Option<Range<usize>> {
         let start: usize = self.divide_point();
         let end: usize = self.range.end;
-        let range: Range<usize> = start..end;
-        (!range.is_empty()).then_some(range)
+        Some(start..end).filter(|range| !range.is_empty())
     }
 
     fn index_in_list(&self) -> usize {
@@ -410,7 +408,7 @@ impl Node {
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
         let index: usize = 2 * self.index_in_list() + 1;
-        (index < NODE_LIST_LENGTH).then_some(index)
+        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
@@ -418,15 +416,13 @@ impl Node {
         let end: usize = cmp::min(self.divide_point(), self.available_range.end) - self
             .lower_half_node_index_in_list()
             .map_or(memory::PAGE_SIZE, |_| 0);
-        let range: Range<usize> = start..end;
-        (!range.is_empty()).then_some(range)
+        Some(start..end).filter(|range| !range.is_empty())
     }
 
     fn lower_half_range(&self) -> Option<Range<usize>> {
         let start: usize = self.range.start;
         let end: usize = self.divide_point();
-        let range: Range<usize> = start..end;
-        (!range.is_empty()).then_some(range)
+        Some(start..end).filter(|range| !range.is_empty())
     }
 
     fn merge(&mut self) {
