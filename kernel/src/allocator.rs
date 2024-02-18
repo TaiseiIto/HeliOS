@@ -9,7 +9,6 @@ use {
         fmt,
         mem,
         ops::Range,
-        slice,
     },
     crate::{
         efi,
@@ -97,7 +96,7 @@ unsafe impl GlobalAlloc for Allocator {
             .unwrap()
     }
 
-    unsafe fn dealloc(&self, address: *mut u8, layout: Layout) {
+    unsafe fn dealloc(&self, address: *mut u8, _: Layout) {
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;

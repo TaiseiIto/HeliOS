@@ -31,6 +31,7 @@ pub struct Protocol {
 }
 
 impl Protocol {
+    #[allow(dead_code)]
     pub fn get() -> &'static Self {
         let guid = Guid::new(0x3fdda605, 0xa76e, 0x4f46, [0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08]);
         let registration: &Void = null();
@@ -44,6 +45,7 @@ impl Protocol {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_all_processor_informations(&self) -> BTreeMap<usize, ProcessorInformation> {
         let number_of_processors: usize = self
             .number_of_processors()
@@ -66,6 +68,7 @@ impl Protocol {
             .map(|_| processor_information)
     }
 
+    #[allow(dead_code)]
     pub fn my_processor_number(&self) -> Result<usize, Status> {
         let mut my_processor_number: usize = 0;
         (self.who_am_i)(self, &mut my_processor_number)
@@ -92,6 +95,7 @@ type GetNumberOfProcessors = extern "efiapi" fn(/* This */ &Protocol, /* NumberO
 
 #[derive(Debug)]
 pub struct NumberOfProcessors {
+    #[allow(dead_code)]
     all: usize,
     #[allow(dead_code)]
     enabled: usize,

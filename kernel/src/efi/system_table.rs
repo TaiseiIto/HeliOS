@@ -57,33 +57,40 @@ pub struct SystemTable<'a> {
 }
 
 impl SystemTable<'_> {
+    #[allow(dead_code)]
     pub fn allocate_pages(&self, pages: usize) -> Result<&Void, Status> {
         self.boot_services
             .allocate_pages(pages)
             .map(|physical_address| physical_address.into())
     }
 
+    #[allow(dead_code)]
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {
         self.boot_services.allocate_pool(size)
     }
 
+    #[allow(dead_code)]
     pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
         self.boot_services.exit_boot_services(image)
     }
 
+    #[allow(dead_code)]
     pub fn free_pages(&self, virtual_address: &Void, pages: usize) -> Result<(), Status> {
         let physical_address: memory::PhysicalAddress = virtual_address.into();
         self.boot_services.free_pages(physical_address, pages)
     }
 
+    #[allow(dead_code)]
     pub fn free_pool(&self, pool: &Void) -> Result<(), Status> {
         self.boot_services.free_pool(pool)
     }
 
+    #[allow(dead_code)]
     pub fn locate_protocol(&self, registration: &Void, guid: Guid) -> Result<&Void, Status> {
         self.boot_services.locate_protocol(registration, guid)
     }
 
+    #[allow(dead_code)]
     pub fn memory_map(&self) -> Result<memory::Map, Status> {
         self.boot_services.memory_map()
     }
@@ -102,6 +109,7 @@ impl SystemTable<'static> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn print(args: fmt::Arguments) {
         Self::get()
             .write_fmt(args)

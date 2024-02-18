@@ -24,7 +24,7 @@ impl Register {
         let mut segment_selector: u16;
         unsafe {
             asm!(
-                "str {0}",
+                "str {0:x}",
                 out(reg) segment_selector,
             );
         }

@@ -27,6 +27,7 @@ pub struct Protocol {
 }
 
 impl Protocol {
+    #[allow(dead_code)]
     pub fn get() -> &'static Self {
         let guid = Guid::new(0x964e5b22, 0x6459, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
         let registration: &Void = null();
@@ -40,10 +41,12 @@ impl Protocol {
         }
     }
 
+    #[allow(dead_code)]
     pub fn tree(&self) -> Tree {
         self.root().into()
     }
 
+    #[allow(dead_code)]
     fn root(&self) -> file::Node {
         let mut root: &file::Protocol = null();
         (self.open_volume)(self, &mut root)
@@ -65,10 +68,12 @@ pub struct Tree<'a> {
 }
 
 impl<'a> Tree<'a> {
+    #[allow(dead_code)]
     pub fn get(&self, path: &'a str) -> Option<&file::Node<'a>> {
         self.get_by_iter(path.split('/'))
     }
 
+    #[allow(dead_code)]
     fn get_by_iter<I>(&self, mut path: I) -> Option<&file::Node<'a>> where I: Iterator<Item = &'a str> {
         match path.next() {
             Some(name) => self.children

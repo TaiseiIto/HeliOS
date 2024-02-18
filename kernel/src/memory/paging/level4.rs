@@ -1323,7 +1323,6 @@ impl PteInterface {
             pte.set_pe4kib(pe4kib);
             *self = Self::Pe4Kib;
         } else {
-            let pte_not_present = PteNotPresent::default();
             *self = Self::PteNotPresent;
         }
     }
@@ -1531,8 +1530,8 @@ impl Vaddr {
                     .pe1gib()
                     .map(|pe1gib| {
                         let page_1gib: usize = pe1gib.page_1gib() as usize;
-                        let pdi: usize = (self.pdi() << Self::PDI_OFFSET) as usize;
-                        let pi: usize = (self.pi() << Self::PI_OFFSET) as usize;
+                        let pdi: usize = (self.pdi() as usize) << Self::PDI_OFFSET;
+                        let pi: usize = (self.pi() as usize) << Self::PI_OFFSET;
                         let offset: usize = self.offset() as usize;
                         page_1gib + pdi + pi + offset
                     })
@@ -1548,7 +1547,7 @@ impl Vaddr {
                                 .pe2mib()
                                 .map(|pe2mib| {
                                     let page_2mib: usize = pe2mib.page_2mib() as usize;
-                                    let pi: usize = (self.pi() << Self::PI_OFFSET) as usize;
+                                    let pi: usize = (self.pi() as usize) << Self::PI_OFFSET;
                                     let offset: usize = self.offset() as usize;
                                     page_2mib + pi + offset
                                 })

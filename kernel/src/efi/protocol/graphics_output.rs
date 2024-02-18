@@ -24,6 +24,7 @@ pub struct Protocol<'a> {
 }
 
 impl Protocol<'static> {
+    #[allow(dead_code)]
     pub fn get() -> &'static Self {
         let guid = Guid::new(0x9042a9de, 0x23dc, 0x4a38, [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a]);
         let registration: &Void = null();
@@ -140,6 +141,7 @@ pub struct Coordinates {
 }
 
 impl Coordinates {
+    #[allow(dead_code)]
     pub fn new(x: usize, y: usize) -> Self {
         Self {
             x,
@@ -147,10 +149,12 @@ impl Coordinates {
         }
     }
 
+    #[allow(dead_code)]
     pub fn x(&self) -> usize {
         self.x
     }
 
+    #[allow(dead_code)]
     pub fn y(&self) -> usize {
         self.y
     }
