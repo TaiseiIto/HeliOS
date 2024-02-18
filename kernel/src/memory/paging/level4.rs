@@ -20,10 +20,10 @@ use {
     },
 };
 
-const PML4T_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pml4te>();
-const PDPT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdpte>();
-const PDT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pdte>();
-const PT_LENGTH: usize = memory::PAGE_SIZE / mem::size_of::<Pte>();
+const PML4T_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pml4te>();
+const PDPT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdpte>();
+const PDT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdte>();
+const PT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pte>();
 
 pub struct Interface {
     cr3: x64::control::Register3,

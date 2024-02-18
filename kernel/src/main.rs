@@ -60,15 +60,15 @@ fn main(argument: &'static mut Argument<'static>) {
         .filter(|memory_descriptor| memory_descriptor.is_available())
         .flat_map(|memory_descriptor| memory_descriptor
             .physical_range()
-            .step_by(memory::PAGE_SIZE))
+            .step_by(memory::page::SIZE))
         .enumerate()
         .map(|(index, paddr)| {
-            let vaddr: usize = heap_start + index * memory::PAGE_SIZE;
+            let vaddr: usize = heap_start + index * memory::page::SIZE;
             let present: bool = true;
             let writable: bool = true;
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
-            vaddr + memory::PAGE_SIZE
+            vaddr + memory::page::SIZE
         })
         .max()
         .unwrap();

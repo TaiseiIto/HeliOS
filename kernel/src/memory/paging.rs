@@ -88,7 +88,9 @@ impl Paging {
         }
     }
 
-    pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
+    pub fn vaddr2paddr<T>(&self, vaddr: &T) -> Option<usize> {
+        let vaddr: *const T = vaddr as *const T;
+        let vaddr: usize = vaddr as usize;
         match self {
             Self::Disable => None,
             Self::Bit32 => None,
