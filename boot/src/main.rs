@@ -21,7 +21,10 @@ use {
         collections::BTreeMap,
         vec::Vec,
     },
-    core::panic::PanicInfo,
+    core::{
+        panic::PanicInfo,
+        ops::Range,
+    },
 };
 
 /// # The entry point of the OS
@@ -95,7 +98,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .memory_map()
         .unwrap()
         .into();
-    let kernel_heap_start: usize = 0xffffc00000000000;
+    let higher_half_range: Range<u128> = paging.higher_half_range();
+    let kernel_heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
+    let kernel_heap_start: usize = kernel_heap_start as usize;
+    com2_println!("kernel_heap_start = {:#x?}", kernel_heap_start);
     let kernel_heap_pages: usize = memory_map
         .into_iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())

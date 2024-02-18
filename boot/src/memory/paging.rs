@@ -1,9 +1,12 @@
 mod level4;
 
-use crate::{
-    com2_print,
-    com2_println,
-    x64,
+use {
+    core::ops::Range,
+    crate::{
+        com2_print,
+        com2_println,
+        x64,
+    },
 };
 
 /// # Paging
@@ -57,6 +60,20 @@ impl Paging {
             }
         } else {
             Self::Level5
+        }
+    }
+
+    pub fn higher_half_range(&self) -> Range<u128> {
+        match self {
+            Self::Disable => panic!("Unimplemented!"),
+            Self::Bit32 => panic!("Unimplemented!"),
+            Self::Pae => panic!("Unimplemented!"),
+            Self::Level4 {
+                interface
+            } => {
+                interface.higher_half_range()
+            },
+            Self::Level5 => panic!("Unimplemented!"),
         }
     }
 
