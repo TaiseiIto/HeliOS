@@ -54,7 +54,7 @@ impl Header {
 
     pub fn pages(&self) -> Vec<usize> {
         self.vaddr_range_in_pages()
-            .filter(|vaddr| vaddr % memory::PAGE_SIZE == 0)
+            .filter(|vaddr| vaddr % memory::page::SIZE == 0)
             .collect()
     }
 
@@ -83,8 +83,8 @@ impl Header {
             start,
             end,
         } = self.vaddr_range_in_bytes();
-        let start = (start / memory::PAGE_SIZE) * memory::PAGE_SIZE;
-        let end = ((end + memory::PAGE_SIZE - 1) / memory::PAGE_SIZE) * memory::PAGE_SIZE;
+        let start = (start / memory::page::SIZE) * memory::page::SIZE;
+        let end = ((end + memory::page::SIZE - 1) / memory::page::SIZE) * memory::page::SIZE;
         start..end
     }
 }

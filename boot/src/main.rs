@@ -79,7 +79,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
     let kernel_stack_pages: usize = 0x20;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
-        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
+        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
         .collect();
     kernel_stack_vaddr2frame
         .iter()
@@ -103,7 +103,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .sum();
     (0..kernel_heap_pages)
         .for_each(|heap_page_index| {
-            let vaddr: usize = kernel_heap_start + heap_page_index * memory::PAGE_SIZE;
+            let vaddr: usize = kernel_heap_start + heap_page_index * memory::page::SIZE;
             let paddr: usize = 0;
             let present: bool = false;
             let writable: bool = false;

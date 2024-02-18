@@ -63,7 +63,7 @@ impl From<&Descriptor> for Option<Interface> {
             let limit1: usize = descriptor.limit1() as usize;
             let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
             let size: usize = (limit + 1) * if descriptor.g() {
-                memory::PAGE_SIZE
+                memory::page::SIZE
             } else {
                 1
             };
