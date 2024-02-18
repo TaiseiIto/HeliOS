@@ -15,8 +15,8 @@ mod x64;
 use {
     alloc::collections::BTreeMap,
     core::{
-        panic::PanicInfo,
         ops::Range,
+        panic::PanicInfo,
     },
 };
 
@@ -68,13 +68,8 @@ fn main(argument: &'static mut Argument<'static>) {
     let interrupt_stack_floor: usize = ((higher_half_range.start + (*heap_start as u128)) / 2) as usize;
     com2_println!("interrupt_stack_floor = {:#x?}", interrupt_stack_floor);
     let interrupt_stack_pages: usize = 0x10;
-    let interrupt_stack_size: usize = interrupt_stack_pages * memory::page::SIZE;
-    let interrupt_stack_ceil: usize = interrupt_stack_floor - interrupt_stack_size;
-    let interrupt_stack_range: Range<usize> = interrupt_stack_ceil..interrupt_stack_floor;
-    let interrupt_stack_writable: bool = true;
-    let interrupt_stack_executable: bool = false;
-    let interrupt_stack_pages = memory::ContinuousPages::new(paging, interrupt_stack_range, interrupt_stack_writable, interrupt_stack_executable);
-    com2_println!("interrupt_stack_pages = {:#x?}", interrupt_stack_pages);
+    let interrupt_stack = memory::Stack::new(paging, interrupt_stack_floor, interrupt_stack_pages);
+    com2_println!("interrupt_stack = {:#x?}", interrupt_stack);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
