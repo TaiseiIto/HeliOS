@@ -316,11 +316,12 @@ impl Pml4te {
     }
 
     fn set_pml4e(&mut self, mut pml4e: Pml4e, pdpt: &Pdpt) {
-        let pdpt: *const Pdpt = pdpt as *const Pdpt;
-        let pdpt: u64 = pdpt as u64;
-        let pdpt: u64 = pdpt >> Pml4e::ADDRESS_OF_PDPT_OFFSET;
+        let pdpt_vaddr: Vaddr = pdpt.into();
+        let pdpt_paddr: u64 = pdpt_vaddr
+            .paddr()
+            .unwrap() as u64;
         pml4e.set_p(true);
-        pml4e.set_address_of_pdpt(pdpt);
+        pml4e.set_address_of_pdpt(pdpt_paddr >> Pml4e::ADDRESS_OF_PDPT_OFFSET);
         self.pml4e = pml4e;
         assert!(self.pml4e().is_some());
         assert!(self.pml4te_not_present().is_none());
