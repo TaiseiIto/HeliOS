@@ -64,8 +64,8 @@ fn main(argument: &'static mut Argument<'static>) {
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
     let higher_half_range: Range<u128> = paging.higher_half_range();
-    com2_println!("higher_half_range = {:#x?}", higher_half_range);
-    let interrupt_stack_floor: usize = 0xffffe00000000000;
+    let interrupt_stack_floor: usize = ((higher_half_range.start + (*heap_start as u128)) / 2) as usize;
+    com2_println!("interrupt_stack_floor = {:#x?}", interrupt_stack_floor);
     let interrupt_stack_pages: usize = 0x10;
     let interrupt_stack_size: usize = interrupt_stack_pages * memory::page::SIZE;
     let interrupt_stack_ceil: usize = interrupt_stack_floor - interrupt_stack_size;
