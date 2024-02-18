@@ -33,6 +33,7 @@ pub struct Interface {
 }
 
 impl Interface {
+    #[allow(dead_code)]
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
@@ -70,6 +71,7 @@ impl Interface {
         start..end
     }
 
+    #[allow(dead_code)]
     pub fn set(&self) {
         self.cr3.set()
     }
@@ -158,10 +160,12 @@ enum Pml4teInterface {
         pdpt: Box<Pdpt>,
         vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface>,
     },
+    #[allow(dead_code)]
     Pml4teNotPresent,
 }
 
 impl Pml4teInterface {
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pml4e {
             pdpt,
@@ -322,6 +326,7 @@ impl Pml4te {
         assert!(self.pml4te_not_present().is_none());
     }
 
+    #[allow(dead_code)]
     fn set_pml4te_not_present(&mut self, pml4te_not_present: Pml4teNotPresent) {
         self.pml4te_not_present = pml4te_not_present;
         assert!(self.pml4e().is_none());
@@ -436,6 +441,7 @@ impl<'a> From<&'a Pml4e> for &'a Pdpt {
 
 /// # Page Directory Pointer Table Entry Interface
 enum PdpteInterface {
+    #[allow(dead_code)]
     Pe1Gib,
     Pdpe {
         pdt: Box<Pdt>,
@@ -445,6 +451,7 @@ enum PdpteInterface {
 }
 
 impl PdpteInterface {
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pdpe {
             pdt,
@@ -675,6 +682,7 @@ impl Pdpte {
         (!pdpte_not_present.p()).then_some(pdpte_not_present)
     }
 
+    #[allow(dead_code)]
     fn set_pe1gib(&mut self, pe1gib: Pe1Gib) {
         self.pe1gib = pe1gib;
         assert!(self.pe1gib().is_some());
@@ -693,6 +701,7 @@ impl Pdpte {
         assert!(self.pdpte_not_present().is_none());
     }
 
+    #[allow(dead_code)]
     fn set_pdpte_not_present(&mut self, pdpte_not_present: PdpteNotPresent) {
         self.pdpte_not_present = pdpte_not_present;
         assert!(self.pe1gib().is_none());
@@ -875,6 +884,7 @@ enum PdteInterface {
 }
 
 impl PdteInterface {
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pde {
             pt,
@@ -1113,6 +1123,7 @@ impl Pdte {
         assert!(self.pdte_not_present().is_none());
     }
 
+    #[allow(dead_code)]
     fn set_pdte_not_present(&mut self, pdte_not_present: PdteNotPresent) {
         self.pdte_not_present = pdte_not_present;
         assert!(self.pe2mib().is_none());
@@ -1370,6 +1381,7 @@ impl Pte {
         assert!(self.pte_not_present().is_none());
     }
 
+    #[allow(dead_code)]
     fn set_pte_not_present(&mut self, pte_not_present: PteNotPresent) {
         self.pte_not_present = pte_not_present;
         assert!(self.pe4kib().is_none());
@@ -1502,6 +1514,7 @@ impl Vaddr {
             })
     }
 
+    #[allow(dead_code)]
     fn paddr(&self) -> Option<usize> {
         let cr3 = x64::control::Register3::get();
         let pml4t: &Pml4t = (&cr3).into();

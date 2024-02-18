@@ -17,7 +17,9 @@ pub const SIZE: usize = 4 * KIB;
 
 #[derive(Debug)]
 pub struct ContinuousPages {
+    #[allow(dead_code)]
     pages: Vec<Page>,
+    #[allow(dead_code)]
     vaddr_range: Range<usize>,
 }
 
@@ -40,7 +42,9 @@ impl ContinuousPages {
 
 #[derive(Debug)]
 pub struct Page {
+    #[allow(dead_code)]
     page: Box<InHeap>,
+    #[allow(dead_code)]
     vaddr: usize,
 }
 

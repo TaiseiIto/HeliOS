@@ -14,6 +14,7 @@ use {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 2.4.4 Task Register (TR)
 #[derive(Debug)]
 pub struct Register {
+    #[allow(dead_code)]
     segment_selector: memory::segment::Selector,
 }
 
