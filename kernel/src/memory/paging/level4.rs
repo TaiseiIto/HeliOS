@@ -11,6 +11,7 @@ use {
     core::{
         fmt,
         mem,
+        ops::Range,
     },
     crate::{
         com2_print,
@@ -72,6 +73,26 @@ impl Interface {
             pml4t,
             vaddr2pml4te_interface,
         }
+    }
+
+    pub fn higher_half_range(&self) -> Range<u128> {
+        let start_pml4i: usize = 1 << (Vaddr::PML4I_BITS - 1);
+        let start_pdpi: usize = 0;
+        let start_pdi: usize = 0;
+        let start_pi: usize = 0;
+        let start_offset: usize = 0;
+        let start = Vaddr::create(start_pml4i, start_pdpi, start_pdi, start_pi, start_offset);
+        let start: usize = start.into();
+        let start: u128 = start as u128;
+        let end_pml4i: usize = (1 << Vaddr::PML4I_BITS) - 1;
+        let end_pdpi: usize = (1 << Vaddr::PDPI_BITS) - 1;
+        let end_pdi: usize = (1 << Vaddr::PDI_BITS) - 1;
+        let end_pi: usize = (1 << Vaddr::PI_BITS) - 1;
+        let end_offset: usize = (1 << Vaddr::OFFSET_BITS) - 1;
+        let end = Vaddr::create(end_pml4i, end_pdpi, end_pdi, end_pi, end_offset);
+        let end: usize = end.into();
+        let end: u128 = end as u128 + 1;
+        start..end
     }
 
     pub fn set(&self) {
