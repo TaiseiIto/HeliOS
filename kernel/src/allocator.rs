@@ -11,7 +11,10 @@ use {
         ops::Range,
         slice,
     },
-    crate::memory,
+    crate::{
+        efi,
+        memory,
+    },
 };
 
 #[global_allocator]
@@ -19,9 +22,26 @@ static mut ALLOCATOR: Allocator = Allocator {
     root_node_list: UnsafeCell::new(0 as *mut NodeList),
 };
 
-pub fn initialize(available_range: Range<usize>) {
+pub fn initialize(paging: &mut memory::Paging, memory_map: &efi::memory::Map, heap_start: usize) {
+    let heap_end: usize = memory_map
+        .iter()
+        .filter(|memory_descriptor| memory_descriptor.is_available())
+        .flat_map(|memory_descriptor| memory_descriptor
+            .physical_range()
+            .step_by(memory::page::SIZE))
+        .enumerate()
+        .map(|(index, paddr)| {
+            let vaddr: usize = heap_start + index * memory::page::SIZE;
+            let present: bool = true;
+            let writable: bool = true;
+            let executable: bool = false;
+            paging.set_page(vaddr, paddr, present, writable, executable);
+            vaddr + memory::page::SIZE
+        })
+        .max()
+        .unwrap();
     unsafe {
-        ALLOCATOR.initialize(available_range);
+        ALLOCATOR.initialize(heap_start..heap_end);
     }
 }
 
