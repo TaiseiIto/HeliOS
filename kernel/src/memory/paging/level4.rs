@@ -316,12 +316,8 @@ impl Pml4te {
     }
 
     fn set_pml4e(&mut self, mut pml4e: Pml4e, pdpt: &Pdpt) {
-        let pdpt_vaddr: Vaddr = pdpt.into();
-        let pdpt_paddr: u64 = pdpt_vaddr
-            .paddr()
-            .unwrap() as u64;
         pml4e.set_p(true);
-        pml4e.set_address_of_pdpt(pdpt_paddr >> Pml4e::ADDRESS_OF_PDPT_OFFSET);
+        pml4e.set_address_of_pdpt((vaddr2paddr(pdpt) as u64) >> Pml4e::ADDRESS_OF_PDPT_OFFSET);
         self.pml4e = pml4e;
         assert!(self.pml4e().is_some());
         assert!(self.pml4te_not_present().is_none());
@@ -692,11 +688,7 @@ impl Pdpte {
     }
 
     fn set_pdpe(&mut self, mut pdpe: Pdpe, pdt: &Pdt) {
-        let pdt_vaddr: Vaddr = pdt.into();
-        let pdt_paddr: u64 = pdt_vaddr
-            .paddr()
-            .unwrap() as u64;
-        pdpe.set_address_of_pdt(pdt_paddr >> Pdpe::ADDRESS_OF_PDT_OFFSET);
+        pdpe.set_address_of_pdt((vaddr2paddr(pdt) as u64) >> Pdpe::ADDRESS_OF_PDT_OFFSET);
         self.pdpe = pdpe;
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_some());
@@ -1115,11 +1107,7 @@ impl Pdte {
     }
 
     fn set_pde(&mut self, mut pde: Pde, pt: &Pt) {
-        let pt_vaddr: Vaddr = pt.into();
-        let pt_paddr: u64 = pt_vaddr
-            .paddr()
-            .unwrap() as u64;
-        pde.set_address_of_pt(pt_paddr >> Pde::ADDRESS_OF_PT_OFFSET);
+        pde.set_address_of_pt((vaddr2paddr(pt) as u64) >> Pde::ADDRESS_OF_PT_OFFSET);
         self.pde = pde;
         assert!(self.pe2mib().is_none());
         assert!(self.pde().is_some());
@@ -1594,5 +1582,12 @@ impl From<Vaddr> for usize {
         let vaddr: u64 = vaddr.into();
         vaddr as Self
     }
+}
+
+fn vaddr2paddr<T>(vaddr: &T) -> usize {
+    let vaddr: Vaddr = vaddr.into();
+    vaddr
+        .paddr()
+        .unwrap()
 }
 
