@@ -1501,6 +1501,63 @@ impl Vaddr {
                 _ => 0xffff,
             })
     }
+
+    fn paddr(&self) -> Option<usize> {
+        let cr3 = x64::control::Register3::get();
+        let pml4t: &Pml4t = (&cr3).into();
+        let pml4te: &Pml4te = pml4t.pml4te(self);
+        pml4te
+            .pml4e()
+            .and_then(|pml4e| {
+                let pdpt: *const Pdpt = pml4e.pdpt();
+                let pdpt: &Pdpt = unsafe {
+                    &*pdpt
+                };
+                let pdpte: &Pdpte = pdpt.pdpte(self);
+                pdpte
+                    .pe1gib()
+                    .map(|pe1gib| {
+                        let page_1gib: usize = pe1gib.page_1gib() as usize;
+                        let pdi: usize = (self.pdi() << Self::PDI_OFFSET) as usize;
+                        let pi: usize = (self.pi() << Self::PI_OFFSET) as usize;
+                        let offset: usize = self.offset() as usize;
+                        page_1gib + pdi + pi + offset
+                    })
+                    .or(pdpte
+                        .pdpe()
+                        .and_then(|pdpe| {
+                            let pdt: *const Pdt = pdpe.pdt();
+                            let pdt: &Pdt = unsafe {
+                                &*pdt
+                            };
+                            let pdte: &Pdte = pdt.pdte(self);
+                            pdte
+                                .pe2mib()
+                                .map(|pe2mib| {
+                                    let page_2mib: usize = pe2mib.page_2mib() as usize;
+                                    let pi: usize = (self.pi() << Self::PI_OFFSET) as usize;
+                                    let offset: usize = self.offset() as usize;
+                                    page_2mib + pi + offset
+                                })
+                                .or(pdte
+                                    .pde()
+                                    .and_then(|pde| {
+                                        let pt: *const Pt = pde.pt();
+                                        let pt: &Pt = unsafe {
+                                            &*pt
+                                        };
+                                        let pte: &Pte = pt.pte(self);
+                                        pte
+                                            .pe4kib()
+                                            .map(|pe4kib| {
+                                                let page_4kib: usize = pe4kib.page_4kib() as usize;
+                                                let offset: usize = self.offset() as usize;
+                                                page_4kib + offset
+                                            })
+                                    }))
+                        }))
+            })
+    }
 }
 
 impl<T> From<&T> for Vaddr {
