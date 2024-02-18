@@ -692,10 +692,11 @@ impl Pdpte {
     }
 
     fn set_pdpe(&mut self, mut pdpe: Pdpe, pdt: &Pdt) {
-        let pdt: *const Pdt = pdt as *const Pdt;
-        let pdt: u64 = pdt as u64;
-        let pdt: u64 = pdt >> Pdpe::ADDRESS_OF_PDT_OFFSET;
-        pdpe.set_address_of_pdt(pdt);
+        let pdt_vaddr: Vaddr = pdt.into();
+        let pdt_paddr: u64 = pdt_vaddr
+            .paddr()
+            .unwrap() as u64;
+        pdpe.set_address_of_pdt(pdt_paddr >> Pdpe::ADDRESS_OF_PDT_OFFSET);
         self.pdpe = pdpe;
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_some());
@@ -1114,10 +1115,11 @@ impl Pdte {
     }
 
     fn set_pde(&mut self, mut pde: Pde, pt: &Pt) {
-        let pt: *const Pt = pt as *const Pt;
-        let pt: u64 = pt as u64;
-        let pt: u64 = pt >> Pde::ADDRESS_OF_PT_OFFSET;
-        pde.set_address_of_pt(pt);
+        let pt_vaddr: Vaddr = pt.into();
+        let pt_paddr: u64 = pt_vaddr
+            .paddr()
+            .unwrap() as u64;
+        pde.set_address_of_pt(pt_paddr >> Pde::ADDRESS_OF_PT_OFFSET);
         self.pde = pde;
         assert!(self.pe2mib().is_none());
         assert!(self.pde().is_some());
