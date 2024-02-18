@@ -70,6 +70,10 @@ fn main(argument: &'static mut Argument<'static>) {
     let interrupt_stack_pages: usize = 0x10;
     let interrupt_stack = memory::Stack::new(paging, interrupt_stack_floor, interrupt_stack_pages);
     com2_println!("interrupt_stack = {:#x?}", interrupt_stack);
+    let double_fault_stack_floor: usize = ((higher_half_range.start + interrupt_stack_floor as u128) / 2) as usize;
+    let double_fault_stack_pages: usize = 0x10;
+    let double_fault_stack = memory::Stack::new(paging, double_fault_stack_floor, double_fault_stack_pages);
+    com2_println!("double_fault_stack = {:#x?}", double_fault_stack);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
