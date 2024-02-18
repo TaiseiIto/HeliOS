@@ -1516,7 +1516,6 @@ impl Vaddr {
             })
     }
 
-    #[allow(dead_code)]
     fn paddr(&self) -> Option<usize> {
         let cr3 = x64::control::Register3::get();
         let pml4t: &Pml4t = (&cr3).into();
