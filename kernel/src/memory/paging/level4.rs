@@ -1503,6 +1503,14 @@ impl Vaddr {
     }
 }
 
+impl<T> From<&T> for Vaddr {
+    fn from(object: &T) -> Self {
+        let object: *const T = object as *const T;
+        let object: usize = object as usize;
+        object.into()
+    }
+}
+
 impl From<usize> for Vaddr {
     fn from(vaddr: usize) -> Self {
         let vaddr: u64 = vaddr as u64;
