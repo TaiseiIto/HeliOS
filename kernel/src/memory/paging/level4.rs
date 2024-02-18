@@ -50,31 +50,6 @@ impl Interface {
         }
     }
 
-    pub fn get(cr3: x64::control::Register3) -> Self {
-        let source: &Pml4t = cr3.get_paging_structure();
-        let mut pml4t: Box<Pml4t> = Box::default();
-        let cr3: x64::control::Register3 = cr3.with_paging_structure(pml4t.as_ref());
-        let vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface> = source.pml4te
-            .as_slice()
-            .iter()
-            .zip(pml4t
-                .as_mut()
-                .pml4te
-                .as_mut_slice()
-                .iter_mut())
-            .enumerate()
-            .map(|(pml4i, (source, destination))| {
-                let vaddr = Vaddr::create(pml4i, 0, 0, 0, 0);
-                (vaddr, Pml4teInterface::copy(source, destination, vaddr))
-            })
-            .collect();
-        Self {
-            cr3,
-            pml4t,
-            vaddr2pml4te_interface,
-        }
-    }
-
     pub fn higher_half_range(&self) -> Range<u128> {
         let start_pml4i: usize = 1 << (Vaddr::PML4I_BITS - 1);
         let start_pdpi: usize = 0;
@@ -187,39 +162,6 @@ enum Pml4teInterface {
 }
 
 impl Pml4teInterface {
-    fn copy(source: &Pml4te, destination: &mut Pml4te, vaddr: Vaddr) -> Self {
-        match (source.pml4e(), source.pml4te_not_present()) {
-            (Some(pml4e), None) => {
-                let source: &Pdpt = pml4e.into();
-                let mut pdpt: Box<Pdpt> = Box::default();
-                destination.set_pml4e(*pml4e, pdpt.as_ref());
-                let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = source.pdpte
-                    .as_slice()
-                    .iter()
-                    .zip(pdpt
-                        .as_mut()
-                        .pdpte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pdpi, (source, destination))| {
-                        let vaddr: Vaddr = vaddr.with_pdpi(pdpi as u16);
-                        (vaddr, PdpteInterface::copy(source, destination, vaddr))
-                    })
-                    .collect();
-                Self::Pml4e {
-                    pdpt,
-                    vaddr2pdpte_interface,
-                }
-            },
-            (None, Some(pml4te_not_present)) => {
-                destination.set_pml4te_not_present(*pml4te_not_present);
-                Self::Pml4teNotPresent
-            },
-            _ => panic!("Can't get a page map level 4 table entry."),
-        }
-    }
-
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pml4e {
             pdpt,
@@ -503,43 +445,6 @@ enum PdpteInterface {
 }
 
 impl PdpteInterface {
-    fn copy(source: &Pdpte, destination: &mut Pdpte, vaddr: Vaddr) -> Self {
-        match (source.pe1gib(), source.pdpe(), source.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => {
-                destination.set_pe1gib(*pe1gib);
-                Self::Pe1Gib
-            },
-            (None, Some(pdpe), None) => {
-                let source: &Pdt = pdpe.into();
-                let mut pdt: Box<Pdt> = Box::default();
-                destination.set_pdpe(*pdpe, pdt.as_ref());
-                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = source.pdte
-                    .as_slice()
-                    .iter()
-                    .zip(pdt
-                        .as_mut()
-                        .pdte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pdi, (source, destination))| {
-                        let vaddr: Vaddr = vaddr.with_pdi(pdi as u16);
-                        (vaddr, PdteInterface::copy(source, destination, vaddr))
-                    })
-                    .collect();
-                Self::Pdpe {
-                    pdt,
-                    vaddr2pdte_interface,
-                }
-            },
-            (None, None, Some(pdpte_not_present)) => {
-                destination.set_pdpte_not_present(*pdpte_not_present);
-                Self::PdpteNotPresent
-            },
-            _ => panic!("Can't get a page directory pointer table entry."),
-        }
-    }
-
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pdpe {
             pdt,
@@ -970,40 +875,6 @@ enum PdteInterface {
 }
 
 impl PdteInterface {
-    fn copy(source: &Pdte, destination: &mut Pdte, vaddr: Vaddr) -> Self {
-        match (source.pe2mib(), source.pde(), source.pdte_not_present()) {
-            (Some(pe2mib), None, None) => {
-                destination.set_pe2mib(*pe2mib);
-                Self::Pe2Mib
-            },
-            (None, Some(pde), None) => {
-                let source: &Pt = pde.into();
-                let mut pt: Box<Pt> = Box::default();
-                destination.set_pde(*pde, pt.as_ref());
-                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = source.pte
-                    .as_slice()
-                    .iter()
-                    .zip(pt
-                        .as_mut()
-                        .pte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pi, (source, destination))| (vaddr.with_pi(pi as u16), PteInterface::copy(source, destination)))
-                    .collect();
-                Self::Pde {
-                    pt,
-                    vaddr2pte_interface,
-                }
-            },
-            (None, None, Some(pdte_not_present)) => {
-                destination.set_pdte_not_present(*pdte_not_present);
-                Self::PdteNotPresent
-            },
-            _ => panic!("Can't get a page directory table entry."),
-        }
-    }
-
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pde {
             pt,
@@ -1422,20 +1293,6 @@ enum PteInterface {
 }
 
 impl PteInterface {
-    fn copy(source: &Pte, destination: &mut Pte) -> Self {
-        match (source.pe4kib(), source.pte_not_present()) {
-            (Some(pe4kib), None) => {
-                destination.set_pe4kib(*pe4kib);
-                Self::Pe4Kib
-            },
-            (None, Some(pte_not_present)) => {
-                destination.set_pte_not_present(*pte_not_present);
-                Self::PteNotPresent
-            },
-            _ => panic!("Can't get a page table entry."),
-        }
-    }
-
     fn set_page(&mut self, pte: &mut Pte, paddr: usize, present: bool, writable: bool, executable: bool) {
         if present {
             let pe4kib: Pe4Kib = Pe4Kib::default()
