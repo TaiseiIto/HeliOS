@@ -27,6 +27,7 @@ pub struct Argument<'a> {
 }
 
 impl<'a> Argument<'a> {
+    #[allow(clippy::to_many_arguments)]
     pub fn new(
         com2: &'a mut rs232c::Com,
         cpuid: Option<x64::Cpuid>,

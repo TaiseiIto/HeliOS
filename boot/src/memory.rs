@@ -8,7 +8,5 @@ pub use {
     paging::Paging,
 };
 
-use core::fmt;
-
 pub const KIB: usize = 1 << 10;
 

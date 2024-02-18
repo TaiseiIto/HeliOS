@@ -261,7 +261,9 @@ pub struct Info<'a> {
 
 #[derive(Debug)]
 pub struct Font<'a> {
+    #[allow(dead_code)]
     display_info: &'a DisplayInfo<'a>,
+    #[allow(dead_code)]
     character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>,
 }
 

@@ -24,6 +24,7 @@ pub enum Paging {
 }
 
 impl Paging {
+    #[allow(dead_code)]
     pub fn debug(&self, vaddr: usize) {
         com2_println!("Begin paging information vaddr {:#x?}", vaddr);
         match self {

@@ -33,6 +33,7 @@ pub struct Interface {
 }
 
 impl Interface {
+    #[allow(dead_code)]
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
@@ -141,6 +142,7 @@ struct Pml4t {
 }
 
 impl Pml4t {
+    #[allow(dead_code)]
     fn pml4te(&self, vaddr: &Vaddr) -> &Pml4te {
         &self.pml4te[vaddr.pml4i() as usize]
     }
@@ -208,6 +210,7 @@ impl Pml4teInterface {
         }
     }
 
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pml4e {
             pdpt,
@@ -433,6 +436,7 @@ struct Pdpt {
 }
 
 impl Pdpt {
+    #[allow(dead_code)]
     fn pdpte(&self, vaddr: &Vaddr) -> &Pdpte {
         &self.pdpte[vaddr.pdpi() as usize]
     }
@@ -507,6 +511,7 @@ impl PdpteInterface {
         }
     }
 
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pdpe {
             pdt,
@@ -869,6 +874,7 @@ struct Pdt {
 }
 
 impl Pdt {
+    #[allow(dead_code)]
     fn pdte(&self, vaddr: &Vaddr) -> &Pdte {
         &self.pdte[vaddr.pdi() as usize]
     }
@@ -940,6 +946,7 @@ impl PdteInterface {
         }
     }
 
+    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pde {
             pt,
@@ -1295,6 +1302,7 @@ struct Pt {
 }
 
 impl Pt {
+    #[allow(dead_code)]
     fn pte(&self, vaddr: &Vaddr) -> &Pte {
         &self.pte[vaddr.pi() as usize]
     }
