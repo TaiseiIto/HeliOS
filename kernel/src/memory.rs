@@ -2,6 +2,8 @@ pub mod page;
 pub mod paging;
 pub mod segment;
 
+pub use page::Page;
+pub use page::ContinuousPages;
 pub use paging::Paging;
 
 use {
