@@ -44,7 +44,7 @@ impl Type {
 
     pub fn db(&self) -> bool {
         match self {
-            Code {
+            Self::Code {
                 accessed,
                 readable,
                 conforming,
@@ -54,7 +54,7 @@ impl Type {
                 32 => true,
                 _ => panic!("Can't get db flag."),
             },
-            Data {
+            Self::Data {
                 accessed,
                 writable,
                 expand_down,
@@ -64,13 +64,13 @@ impl Type {
                 16 => false,
                 _ => panic!("Can't get db flag."),
             },
-            Ldt | AvailableTss | BusyTss | CallGate | InterruptGate | TrapGate => false,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
 
     pub fn l(&self) -> bool {
         match self {
-            Code {
+            Self::Code {
                 accessed,
                 readable,
                 conforming,
@@ -80,7 +80,7 @@ impl Type {
                 64 => true,
                 _ => panic!("Can't get l flag."),
             },
-            Data | Ldt | AvailableTss | BusyTss | CallGate | InterruptGate | TrapGate => false,
+            Self::Data | Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
 
@@ -138,14 +138,14 @@ impl Type {
 
     pub fn s(&self) -> bool {
         match self {
-            Code | Data  => true,
-            Ldt | AvailableTss | BusyTss | CallGate | InterruptGate | TrapGate => false,
+            Self::Code | Self::Data  => true,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
 
     pub fn segment_type(&self) -> u8 {
         match self {
-            Code {
+            Self::Code {
                 accessed,
                 readable,
                 conforming,
@@ -165,7 +165,7 @@ impl Type {
                     0
                 } + 1 << 3
             },
-            Data {
+            Self::Data {
                 accessed,
                 writable,
                 expand_down,
@@ -181,12 +181,12 @@ impl Type {
                     0
                 }
             },
-            Ldt => 2,
-            AvailableTss => 9,
-            BusyTss => 11,
-            CallGate => 12,
-            InterruptGate => 14,
-            TrapGate => 15,
+            Self::Ldt => 2,
+            Self::AvailableTss => 9,
+            Self::BusyTss => 11,
+            Self::CallGate => 12,
+            Self::InterruptGate => 14,
+            Self::TrapGate => 15,
         }
     }
 }
