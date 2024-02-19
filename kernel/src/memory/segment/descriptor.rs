@@ -3,11 +3,11 @@ pub mod table;
 pub use table::Table;
 
 use {
+    bitfield_struct::bitfield,
     crate::{
         memory,
         x64::descriptor::Type,
     },
-    bitfield_struct::bitfield,
 };
 
 /// # Segment Descriptor
@@ -34,8 +34,54 @@ pub struct Descriptor {
 }
 
 impl Descriptor {
+    const GRANULE_THRESHOLD: usize = 1 << (Self::LIMIT0_BITS + Self::LIMIT1_BITS);
+
     pub fn present(&self) -> bool {
         self.p()
+    }
+}
+
+impl From<&Interface> for Descriptor {
+    fn from(interface: &Interface) -> Self {
+        let Interface {
+            base,
+            size,
+            dpl,
+            avl,
+            segment_type,
+        } = interface;
+        let g: bool = Self::GRANULE_THRESHOLD <= size;
+        let size = if g {
+            (size + Self::GRANULE_THRESHOLD - 1) / Self::GRANULE_THRESHOLD
+        } else {
+            size
+        };
+        let limit: usize = size - 1;
+        let limit0: u16 = (limit & ((1 << Self::LIMIT0_BITS) - 1)) as u16;
+        let base0: u32 = (base & ((1 << Self::BASE0_BITS) - 1)) as u32;
+        let segment_type: u8 = segment_type.segment_type();
+        let s: bool = segment_type.s();
+        let dpl: u8 = dpl;
+        let p: bool = true;
+        let limit1: u8 = ((limit >> Self::LIMIT1_OFFSET) & ((1 << Self::LIMIT1_BITS) - 1)) as u8;
+        let avl: bool = avl;
+        let l: bool = segment_type.l();
+        let db: bool = segment_type.db();
+        let base1: u8 = ((base >> Self::BASE1_OFFSET) & ((1 << Self::BASE1_BITS) - 1)) as u8;
+        Self {
+            limit0,
+            base0,
+            segment_type,
+            s,
+            dpl,
+            p,
+            limit1,
+            avl,
+            l,
+            db,
+            g,
+            base1,
+        }
     }
 }
 
