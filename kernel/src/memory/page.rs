@@ -38,6 +38,10 @@ impl ContinuousPages {
             vaddr_range,
         }
     }
+
+    pub fn range(&self) -> &Range<usize> {
+        &self.vaddr_range
+    }
 }
 
 #[derive(Debug)]

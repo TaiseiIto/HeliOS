@@ -66,14 +66,13 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     let higher_half_range: Range<u128> = paging.higher_half_range();
     let interrupt_stack_floor: usize = ((higher_half_range.start + (*heap_start as u128)) / 2) as usize;
-    com2_println!("interrupt_stack_floor = {:#x?}", interrupt_stack_floor);
     let interrupt_stack_pages: usize = 0x10;
     let interrupt_stack = memory::Stack::new(paging, interrupt_stack_floor, interrupt_stack_pages);
-    com2_println!("interrupt_stack = {:#x?}", interrupt_stack);
+    com2_println!("interrupt_stack.floor() = {:#x?}", interrupt_stack.floor());
     let double_fault_stack_floor: usize = ((higher_half_range.start + interrupt_stack_floor as u128) / 2) as usize;
     let double_fault_stack_pages: usize = 0x10;
     let double_fault_stack = memory::Stack::new(paging, double_fault_stack_floor, double_fault_stack_pages);
-    com2_println!("double_fault_stack = {:#x?}", double_fault_stack);
+    com2_println!("double_fault_stack.floor() = {:#x?}", double_fault_stack.floor());
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }

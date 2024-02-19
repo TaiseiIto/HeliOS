@@ -14,6 +14,10 @@ pub struct Stack {
 }
 
 impl Stack {
+    pub fn floor(&self) -> usize {
+        self.pages.range().end
+    }
+
     pub fn new(paging: &mut Paging, floor: usize, pages: usize) -> Self {
         let size: usize = pages * page::SIZE;
         let ceil: usize = floor - size;
