@@ -85,7 +85,8 @@ impl Type {
                 writable,
                 expand_down,
                 default_bits,
-            } | Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+            } => false,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
 
@@ -148,7 +149,8 @@ impl Type {
                 readable,
                 conforming,
                 default_bits,
-            } | Self::Data {
+            } => true,
+            Self::Data {
                 accessed,
                 writable,
                 expand_down,
@@ -165,33 +167,33 @@ impl Type {
                 readable,
                 conforming,
                 default_bits,
-            } => if *accessed {
+            } => (if *accessed {
                 1 << 0
             } else {
                 0
-            } + if *readable {
+            }) + (if *readable {
                 1 << 1
             } else {
                 0
-            } + if *conforming {
+            }) + (if *conforming {
                 1 << 2
             } else {
                 0
-            } + 1 << 3,
+            }) + 1 << 3,
             Self::Data {
                 accessed,
                 writable,
                 expand_down,
                 default_bits,
-            } => if *writable {
+            } => (if *writable {
                  1 << 1
             } else {
                 0
-            } + if *expand_down {
+            }) + (if *expand_down {
                 1 << 2
             } else {
                 0
-            },
+            }),
             Self::Ldt => 2,
             Self::AvailableTss => 9,
             Self::BusyTss => 11,
