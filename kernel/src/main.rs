@@ -71,8 +71,8 @@ fn main(argument: &'static mut Argument<'static>) {
             memory::Stack::new(paging, floor, pages)
         })
         .collect();
-    let task_state_segment = x64::task::state::Segment::new(&interrupt_stacks);
-    com2_println!("task_state_segment = {:#x?}", task_state_segment);
+    let task_state_segment_and_io_permission_bit_map = x64::task::state::SegmentAndIoPermissionBitMap::new(&interrupt_stacks);
+    com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }

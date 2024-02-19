@@ -1,13 +1,34 @@
 use {
     alloc::vec::Vec,
-    core::iter,
+    core::{
+        iter,
+        mem,
+    },
     crate::memory,
 };
+
+#[derive(Debug)]
+#[repr(packed)]
+pub struct SegmentAndIoPermissionBitMap {
+    segment: Segment,
+    io_permission_bit_map: IoPermissionBitMap,
+}
+
+impl SegmentAndIoPermissionBitMap {
+    pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Self {
+        let segment = Segment::new(interrupt_stacks, mem::size_of::<Segment>());
+        let io_permission_bit_map = IoPermissionBitMap::default();
+        Self {
+            segment,
+            io_permission_bit_map,
+        }
+    }
+}
 
 /// Task State Segment
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 8.7 Figure 8-11. 64-Bit TSS Format
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Segment {
     reserved0: u32,
@@ -23,7 +44,7 @@ impl Segment {
     pub const NUMBER_OF_INTERRUPT_STACKS: usize = 7;
 
     #[allow(dead_code)]
-    pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Self {
+    pub fn new(interrupt_stacks: &Vec<memory::Stack>, io_map_base_address: usize) -> Self {
         let reserved0: u32 = 0;
         let reserved1: u64 = 0;
         let reserved2: u16 = 0;
@@ -43,7 +64,7 @@ impl Segment {
             .as_slice()
             .try_into()
             .unwrap();
-        let io_map_base_address: u16 = 0;
+        let io_map_base_address: u16 = io_map_base_address as u16;
         Self {
             reserved0,
             rsp,
@@ -58,7 +79,7 @@ impl Segment {
 /// I/O Permission Bit Map
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.1A 19.5.2 I/O Permission Bit Map
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct IoPermissionBitMap {
     bit_map: [u8; Self::LENGTH],
@@ -72,8 +93,8 @@ impl IoPermissionBitMap {
 
 impl Default for IoPermissionBitMap {
     fn default() -> Self {
-        let bit_map: [u8; Self::LENGTH] = [0; Self::LENGTH];
-        let last_byte: u8 = 0;
+        let bit_map: [u8; Self::LENGTH] = [u8::MAX; Self::LENGTH];
+        let last_byte: u8 = u8::MAX;
         Self {
             bit_map,
             last_byte,
