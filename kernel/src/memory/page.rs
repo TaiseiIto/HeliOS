@@ -7,10 +7,6 @@ use {
         fmt,
         ops::Range,
     },
-    crate::{
-        com2_print,
-        com2_println,
-    },
     super::{
         KIB,
         Paging,
@@ -80,7 +76,6 @@ impl InHeap {
     fn paddr(&self, paging: &Paging) -> usize {
         let vaddr: *const Self = self as *const Self;
         let vaddr: usize = vaddr as usize;
-        com2_println!("vaddr = {:#x?}", vaddr);
         paging
             .vaddr2paddr(self)
             .unwrap()
