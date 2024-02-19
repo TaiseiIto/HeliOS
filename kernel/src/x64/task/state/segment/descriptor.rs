@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    crate::memory,
-};
+use bitfield_struct::bitfield;
 
 /// # TSS Descriptor in 64-Bit mode
 /// ## References

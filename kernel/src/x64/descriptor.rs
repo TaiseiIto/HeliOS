@@ -80,7 +80,12 @@ impl Type {
                 64 => true,
                 _ => panic!("Can't get l flag."),
             },
-            Self::Data | Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+            Self::Data {
+                accessed,
+                writable,
+                expand_down,
+                default_bits,
+            } | Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
 
@@ -138,7 +143,17 @@ impl Type {
 
     pub fn s(&self) -> bool {
         match self {
-            Self::Code | Self::Data  => true,
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+                default_bits,
+            } | Self::Data {
+                accessed,
+                writable,
+                expand_down,
+                default_bits,
+            } => true,
             Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
     }
@@ -150,36 +165,32 @@ impl Type {
                 readable,
                 conforming,
                 default_bits,
-            } => {
-                if accessed {
-                    1 << 0
-                } else {
-                    0
-                } + if readable {
-                    1 << 1
-                } else {
-                    0
-                } + if conforming {
-                    1 << 2
-                } else {
-                    0
-                } + 1 << 3
-            },
+            } => if *accessed {
+                1 << 0
+            } else {
+                0
+            } + if *readable {
+                1 << 1
+            } else {
+                0
+            } + if *conforming {
+                1 << 2
+            } else {
+                0
+            } + 1 << 3,
             Self::Data {
                 accessed,
                 writable,
                 expand_down,
                 default_bits,
-            } => {
-                if writable {
-                     1 << 1
-                } else {
-                    0
-                } + if expand_down {
-                    1 << 2
-                } else {
-                    0
-                }
+            } => if *writable {
+                 1 << 1
+            } else {
+                0
+            } + if *expand_down {
+                1 << 2
+            } else {
+                0
             },
             Self::Ldt => 2,
             Self::AvailableTss => 9,
