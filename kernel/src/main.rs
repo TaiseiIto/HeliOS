@@ -13,11 +13,11 @@ mod rs232c;
 mod x64;
 
 use {
-    alloc::collections::BTreeMap,
-    core::{
-        ops::Range,
-        panic::PanicInfo,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
     },
+    core::panic::PanicInfo,
 };
 
 #[derive(Debug)]
@@ -64,15 +64,14 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
-    let higher_half_range: Range<u128> = paging.higher_half_range();
-    let interrupt_stack_floor: usize = ((higher_half_range.start + (*heap_start as u128)) / 2) as usize;
-    let interrupt_stack_pages: usize = 0x10;
-    let interrupt_stack = memory::Stack::new(paging, interrupt_stack_floor, interrupt_stack_pages);
-    com2_println!("interrupt_stack.floor() = {:#x?}", interrupt_stack.floor());
-    let double_fault_stack_floor: usize = ((higher_half_range.start + interrupt_stack_floor as u128) / 2) as usize;
-    let double_fault_stack_pages: usize = 0x10;
-    let double_fault_stack = memory::Stack::new(paging, double_fault_stack_floor, double_fault_stack_pages);
-    com2_println!("double_fault_stack.floor() = {:#x?}", double_fault_stack.floor());
+    let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS)
+        .map(|index| {
+            let floor: usize = *heap_start - (2 * index + 1) * memory::page::SIZE;
+            let pages: usize = 0x10;
+            memory::Stack::new(paging, floor, pages)
+        })
+        .collect();
+    com2_println!("interrupt_stacks = {:#x?}", interrupt_stacks);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }

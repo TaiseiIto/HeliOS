@@ -6,14 +6,17 @@
 #[repr(packed)]
 pub struct Segment {
     reserved0: u32,
-    rsp: [u64; 3],
-    ist: [u64; 8], // ist[0] is reserved.
+    rsp: [u64; Self::NUMBER_OF_STACK_POINTERS],
+    ist: [u64; Self::NUMBER_OF_INTERRUPT_STACKS + 1], // ist[0] is reserved.
     reserved1: u64,
     reserved2: u16,
     io_map_base_address: u16,
 }
 
 impl Segment {
+    pub const NUMBER_OF_STACK_POINTERS: usize = 3;
+    pub const NUMBER_OF_INTERRUPT_STACKS: usize = 7;
+
     #[allow(dead_code)]
     pub fn new(rsp: [u64; 3], ist: [u64; 8], io_map_base_address: u16) -> Self {
         let reserved0: u32 = 0;
