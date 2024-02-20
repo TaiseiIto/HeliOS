@@ -72,6 +72,9 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .collect();
     let task_state_segment_and_io_permission_bit_map = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
+    com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map);
+    let task_state_segment_descriptor: memory::segment::Descriptor = (&task_state_segment_and_io_permission_bit_map).into();
+    com2_println!("task_state_segment_descriptor = {:#x?}", task_state_segment_descriptor);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }

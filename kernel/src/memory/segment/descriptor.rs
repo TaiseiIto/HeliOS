@@ -4,9 +4,10 @@ pub use table::Table;
 
 use {
     bitfield_struct::bitfield,
+    core::mem,
     crate::{
         memory,
-        x64::descriptor::Type,
+        x64,
     },
 };
 
@@ -84,6 +85,13 @@ impl From<&Interface> for Descriptor {
     }
 }
 
+impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Descriptor {
+    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
+        let interface: Interface = segment_and_io_permission_bit_map.into();
+        (&interface).into()
+    }
+}
+
 #[derive(Debug)]
 pub struct Interface {
     #[allow(dead_code)]
@@ -95,7 +103,7 @@ pub struct Interface {
     #[allow(dead_code)]
     avl: bool,
     #[allow(dead_code)]
-    segment_type: Type,
+    segment_type: x64::descriptor::Type,
 }
 
 impl From<&Descriptor> for Option<Interface> {
@@ -118,7 +126,7 @@ impl From<&Descriptor> for Option<Interface> {
             let s: bool = descriptor.s();
             let db: bool = descriptor.db();
             let l: bool = descriptor.l();
-            let segment_type = Type::new(segment_type, s, db, l);
+            let segment_type = x64::descriptor::Type::new(segment_type, s, db, l);
             Interface {
                 base,
                 size,
@@ -127,6 +135,24 @@ impl From<&Descriptor> for Option<Interface> {
                 segment_type,
             }
         })
+    }
+}
+
+impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
+    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
+        let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
+        let base: usize = base as usize;
+        let size: usize = mem::size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
+        let dpl: u8 = 0;
+        let avl: bool = false;
+        let segment_type = x64::descriptor::Type::available_tss();
+        Self {
+            base,
+            size,
+            dpl,
+            avl,
+            segment_type,
+        }
     }
 }
 
