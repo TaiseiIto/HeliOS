@@ -7,6 +7,7 @@ use {
         mem,
         slice,
     },
+    crate::x64,
     super::{
         Interface,
         super::Descriptor,
@@ -39,6 +40,30 @@ impl Table {
         let size: usize = length * mem::size_of::<Descriptor>();
         let limit: usize = size - 1;
         limit as u16
+    }
+
+    pub fn set_task_state_segment_descriptor(&mut self, task_state_segment_descriptor: &x64::task::state::segment::Descriptor) -> u16 {
+        let task_state_segment_descriptor: u128 = (*task_state_segment_descriptor).into();
+        let lower_descriptor: u64 = (task_state_segment_descriptor & ((1 << u64::BITS) - 1)) as u64;
+        let lower_descriptor: Descriptor = lower_descriptor.into();
+        let higher_descriptor: u64 = (task_state_segment_descriptor >> u64::BITS) as u64;
+        let higher_descriptor: Descriptor = higher_descriptor.into();
+        let free_descriptor_indices: Vec<usize> = self.descriptors
+            .iter()
+            .enumerate()
+            .filter_map(|(index, descriptor)| (!descriptor.present()).then_some(index))
+            .collect();
+        let free_descriptor_indices: &[usize] = free_descriptor_indices.as_slice();
+        let lower_descriptor_indices: &[usize] = &free_descriptor_indices[..free_descriptor_indices.len() - 1];
+        let higher_descriptor_indices: &[usize] = &free_descriptor_indices[1..];
+        let (lower_descriptor_index, higher_descriptor_index): (&usize, &usize) = lower_descriptor_indices
+            .iter()
+            .zip(higher_descriptor_indices.iter())
+            .find(|(lower_descriptor_index, higher_descriptor_index)| *lower_descriptor_index + 1 == **higher_descriptor_index)
+            .unwrap();
+        self.descriptors[*lower_descriptor_index] = lower_descriptor;
+        self.descriptors[*higher_descriptor_index] = higher_descriptor;
+        (lower_descriptor_index * mem::size_of::<Descriptor>()) as u16
     }
 }
 
