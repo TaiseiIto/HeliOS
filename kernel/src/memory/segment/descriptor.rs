@@ -42,6 +42,11 @@ impl Descriptor {
         interface.map_or(false, |interface| interface.is_long_descriptor())
     }
 
+    pub fn is_short(&self) -> bool {
+        let interface: Option<Interface> = self.into();
+        interface.map_or(true, |interface| interface.is_short_descriptor())
+    }
+
     pub fn present(&self) -> bool {
         self.p()
     }
@@ -118,6 +123,10 @@ impl Interface {
 
     pub fn is_long_descriptor(&self) -> bool {
         self.segment_type.is_long_descriptor()
+    }
+
+    pub fn is_short_descriptor(&self) -> bool {
+        self.segment_type.is_short_descriptor()
     }
 }
 

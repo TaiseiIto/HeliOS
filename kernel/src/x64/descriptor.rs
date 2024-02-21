@@ -87,6 +87,25 @@ impl Type {
         }
     }
 
+    pub fn is_short_descriptor(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+                default_bits,
+            } => true,
+            Self::Data {
+                accessed,
+                writable,
+                expand_down,
+                default_bits,
+            } => true,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss => false,
+            Self::CallGate | Self::InterruptGate | Self::TrapGate => true,
+        }
+    }
+
     pub fn l(&self) -> bool {
         match self {
             Self::Code {

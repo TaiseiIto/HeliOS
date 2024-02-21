@@ -72,12 +72,12 @@ impl Table {
             .chain(self.descriptors
                 .as_slice()[..self.descriptors.len() - 1]
                 .iter()
-                .map(|descriptor| Some(descriptor)))
+                .map(Some))
             .zip(self.descriptors
                 .as_slice()
                 .iter())
             .enumerate()
-            .filter_map(|(index, (previous_descriptor, descriptor))| (!descriptor.present() && previous_descriptor.map_or(true, |previous_descriptor| !previous_descriptor.is_long())).then_some(index))
+            .filter_map(|(index, (previous_descriptor, descriptor))| (!descriptor.present() && previous_descriptor.map_or(true, |previous_descriptor| previous_descriptor.is_short())).then_some(index))
             .collect()
     }
 }
