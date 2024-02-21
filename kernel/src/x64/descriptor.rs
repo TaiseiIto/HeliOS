@@ -45,9 +45,9 @@ impl Type {
     pub fn db(&self) -> bool {
         match self {
             Self::Code {
-                accessed,
-                readable,
-                conforming,
+                accessed: _,
+                readable: _,
+                conforming: _,
                 default_bits,
             } => match default_bits {
                 16 | 64 => false,
@@ -55,9 +55,9 @@ impl Type {
                 _ => panic!("Can't get db flag."),
             },
             Self::Data {
-                accessed,
-                writable,
-                expand_down,
+                accessed: _,
+                writable: _,
+                expand_down: _,
                 default_bits,
             } => match default_bits {
                 32 => true,
@@ -71,16 +71,16 @@ impl Type {
     pub fn is_long_descriptor(&self) -> bool {
         match self {
             Self::Code {
-                accessed,
-                readable,
-                conforming,
-                default_bits,
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
             } => false,
             Self::Data {
-                accessed,
-                writable,
-                expand_down,
-                default_bits,
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
             } => false,
             Self::Ldt | Self::AvailableTss | Self::BusyTss => true,
             Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
@@ -90,16 +90,16 @@ impl Type {
     pub fn is_short_descriptor(&self) -> bool {
         match self {
             Self::Code {
-                accessed,
-                readable,
-                conforming,
-                default_bits,
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
             } => true,
             Self::Data {
-                accessed,
-                writable,
-                expand_down,
-                default_bits,
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
             } => true,
             Self::Ldt | Self::AvailableTss | Self::BusyTss => false,
             Self::CallGate | Self::InterruptGate | Self::TrapGate => true,
@@ -109,9 +109,9 @@ impl Type {
     pub fn l(&self) -> bool {
         match self {
             Self::Code {
-                accessed,
-                readable,
-                conforming,
+                accessed: _,
+                readable: _,
+                conforming: _,
                 default_bits,
             } => match default_bits {
                 16 | 32 => false,
@@ -119,10 +119,10 @@ impl Type {
                 _ => panic!("Can't get l flag."),
             },
             Self::Data {
-                accessed,
-                writable,
-                expand_down,
-                default_bits,
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
             } => false,
             Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
@@ -183,16 +183,16 @@ impl Type {
     pub fn s(&self) -> bool {
         match self {
             Self::Code {
-                accessed,
-                readable,
-                conforming,
-                default_bits,
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
             } => true,
             Self::Data {
-                accessed,
-                writable,
-                expand_down,
-                default_bits,
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
             } => true,
             Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
         }
@@ -204,7 +204,7 @@ impl Type {
                 accessed,
                 readable,
                 conforming,
-                default_bits,
+                default_bits: _,
             } => (if *accessed {
                 1 << 0
             } else {
@@ -219,10 +219,10 @@ impl Type {
                 0
             }) + 1 << 3,
             Self::Data {
-                accessed,
+                accessed: _,
                 writable,
                 expand_down,
-                default_bits,
+                default_bits: _,
             } => (if *writable {
                  1 << 1
             } else {

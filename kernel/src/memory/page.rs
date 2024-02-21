@@ -74,8 +74,6 @@ struct InHeap {
 
 impl InHeap {
     fn paddr(&self, paging: &Paging) -> usize {
-        let vaddr: *const Self = self as *const Self;
-        let vaddr: usize = vaddr as usize;
         paging
             .vaddr2paddr(self)
             .unwrap()

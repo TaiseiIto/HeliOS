@@ -7,7 +7,6 @@ use {
     },
     core::{
         fmt,
-        iter,
         mem,
         slice,
     },
@@ -77,7 +76,7 @@ impl Table {
         self.descriptors
             .iter()
             .enumerate()
-            .fold((BTreeSet::<usize>::new(), false), |(free_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
+            .fold((BTreeSet::<usize>::new(), false), |(mut free_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
                 (free_descriptor_indices, false)
             } else {
                 let interface: Option<Interface> = descriptor.into();
