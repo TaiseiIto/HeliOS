@@ -94,6 +94,48 @@ impl Table {
             })
             .0
     }
+
+    fn long_descriptor_indices(&self) -> BTreeSet<usize> {
+        self.descriptors
+            .iter()
+            .enumerate()
+            .fold((BTreeSet::<usize>::new(), false), |(mut long_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
+                (long_descriptor_indices, false)
+            } else {
+                let interface: Option<Interface> = descriptor.into();
+                match interface {
+                    Some(interface) => if interface.is_long_descriptor() {
+                        long_descriptor_indices.insert(index);
+                        (long_descriptor_indices, true)
+                    } else {
+                        (long_descriptor_indices, false)
+                    },
+                    None => (long_descriptor_indices, false),
+                }
+            })
+            .0
+    }
+
+    fn short_descriptor_indices(&self) -> BTreeSet<usize> {
+        self.descriptors
+            .iter()
+            .enumerate()
+            .fold((BTreeSet::<usize>::new(), false), |(mut short_descriptor_indices, previous_descriptor_is_lower_of_short), (index, descriptor)| if previous_descriptor_is_lower_of_short {
+                (short_descriptor_indices, false)
+            } else {
+                let interface: Option<Interface> = descriptor.into();
+                match interface {
+                    Some(interface) => if interface.is_short_descriptor() {
+                        short_descriptor_indices.insert(index);
+                        (short_descriptor_indices, false)
+                    } else {
+                        (short_descriptor_indices, true)
+                    },
+                    None => (short_descriptor_indices, false),
+                }
+            })
+            .0
+    }
 }
 
 impl fmt::Debug for Table {
