@@ -7,6 +7,7 @@ use {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.2 Segment Selectors, Figure 3-6. Segment Selector
 #[bitfield(u16)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 pub struct Selector {
     #[bits(2)]
     rpl: u8,
