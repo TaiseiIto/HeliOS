@@ -112,6 +112,10 @@ pub struct Interface {
 }
 
 impl Interface {
+    pub fn base_address(&self) -> usize {
+        self.base
+    }
+
     pub fn is_long_descriptor(&self) -> bool {
         self.segment_type.is_long_descriptor()
     }
@@ -164,6 +168,28 @@ impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
             avl,
             segment_type,
         }
+    }
+}
+
+impl From<&x64::task::state::segment::Descriptor> for Option<Interface> {
+    fn from(descriptor: &x64::task::state::segment::Descriptor) -> Self {
+        let lower_descriptor: Self = (&descriptor.lower_descriptor()).into();
+        let base: Option<usize> = descriptor.base_address();
+        lower_descriptor
+            .zip(base)
+            .map(|(Interface {
+                base: _,
+                size,
+                dpl,
+                avl,
+                segment_type,
+            }, base)| Interface {
+                base,
+                size,
+                dpl,
+                avl,
+                segment_type,
+            })
     }
 }
 
