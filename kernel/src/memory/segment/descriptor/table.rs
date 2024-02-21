@@ -1,7 +1,10 @@
 pub use register::Register;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeSet,
+        vec::Vec,
+    },
     core::{
         fmt,
         iter,
@@ -52,7 +55,10 @@ impl Table {
         let lower_descriptor: Descriptor = lower_descriptor.into();
         let higher_descriptor: u64 = (task_state_segment_descriptor >> u64::BITS) as u64;
         let higher_descriptor: Descriptor = higher_descriptor.into();
-        let free_descriptor_indices: Vec<usize> = self.free_descriptor_indices();
+        let free_descriptor_indices: Vec<usize> = self
+            .free_descriptor_indices()
+            .into_iter()
+            .collect();
         let free_descriptor_indices: &[usize] = free_descriptor_indices.as_slice();
         let lower_descriptor_indices: &[usize] = &free_descriptor_indices[..free_descriptor_indices.len() - 1];
         let higher_descriptor_indices: &[usize] = &free_descriptor_indices[1..];
@@ -67,18 +73,27 @@ impl Table {
         segment_selector.into()
     }
 
-    fn free_descriptor_indices(&self) -> Vec<usize> {
-        iter::once(None)
-            .chain(self.descriptors
-                .as_slice()[..self.descriptors.len() - 1]
-                .iter()
-                .map(Some))
-            .zip(self.descriptors
-                .as_slice()
-                .iter())
+    fn free_descriptor_indices(&self) -> BTreeSet<usize> {
+        self.descriptors
+            .iter()
             .enumerate()
-            .filter_map(|(index, (previous_descriptor, descriptor))| (!descriptor.present() && previous_descriptor.map_or(true, |previous_descriptor| previous_descriptor.is_short())).then_some(index))
-            .collect()
+            .fold((BTreeSet::<usize>::new(), false), |(free_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
+                (free_descriptor_indices, false)
+            } else {
+                let interface: Option<Interface> = descriptor.into();
+                match interface {
+                    Some(interface) => if interface.is_long_descriptor() {
+                        (free_descriptor_indices, true)
+                    } else {
+                        (free_descriptor_indices, false)
+                    },
+                    None => {
+                        free_descriptor_indices.insert(index);
+                        (free_descriptor_indices, false)
+                    },
+                }
+            })
+            .0
     }
 }
 
