@@ -36,6 +36,26 @@ impl Table {
             .as_ptr() as u64
     }
 
+    pub fn descriptors<'a>(&'a self) -> impl Iterator<Item = Interface> + 'a {
+        let free_descriptor_indices: BTreeSet<usize> = self.free_descriptor_indices();
+        let long_descriptor_indices: BTreeSet<usize> = self.long_descriptor_indices();
+        let short_descriptor_indices: BTreeSet<usize> = self.short_descriptor_indices();
+        (0..self.descriptors.len())
+            .filter_map(move |index| if short_descriptor_indices.contains(&index) {
+                let descriptor: Option<Interface> = (&self.descriptors[index]).into();
+                descriptor
+            } else if long_descriptor_indices.contains(&index) {
+                let lower_descriptor: u64 = self.descriptors[index].into();
+                let higher_descriptor: u64 = self.descriptors[index + 1].into();
+                let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
+                let descriptor: x64::task::state::segment::Descriptor = descriptor.into();
+                let descriptor: Option<Interface> = (&descriptor).into();
+                descriptor
+            } else {
+                None
+            })
+    }
+
     #[allow(dead_code)]
     pub fn get() -> Self {
         Register::get().into()
