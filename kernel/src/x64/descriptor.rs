@@ -68,6 +68,25 @@ impl Type {
         }
     }
 
+    pub fn is_long_descriptor(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+                default_bits,
+            } => false,
+            Self::Data {
+                accessed,
+                writable,
+                expand_down,
+                default_bits,
+            } => false,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss => true,
+            Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+        }
+    }
+
     pub fn l(&self) -> bool {
         match self {
             Self::Code {

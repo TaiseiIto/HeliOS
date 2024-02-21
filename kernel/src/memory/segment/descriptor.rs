@@ -37,6 +37,11 @@ pub struct Descriptor {
 impl Descriptor {
     const GRANULE_THRESHOLD: usize = 1 << (Self::LIMIT0_BITS + Self::LIMIT1_BITS);
 
+    pub fn is_long(&self) -> bool {
+        let interface: Option<Interface> = self.into();
+        interface.map_or(false, |interface| interface.is_long_descriptor())
+    }
+
     pub fn present(&self) -> bool {
         self.p()
     }
@@ -104,6 +109,12 @@ pub struct Interface {
     avl: bool,
     #[allow(dead_code)]
     segment_type: x64::descriptor::Type,
+}
+
+impl Interface {
+    pub fn is_long_descriptor(&self) -> bool {
+        self.segment_type.is_long_descriptor()
+    }
 }
 
 impl From<&Descriptor> for Option<Interface> {
