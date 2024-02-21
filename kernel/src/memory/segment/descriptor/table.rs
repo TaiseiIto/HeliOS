@@ -52,17 +52,7 @@ impl Table {
         let lower_descriptor: Descriptor = lower_descriptor.into();
         let higher_descriptor: u64 = (task_state_segment_descriptor >> u64::BITS) as u64;
         let higher_descriptor: Descriptor = higher_descriptor.into();
-        let free_descriptor_indices: Vec<usize> = iter::once(None)
-            .chain(self.descriptors
-                .as_slice()[..self.descriptors.len() - 1]
-                .iter()
-                .map(|descriptor| Some(descriptor)))
-            .zip(self.descriptors
-                .as_slice()
-                .iter())
-            .enumerate()
-            .filter_map(|(index, (previous_descriptor, descriptor))| (!descriptor.present() && previous_descriptor.map_or(true, |previous_descriptor| !previous_descriptor.is_long())).then_some(index))
-            .collect();
+        let free_descriptor_indices: Vec<usize> = self.free_descriptor_indices();
         let free_descriptor_indices: &[usize] = free_descriptor_indices.as_slice();
         let lower_descriptor_indices: &[usize] = &free_descriptor_indices[..free_descriptor_indices.len() - 1];
         let higher_descriptor_indices: &[usize] = &free_descriptor_indices[1..];
@@ -75,6 +65,20 @@ impl Table {
         self.descriptors[*higher_descriptor_index] = higher_descriptor;
         let segment_selector: u16 = (lower_descriptor_index * mem::size_of::<Descriptor>()) as u16;
         segment_selector.into()
+    }
+
+    fn free_descriptor_indices(&self) -> Vec<usize> {
+        iter::once(None)
+            .chain(self.descriptors
+                .as_slice()[..self.descriptors.len() - 1]
+                .iter()
+                .map(|descriptor| Some(descriptor)))
+            .zip(self.descriptors
+                .as_slice()
+                .iter())
+            .enumerate()
+            .filter_map(|(index, (previous_descriptor, descriptor))| (!descriptor.present() && previous_descriptor.map_or(true, |previous_descriptor| !previous_descriptor.is_long())).then_some(index))
+            .collect()
     }
 }
 
