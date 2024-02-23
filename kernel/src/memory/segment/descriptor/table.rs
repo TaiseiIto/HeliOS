@@ -48,7 +48,7 @@ impl Table {
         limit as u16
     }
 
-    pub fn selector2descriptor(&self) -> BTreeMap<Selector, short::Interface> {
+    pub fn selector2descriptor(&self) -> BTreeMap<Selector, short::descriptor::Interface> {
         let long_descriptor_indices: BTreeSet<usize> = self.long_descriptor_indices();
         let short_descriptor_indices: BTreeSet<usize> = self.short_descriptor_indices();
         (0..self.descriptors.len())
@@ -56,14 +56,14 @@ impl Table {
                 let selector: u16 = (index * mem::size_of::<short::Descriptor>()) as u16;
                 let selector: Selector = selector.into();
                 if short_descriptor_indices.contains(&index) {
-                    let descriptor: Option<short::Interface> = (&self.descriptors[index]).into();
+                    let descriptor: Option<short::descriptor::Interface> = (&self.descriptors[index]).into();
                     descriptor.map(|descriptor| (selector, descriptor))
                 } else if long_descriptor_indices.contains(&index) {
                     let lower_descriptor: u64 = self.descriptors[index].into();
                     let higher_descriptor: u64 = self.descriptors[index + 1].into();
                     let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
                     let descriptor: x64::task::state::segment::Descriptor = descriptor.into();
-                    let descriptor: Option<short::Interface> = (&descriptor).into();
+                    let descriptor: Option<short::descriptor::Interface> = (&descriptor).into();
                     descriptor.map(|descriptor| (selector, descriptor))
                 } else {
                     None
@@ -103,7 +103,7 @@ impl Table {
             .fold((BTreeSet::<usize>::new(), false), |(mut free_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
                 (free_descriptor_indices, false)
             } else {
-                let interface: Option<short::Interface> = descriptor.into();
+                let interface: Option<short::descriptor::Interface> = descriptor.into();
                 match interface {
                     Some(interface) => if interface.is_long_descriptor() {
                         (free_descriptor_indices, true)
@@ -126,7 +126,7 @@ impl Table {
             .fold((BTreeSet::<usize>::new(), false), |(mut long_descriptor_indices, previous_descriptor_is_lower_of_long), (index, descriptor)| if previous_descriptor_is_lower_of_long {
                 (long_descriptor_indices, false)
             } else {
-                let interface: Option<short::Interface> = descriptor.into();
+                let interface: Option<short::descriptor::Interface> = descriptor.into();
                 match interface {
                     Some(interface) => if interface.is_long_descriptor() {
                         long_descriptor_indices.insert(index);
@@ -147,7 +147,7 @@ impl Table {
             .fold((BTreeSet::<usize>::new(), false), |(mut short_descriptor_indices, previous_descriptor_is_lower_of_short), (index, descriptor)| if previous_descriptor_is_lower_of_short {
                 (short_descriptor_indices, false)
             } else {
-                let interface: Option<short::Interface> = descriptor.into();
+                let interface: Option<short::descriptor::Interface> = descriptor.into();
                 match interface {
                     Some(interface) => if interface.is_short_descriptor() {
                         short_descriptor_indices.insert(index);
