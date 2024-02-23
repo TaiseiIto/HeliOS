@@ -3,7 +3,10 @@ mod descriptor;
 pub use descriptor::Descriptor;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        boxed::Box,
+        vec::Vec,
+    },
     core::{
         iter,
         mem,
@@ -19,13 +22,13 @@ pub struct AndIoPermissionBitMap {
 }
 
 impl AndIoPermissionBitMap {
-    pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Self {
+    pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Box<Self> {
         let segment = Segment::new(interrupt_stacks, mem::size_of::<Segment>());
         let io_permission_bit_map = IoPermissionBitMap::default();
-        Self {
+        Box::new(Self {
             segment,
             io_permission_bit_map,
-        }
+        })
     }
 }
 
