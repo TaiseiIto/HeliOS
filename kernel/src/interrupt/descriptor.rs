@@ -90,7 +90,7 @@ impl From<&Descriptor> for Option<Interface> {
         descriptor.p().then(|| {
             let offset0: usize = descriptor.offset0() as usize;
             let offset1: usize = descriptor.offset1() as usize;
-            let offset: usize = offset0 + (offset1 << Descriptor::OFFSET0_OFFSET);
+            let offset: usize = offset0 + (offset1 << Descriptor::OFFSET0_BITS);
             let segment_selector: memory::segment::Selector = descriptor
                 .segment_selector()
                 .into();
