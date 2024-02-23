@@ -65,6 +65,10 @@ impl Selector {
         fs.into()
     }
 
+    pub fn get_rpl(&self) -> u8 {
+        self.rpl()
+    }
+
     #[inline(never)]
     pub fn gs() -> Self {
         let gs: u16;

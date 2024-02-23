@@ -68,6 +68,10 @@ impl Type {
         }
     }
 
+    pub fn interrupt_gate() -> Self {
+        Self::InterruptGate
+    }
+
     pub fn is_long_descriptor(&self) -> bool {
         match self {
             Self::Code {
