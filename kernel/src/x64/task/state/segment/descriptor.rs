@@ -22,19 +22,19 @@ pub struct Descriptor {
 impl Descriptor {
     pub fn base_address(&self) -> Option<usize> {
         let higher_base_address: usize = (self.base() as usize) << u32::BITS;
-        let lower_descriptor: memory::segment::Descriptor = self.lower_descriptor();
-        let lower_descriptor: Option<memory::segment::descriptor::Interface> = (&lower_descriptor).into();
+        let lower_descriptor: memory::segment::short::Descriptor = self.lower_descriptor();
+        let lower_descriptor: Option<memory::segment::short::Interface> = (&lower_descriptor).into();
         lower_descriptor.map(|lower_descriptor| lower_descriptor.base_address() + higher_base_address)
     }
 
-    pub fn lower_descriptor(&self) -> memory::segment::Descriptor {
+    pub fn lower_descriptor(&self) -> memory::segment::short::Descriptor {
         self.descriptor().into()
     }
 }
 
 impl From<&AndIoPermissionBitMap> for Descriptor {
     fn from(segment_and_io_permission_bit_map: &AndIoPermissionBitMap) -> Self {
-        let descriptor: memory::segment::Descriptor = segment_and_io_permission_bit_map.into();
+        let descriptor: memory::segment::short::Descriptor = segment_and_io_permission_bit_map.into();
         let descriptor: u64 = descriptor.into();
         let base: *const AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const AndIoPermissionBitMap;
         let base: u64 = base as u64;

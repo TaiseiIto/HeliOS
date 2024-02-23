@@ -4,7 +4,7 @@ use {
         mem,
     },
     super::super::{
-        super::Descriptor,
+        super::short,
         Table,
     },
 };
@@ -17,8 +17,8 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn base(&self) -> *const Descriptor {
-        self.base as *const Descriptor
+    pub fn base(&self) -> *const short::Descriptor {
+        self.base as *const short::Descriptor
     }
 
     #[allow(dead_code)]
@@ -35,7 +35,7 @@ impl Register {
     }
 
     pub fn length(&self) -> usize {
-        (self.limit as usize + 1) / mem::size_of::<Descriptor>()
+        (self.limit as usize + 1) / mem::size_of::<short::Descriptor>()
     }
 
     #[allow(dead_code)]

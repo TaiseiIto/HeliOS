@@ -1,6 +1,6 @@
 pub mod descriptor;
 pub mod selector;
+pub mod short;
 
-pub use descriptor::Descriptor;
 pub use selector::Selector;
 
