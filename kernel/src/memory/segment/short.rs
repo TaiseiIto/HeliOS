@@ -1,8 +1,7 @@
-pub mod descriptor;
-
 use {
     bitfield_struct::bitfield,
     crate::x64,
+    super::descriptor,
 };
 
 /// # Segment Descriptor
@@ -31,6 +30,28 @@ pub struct Descriptor {
 impl Descriptor {
     const GRANULE_THRESHOLD: usize = 1 << (Self::LIMIT0_BITS + Self::LIMIT1_BITS);
 
+    pub fn base(&self) -> usize {
+        let base0: usize = self.base0() as usize;
+        let base1: usize = self.base1() as usize;
+        base0 + (base1 << Self::BASE0_BITS)
+    }
+
+    pub fn get_avl(&self) -> bool {
+        self.avl()
+    }
+
+    pub fn get_dpl(&self) -> u8 {
+        self.dpl()
+    }
+
+    pub fn get_segment_type(&self) -> x64::descriptor::Type {
+        let segment_type: u8 = self.segment_type();
+        let s: bool = self.s();
+        let db: bool = self.db();
+        let l: bool = self.l();
+        x64::descriptor::Type::new(segment_type, s, db, l)
+    }
+
     pub fn is_long(&self) -> bool {
         let interface: Option<descriptor::Interface> = self.into();
         interface.map_or(false, |interface| interface.is_long_descriptor())
@@ -43,6 +64,12 @@ impl Descriptor {
 
     pub fn present(&self) -> bool {
         self.p()
+    }
+
+    pub fn size(&self) -> usize {
+        let limit0: usize = self.limit0() as usize;
+        let limit1: usize = self.limit1() as usize;
+        limit0 + (limit1 << Self::LIMIT0_BITS)
     }
 }
 

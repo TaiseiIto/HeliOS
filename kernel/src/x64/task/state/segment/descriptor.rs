@@ -23,7 +23,7 @@ impl Descriptor {
     pub fn base_address(&self) -> Option<usize> {
         let higher_base_address: usize = (self.base() as usize) << u32::BITS;
         let lower_descriptor: memory::segment::short::Descriptor = self.lower_descriptor();
-        let lower_descriptor: Option<memory::segment::short::descriptor::Interface> = (&lower_descriptor).into();
+        let lower_descriptor: Option<memory::segment::descriptor::Interface> = (&lower_descriptor).into();
         lower_descriptor.map(|lower_descriptor| lower_descriptor.base() + higher_base_address)
     }
 
