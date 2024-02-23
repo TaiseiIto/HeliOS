@@ -33,5 +33,24 @@ impl Register {
             segment_selector,
         }
     }
+
+    #[inline(never)]
+    pub fn set(&self) {
+        let segment_selector: u16 = self.segment_selector.into();
+        unsafe {
+            asm!(
+                "ltr {0:x}",
+                in(reg) segment_selector,
+            );
+        }
+    }
+}
+
+impl From<memory::segment::Selector> for Register {
+    fn from(segment_selector: memory::segment::Selector) -> Self {
+        Self {
+            segment_selector,
+        }
+    }
 }
 

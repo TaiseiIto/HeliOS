@@ -67,8 +67,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS)
         .map(|index| {
-            let floor: usize = *heap_start - (2 * index + 1) * memory::page::SIZE;
             let pages: usize = 0x10;
+            let floor: usize = *heap_start - (2 * index + 1) * pages * memory::page::SIZE;
             memory::Stack::new(paging, floor, pages)
         })
         .collect();
@@ -78,6 +78,9 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_state_segment_descriptor = {:#x?}", task_state_segment_descriptor);
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
     com2_println!("task_state_segment_selector = {:#x?}", task_state_segment_selector);
+    let task_register: x64::task::Register = task_state_segment_selector.into();
+    com2_println!("task_register = {:#x?}", task_register);
+    task_register.set();
     com2_println!("gdt = {:#x?}", gdt);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
