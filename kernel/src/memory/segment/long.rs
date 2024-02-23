@@ -1,12 +1,14 @@
 use {
     bitfield_struct::bitfield,
-    crate::memory,
-    super::AndIoPermissionBitMap,
+    crate::{
+        memory,
+        x64,
+    },
 };
 
-/// # TSS Descriptor in 64-Bit mode
+/// # TSS and LDT Descriptor in 64-Bit mode
 /// ## References
-/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 8.2.3 TSS Descriptor in 64-Bit mode
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 8.2.3 Figure 8-4. Format of TSS and LDT Descriptors in 64-bit Mode
 #[bitfield(u128)]
 pub struct Descriptor {
     descriptor: u64,
@@ -32,11 +34,11 @@ impl Descriptor {
     }
 }
 
-impl From<&AndIoPermissionBitMap> for Descriptor {
-    fn from(segment_and_io_permission_bit_map: &AndIoPermissionBitMap) -> Self {
+impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Descriptor {
+    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
         let descriptor: memory::segment::short::Descriptor = segment_and_io_permission_bit_map.into();
         let descriptor: u64 = descriptor.into();
-        let base: *const AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const AndIoPermissionBitMap;
+        let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
         let base: u64 = base as u64;
         let base: u32 = (base >> u32::BITS) as u32;
         Self::default()

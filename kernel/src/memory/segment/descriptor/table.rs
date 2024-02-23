@@ -17,6 +17,7 @@ use {
     super::{
         Interface,
         super::{
+            long,
             short,
             Selector,
         },
@@ -65,7 +66,7 @@ impl Table {
                     let lower_descriptor: u64 = self.descriptors[index].into();
                     let higher_descriptor: u64 = self.descriptors[index + 1].into();
                     let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
-                    let descriptor: x64::task::state::segment::Descriptor = descriptor.into();
+                    let descriptor: long::Descriptor = descriptor.into();
                     let descriptor: Option<Interface> = (&descriptor).into();
                     descriptor.map(|descriptor| (selector, descriptor))
                 } else {
@@ -75,7 +76,7 @@ impl Table {
             .collect()
     }
 
-    pub fn set_task_state_segment_descriptor(&mut self, task_state_segment_descriptor: &x64::task::state::segment::Descriptor) -> Selector {
+    pub fn set_task_state_segment_descriptor(&mut self, task_state_segment_descriptor: &long::Descriptor) -> Selector {
         let task_state_segment_descriptor: u128 = (*task_state_segment_descriptor).into();
         let lower_descriptor: u64 = (task_state_segment_descriptor & ((1 << u64::BITS) - 1)) as u64;
         let lower_descriptor: short::Descriptor = lower_descriptor.into();

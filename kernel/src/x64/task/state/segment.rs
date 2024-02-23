@@ -1,7 +1,3 @@
-mod descriptor;
-
-pub use descriptor::Descriptor;
-
 use {
     alloc::{
         boxed::Box,

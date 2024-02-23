@@ -5,7 +5,10 @@ pub use table::Table;
 use {
     core::mem,
     crate::x64,
-    super::short,
+    super::{
+        long,
+        short,
+    },
 };
 
 #[derive(Debug)]
@@ -89,8 +92,8 @@ impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
     }
 }
 
-impl From<&x64::task::state::segment::Descriptor> for Option<Interface> {
-    fn from(descriptor: &x64::task::state::segment::Descriptor) -> Self {
+impl From<&long::Descriptor> for Option<Interface> {
+    fn from(descriptor: &long::Descriptor) -> Self {
         let lower_descriptor: Self = (&descriptor.lower_descriptor()).into();
         let base: Option<usize> = descriptor.base_address();
         lower_descriptor

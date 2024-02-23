@@ -74,7 +74,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .collect();
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
     com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map);
-    let task_state_segment_descriptor: x64::task::state::segment::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
+    let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
     com2_println!("task_state_segment_descriptor = {:#x?}", task_state_segment_descriptor);
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
     com2_println!("task_state_segment_selector = {:#x?}", task_state_segment_selector);
