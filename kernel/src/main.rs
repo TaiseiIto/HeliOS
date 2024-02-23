@@ -52,7 +52,7 @@ fn main(argument: &'static mut Argument<'static>) {
         gdt,
         graphics_output_protocol: _,
         heap_start,
-        idt: _,
+        idt,
         memory_map,
         my_processor_number,
         processor_informations,
@@ -83,6 +83,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("gdt = {:#x?}", gdt);
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
+    interrupt::register_handlers(idt);
+    com2_println!("idt = {:#x?}", idt);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }

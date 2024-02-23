@@ -70,7 +70,7 @@ pub struct Interface {
 }
 
 impl Interface {
-    fn new(handler: extern "x86-interrupt" fn(), interrupt_stack_table: u8) -> Self {
+    pub fn new(handler: extern "x86-interrupt" fn(), interrupt_stack_table: u8) -> Self {
         let offset: usize = handler as usize;
         let segment_selector = memory::segment::Selector::cs();
         let descriptor_type = x64::descriptor::Type::interrupt_gate();

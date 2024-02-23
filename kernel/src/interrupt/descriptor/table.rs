@@ -34,6 +34,10 @@ impl Table {
         Register::get().into()
     }
 
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Descriptor> {
+        self.descriptors.iter_mut()
+    }
+
     pub fn limit(&self) -> u16 {
         let length: usize = self.descriptors.len();
         let size: usize = length * mem::size_of::<Descriptor>();
