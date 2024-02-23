@@ -17,8 +17,8 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn base(&self) -> *const short::Descriptor {
-        self.base as *const short::Descriptor
+    pub fn base(&self) -> *const u64 {
+        self.base as *const u64
     }
 
     #[allow(dead_code)]
