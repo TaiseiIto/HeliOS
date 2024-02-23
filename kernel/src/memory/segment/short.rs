@@ -1,6 +1,9 @@
 use {
     bitfield_struct::bitfield,
-    crate::x64,
+    crate::{
+        memory,
+        x64,
+    },
     super::descriptor,
 };
 
@@ -69,7 +72,13 @@ impl Descriptor {
     pub fn size(&self) -> usize {
         let limit0: usize = self.limit0() as usize;
         let limit1: usize = self.limit1() as usize;
-        limit0 + (limit1 << Self::LIMIT0_BITS)
+        let limit: usize = limit0 + (limit1 << Self::LIMIT0_BITS);
+        let size: usize = limit + 1;
+        size * if self.g() {
+            4 * memory::KIB
+        } else {
+            1
+        }
     }
 }
 
