@@ -1,5 +1,6 @@
 //! # The kernel
 
+#![feature(abi_x86_interrupt)]
 #![no_main]
 #![no_std]
 
@@ -63,8 +64,6 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let task_register = x64::task::Register::get();
-    com2_println!("task_register = {:#x?}", task_register);
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS)
         .map(|index| {
             let pages: usize = 0x10;
@@ -82,6 +81,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     task_register.set();
     com2_println!("gdt = {:#x?}", gdt);
+    let task_register = x64::task::Register::get();
+    com2_println!("task_register = {:#x?}", task_register);
     efi::SystemTable::get().shutdown();
     panic!("End of kernel.elf");
 }
