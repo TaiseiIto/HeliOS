@@ -98,9 +98,16 @@ debug_on_tmux:
 
 # Debug QEMU by GDB.
 # Usage: make debug_qemu
-.PHONU: debug_qemu
+.PHONY: debug_qemu
 debug_qemu: $(TARGET)
 	-make debug_qemu -C .tmux -s
+
+# Run the OS on QEMU.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: debug_qemu_on_tmux
+debug_qemu_on_tmux:
+	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Stop the OS on QEMU.
 # Usage: make stop
