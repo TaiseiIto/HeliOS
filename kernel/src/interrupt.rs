@@ -13,7 +13,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         .iter()
         .zip(idt.iter_mut())
         .for_each(|(handler, descriptor)| {
-            let interrupt_stack_table: u8 = 0;
+            let interrupt_stack_table: u8 = 1;
             let interface = descriptor::Interface::new(*handler, interrupt_stack_table);
             *descriptor = (&interface).into();
         });
