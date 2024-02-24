@@ -48,18 +48,23 @@ impl Segment {
 
     #[allow(dead_code)]
     pub fn new(interrupt_stacks: &Vec<memory::Stack>, io_map_base_address: usize) -> Self {
+        assert_eq!(interrupt_stacks.len(), Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS);
         let reserved0: u32 = 0;
         let reserved1: u64 = 0;
         let reserved2: u16 = 0;
-        let rsp: Vec<usize> = iter::repeat(0)
-            .take(Self::NUMBER_OF_STACK_POINTERS)
+        let interrupt_stacks: &[memory::Stack] = interrupt_stacks.as_slice();
+        let rsp: &[memory::Stack] = &interrupt_stacks[..Self::NUMBER_OF_STACK_POINTERS];
+        let rsp: Vec<usize> = rsp
+            .iter()
+            .map(|interrupt_stack| interrupt_stack.floor())
             .collect();
         let rsp: [usize; Self::NUMBER_OF_STACK_POINTERS] = rsp
             .as_slice()
             .try_into()
             .unwrap();
+        let ist: &[memory::Stack] = &interrupt_stacks[Self::NUMBER_OF_STACK_POINTERS..];
         let ist: Vec<usize> = iter::once(0)
-            .chain(interrupt_stacks
+            .chain(ist
                 .iter()
                 .map(|interrupt_stack| interrupt_stack.floor()))
             .collect();

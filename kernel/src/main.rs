@@ -67,7 +67,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS)
+    let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
         .map(|index| {
             let pages: usize = 0x10;
             let floor: usize = *heap_start - (2 * index + 1) * pages * memory::page::SIZE;
@@ -75,6 +75,7 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .collect();
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
+    com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map);
     let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
     com2_println!("task_state_segment_descriptor = {:#x?}", task_state_segment_descriptor);
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
