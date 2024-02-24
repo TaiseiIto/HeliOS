@@ -4,5 +4,5 @@ debug:
 
 .PHONY: debug_qemu
 debug_qemu:
-	echo debug_qemu
+	echo DEBUGGEE=$(DEBUGGEE)
 
