@@ -105,7 +105,7 @@ impl From<&descriptor::Interface> for Descriptor {
         let avl: bool = avl;
         let l: bool = segment_type.l();
         let db: bool = segment_type.db();
-        let base1: u8 = ((base >> Self::BASE1_OFFSET) & ((1 << Self::BASE1_BITS) - 1)) as u8;
+        let base1: u8 = ((base >> Self::BASE0_BITS) & ((1 << Self::BASE1_BITS) - 1)) as u8;
         let segment_type: u8 = segment_type.segment_type();
         Self::default()
             .with_limit0(limit0)

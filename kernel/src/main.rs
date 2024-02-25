@@ -78,29 +78,16 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map);
     let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
     com2_println!("task_state_segment_descriptor = {:#x?}", task_state_segment_descriptor);
-    let task_state_segment: usize = task_state_segment_descriptor.base_address().unwrap();
-    com2_println!("task_state_segment = {:#x?}", task_state_segment);
-    let task_state_segment: *const u128 = task_state_segment as *const u128;
-    let task_state_segment: &u128 = unsafe {
-        &*task_state_segment
-    };
-    com2_println!("task_state_segment_and_io_permission_bit_map = {:#x?}", task_state_segment_and_io_permission_bit_map); // No Problem
-    com2_println!("0. task_state_segment = {:#x?}", task_state_segment); // Page fault exception
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
     com2_println!("task_state_segment_selector = {:#x?}", task_state_segment_selector);
-    com2_println!("1. task_state_segment = {:#x?}", task_state_segment);
     let task_register: x64::task::Register = task_state_segment_selector.into();
     com2_println!("task_register = {:#x?}", task_register);
-    com2_println!("2. task_state_segment = {:#x?}", task_state_segment);
     task_register.set();
     com2_println!("gdt = {:#x?}", gdt);
-    com2_println!("3. task_state_segment = {:#x?}", task_state_segment);
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
-    com2_println!("4. task_state_segment = {:#x?}", task_state_segment);
     interrupt::register_handlers(idt);
     com2_println!("idt = {:#x?}", idt);
-    com2_println!("5. task_state_segment = {:#x?}", task_state_segment);
     unsafe {
         asm!("int 0x80");
     }
