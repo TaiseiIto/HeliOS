@@ -15,6 +15,11 @@ BLOCK_COUNT=4K
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
 
+# Applications
+APPLICATION_DIRECTORY=applications
+APPLICATION_DIRECTORIES=$(shell for application in $$(ls $(APPLICATION_DIRECTORY)); do echo $(APPLICATION_DIRECTORY)/$${application}; done)
+APPLICATIONS=$(shell for application in $(APPLICATION_DIRECTORIES); do make target -C $${application} -s; done)
+
 # A bootloader file path
 BOOT_DIRECTORY=boot
 BOOTLOADER_SOURCE=$(shell make target -C $(BOOT_DIRECTORY) -s)
