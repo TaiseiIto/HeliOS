@@ -60,6 +60,8 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
 	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
 	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
+	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	$(SUDO) mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
 	make $(APPLICATION_DESTINATIONS) SUDO=$(SUDO)
 	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
@@ -70,10 +72,11 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	mkdir $@
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
+	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
 	make $(APPLICATION_DESTINATIONS)
 
-$(APPLICATION_DESTINATION_DIRECTORY)/%.elf: $(shell find $(APPLICATION_SOURCE_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	make $(call destination2source,$@)
+$(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
 	$(SUDO) cp $(call destination2source,$@) $@
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
