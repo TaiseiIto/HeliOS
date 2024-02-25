@@ -19,6 +19,7 @@ MOUNT_DIRECTORY=$(PRODUCT).mnt
 APPLICATION_SOURCE_DIRECTORY=applications
 APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
 APPLICATIONS=$(shell ls $(APPLICATION_SOURCE_DIRECTORY))
+APPLICATION_DESTINATIONS=$(foreach APPLICATION,$(APPLICATIONS),$(call application2destination,$(APPLICATION)))
 
 define application2destination
 	$(APPLICATION_DESTINATION_DIRECTORY)/$(1).elf
@@ -46,9 +47,6 @@ DEBUG_PORT=2159
 
 # Telnet port to stop QEMU.
 TELNET_PORT=23
-
-test:
-	echo $(call destination2source,$(call application2destination,hello))
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
