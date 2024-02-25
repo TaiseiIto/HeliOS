@@ -72,7 +72,7 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	make $(KERNEL_DESTINATION)
 	make $(APPLICATION_DESTINATIONS)
 
-$(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
+$(APPLICATION_DESTINATION_DIRECTORY)/%.elf: $(shell find $(APPLICATION_SOURCE_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make $(call destination2source,$@)
 	$(SUDO) cp $(call destination2source,$@) $@
 
