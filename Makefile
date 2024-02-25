@@ -60,6 +60,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
 	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
 	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
+	make $(APPLICATION_DESTINATIONS) SUDO=$(SUDO)
 	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
@@ -69,6 +70,7 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	mkdir $@
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
+	make $(APPLICATION_DESTINATIONS)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
