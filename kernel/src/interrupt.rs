@@ -7,6 +7,32 @@ use crate::{
     com2_println,
 };
 
+pub enum Handler {
+    WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
+    WithoutErrorCode(extern "x86-interrupt" fn(StackFrame)),
+}
+
+impl From<&Handler> for usize {
+    fn from(handler: &Handler) -> Self {
+        match handler {
+            Handler::WithErrorCode(handler) => *handler as Self,
+            Handler::WithoutErrorCode(handler) => *handler as Self,
+        }
+    }
+}
+
+impl From<extern "x86-interrupt" fn(StackFrameAndErrorCode)> for Handler {
+    fn from(handler: extern "x86-interrupt" fn(StackFrameAndErrorCode)) -> Self {
+        Self::WithErrorCode(handler)
+    }
+}
+
+impl From<extern "x86-interrupt" fn(StackFrame)> for Handler {
+    fn from(handler: extern "x86-interrupt" fn(StackFrame)) -> Self {
+        Self::WithoutErrorCode(handler)
+    }
+}
+
 /// # Interrupt Stack Frame
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.14.4 Figure 6-9. IA-32e Mode Stack Usage After Privilege Level Change
@@ -20,286 +46,285 @@ pub struct StackFrame {
     ss: u64,
 }
 
-/// # Interrupt Stack Frame with Error Code
+/// # Interrupt Stack Frame and Error Code
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.14.4 Figure 6-9. IA-32e Mode Stack Usage After Privilege Level Change
 #[derive(Debug)]
 #[repr(C)]
-pub struct StackFrameWithErrorCode {
+pub struct StackFrameAndErrorCode {
     error_code: u64,
     stack_frame: StackFrame,
 }
 
 pub fn register_handlers(idt: &mut descriptor::Table) {
-    HANDLERS
+    let handlers: [Handler; 0x100] = [
+        (handler_0x00 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x01 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x02 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x03 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x04 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x05 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x06 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x07 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x08 as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x09 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x0a as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x0b as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x0c as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x0d as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x0e as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x0f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x10 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x11 as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x12 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x13 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x14 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x15 as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x16 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x17 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x18 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x19 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x1a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x1b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x1c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x1d as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x1e as extern "x86-interrupt" fn(StackFrameAndErrorCode)).into(),
+        (handler_0x1f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x20 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x21 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x22 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x23 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x24 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x25 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x26 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x27 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x28 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x29 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x2f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x30 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x31 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x32 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x33 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x34 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x35 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x36 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x37 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x38 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x39 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x3f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x40 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x41 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x42 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x43 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x44 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x45 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x46 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x47 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x48 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x49 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x4f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x50 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x51 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x52 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x53 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x54 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x55 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x56 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x57 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x58 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x59 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x5f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x60 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x61 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x62 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x63 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x64 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x65 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x66 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x67 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x68 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x69 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x6f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x70 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x71 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x72 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x73 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x74 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x75 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x76 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x77 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x78 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x79 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x7f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x80 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x81 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x82 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x83 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x84 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x85 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x86 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x87 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x88 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x89 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x8f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x90 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x91 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x92 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x93 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x94 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x95 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x96 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x97 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x98 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x99 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9a as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9b as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9c as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9d as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9e as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0x9f as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xa9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xaa as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xab as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xac as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xad as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xae as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xaf as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xb9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xba as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xbb as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xbc as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xbd as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xbe as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xbf as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xc9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xca as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xcb as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xcc as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xcd as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xce as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xcf as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xd9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xda as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xdb as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xdc as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xdd as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xde as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xdf as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xe9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xea as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xeb as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xec as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xed as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xee as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xef as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf0 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf1 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf2 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf3 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf4 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf5 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf6 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf7 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf8 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xf9 as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xfa as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xfb as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xfc as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xfd as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xfe as extern "x86-interrupt" fn(StackFrame)).into(),
+        (handler_0xff as extern "x86-interrupt" fn(StackFrame)).into(),
+    ];
+    handlers
         .as_slice()
         .iter()
         .zip(idt.iter_mut())
         .for_each(|(handler, descriptor)| {
             let interrupt_stack_table: u8 = 1;
-            let interface = descriptor::Interface::new(*handler, interrupt_stack_table);
+            let interface = descriptor::Interface::new(handler, interrupt_stack_table);
             *descriptor = (&interface).into();
         });
 }
-
-const HANDLERS: [extern "x86-interrupt" fn(StackFrame); 0x100] = [
-    handler_0x00,
-    handler_0x01,
-    handler_0x02,
-    handler_0x03,
-    handler_0x04,
-    handler_0x05,
-    handler_0x06,
-    handler_0x07,
-    handler_0x08,
-    handler_0x09,
-    handler_0x0a,
-    handler_0x0b,
-    handler_0x0c,
-    handler_0x0d,
-    handler_0x0e,
-    handler_0x0f,
-    handler_0x10,
-    handler_0x11,
-    handler_0x12,
-    handler_0x13,
-    handler_0x14,
-    handler_0x15,
-    handler_0x16,
-    handler_0x17,
-    handler_0x18,
-    handler_0x19,
-    handler_0x1a,
-    handler_0x1b,
-    handler_0x1c,
-    handler_0x1d,
-    handler_0x1e,
-    handler_0x1f,
-    handler_0x20,
-    handler_0x21,
-    handler_0x22,
-    handler_0x23,
-    handler_0x24,
-    handler_0x25,
-    handler_0x26,
-    handler_0x27,
-    handler_0x28,
-    handler_0x29,
-    handler_0x2a,
-    handler_0x2b,
-    handler_0x2c,
-    handler_0x2d,
-    handler_0x2e,
-    handler_0x2f,
-    handler_0x30,
-    handler_0x31,
-    handler_0x32,
-    handler_0x33,
-    handler_0x34,
-    handler_0x35,
-    handler_0x36,
-    handler_0x37,
-    handler_0x38,
-    handler_0x39,
-    handler_0x3a,
-    handler_0x3b,
-    handler_0x3c,
-    handler_0x3d,
-    handler_0x3e,
-    handler_0x3f,
-    handler_0x40,
-    handler_0x41,
-    handler_0x42,
-    handler_0x43,
-    handler_0x44,
-    handler_0x45,
-    handler_0x46,
-    handler_0x47,
-    handler_0x48,
-    handler_0x49,
-    handler_0x4a,
-    handler_0x4b,
-    handler_0x4c,
-    handler_0x4d,
-    handler_0x4e,
-    handler_0x4f,
-    handler_0x50,
-    handler_0x51,
-    handler_0x52,
-    handler_0x53,
-    handler_0x54,
-    handler_0x55,
-    handler_0x56,
-    handler_0x57,
-    handler_0x58,
-    handler_0x59,
-    handler_0x5a,
-    handler_0x5b,
-    handler_0x5c,
-    handler_0x5d,
-    handler_0x5e,
-    handler_0x5f,
-    handler_0x60,
-    handler_0x61,
-    handler_0x62,
-    handler_0x63,
-    handler_0x64,
-    handler_0x65,
-    handler_0x66,
-    handler_0x67,
-    handler_0x68,
-    handler_0x69,
-    handler_0x6a,
-    handler_0x6b,
-    handler_0x6c,
-    handler_0x6d,
-    handler_0x6e,
-    handler_0x6f,
-    handler_0x70,
-    handler_0x71,
-    handler_0x72,
-    handler_0x73,
-    handler_0x74,
-    handler_0x75,
-    handler_0x76,
-    handler_0x77,
-    handler_0x78,
-    handler_0x79,
-    handler_0x7a,
-    handler_0x7b,
-    handler_0x7c,
-    handler_0x7d,
-    handler_0x7e,
-    handler_0x7f,
-    handler_0x80,
-    handler_0x81,
-    handler_0x82,
-    handler_0x83,
-    handler_0x84,
-    handler_0x85,
-    handler_0x86,
-    handler_0x87,
-    handler_0x88,
-    handler_0x89,
-    handler_0x8a,
-    handler_0x8b,
-    handler_0x8c,
-    handler_0x8d,
-    handler_0x8e,
-    handler_0x8f,
-    handler_0x90,
-    handler_0x91,
-    handler_0x92,
-    handler_0x93,
-    handler_0x94,
-    handler_0x95,
-    handler_0x96,
-    handler_0x97,
-    handler_0x98,
-    handler_0x99,
-    handler_0x9a,
-    handler_0x9b,
-    handler_0x9c,
-    handler_0x9d,
-    handler_0x9e,
-    handler_0x9f,
-    handler_0xa0,
-    handler_0xa1,
-    handler_0xa2,
-    handler_0xa3,
-    handler_0xa4,
-    handler_0xa5,
-    handler_0xa6,
-    handler_0xa7,
-    handler_0xa8,
-    handler_0xa9,
-    handler_0xaa,
-    handler_0xab,
-    handler_0xac,
-    handler_0xad,
-    handler_0xae,
-    handler_0xaf,
-    handler_0xb0,
-    handler_0xb1,
-    handler_0xb2,
-    handler_0xb3,
-    handler_0xb4,
-    handler_0xb5,
-    handler_0xb6,
-    handler_0xb7,
-    handler_0xb8,
-    handler_0xb9,
-    handler_0xba,
-    handler_0xbb,
-    handler_0xbc,
-    handler_0xbd,
-    handler_0xbe,
-    handler_0xbf,
-    handler_0xc0,
-    handler_0xc1,
-    handler_0xc2,
-    handler_0xc3,
-    handler_0xc4,
-    handler_0xc5,
-    handler_0xc6,
-    handler_0xc7,
-    handler_0xc8,
-    handler_0xc9,
-    handler_0xca,
-    handler_0xcb,
-    handler_0xcc,
-    handler_0xcd,
-    handler_0xce,
-    handler_0xcf,
-    handler_0xd0,
-    handler_0xd1,
-    handler_0xd2,
-    handler_0xd3,
-    handler_0xd4,
-    handler_0xd5,
-    handler_0xd6,
-    handler_0xd7,
-    handler_0xd8,
-    handler_0xd9,
-    handler_0xda,
-    handler_0xdb,
-    handler_0xdc,
-    handler_0xdd,
-    handler_0xde,
-    handler_0xdf,
-    handler_0xe0,
-    handler_0xe1,
-    handler_0xe2,
-    handler_0xe3,
-    handler_0xe4,
-    handler_0xe5,
-    handler_0xe6,
-    handler_0xe7,
-    handler_0xe8,
-    handler_0xe9,
-    handler_0xea,
-    handler_0xeb,
-    handler_0xec,
-    handler_0xed,
-    handler_0xee,
-    handler_0xef,
-    handler_0xf0,
-    handler_0xf1,
-    handler_0xf2,
-    handler_0xf3,
-    handler_0xf4,
-    handler_0xf5,
-    handler_0xf6,
-    handler_0xf7,
-    handler_0xf8,
-    handler_0xf9,
-    handler_0xfa,
-    handler_0xfb,
-    handler_0xfc,
-    handler_0xfd,
-    handler_0xfe,
-    handler_0xff,
-];
 
 /// # Divide Error Exception (\#DE)
 /// ## References
@@ -384,11 +409,11 @@ extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
 /// # Double Fault Exception (\#DF)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x08(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x08;
     com2_println!("Double Fault Exception (#DF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Coprocessor Segment Overrun
@@ -404,51 +429,51 @@ extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
 /// # Invalid TSS Exception (\#TS)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x0a(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0a;
     com2_println!("Invalid TSS Exception (#TS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Segment Not Present (\#NP)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x0b(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0b;
     com2_println!("Segment Not Present (#NP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Stack Fault Exception (\#SS)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x0c(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0c;
     com2_println!("Stack Fault Exception (#SS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # General Protection Exception (\#GP)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x0d(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0d;
     com2_println!("General Protection Exception (#GP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Page-Fault Exception (\#PF)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x0e(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0e;
     com2_println!("Page-Fault Exception (#PF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Reserved Exception 0
@@ -474,11 +499,11 @@ extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
 /// # Alignment Check Exception (\#AC)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x11(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x11;
     com2_println!("Alignment Check Exception (#AC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Machine Check Exception (\#MC)
@@ -514,11 +539,11 @@ extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
 /// # Control Protection Exception (\#CP)
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
-extern "x86-interrupt" fn handler_0x15(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x15;
     com2_println!("Control Protection Exception (#CP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Reserved Exception 1
@@ -594,21 +619,21 @@ extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
 /// # VMM Communication Exception (\#VC)
 /// ## References
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
-extern "x86-interrupt" fn handler_0x1d(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x1d;
     com2_println!("VMM Communication Exception (#VC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Security Exception (\#SX)
 /// ## References
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
-extern "x86-interrupt" fn handler_0x1e(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x1e;
     com2_println!("Security Exception (#SX)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
 }
 
 /// # Reserved Exception 7
