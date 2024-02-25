@@ -85,7 +85,7 @@ impl Descriptor {
     }
 
     pub fn physical_end(&self) -> usize {
-        self.physical_start() + (self.number_of_pages as usize) * memory::PAGE_SIZE
+        self.physical_start() + (self.number_of_pages as usize) * memory::page::SIZE
     }
 
     pub fn physical_range(&self) -> Range<usize> {

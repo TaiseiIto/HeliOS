@@ -273,6 +273,7 @@ impl Node<'_> {
         self.information.name()
     }
 
+    #[allow(dead_code)]
     pub fn read(&self) -> Vec<u8> {
         (!self.is_directory())
             .then(|| {

@@ -4,7 +4,7 @@ use {
         mem,
     },
     super::super::{
-        super::Descriptor,
+        super::short,
         Table,
     },
 };
@@ -17,10 +17,12 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn base(&self) -> *const Descriptor {
-        self.base as *const Descriptor
+    pub fn base(&self) -> *const u64 {
+        self.base as *const u64
     }
 
+    #[allow(dead_code)]
+    #[inline(never)]
     pub fn get() -> Self {
         let mut register = Register::default();
         unsafe {
@@ -33,9 +35,11 @@ impl Register {
     }
 
     pub fn length(&self) -> usize {
-        (self.limit as usize + 1) / mem::size_of::<Descriptor>()
+        (self.limit as usize + 1) / mem::size_of::<short::Descriptor>()
     }
 
+    #[allow(dead_code)]
+    #[inline(never)]
     pub fn set(&self) {
         unsafe {
             asm!(

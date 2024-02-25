@@ -18,7 +18,7 @@ pub struct Argument<'a> {
     fonts: BTreeMap<usize, efi::Font<'a>>,
     gdt: memory::segment::descriptor::Table,
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
-    heap_end: usize,
+    heap_start: usize,
     idt: interrupt::descriptor::Table,
     memory_map: efi::memory::Map,
     my_processor_number: Option<usize>,
@@ -27,6 +27,7 @@ pub struct Argument<'a> {
 }
 
 impl<'a> Argument<'a> {
+    #[allow(clippy::to_many_arguments)]
     pub fn new(
         com2: &'a mut rs232c::Com,
         cpuid: Option<x64::Cpuid>,
@@ -34,7 +35,7 @@ impl<'a> Argument<'a> {
         fonts: BTreeMap<usize, efi::Font<'a>>,
         gdt: memory::segment::descriptor::Table,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
-        heap_end: usize,
+        heap_start: usize,
         idt: interrupt::descriptor::Table,
         memory_map: efi::memory::Map,
         my_processor_number: Option<usize>,
@@ -48,7 +49,7 @@ impl<'a> Argument<'a> {
             fonts,
             gdt,
             graphics_output_protocol,
-            heap_end,
+            heap_start,
             idt,
             memory_map,
             my_processor_number,

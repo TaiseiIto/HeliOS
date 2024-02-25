@@ -6,6 +6,7 @@ mod ia32_efer;
 
 use core::arch::asm;
 
+#[allow(unused_imports)]
 pub use ia32_efer::Ia32Efer;
 
 /// # Read From Model Specific Register

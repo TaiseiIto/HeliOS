@@ -43,7 +43,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
-	mount -o loop $@ $(MOUNT_DIRECTORY)
+	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
 	umount $(MOUNT_DIRECTORY)
@@ -95,6 +95,19 @@ debug: $(TARGET)
 .PHONY: debug_on_tmux
 debug_on_tmux:
 	-make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
+
+# Debug QEMU by GDB.
+# Usage: make debug_qemu
+.PHONY: debug_qemu
+debug_qemu: $(TARGET)
+	-make debug_qemu -C .tmux -s
+
+# Run the OS on QEMU.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: debug_qemu_on_tmux
+debug_qemu_on_tmux:
+	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Stop the OS on QEMU.
 # Usage: make stop

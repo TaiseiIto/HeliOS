@@ -62,6 +62,7 @@ pub struct Protocol {
 }
 
 impl Protocol {
+    #[allow(dead_code)]
     pub fn get() -> &'static Self {
         let guid = Guid::new(0xe9ca4775, 0x8657, 0x47fc, [0x97, 0xe7, 0x7e, 0xd6, 0x5a, 0x8, 0x43, 0x24]);
         let registration: &Void = null();
@@ -75,6 +76,7 @@ impl Protocol {
         }
     }
 
+    #[allow(dead_code)]
     pub fn fonts(&self) -> BTreeMap<usize, Font> {
         let font_iterator: FontIterator = self.into();
         font_iterator
@@ -238,6 +240,7 @@ impl ImageOutput<'_> {
         }
     }
 
+    #[allow(dead_code)]
     fn pixel(&self, x: usize, y: usize) -> graphics_output::BltPixel {
         self.bitmap()[self.width as usize * y + x].clone()
     }
@@ -261,11 +264,14 @@ pub struct Info<'a> {
 
 #[derive(Debug)]
 pub struct Font<'a> {
+    #[allow(dead_code)]
     display_info: &'a DisplayInfo<'a>,
+    #[allow(dead_code)]
     character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>,
 }
 
 impl<'a> Font<'a> {
+    #[allow(dead_code)]
     pub fn new(display_info: &'a DisplayInfo<'a>, character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>) -> Self {
         Self {
             display_info,

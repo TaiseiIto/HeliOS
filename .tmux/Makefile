@@ -12,6 +12,12 @@ run:
 .PHONY: debug
 debug:
 	-tmux new-session \; source-file debug.conf
+
+# Debug QEMU by GDB
+# Usage: make debug_qemu
+.PHONY: debug_qemu
+debug_qemu:
+	-tmux new-session \; source-file debug_qemu.conf
 	
 # Stop the OS on QEMU.
 # Usage: make stop

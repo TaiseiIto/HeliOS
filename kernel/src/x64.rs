@@ -10,6 +10,7 @@ pub mod descriptor;
 pub mod msr;
 pub mod port;
 pub mod rflags;
+pub mod task;
 
 pub use {
     cpuid::Cpuid,

@@ -32,6 +32,12 @@ run:
 debug:
 	-$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) $(DEBUG) | tee $(COM2_LOG)
 
+# Debug QEMU by GDB.
+# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
+.PHONY: debug_qemu
+debug_qemu:
+	gdb --args $(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC)
+
 # Stop the OS on QEMU.
 # Usage: $ make stop
 .PHONY: stop

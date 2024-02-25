@@ -22,8 +22,8 @@ unsafe impl GlobalAlloc for Allocator {
             // EFI_BOOT_SERVICES.AllocatePool()
             // "All allocations are eight-byte aligned."
             SystemTable::get().allocate_pool(size)
-        } else if (1..=memory::PAGE_SIZE).contains(&align) {
-            let pages: usize = (size + memory::PAGE_SIZE - 1) / memory::PAGE_SIZE;
+        } else if (1..=memory::page::SIZE).contains(&align) {
+            let pages: usize = (size + memory::page::SIZE - 1) / memory::page::SIZE;
             SystemTable::get().allocate_pages(pages)
         } else {
             panic!("Can't allocate memory.")
@@ -40,8 +40,8 @@ unsafe impl GlobalAlloc for Allocator {
             // "All allocations are eight-byte aligned."
             assert!(align <= 8);
             SystemTable::get().free_pool(pointer.into())
-        } else if (1..=memory::PAGE_SIZE).contains(&align) {
-            let pages: usize = size / memory::PAGE_SIZE;
+        } else if (1..=memory::page::SIZE).contains(&align) {
+            let pages: usize = size / memory::page::SIZE;
             SystemTable::get().free_pages(pointer.into(), pages)
         } else {
             panic!("Can't deallocate memory.")

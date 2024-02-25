@@ -29,8 +29,13 @@ impl Table {
             .as_ptr() as u64
     }
 
+    #[allow(dead_code)]
     pub fn get() -> Self {
         Register::get().into()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Descriptor> {
+        self.descriptors.iter_mut()
     }
 
     pub fn limit(&self) -> u16 {

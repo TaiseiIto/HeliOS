@@ -21,7 +21,10 @@ use {
         collections::BTreeMap,
         vec::Vec,
     },
-    core::panic::PanicInfo,
+    core::{
+        panic::PanicInfo,
+        ops::Range,
+    },
 };
 
 /// # The entry point of the OS
@@ -77,9 +80,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .read()
         .into();
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
-    let kernel_stack_pages: usize = 0x20;
+    com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
+    let kernel_stack_pages: usize = 0x400;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
-        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::PAGE_SIZE + 1, Box::default()))
+        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
         .collect();
     kernel_stack_vaddr2frame
         .iter()
@@ -95,7 +99,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .memory_map()
         .unwrap()
         .into();
-    let kernel_heap_end: usize = 0xffffc00000000000;
+    let higher_half_range: Range<u128> = paging.higher_half_range();
+    let kernel_heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
+    let kernel_heap_start: usize = kernel_heap_start as usize;
+    com2_println!("kernel_heap_start = {:#x?}", kernel_heap_start);
     let kernel_heap_pages: usize = memory_map
         .into_iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
@@ -103,7 +110,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .sum();
     (0..kernel_heap_pages)
         .for_each(|heap_page_index| {
-            let vaddr: usize = kernel_heap_end - (heap_page_index + 1) * memory::PAGE_SIZE;
+            let vaddr: usize = kernel_heap_start + heap_page_index * memory::page::SIZE;
             let paddr: usize = 0;
             let present: bool = false;
             let writable: bool = false;
@@ -120,7 +127,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         fonts,
         gdt,
         graphics_output_protocol,
-        kernel_heap_end,
+        kernel_heap_start,
         idt,
         memory_map,
         my_processor_number,

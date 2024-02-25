@@ -3,41 +3,13 @@ pub mod table;
 pub use table::Table;
 
 use {
-    crate::{
-        memory,
-        x64::descriptor::Type,
+    core::mem,
+    crate::x64,
+    super::{
+        long,
+        short,
     },
-    bitfield_struct::bitfield,
 };
-
-/// # Segment Descriptor
-/// ## References
-/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
-#[bitfield(u64)]
-pub struct Descriptor {
-    limit0: u16,
-    #[bits(24)]
-    base0: u32,
-    #[bits(4)]
-    segment_type: u8,
-    s: bool,
-    #[bits(2)]
-    dpl: u8,
-    p: bool,
-    #[bits(4)]
-    limit1: u8,
-    avl: bool,
-    l: bool,
-    db: bool,
-    g: bool,
-    base1: u8,
-}
-
-impl Descriptor {
-    pub fn present(&self) -> bool {
-        self.p()
-    }
-}
 
 #[derive(Debug)]
 pub struct Interface {
@@ -50,30 +22,47 @@ pub struct Interface {
     #[allow(dead_code)]
     avl: bool,
     #[allow(dead_code)]
-    segment_type: Type,
+    segment_type: x64::descriptor::Type,
 }
 
-impl From<&Descriptor> for Option<Interface> {
-    fn from(descriptor: &Descriptor) -> Self {
-        descriptor.p().then(|| {
-            let base0: usize = descriptor.base0() as usize;
-            let base1: usize = descriptor.base1() as usize;
-            let base: usize = base0 + (base1 << Descriptor::BASE0_BITS);
-            let limit0: usize = descriptor.limit0() as usize;
-            let limit1: usize = descriptor.limit1() as usize;
-            let limit: usize = limit0 + (limit1 << Descriptor::LIMIT0_BITS);
-            let size: usize = (limit + 1) * if descriptor.g() {
-                memory::PAGE_SIZE
-            } else {
-                1
-            };
-            let dpl: u8 = descriptor.dpl();
-            let avl: bool = descriptor.avl();
-            let segment_type: u8 = descriptor.segment_type();
-            let s: bool = descriptor.s();
-            let db: bool = descriptor.db();
-            let l: bool = descriptor.l();
-            let segment_type = Type::new(segment_type, s, db, l);
+impl Interface {
+    pub fn avl(&self) -> bool {
+        self.avl
+    }
+
+    pub fn base(&self) -> usize {
+        self.base
+    }
+
+    pub fn dpl(&self) -> u8 {
+        self.dpl
+    }
+
+    pub fn is_long_descriptor(&self) -> bool {
+        self.segment_type.is_long_descriptor()
+    }
+
+    pub fn is_short_descriptor(&self) -> bool {
+        self.segment_type.is_short_descriptor()
+    }
+
+    pub fn segment_type(&self) -> &x64::descriptor::Type {
+        &self.segment_type
+    }
+
+    pub fn size(&self) -> usize {
+        self.size
+    }
+}
+
+impl From<&short::Descriptor> for Option<Interface> {
+    fn from(descriptor: &short::Descriptor) -> Self {
+        descriptor.present().then(|| {
+            let base: usize = descriptor.base();
+            let size: usize = descriptor.size();
+            let dpl: u8 = descriptor.get_dpl();
+            let avl: bool = descriptor.get_avl();
+            let segment_type: x64::descriptor::Type = descriptor.get_segment_type();
             Interface {
                 base,
                 size,
@@ -82,6 +71,46 @@ impl From<&Descriptor> for Option<Interface> {
                 segment_type,
             }
         })
+    }
+}
+
+impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
+    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
+        let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
+        let base: usize = base as usize;
+        let size: usize = mem::size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
+        let dpl: u8 = 0;
+        let avl: bool = false;
+        let segment_type = x64::descriptor::Type::available_tss();
+        Self {
+            base,
+            size,
+            dpl,
+            avl,
+            segment_type,
+        }
+    }
+}
+
+impl From<&long::Descriptor> for Option<Interface> {
+    fn from(descriptor: &long::Descriptor) -> Self {
+        let lower_descriptor: Self = (&descriptor.lower_descriptor()).into();
+        let base: Option<usize> = descriptor.base_address();
+        lower_descriptor
+            .zip(base)
+            .map(|(Interface {
+                base: _,
+                size,
+                dpl,
+                avl,
+                segment_type,
+            }, base)| Interface {
+                base,
+                size,
+                dpl,
+                avl,
+                segment_type,
+            })
     }
 }
 

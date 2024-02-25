@@ -64,13 +64,19 @@ pub struct Com {
 }
 
 impl Com {
+    #[allow(dead_code)]
     const FREQUENCY: u32 = 115200;
+    #[allow(dead_code)]
     const OFFSET_DIVISOR_LATCH_LOW_BYTE: u16 = 0;
     const OFFSET_TRANSMITTER_HOLDING_BUFFER: u16 = 0;
+    #[allow(dead_code)]
     const OFFSET_DIVISOR_LATCH_HIGH_BYTE: u16 = 1;
+    #[allow(dead_code)]
     const OFFSET_INTERRUPT_ENABLE: u16 = 1;
+    #[allow(dead_code)]
     const OFFSET_FIFO_CONTROL: u16 = 2;
     const OFFSET_LINE_CONTROL: u16 = 3;
+    #[allow(dead_code)]
     const OFFSET_MODEM_CONTROL: u16 = 4;
     const OFFSET_LINE_STATUS: u16 = 5;
 
@@ -78,6 +84,7 @@ impl Com {
         self.read_line_status().can_send()
     }
 
+    #[allow(dead_code)]
     fn disable_all_interrupts(&self) {
         self.write_interrupt_enable(self.read_interrupt_enable().disable_all_interrupts());
     }
@@ -89,6 +96,7 @@ impl Com {
         }
     }
 
+    #[allow(dead_code)]
     fn enable_divisor_latch_access(&self) {
         let line_control: line_control::Register = self.read_line_control();
         if !line_control.read_divisor_latch_access() {
@@ -96,6 +104,7 @@ impl Com {
         }
     }
 
+    #[allow(dead_code)]
     fn new(port: u16, baud_rate: u32) -> Self {
         let com = Self {
             port
