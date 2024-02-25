@@ -72,6 +72,10 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	make $(KERNEL_DESTINATION)
 	make $(APPLICATION_DESTINATIONS)
 
+$(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
+	make $(call destination2source,$@)
+	$(SUDO) cp $(call destination2source,$@) $@
+
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
