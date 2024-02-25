@@ -8,6 +8,7 @@ use {
         memory,
         x64,
     },
+    super::StackFrame,
 };
 
 /// # Interrupt Descriptor
@@ -70,7 +71,7 @@ pub struct Interface {
 }
 
 impl Interface {
-    pub fn new(handler: extern "x86-interrupt" fn(u64), interrupt_stack_table: u8) -> Self {
+    pub fn new(handler: extern "x86-interrupt" fn(StackFrame), interrupt_stack_table: u8) -> Self {
         let offset: usize = handler as usize;
         let segment_selector = memory::segment::Selector::cs();
         let descriptor_type = x64::descriptor::Type::interrupt_gate();
