@@ -221,7 +221,7 @@ impl Type {
                 1 << 2
             } else {
                 0
-            }) + 1 << 3,
+            }) + (1 << 3),
             Self::Data {
                 accessed: _,
                 writable,

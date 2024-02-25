@@ -5,6 +5,7 @@ pub use descriptor::Descriptor;
 use crate::{
     com2_print,
     com2_println,
+    x64,
 };
 
 pub enum Handler {
@@ -41,7 +42,7 @@ impl From<extern "x86-interrupt" fn(StackFrame)> for Handler {
 pub struct StackFrame {
     rip: u64,
     cs: u64,
-    rflags: u64,
+    rflags: x64::Rflags,
     rsp: u64,
     ss: u64,
 }

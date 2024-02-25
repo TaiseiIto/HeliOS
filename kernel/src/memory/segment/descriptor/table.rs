@@ -13,7 +13,6 @@ use {
         mem,
         slice,
     },
-    crate::x64,
     super::{
         Interface,
         super::{
@@ -64,8 +63,8 @@ impl Table {
                     let descriptor: Option<Interface> = (&descriptor).into();
                     descriptor.map(|descriptor| (selector, descriptor))
                 } else if long_descriptor_indices.contains(&index) {
-                    let lower_descriptor: u64 = self.descriptors[index].into();
-                    let higher_descriptor: u64 = self.descriptors[index + 1].into();
+                    let lower_descriptor: u64 = self.descriptors[index];
+                    let higher_descriptor: u64 = self.descriptors[index + 1];
                     let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
                     let descriptor: long::Descriptor = descriptor.into();
                     let descriptor: Option<Interface> = (&descriptor).into();
