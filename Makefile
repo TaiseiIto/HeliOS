@@ -16,9 +16,17 @@ BLOCK_COUNT=4K
 MOUNT_DIRECTORY=$(PRODUCT).mnt
 
 # Applications
-APPLICATION_DIRECTORY=applications
-APPLICATION_DIRECTORIES=$(shell for application in $$(ls $(APPLICATION_DIRECTORY)); do echo $(APPLICATION_DIRECTORY)/$${application}; done)
-APPLICATIONS=$(shell for application in $(APPLICATION_DIRECTORIES); do make target -C $${application} -s; done)
+APPLICATION_SOURCE_DIRECTORY=applications
+APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
+APPLICATIONS=$(shell ls $(APPLICATION_SOURCE_DIRECTORY))
+
+define application2destination
+	$(APPLICATION_DESTINATION_DIRECTORY)/$(1).elf
+endef
+
+define destination2source
+	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
+endef
 
 # A bootloader file path
 BOOT_DIRECTORY=boot
@@ -38,6 +46,9 @@ DEBUG_PORT=2159
 
 # Telnet port to stop QEMU.
 TELNET_PORT=23
+
+test:
+	echo $(call destination2source,$(call application2destination,hello))
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
