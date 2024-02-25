@@ -7,6 +7,9 @@ use crate::{
     com2_println,
 };
 
+/// # Interrupt Stack Frame
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.14.4 Figure 6-9. IA-32e Mode Stack Usage After Privilege Level Change
 #[derive(Debug)]
 #[repr(C)]
 pub struct StackFrame {
@@ -15,6 +18,16 @@ pub struct StackFrame {
     rflags: u64,
     rsp: u64,
     ss: u64,
+}
+
+/// # Interrupt Stack Frame with Error Code
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.14.4 Figure 6-9. IA-32e Mode Stack Usage After Privilege Level Change
+#[derive(Debug)]
+#[repr(C)]
+pub struct StackFrameWithErrorCode {
+    error_code: u64,
+    stack_frame: StackFrame,
 }
 
 pub fn register_handlers(idt: &mut descriptor::Table) {
@@ -288,130 +301,226 @@ const HANDLERS: [extern "x86-interrupt" fn(StackFrame); 0x100] = [
     handler_0xff,
 ];
 
+/// # Divide Error Exception (\#DE)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x00(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Debug Exception (\#DB)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x01(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # NMI Interrupt
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x02(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Breakpoint Exception (\#BP)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x03(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Overflow Exception (\#OF)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x04(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # BOUND Range Exceeded Exception (\#BR)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x05(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Invalid Opcode Exception (\#UD)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x06(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Device Not Available Exception (\#NM)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Double Fault Exception (\#DF)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x08(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Coprocessor Segment Overrun
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Invalid TSS Exception (\#TS)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0a(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Segment Not Present (\#NP)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0b(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Stack Fault Exception (\#SS)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0c(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # General Protection Exception (\#GP)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0d(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Page-Fault Exception (\#PF)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0e(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 0
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x0f(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # x87 Floating-Point Error (\#MF)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Alignment Check Exception (\#AC)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x11(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Machine Check Exception (\#MC)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x12(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # SIMD Floating-Point Exception (\#XM)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x13(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Virtualization Exception (\#VE)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Control Protection Exception (\#CP)
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x15(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 1
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x16(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 2
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x17(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 3
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x18(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 4
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x19(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 5
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1a(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 6
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1b(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Hypervisor Injection Exception (\#HV)
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # VMM Communication Exception (\#VC)
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1d(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Security Exception (\#SX)
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1e(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Reserved Exception 7
+/// ## References
+/// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     panic!("stack_frame = {:#x?}", stack_frame);
 }
