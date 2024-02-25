@@ -44,9 +44,9 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
-	make $(BOOTLOADER_DESTINATION)
-	make $(KERNEL_DESTINATION)
-	umount $(MOUNT_DIRECTORY)
+	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
+	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
+	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
 $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
@@ -57,15 +57,15 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	make $(KERNEL_DESTINATION)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
-	mkdir -p $(shell dirname $@)
-	cp $^ $@
+	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(BOOT_DIRECTORY)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
-	mkdir -p $(shell dirname $@)
-	cp $^ $@
+	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) cp $^ $@
 
 $(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(KERNEL_DIRECTORY)
