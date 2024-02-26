@@ -11,6 +11,7 @@ use {
     core::{
         fmt,
         mem,
+        ops::Range,
         slice,
     },
     super::{
@@ -37,6 +38,19 @@ impl Table {
         self.descriptors
             .as_slice()
             .as_ptr() as u64
+    }
+
+    pub fn continuous_free_descriptor_indices(&self, length: usize) -> Option<Range<usize>> {
+        let indices: Range<usize> = self.free_descriptor_indices()
+            .into_iter()
+            .fold(0..0, |indices, index| if indices.len() == length {
+                indices
+            } else if indices.end == index {
+                indices.start..index + 1
+            } else {
+                index..index + 1
+            });
+        (indices.len() == length).then_some(indices)
     }
 
     pub fn descriptor(&self, selector: &Selector) -> Option<Interface> {

@@ -68,16 +68,25 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .descriptor(&cs)
         .unwrap();
     com2_println!("kernel_code_segment_descriptor = {:#x?}", kernel_code_segment_descriptor);
-    let kernel_stack_segment_descriptor: memory::segment::descriptor::Interface = gdt
-        .descriptor(&ss)
+    let kernel_data_segment_descriptor: memory::segment::descriptor::Interface = gdt
+        .descriptor(&ds)
         .unwrap();
-    com2_println!("kernel_stack_segment_descriptor = {:#x?}", kernel_stack_segment_descriptor);
+    com2_println!("kernel_data_segment_descriptor = {:#x?}", kernel_data_segment_descriptor);
     let application_code_segment_descriptor: memory::segment::descriptor::Interface = kernel_code_segment_descriptor
         .with_dpl(application::PRIVILEGE_LEVEL);
     com2_println!("application_code_segment_descriptor = {:#x?}", application_code_segment_descriptor);
-    let application_stack_segment_descriptor: memory::segment::descriptor::Interface = kernel_stack_segment_descriptor
+    let application_data_segment_descriptor: memory::segment::descriptor::Interface = kernel_data_segment_descriptor
         .with_dpl(application::PRIVILEGE_LEVEL);
-    com2_println!("application_stack_segment_descriptor = {:#x?}", application_stack_segment_descriptor);
+    com2_println!("application_data_segment_descriptor = {:#x?}", application_data_segment_descriptor);
+    let segment_descriptors = [
+        kernel_code_segment_descriptor,
+        kernel_data_segment_descriptor,
+        application_data_segment_descriptor,
+        application_code_segment_descriptor,
+    ];
+    let segment_descriptors: &[memory::segment::descriptor::Interface] = segment_descriptors.as_slice();
+    let segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
+    com2_println!("segment_descriptor_indices = {:#x?}", segment_descriptor_indices);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
