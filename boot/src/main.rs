@@ -85,12 +85,21 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         application_code_segment_descriptor,
     ];
     let segment_descriptors: &[memory::segment::descriptor::Interface] = segment_descriptors.as_slice();
-    let segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
+    let mut segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
     com2_println!("segment_descriptor_indices = {:#x?}", segment_descriptor_indices);
     segment_descriptor_indices
+        .clone()
         .zip(segment_descriptors.iter())
         .for_each(|(index, descriptor)| gdt.set_descriptor(index, descriptor));
     com2_println!("gdt = {:#x?}", gdt);
+    let kernel_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    com2_println!("kernel_code_segment_index = {:#x?}", kernel_code_segment_index);
+    let kernel_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    com2_println!("kernel_data_segment_index = {:#x?}", kernel_data_segment_index);
+    let application_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    com2_println!("application_data_segment_index = {:#x?}", application_data_segment_index);
+    let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    com2_println!("application_code_segment_index = {:#x?}", application_code_segment_index);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
