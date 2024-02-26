@@ -27,27 +27,29 @@ use {
 
 #[derive(Debug)]
 pub struct Argument<'a> {
+    application_code_segment_index: usize,
+    application_data_segment_index: usize,
     com2: &'a mut rs232c::Com,
     cpuid: Option<x64::Cpuid>,
     efi_system_table: &'a mut efi::SystemTable<'a>,
-    #[allow(dead_code)]
     fonts: BTreeMap<usize, efi::Font<'a>>,
-    #[allow(dead_code)]
     gdt: memory::segment::descriptor::Table,
-    #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
-    #[allow(dead_code)]
     idt: interrupt::descriptor::Table,
+    kernel_code_segment_index: usize,
+    kernel_data_segment_index: usize,
     memory_map: efi::memory::Map,
     my_processor_number: Option<usize>,
-    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
     paging: memory::Paging,
+    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
+        application_code_segment_index,
+        application_data_segment_index,
         com2,
         cpuid,
         efi_system_table,
@@ -56,14 +58,20 @@ fn main(argument: &'static mut Argument<'static>) {
         graphics_output_protocol: _,
         heap_start,
         idt,
+        kernel_code_segment_index,
+        kernel_data_segment_index,
         memory_map,
         my_processor_number,
-        processor_informations,
         paging,
+        processor_informations,
     } = argument;
     efi_system_table.set();
     rs232c::set_com2(com2);
     allocator::initialize(paging, memory_map, *heap_start);
+    com2_println!("application_code_segment_index = {:#x?}", application_code_segment_index);
+    com2_println!("application_data_segment_index = {:#x?}", application_data_segment_index);
+    com2_println!("kernel_code_segment_index = {:#x?}", kernel_code_segment_index);
+    com2_println!("kernel_data_segment_index = {:#x?}", kernel_data_segment_index);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
