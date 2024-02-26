@@ -52,18 +52,32 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     com2_println!("gdtr = {:#x?}", gdtr);
     gdtr.set();
-    let cs: memory::segment::Selector = memory::segment::Selector::cs().into();
+    let cs: memory::segment::Selector = memory::segment::Selector::cs();
     com2_println!("cs = {:#x?}", cs);
-    let ds: memory::segment::Selector = memory::segment::Selector::ds().into();
+    let ds: memory::segment::Selector = memory::segment::Selector::ds();
     com2_println!("ds = {:#x?}", ds);
-    let es: memory::segment::Selector = memory::segment::Selector::es().into();
+    let es: memory::segment::Selector = memory::segment::Selector::es();
     com2_println!("es = {:#x?}", es);
-    let fs: memory::segment::Selector = memory::segment::Selector::fs().into();
+    let fs: memory::segment::Selector = memory::segment::Selector::fs();
     com2_println!("fs = {:#x?}", fs);
-    let gs: memory::segment::Selector = memory::segment::Selector::gs().into();
+    let gs: memory::segment::Selector = memory::segment::Selector::gs();
     com2_println!("gs = {:#x?}", gs);
-    let ss: memory::segment::Selector = memory::segment::Selector::ss().into();
+    let ss: memory::segment::Selector = memory::segment::Selector::ss();
     com2_println!("ss = {:#x?}", ss);
+    let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
+        .descriptor(&cs)
+        .unwrap();
+    com2_println!("kernel_code_segment_descriptor = {:#x?}", kernel_code_segment_descriptor);
+    let kernel_stack_segment_descriptor: memory::segment::descriptor::Interface = gdt
+        .descriptor(&ss)
+        .unwrap();
+    com2_println!("kernel_stack_segment_descriptor = {:#x?}", kernel_stack_segment_descriptor);
+    let application_code_segment_descriptor: memory::segment::descriptor::Interface = kernel_code_segment_descriptor
+        .with_dpl(application::PRIVILEGE_LEVEL);
+    com2_println!("application_code_segment_descriptor = {:#x?}", application_code_segment_descriptor);
+    let application_stack_segment_descriptor: memory::segment::descriptor::Interface = kernel_stack_segment_descriptor
+        .with_dpl(application::PRIVILEGE_LEVEL);
+    com2_println!("application_stack_segment_descriptor = {:#x?}", application_stack_segment_descriptor);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
