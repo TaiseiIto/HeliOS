@@ -38,6 +38,100 @@ pub enum Type {
 impl Type {
     const BITS: usize = 4;
 
+    pub fn available_tss() -> Self {
+        Self::AvailableTss
+    }
+
+    pub fn db(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits,
+            } => match default_bits {
+                16 | 64 => false,
+                32 => true,
+                _ => panic!("Can't get db flag."),
+            },
+            Self::Data {
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits,
+            } => match default_bits {
+                32 => true,
+                16 => false,
+                _ => panic!("Can't get db flag."),
+            },
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+        }
+    }
+
+    pub fn interrupt_gate() -> Self {
+        Self::InterruptGate
+    }
+
+    pub fn is_long_descriptor(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
+            } => false,
+            Self::Data {
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
+            } => false,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss => true,
+            Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+        }
+    }
+
+    pub fn is_short_descriptor(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
+            } => true,
+            Self::Data {
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
+            } => true,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss => false,
+            Self::CallGate | Self::InterruptGate | Self::TrapGate => true,
+        }
+    }
+
+    pub fn l(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits,
+            } => match default_bits {
+                16 | 32 => false,
+                64 => true,
+                _ => panic!("Can't get l flag."),
+            },
+            Self::Data {
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
+            } => false,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+        }
+    }
+
     pub fn new(segment_type: u8, s: bool, db: bool, l: bool) -> Self {
         if s {
             let segment_type: Vec<bool> = (0..Self::BITS)
@@ -87,6 +181,67 @@ impl Type {
                 15 => Self::TrapGate,
                 segment_type => panic!("Invalid segment type {}.", segment_type),
             }
+        }
+    }
+
+    pub fn s(&self) -> bool {
+        match self {
+            Self::Code {
+                accessed: _,
+                readable: _,
+                conforming: _,
+                default_bits: _,
+            } => true,
+            Self::Data {
+                accessed: _,
+                writable: _,
+                expand_down: _,
+                default_bits: _,
+            } => true,
+            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+        }
+    }
+
+    pub fn segment_type(&self) -> u8 {
+        match self {
+            Self::Code {
+                accessed,
+                readable,
+                conforming,
+                default_bits: _,
+            } => (if *accessed {
+                1 << 0
+            } else {
+                0
+            }) + (if *readable {
+                1 << 1
+            } else {
+                0
+            }) + (if *conforming {
+                1 << 2
+            } else {
+                0
+            }) + (1 << 3),
+            Self::Data {
+                accessed: _,
+                writable,
+                expand_down,
+                default_bits: _,
+            } => (if *writable {
+                 1 << 1
+            } else {
+                0
+            }) + (if *expand_down {
+                1 << 2
+            } else {
+                0
+            }),
+            Self::Ldt => 2,
+            Self::AvailableTss => 9,
+            Self::BusyTss => 11,
+            Self::CallGate => 12,
+            Self::InterruptGate => 14,
+            Self::TrapGate => 15,
         }
     }
 }
