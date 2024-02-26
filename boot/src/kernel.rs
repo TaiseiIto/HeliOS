@@ -9,6 +9,8 @@ use {
     },
 };
 
+pub const PRIVILEGE_LEVEL: u8 = 0;
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Argument<'a> {
