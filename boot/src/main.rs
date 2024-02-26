@@ -105,6 +105,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
     let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, kernel::PRIVILEGE_LEVEL);
     com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
+    x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
