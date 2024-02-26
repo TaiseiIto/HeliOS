@@ -7,6 +7,7 @@
 
 extern crate alloc;
 
+mod application;
 mod efi;
 mod elf;
 mod interrupt;

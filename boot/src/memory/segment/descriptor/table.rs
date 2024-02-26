@@ -13,6 +13,7 @@ use {
         mem,
         slice,
     },
+    crate::application,
     super::{
         Interface,
         super::{
@@ -33,20 +34,20 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn application_code_segment_descriptor(&self) -> Interface {
+        self.kernel_code_segment_descriptor()
+            .with_dpl(application::PRIVILEGE_LEVEL)
+    }
+
+    pub fn application_stack_segment_descriptor(&self) -> Interface {
+        self.kernel_stack_segment_descriptor()
+            .with_dpl(application::PRIVILEGE_LEVEL)
+    }
+
     pub fn base(&self) -> u64 {
         self.descriptors
             .as_slice()
             .as_ptr() as u64
-    }
-
-    pub fn code_segment_descriptor(&self) -> Interface {
-        let code_segment_selector = Selector::cs();
-        self.descriptor(&code_segment_selector).unwrap()
-    }
-
-    pub fn stack_segment_descriptor(&self) -> Interface {
-        let stack_segment_selector = Selector::ss();
-        self.descriptor(&stack_segment_selector).unwrap()
     }
 
     pub fn descriptor(&self, selector: &Selector) -> Option<Interface> {
@@ -57,6 +58,16 @@ impl Table {
 
     pub fn get() -> Self {
         Register::get().into()
+    }
+
+    pub fn kernel_code_segment_descriptor(&self) -> Interface {
+        let code_segment_selector = Selector::cs();
+        self.descriptor(&code_segment_selector).unwrap()
+    }
+
+    pub fn kernel_stack_segment_descriptor(&self) -> Interface {
+        let stack_segment_selector = Selector::ss();
+        self.descriptor(&stack_segment_selector).unwrap()
     }
 
     pub fn limit(&self) -> u16 {
