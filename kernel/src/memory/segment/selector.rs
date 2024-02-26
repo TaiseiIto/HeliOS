@@ -94,26 +94,3 @@ impl Selector {
     }
 }
 
-#[derive(Debug)]
-pub struct Interface {
-    #[allow(dead_code)]
-    rpl: u8,
-    #[allow(dead_code)]
-    ti: bool,
-    #[allow(dead_code)]
-    index: u16,
-}
-
-impl From<Selector> for Interface {
-    fn from(selector: Selector) -> Self {
-        let rpl: u8 = selector.rpl();
-        let ti: bool = selector.ti();
-        let index: u16 = selector.index() << Selector::INDEX_OFFSET;
-        Self {
-            rpl,
-            ti,
-            index,
-        }
-    }
-}
-

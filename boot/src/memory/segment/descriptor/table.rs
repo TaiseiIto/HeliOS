@@ -39,7 +39,22 @@ impl Table {
             .as_ptr() as u64
     }
 
-    #[allow(dead_code)]
+    pub fn code_segment_descriptor(&self) -> Interface {
+        let code_segment_selector = Selector::cs();
+        self.descriptor(&code_segment_selector).unwrap()
+    }
+
+    pub fn stack_segment_descriptor(&self) -> Interface {
+        let stack_segment_selector = Selector::ss();
+        self.descriptor(&stack_segment_selector).unwrap()
+    }
+
+    pub fn descriptor(&self, selector: &Selector) -> Option<Interface> {
+        self.selector2descriptor()
+            .into_iter()
+            .find_map(|(key_selector, interface)| (key_selector.get_index() == selector.get_index()).then_some(interface))
+    }
+
     pub fn get() -> Self {
         Register::get().into()
     }
