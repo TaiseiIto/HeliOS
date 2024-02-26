@@ -1,6 +1,10 @@
 use {
     bitfield_struct::bitfield,
     crate::memory,
+    super::{
+        descriptor,
+        short,
+    },
 };
 
 /// # TSS and LDT Descriptor in 64-Bit mode
@@ -28,6 +32,18 @@ impl Descriptor {
 
     pub fn lower_descriptor(&self) -> memory::segment::short::Descriptor {
         self.descriptor().into()
+    }
+}
+
+impl From<&descriptor::Interface> for Descriptor {
+    fn from(interface: &descriptor::Interface) -> Self {
+        let descriptor: short::Descriptor = interface.into();
+        let descriptor: u64 = descriptor.into();
+        let base: usize = interface.base();
+        let base: u32 = (base >> u32::BITS) as u32;
+        Self::default()
+            .with_descriptor(descriptor)
+            .with_base(base)
     }
 }
 

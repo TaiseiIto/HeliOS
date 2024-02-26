@@ -95,6 +95,23 @@ impl Table {
             .collect()
     }
 
+    pub fn set_descriptor(&mut self, index: usize, descriptor: &Interface) {
+        if descriptor.is_long_descriptor() {
+            let descriptor: long::Descriptor = descriptor.into();
+            let descriptor: u128 = descriptor.into();
+            let lower_descriptor: u64 = (descriptor & ((1 << u64::BITS) - 1)) as u64;
+            let higher_descriptor: u64 = (descriptor >> u64::BITS) as u64;
+            self.descriptors[index] = lower_descriptor;
+            self.descriptors[index + 1] = higher_descriptor;
+        } else if descriptor.is_short_descriptor() {
+            let descriptor: short::Descriptor = descriptor.into();
+            let descriptor: u64 = descriptor.into();
+            self.descriptors[index] = descriptor;
+        } else {
+            panic!("Can't set a segment descriptor.");
+        }
+    }
+
     fn free_descriptor_indices(&self) -> BTreeSet<usize> {
         self.descriptors
             .iter()

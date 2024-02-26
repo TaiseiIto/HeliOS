@@ -47,7 +47,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let gdt = memory::segment::descriptor::Table::get();
+    let mut gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     com2_println!("gdtr = {:#x?}", gdtr);
@@ -87,6 +87,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let segment_descriptors: &[memory::segment::descriptor::Interface] = segment_descriptors.as_slice();
     let segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
     com2_println!("segment_descriptor_indices = {:#x?}", segment_descriptor_indices);
+    segment_descriptor_indices
+        .zip(segment_descriptors.iter())
+        .for_each(|(index, descriptor)| gdt.set_descriptor(index, descriptor));
+    com2_println!("gdt = {:#x?}", gdt);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
