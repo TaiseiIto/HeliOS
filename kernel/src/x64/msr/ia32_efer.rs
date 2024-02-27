@@ -45,6 +45,17 @@ impl Ia32Efer {
             .unwrap_or(false)
     }
 
+    pub fn enable_system_call_enable_bit(cpuid: &Option<Cpuid>) -> bool {
+        Self::get(cpuid)
+            .map_or(false, |ia32_efer| {
+                ia32_efer
+                    .with_sce(true)
+                    .with_lma(true)
+                    .set();
+                true
+            })
+    }
+
     pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
         cpuid
             .as_ref()

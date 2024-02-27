@@ -11,6 +11,7 @@ mod efi;
 mod interrupt;
 mod memory;
 mod rs232c;
+mod syscall;
 mod x64;
 
 use {
@@ -95,6 +96,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(idt);
     com2_println!("idt = {:#x?}", idt);
+    syscall::initialize(cpuid);
     unsafe {
         asm!("int 0x80");
     }

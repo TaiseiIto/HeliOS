@@ -113,7 +113,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     idtr.set();
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
-    com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
+    assert!(execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
