@@ -256,13 +256,13 @@ impl Cpuid {
             .map_or(false, |eax0x80000001| eax0x80000001.ia32_efer_is_supported())
     }
 
-    /// # GEt IA32_EFER availability.
+    /// # Get intel64 architecture availability.
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
-    pub fn ia32_star_is_supported(&self) -> bool {
+    pub fn intel64_architecture_available(&self) -> bool {
         self.eax0x80000001
             .as_ref()
-            .map_or(false, |eax0x80000001| eax0x80000001.ia32_star_is_supported())
+            .map_or(false, |eax0x80000001| eax0x80000001.intel64_architecture_available())
     }
 }
 

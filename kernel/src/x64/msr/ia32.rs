@@ -61,10 +61,7 @@ impl Efer {
             .as_ref()
             .and_then(|cpuid| cpuid
                 .ia32_efer_is_supported()
-                .then(|| {
-                    let ia32_efer: u64 = rdmsr(Self::ECX);
-                    ia32_efer.into()
-                }))
+                .then(|| rdmsr(Self::ECX).into()))
     }
 
     pub fn pae_paging_is_used(&self) -> bool {
@@ -79,10 +76,13 @@ impl Efer {
 
 /// # IA32_STAR
 /// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3 5.8.8 Figure 5-14
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
-#[derive(Debug)]
+#[bitfield(u64)]
 pub struct Star {
-    system_call_target_address: usize,
+    reserved0: u32,
+    syscall_cs_and_ss: u16,
+    sysret_cs_and_ss: u16,
 }
 
 impl Star {
@@ -92,13 +92,51 @@ impl Star {
         cpuid
             .as_ref()
             .and_then(|cpuid| cpuid
-                .ia32_star_is_supported()
-                .then(|| {
-                    let system_call_target_address: usize = rdmsr(Self::ECX) as usize;
-                    Self {
-                        system_call_target_address,
-                    }
-                }))
+                .intel64_architecture_available()
+                .then(|| rdmsr(Self::ECX).into()))
+    }
+}
+
+/// # IA32_LSTAR
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3 5.8.8 Figure 5-14
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
+#[bitfield(u64)]
+pub struct Lstar {
+    target_rip_for_64bit_mode_calling_program: u64,
+}
+
+impl Lstar {
+    const ECX: u32 = 0xc0000082;
+
+    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+        cpuid
+            .as_ref()
+            .and_then(|cpuid| cpuid
+                .intel64_architecture_available()
+                .then(|| rdmsr(Self::ECX).into()))
+    }
+}
+
+/// # IA32_FMASK
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3 5.8.8 Figure 5-14
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-64
+#[bitfield(u64)]
+pub struct Fmask {
+    syscall_eflags_mask: u32,
+    reserved0: u32,
+}
+
+impl Fmask {
+    const ECX: u32 = 0xc0000084;
+
+    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+        cpuid
+            .as_ref()
+            .and_then(|cpuid| cpuid
+                .intel64_architecture_available()
+                .then(|| rdmsr(Self::ECX).into()))
     }
 }
 
