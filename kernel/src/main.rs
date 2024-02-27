@@ -28,8 +28,8 @@ use {
 
 #[derive(Debug)]
 pub struct Argument<'a> {
-    application_code_segment_index: usize,
-    application_data_segment_index: usize,
+    application_code_segment_selector: memory::segment::Selector,
+    application_data_segment_selector: memory::segment::Selector,
     com2: &'a mut rs232c::Com,
     cpuid: Option<x64::Cpuid>,
     efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -38,8 +38,8 @@ pub struct Argument<'a> {
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
     idt: interrupt::descriptor::Table,
-    kernel_code_segment_index: usize,
-    kernel_data_segment_index: usize,
+    kernel_code_segment_selector: memory::segment::Selector,
+    kernel_data_segment_selector: memory::segment::Selector,
     memory_map: efi::memory::Map,
     my_processor_number: Option<usize>,
     paging: memory::Paging,
@@ -49,8 +49,8 @@ pub struct Argument<'a> {
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
-        application_code_segment_index,
-        application_data_segment_index,
+        application_code_segment_selector,
+        application_data_segment_selector,
         com2,
         cpuid,
         efi_system_table,
@@ -59,8 +59,8 @@ fn main(argument: &'static mut Argument<'static>) {
         graphics_output_protocol: _,
         heap_start,
         idt,
-        kernel_code_segment_index,
-        kernel_data_segment_index,
+        kernel_code_segment_selector,
+        kernel_data_segment_selector,
         memory_map,
         my_processor_number,
         paging,
@@ -69,10 +69,10 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     allocator::initialize(paging, memory_map, *heap_start);
-    com2_println!("application_code_segment_index = {:#x?}", application_code_segment_index);
-    com2_println!("application_data_segment_index = {:#x?}", application_data_segment_index);
-    com2_println!("kernel_code_segment_index = {:#x?}", kernel_code_segment_index);
-    com2_println!("kernel_data_segment_index = {:#x?}", kernel_data_segment_index);
+    com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
+    com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
+    com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
+    com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
