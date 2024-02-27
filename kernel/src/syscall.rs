@@ -17,6 +17,7 @@ pub fn initialize(
     com2_println!("ia32_star = {:#x?}", ia32_star);
     let ia32_lstar = x64::msr::ia32::Lstar::get(cpuid);
     com2_println!("ia32_lstar = {:#x?}", ia32_lstar);
+    x64::msr::ia32::Fmask::set_all_flags(cpuid);
     let ia32_fmask = x64::msr::ia32::Fmask::get(cpuid);
     com2_println!("ia32_fmask = {:#x?}", ia32_fmask);
     let system_call_enable: bool = x64::msr::ia32::Efer::enable_system_call_enable_bit(cpuid);

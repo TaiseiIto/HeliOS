@@ -37,8 +37,8 @@ impl Efer {
             .as_ref()
             .map_or(false, |cpuid| cpuid.execute_disable_bit_available())
             .then(|| Self::get(cpuid)
-                .map_or(false, |ia32_efer| {
-                    ia32_efer
+                .map_or(false, |efer| {
+                    efer
                         .with_nxe(true)
                         .set();
                     true
@@ -48,8 +48,8 @@ impl Efer {
 
     pub fn enable_system_call_enable_bit(cpuid: &Option<Cpuid>) -> bool {
         Self::get(cpuid)
-            .map_or(false, |ia32_efer| {
-                ia32_efer
+            .map_or(false, |efer| {
+                efer
                     .with_sce(true)
                     .with_lma(true)
                     .set();
@@ -70,8 +70,8 @@ impl Efer {
     }
 
     pub fn set(self) {
-        let ia32_efer: u64 = self.into();
-        wrmsr(Self::ECX, ia32_efer);
+        let efer: u64 = self.into();
+        wrmsr(Self::ECX, efer);
     }
 }
 
@@ -98,8 +98,8 @@ impl Star {
     }
 
     pub fn set(self) {
-        let ia32_star: u64 = self.into();
-        wrmsr(Self::ECX, ia32_star);
+        let star: u64 = self.into();
+        wrmsr(Self::ECX, star);
     }
 
     pub fn set_segment_selectors(
@@ -118,7 +118,7 @@ impl Star {
         let syscall_cs_and_ss: u16 = kernel_code_segment_selector;
         let sysret_cs_and_ss: u16 = application_data_segment_selector - 8;
         Self::get(cpuid)
-            .map(|ia32_star| ia32_star
+            .map(|star| star
                 .with_syscall_cs_and_ss(syscall_cs_and_ss)
                 .with_sysret_cs_and_ss(sysret_cs_and_ss)
                 .set());
@@ -165,6 +165,18 @@ impl Fmask {
             .and_then(|cpuid| cpuid
                 .intel64_architecture_available()
                 .then(|| rdmsr(Self::ECX).into()))
+    }
+
+    pub fn set_all_flags(cpuid: &Option<Cpuid>) {
+        Self::get(cpuid)
+            .map(|fmask| fmask
+                .with_syscall_eflags_mask(u32::MAX)
+                .set());
+    }
+
+    pub fn set(self) {
+        let fmask: u64 = self.into();
+        wrmsr(Self::ECX, fmask);
     }
 }
 
