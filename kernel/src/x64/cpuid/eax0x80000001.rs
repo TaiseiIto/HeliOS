@@ -47,6 +47,14 @@ impl Eax0x80000001 {
     pub fn ia32_efer_is_supported(&self) -> bool {
         self.edx.execute_disable_bit_available() || self.edx.intel64_architecture_available()
     }
+
+    /// # Get IA32_STAR availability.
+    /// ## References
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
+    /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-239
+    pub fn ia32_star_is_supported(&self) -> bool {
+        self.edx.intel64_architecture_available()
+    }
 }
 
 #[bitfield(u32)]

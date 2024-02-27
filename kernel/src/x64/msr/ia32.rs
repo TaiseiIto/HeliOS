@@ -77,3 +77,28 @@ impl Efer {
     }
 }
 
+/// # IA32_STAR
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
+#[derive(Debug)]
+pub struct Star {
+    system_call_target_address: usize,
+}
+
+impl Star {
+    const ECX: u32 = 0xc0000081;
+
+    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+        cpuid
+            .as_ref()
+            .and_then(|cpuid| cpuid
+                .ia32_star_is_supported()
+                .then(|| {
+                    let system_call_target_address: usize = rdmsr(Self::ECX) as usize;
+                    Self {
+                        system_call_target_address,
+                    }
+                }))
+    }
+}
+
