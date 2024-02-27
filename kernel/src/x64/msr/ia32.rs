@@ -15,7 +15,7 @@ use {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
 #[bitfield(u64)]
-pub struct Ia32Efer {
+pub struct Efer {
     sce: bool,
     #[bits(7, access = RO)]
     reserved0: u8,
@@ -28,7 +28,7 @@ pub struct Ia32Efer {
     reserved2: u64,
 }
 
-impl Ia32Efer {
+impl Efer {
     const ECX: u32 = 0xc0000080;
 
     pub fn enable_execute_disable_bit(cpuid: &Option<Cpuid>) -> bool {
