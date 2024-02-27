@@ -4,6 +4,7 @@
 
 use {
     bitfield_struct::bitfield,
+    crate::memory,
     super::{
         rdmsr,
         wrmsr,
@@ -94,6 +95,33 @@ impl Star {
             .and_then(|cpuid| cpuid
                 .intel64_architecture_available()
                 .then(|| rdmsr(Self::ECX).into()))
+    }
+
+    pub fn set(self) {
+        let ia32_star: u64 = self.into();
+        wrmsr(Self::ECX, ia32_star);
+    }
+
+    pub fn set_segment_selectors(
+        cpuid: &Option<Cpuid>,
+        kernel_code_segment_selector: &memory::segment::Selector,
+        kernel_data_segment_selector: &memory::segment::Selector,
+        application_code_segment_selector: &memory::segment::Selector,
+        application_data_segment_selector: &memory::segment::Selector,
+    ) {
+        let kernel_code_segment_selector: u16 = kernel_code_segment_selector.clone().into();
+        let kernel_data_segment_selector: u16 = kernel_data_segment_selector.clone().into();
+        assert_eq!(kernel_code_segment_selector + 8, kernel_data_segment_selector);
+        let application_code_segment_selector: u16 = application_code_segment_selector.clone().into();
+        let application_data_segment_selector: u16 = application_data_segment_selector.clone().into();
+        assert_eq!(application_data_segment_selector + 8, application_code_segment_selector);
+        let syscall_cs_and_ss: u16 = kernel_code_segment_selector;
+        let sysret_cs_and_ss: u16 = application_data_segment_selector - 8;
+        Self::get(cpuid)
+            .map(|ia32_star| ia32_star
+                .with_syscall_cs_and_ss(syscall_cs_and_ss)
+                .with_sysret_cs_and_ss(sysret_cs_and_ss)
+                .set());
     }
 }
 
