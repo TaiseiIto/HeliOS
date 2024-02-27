@@ -44,36 +44,34 @@ impl Table {
         Register::get().into()
     }
 
-    pub fn limit(&self) -> u16 {
-        let length: usize = self.descriptors.len();
-        let size: usize = length * mem::size_of::<short::Descriptor>();
-        let limit: usize = size - 1;
-        limit as u16
-    }
-
-    pub fn selector2descriptor(&self) -> BTreeMap<Selector, Interface> {
+    pub fn index2descriptor(&self) -> BTreeMap<usize, Interface> {
         let long_descriptor_indices: BTreeSet<usize> = self.long_descriptor_indices();
         let short_descriptor_indices: BTreeSet<usize> = self.short_descriptor_indices();
         (0..self.descriptors.len())
             .filter_map(move |index| {
-                let selector: u16 = (index * mem::size_of::<short::Descriptor>()) as u16;
-                let selector: Selector = selector.into();
                 if short_descriptor_indices.contains(&index) {
                     let descriptor: short::Descriptor = self.descriptors[index].into();
                     let descriptor: Option<Interface> = (&descriptor).into();
-                    descriptor.map(|descriptor| (selector, descriptor))
+                    descriptor.map(|descriptor| (index, descriptor))
                 } else if long_descriptor_indices.contains(&index) {
                     let lower_descriptor: u64 = self.descriptors[index];
                     let higher_descriptor: u64 = self.descriptors[index + 1];
                     let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
                     let descriptor: long::Descriptor = descriptor.into();
                     let descriptor: Option<Interface> = (&descriptor).into();
-                    descriptor.map(|descriptor| (selector, descriptor))
+                    descriptor.map(|descriptor| (index, descriptor))
                 } else {
                     None
                 }
             })
             .collect()
+    }
+
+    pub fn limit(&self) -> u16 {
+        let length: usize = self.descriptors.len();
+        let size: usize = length * mem::size_of::<short::Descriptor>();
+        let limit: usize = size - 1;
+        limit as u16
     }
 
     pub fn set_task_state_segment_descriptor(&mut self, task_state_segment_descriptor: &long::Descriptor) -> Selector {
@@ -171,7 +169,7 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.selector2descriptor())
+            .entries(self.index2descriptor())
             .finish()
     }
 }
