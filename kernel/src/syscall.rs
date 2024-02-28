@@ -65,6 +65,7 @@ pub fn initialize(
     x64::msr::ia32::Star::set_segment_selectors(cpuid, kernel_code_segment_selector, kernel_data_segment_selector, application_code_segment_selector, application_data_segment_selector);
     let ia32_star = x64::msr::ia32::Star::get(cpuid);
     com2_println!("ia32_star = {:#x?}", ia32_star);
+    x64::msr::ia32::Lstar::set_handler(cpuid, handler);
     let ia32_lstar = x64::msr::ia32::Lstar::get(cpuid);
     com2_println!("ia32_lstar = {:#x?}", ia32_lstar);
     x64::msr::ia32::Fmask::set_all_flags(cpuid);

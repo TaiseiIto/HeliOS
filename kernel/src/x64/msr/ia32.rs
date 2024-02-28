@@ -117,11 +117,10 @@ impl Star {
         assert_eq!(application_data_segment_selector + 8, application_code_segment_selector);
         let syscall_cs_and_ss: u16 = kernel_code_segment_selector;
         let sysret_cs_and_ss: u16 = application_data_segment_selector - 8;
-        Self::get(cpuid)
-            .map(|star| star
-                .with_syscall_cs_and_ss(syscall_cs_and_ss)
-                .with_sysret_cs_and_ss(sysret_cs_and_ss)
-                .set());
+        Self::get(cpuid).map(|star| star
+            .with_syscall_cs_and_ss(syscall_cs_and_ss)
+            .with_sysret_cs_and_ss(sysret_cs_and_ss)
+            .set());
     }
 }
 
@@ -143,6 +142,18 @@ impl Lstar {
             .and_then(|cpuid| cpuid
                 .intel64_architecture_available()
                 .then(|| rdmsr(Self::ECX).into()))
+    }
+
+    pub fn set(self) {
+        let lstar: u64 = self.into();
+        wrmsr(Self::ECX, lstar);
+    }
+
+    pub fn set_handler(cpuid: &Option<Cpuid>, handler: unsafe extern "C" fn()) {
+        let handler: u64 = handler as u64;
+        Self::get(cpuid).map(|lstar| lstar
+            .with_target_rip_for_64bit_mode_calling_program(handler)
+            .set());
     }
 }
 
@@ -168,10 +179,9 @@ impl Fmask {
     }
 
     pub fn set_all_flags(cpuid: &Option<Cpuid>) {
-        Self::get(cpuid)
-            .map(|fmask| fmask
-                .with_syscall_eflags_mask(u32::MAX)
-                .set());
+        Self::get(cpuid).map(|fmask| fmask
+            .with_syscall_eflags_mask(u32::MAX)
+            .set());
     }
 
     pub fn set(self) {
