@@ -1,9 +1,19 @@
-use crate::{
-    com2_print,
-    com2_println,
-    memory,
-    x64,
+use {
+    core::arch::asm,
+    crate::{
+        com2_print,
+        com2_println,
+        memory,
+        x64,
+    },
 };
+
+#[naked_function::naked]
+pub unsafe extern "C" fn handler() {
+    asm!(
+        "sysret",
+    );
+}
 
 pub fn initialize(
     cpuid: &Option<x64::Cpuid>,
