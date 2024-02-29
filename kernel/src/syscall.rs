@@ -1,11 +1,8 @@
-use {
-    core::arch::asm,
-    crate::{
-        com2_print,
-        com2_println,
-        memory,
-        x64,
-    },
+use crate::{
+    com2_print,
+    com2_println,
+    memory,
+    x64,
 };
 
 #[naked_function::naked]

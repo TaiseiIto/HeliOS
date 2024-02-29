@@ -1,5 +1,8 @@
 use {
-    alloc::collections::BTreeMap,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     crate::{
         efi,
         interrupt,
@@ -23,6 +26,7 @@ pub struct Argument<'a> {
     gdt: memory::segment::descriptor::Table,
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
+    hello_application: Vec<u8>,
     idt: interrupt::descriptor::Table,
     kernel_code_segment_selector: memory::segment::Selector,
     kernel_data_segment_selector: memory::segment::Selector,
@@ -44,6 +48,7 @@ impl<'a> Argument<'a> {
         gdt: memory::segment::descriptor::Table,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
         heap_start: usize,
+        hello_application: Vec<u8>,
         idt: interrupt::descriptor::Table,
         kernel_code_segment_selector: memory::segment::Selector,
         kernel_data_segment_selector: memory::segment::Selector,
@@ -62,6 +67,7 @@ impl<'a> Argument<'a> {
             gdt,
             graphics_output_protocol,
             heap_start,
+            hello_application,
             idt,
             kernel_code_segment_selector,
             kernel_data_segment_selector,

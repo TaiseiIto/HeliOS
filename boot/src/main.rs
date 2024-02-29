@@ -164,6 +164,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
+    let hello_application: Vec<u8> = directory_tree
+        .get("applications/hello.elf")
+        .unwrap()
+        .read();
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
@@ -177,6 +181,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         gdt,
         graphics_output_protocol,
         kernel_heap_start,
+        hello_application,
         idt,
         kernel_code_segment_selector,
         kernel_data_segment_selector,

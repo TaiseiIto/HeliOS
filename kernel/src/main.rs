@@ -37,6 +37,7 @@ pub struct Argument<'a> {
     gdt: memory::segment::descriptor::Table,
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
+    hello_application: Vec<u8>,
     idt: interrupt::descriptor::Table,
     kernel_code_segment_selector: memory::segment::Selector,
     kernel_data_segment_selector: memory::segment::Selector,
@@ -58,6 +59,7 @@ fn main(argument: &'static mut Argument<'static>) {
         gdt,
         graphics_output_protocol: _,
         heap_start,
+        hello_application,
         idt,
         kernel_code_segment_selector,
         kernel_data_segment_selector,
@@ -71,9 +73,10 @@ fn main(argument: &'static mut Argument<'static>) {
     allocator::initialize(paging, memory_map, *heap_start);
     com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
     com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
+    com2_println!("cpuid = {:#x?}", cpuid);
+    com2_println!("&hello_application[0..4] = {:#x?}", &hello_application[0..4]);
     com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
     com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
-    com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     com2_println!("processor_informations = {:#x?}", processor_informations);
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
