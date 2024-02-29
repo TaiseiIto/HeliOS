@@ -86,39 +86,45 @@ enum Stt{
     Func = 2,
     Section = 3,
     File = 4,
-    LoOs = 10,
-    HiOs = 12,
-    LoProc = 13,
-    HiProc = 15,
+    Os10 = 10,
+    Os11 = 11,
+    Os12 = 12,
+    Proc13 = 13,
+    Proc14 = 14,
+    Proc15 = 15,
 }
 
 impl Stt {
     const fn from_bits(bits: u8) -> Self {
         match bits {
-            0 => Self::Notype ,
-            1 => Self::Object ,
-            2 => Self::Func ,
-            3 => Self::Section ,
-            4 => Self::File ,
-            10 => Self::LoOs ,
-            12 => Self::HiOs ,
-            13 => Self::LoProc ,
-            15 => Self::HiProc ,
+            0 => Self::Notype,
+            1 => Self::Object,
+            2 => Self::Func,
+            3 => Self::Section,
+            4 => Self::File,
+            10 => Self::Os10,
+            11 => Self::Os11,
+            12 => Self::Os12,
+            13 => Self::Proc13,
+            14 => Self::Proc14,
+            15 => Self::Proc15,
             _ => panic!("Invalid Stt!"),
         }
     }
 
     const fn into_bits(self) -> u8 {
         match self {
-            Stt::Notype  => 0,
-            Stt::Object  => 1,
-            Stt::Func  => 2,
-            Stt::Section  => 3,
-            Stt::File  => 4,
-            Stt::LoOs  => 10,
-            Stt::HiOs  => 12,
-            Stt::LoProc  => 13,
-            Stt::HiProc  => 15,
+            Stt::Notype => 0,
+            Stt::Object => 1,
+            Stt::Func => 2,
+            Stt::Section => 3,
+            Stt::File => 4,
+            Stt::Os10 => 10,
+            Stt::Os11 => 11,
+            Stt::Os12 => 12,
+            Stt::Proc13 => 13,
+            Stt::Proc14 => 14,
+            Stt::Proc15 => 15,
         }
     }
 }
@@ -129,35 +135,41 @@ enum Stb {
     Local = 0,
     Global = 1,
     Weak = 2,
-    LoOs = 10,
-    HiOs = 12,
-    LoProc = 13,
-    HiProc = 15,
+    Os10 = 10,
+    Os11 = 11,
+    Os12 = 12,
+    Proc13 = 13,
+    Proc14 = 14,
+    Proc15 = 15,
 }
 
 impl Stb {
     const fn from_bits(bits: u8) -> Self {
         match bits {
-            0 => Self::Local ,
-            1 => Self::Global ,
-            2 => Self::Weak ,
-            10 => Self::LoOs ,
-            12 => Self::HiOs ,
-            13 => Self::LoProc ,
-            15 => Self::HiProc ,
+            0 => Self::Local,
+            1 => Self::Global,
+            2 => Self::Weak,
+            10 => Self::Os10,
+            11 => Self::Os11,
+            12 => Self::Os12,
+            13 => Self::Proc13,
+            14 => Self::Proc14,
+            15 => Self::Proc15,
             _ => panic!("Invalid Stb!"),
         }
     }
 
     const fn into_bits(self) -> u8 {
         match self {
-            Stb::Local  => 0,
-            Stb::Global  => 1,
-            Stb::Weak  => 2,
-            Stb::LoOs  => 10,
-            Stb::HiOs  => 12,
-            Stb::LoProc  => 13,
-            Stb::HiProc  => 15,
+            Stb::Local => 0,
+            Stb::Global => 1,
+            Stb::Weak => 2,
+            Stb::Os10 => 10,
+            Stb::Os11 => 11,
+            Stb::Os12 => 12,
+            Stb::Proc13 => 13,
+            Stb::Proc14 => 14,
+            Stb::Proc15 => 15,
         }
     }
 }
