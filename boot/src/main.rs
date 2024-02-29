@@ -164,10 +164,11 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
-    let hello_application: Vec<u8> = directory_tree
+    let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
-        .read();
+        .read()
+        .into();
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();

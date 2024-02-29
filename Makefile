@@ -10,7 +10,7 @@ TARGET=$(PRODUCT).img
 BLOCK_SIZE=4K
 
 # A number of blocks in the OS image
-BLOCK_COUNT=4K
+BLOCK_COUNT=8K
 
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
