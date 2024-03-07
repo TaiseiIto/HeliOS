@@ -109,7 +109,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
-    x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector);
     let idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
@@ -172,6 +171,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
+    x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
     let kernel_argument = kernel::Argument::new(
         application_code_segment_selector,
         application_data_segment_selector,
