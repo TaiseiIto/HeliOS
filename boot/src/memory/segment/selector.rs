@@ -65,10 +65,6 @@ impl Selector {
         fs.into()
     }
 
-    pub fn get_index(&self) -> u16 {
-        self.index()
-    }
-
     pub fn get_rpl(&self) -> u8 {
         self.rpl()
     }

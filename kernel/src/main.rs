@@ -24,6 +24,7 @@ use {
     },
     core::{
         arch::asm,
+        ops::Range,
         panic::PanicInfo,
     },
 };
@@ -63,12 +64,8 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     allocator::initialize(paging, memory_map, *heap_start);
-    com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
-    com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("hello_application = {:#x?}", hello_application);
-    com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
-    com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let mut gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);

@@ -11,18 +11,13 @@ pub use section::symbol;
 
 use {
     alloc::{
-        boxed::Box,
-        collections::{
-            BTreeMap,
-            BTreeSet,
-        },
+        collections::BTreeMap,
         vec::Vec,
     },
     core::{
         fmt,
         str,
     },
-    crate::memory,
     header::Header,
 };
 
