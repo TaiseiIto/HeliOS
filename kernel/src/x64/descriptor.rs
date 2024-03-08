@@ -4,7 +4,7 @@ use alloc::vec::Vec;
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5.1 Code- and Data-Segment Descriptor Types, Table 3-1. Code- and Data-Segment Types
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.5 System Descriptor Types, Table 3-2. System-Segment and Gate-Descriptor Types
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Type {
     Code {
         #[allow(dead_code)]

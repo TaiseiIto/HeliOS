@@ -7,6 +7,7 @@
 extern crate alloc;
 
 mod allocator;
+mod application;
 mod efi;
 mod elf;
 mod interrupt;
@@ -41,6 +42,8 @@ pub struct Argument<'a> {
     paging: memory::Paging,
     processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
+
+const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
@@ -121,16 +124,16 @@ fn main(argument: &'static mut Argument<'static>) {
     let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
     com2_println!("application_code_segment_index = {:#x?}", application_code_segment_index);
     let is_ldt: bool = false;
-    let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, kernel::PRIVILEGE_LEVEL);
+    let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
     com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
-    let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, kernel::PRIVILEGE_LEVEL);
+    let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
     com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
     let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
-    let idt = interrupt::descriptor::Table::get();
+    let mut idt = interrupt::descriptor::Table::get();
     com2_println!("idt = {:#x?}", idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     com2_println!("idtr = {:#x?}", idtr);
@@ -154,7 +157,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("gdt = {:#x?}", gdt);
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
-    interrupt::register_handlers(idt);
+    interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     unsafe {

@@ -53,6 +53,27 @@ impl Interface {
     pub fn size(&self) -> usize {
         self.size
     }
+
+    pub fn with_dpl(&self, dpl: u8) -> Self {
+        let Self {
+            base,
+            size,
+            dpl: _,
+            avl,
+            segment_type,
+        } = self;
+        let base: usize = *base;
+        let size: usize = *size;
+        let avl: bool = *avl;
+        let segment_type: x64::descriptor::Type = segment_type.clone();
+        Self {
+            base,
+            size,
+            dpl,
+            avl,
+            segment_type
+        }
+    }
 }
 
 impl From<&short::Descriptor> for Option<Interface> {
