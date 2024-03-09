@@ -9,38 +9,21 @@ use crate::{
 pub unsafe extern "C" fn handler() {
     asm!(
         "enter 0, 0",
-        "push rax",
         "push rcx",     // Caller rip
-        "push rdx",
-        "push rdi",
-        "push rsi",
-        "push r8",
-        "push r10",
         "push r11",     // Caller rflags
-        "push r9",      // 6th argument
-        "mov r9, r8",   // 5th argument
-        "mov r8, r10",  // 4th argument
-        "mov rcx, rdx", // 3rd argument
-        "mov rdx, rsi", // 2nd argument
-        "mov rsi, rdi", // 1st argument
-        "mov rdi, rax", // System call number
+        "push rax",     // System call number
+        "mov rcx, r10", // 4th argument
         "call syscall_handler",
-        "pop r9",
-        "pop r11",
-        "pop r10",
-        "pop r8",
-        "pop rsi",
-        "pop rdi",
-        "pop rdx",
-        "pop rcx",
         "pop rax",
+        "pop r11",
+        "pop rcx",
         "leave",
         "sysretq",
     );
 }
 
 #[no_mangle]
-pub extern "C" fn syscall_handler(rax: usize, rdi: usize, rsi: usize, rdx: usize, r10: usize, r8: usize, r9: usize) {
+pub extern "C" fn syscall_handler(rdi: usize, rsi: usize, rdx: usize, r10: usize, r8: usize, r9: usize, rax: usize) {
     com2_println!("Syscall");
     com2_println!("rax = {:#x?}", rax);
     com2_println!("rdi = {:#x?}", rdi);
