@@ -13,7 +13,9 @@ use {
 #[derive(Debug)]
 #[repr(packed)]
 pub struct AndIoPermissionBitMap {
+    #[allow(dead_code)]
     segment: Segment,
+    #[allow(dead_code)]
     io_permission_bit_map: IoPermissionBitMap,
 }
 
@@ -34,11 +36,17 @@ impl AndIoPermissionBitMap {
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Segment {
+    #[allow(dead_code)]
     reserved0: u32,
+    #[allow(dead_code)]
     rsp: [usize; Self::NUMBER_OF_STACK_POINTERS],
+    #[allow(dead_code)]
     ist: [usize; Self::NUMBER_OF_INTERRUPT_STACKS + 1], // ist[0] is reserved.
+    #[allow(dead_code)]
     reserved1: u64,
+    #[allow(dead_code)]
     reserved2: u16,
+    #[allow(dead_code)]
     io_map_base_address: u16,
 }
 
@@ -46,7 +54,6 @@ impl Segment {
     pub const NUMBER_OF_STACK_POINTERS: usize = 3;
     pub const NUMBER_OF_INTERRUPT_STACKS: usize = 7;
 
-    #[allow(dead_code)]
     pub fn new(interrupt_stacks: &Vec<memory::Stack>, io_map_base_address: usize) -> Self {
         assert_eq!(interrupt_stacks.len(), Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS);
         let reserved0: u32 = 0;
@@ -90,7 +97,9 @@ impl Segment {
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct IoPermissionBitMap {
+    #[allow(dead_code)]
     bit_map: [u8; Self::LENGTH],
+    #[allow(dead_code)]
     last_byte: u8,
 }
 

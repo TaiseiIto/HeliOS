@@ -39,6 +39,7 @@ pub struct Header {
 }
 
 impl Header {
+    #[allow(dead_code)]
     pub fn deploy(&self, elf: &[u8]) {
         let start: usize = self.p_vaddr as usize;
         let start: *mut u8 = start as *mut u8;
@@ -52,12 +53,14 @@ impl Header {
         bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
     }
 
+    #[allow(dead_code)]
     pub fn pages(&self) -> Vec<usize> {
         self.vaddr_range_in_pages()
             .filter(|vaddr| vaddr % memory::page::SIZE == 0)
             .collect()
     }
 
+    #[allow(dead_code)]
     pub fn set_page(&self, paging: &mut memory::Paging, vaddr2paddr: BTreeMap<usize, usize>) {
         let present: bool = true;
         let writable: bool = self.p_flags.w();
@@ -72,12 +75,14 @@ impl Header {
             });
     }
 
+    #[allow(dead_code)]
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
         let start: usize = self.p_vaddr as usize;
         let end: usize = start + self.p_memsz as usize;
         start..end
     }
 
+    #[allow(dead_code)]
     fn vaddr_range_in_pages(&self) -> Range<usize> {
         let Range::<usize> {
             start,
@@ -89,20 +94,30 @@ impl Header {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(u32)]
 enum Pt {
+    #[allow(dead_code)]
     Null = 0,
+    #[allow(dead_code)]
     Load = 1,
+    #[allow(dead_code)]
     Dynamic = 2,
+    #[allow(dead_code)]
     Interp = 3,
+    #[allow(dead_code)]
     Note = 4,
+    #[allow(dead_code)]
     Shlib = 5,
+    #[allow(dead_code)]
     Phdr = 6,
+    #[allow(dead_code)]
     LoOs = 0x60000000,
+    #[allow(dead_code)]
     HiOs = 0x6fffffff,
+    #[allow(dead_code)]
     LoProc = 0x70000000,
+    #[allow(dead_code)]
     HiProc = 0x7fffffff,
 }
 

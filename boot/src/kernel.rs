@@ -9,19 +9,29 @@ use {
     },
 };
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Argument<'a> {
+    #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
+    #[allow(dead_code)]
     cpuid: Option<x64::Cpuid>,
+    #[allow(dead_code)]
     efi_system_table: &'a mut efi::SystemTable<'a>,
+    #[allow(dead_code)]
     fonts: BTreeMap<usize, efi::Font<'a>>,
+    #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
+    #[allow(dead_code)]
     heap_start: usize,
+    #[allow(dead_code)]
     hello_application: elf::File,
+    #[allow(dead_code)]
     memory_map: efi::memory::Map,
+    #[allow(dead_code)]
     my_processor_number: Option<usize>,
+    #[allow(dead_code)]
     paging: memory::Paging,
+    #[allow(dead_code)]
     processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
 

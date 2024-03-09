@@ -7,23 +7,15 @@ use alloc::vec::Vec;
 #[derive(Clone, Debug)]
 pub enum Type {
     Code {
-        #[allow(dead_code)]
         accessed: bool,
-        #[allow(dead_code)]
         readable: bool,
-        #[allow(dead_code)]
         conforming: bool,
-        #[allow(dead_code)]
         default_bits: usize,
     },
     Data {
-        #[allow(dead_code)]
         accessed: bool,
-        #[allow(dead_code)]
         writable: bool,
-        #[allow(dead_code)]
         expand_down: bool,
-        #[allow(dead_code)]
         default_bits: usize,
     },
     Ldt,

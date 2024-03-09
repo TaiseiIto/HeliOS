@@ -9,7 +9,6 @@ use {
 
 #[derive(Debug)]
 pub struct Stack {
-    #[allow(dead_code)]
     pages: ContinuousPages,
 }
 

@@ -13,22 +13,16 @@ use {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4 Paging
 #[derive(Debug)]
 pub enum Paging {
-    #[allow(dead_code)]
     Disable,
-    #[allow(dead_code)]
     Bit32,
-    #[allow(dead_code)]
     Pae,
-    #[allow(dead_code)]
     Level4 {
         interface: level4::Interface,
     },
-    #[allow(dead_code)]
     Level5,
 }
 
 impl Paging {
-    #[allow(dead_code)]
     pub fn debug(&self, vaddr: usize) {
         com2_println!("Begin paging information vaddr {:#x?}", vaddr);
         match self {
@@ -59,7 +53,6 @@ impl Paging {
         }
     }
 
-    #[allow(dead_code)]
     pub fn set(&self) {
         match self {
             Self::Disable => {},

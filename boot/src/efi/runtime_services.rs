@@ -101,13 +101,15 @@ type ResetSystem = extern "efiapi" fn(/* ResetType */ ResetType, /* ResetStatus 
 /// # EFI_RESET_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 8.5.1 Reset System
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 enum ResetType {
+    #[allow(dead_code)]
     Cold,
+    #[allow(dead_code)]
     Warm,
     Shutdown,
+    #[allow(dead_code)]
     PlatformSpecific,
 }
 

@@ -29,7 +29,6 @@ impl Table {
             .as_ptr() as u64
     }
 
-    #[allow(dead_code)]
     pub fn get() -> Self {
         Register::get().into()
     }

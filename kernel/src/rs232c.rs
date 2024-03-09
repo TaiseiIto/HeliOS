@@ -173,18 +173,22 @@ impl Com {
         com
     }
 
+    #[allow(dead_code)]
     fn port_divisor_latch_high_byte(&self) -> u16 {
         self.port + Self::OFFSET_DIVISOR_LATCH_HIGH_BYTE
     }
 
+    #[allow(dead_code)]
     fn port_divisor_latch_low_byte(&self) -> u16 {
         self.port + Self::OFFSET_DIVISOR_LATCH_LOW_BYTE
     }
 
+    #[allow(dead_code)]
     fn port_fifo_control(&self) -> u16 {
         self.port + Self::OFFSET_FIFO_CONTROL
     }
 
+    #[allow(dead_code)]
     fn port_interrupt_enable(&self) -> u16 {
         self.port + Self::OFFSET_INTERRUPT_ENABLE
     }
@@ -197,6 +201,7 @@ impl Com {
         self.port + Self::OFFSET_LINE_STATUS
     }
 
+    #[allow(dead_code)]
     fn port_modem_control(&self) -> u16 {
         self.port + Self::OFFSET_MODEM_CONTROL
     }
@@ -205,6 +210,7 @@ impl Com {
         self.port + Self::OFFSET_TRANSMITTER_HOLDING_BUFFER
     }
 
+    #[allow(dead_code)]
     fn read_interrupt_enable(&self) -> interrupt_enable::Register {
         self.disable_divisor_latch_access();
         x64::port::inb(self.port_interrupt_enable()).into()
@@ -223,6 +229,7 @@ impl Com {
         self.write_transmitter_holding_buffer(data);
     }
 
+    #[allow(dead_code)]
     fn write_baud_rate(&self, baud_rate: u32) {
         let divisor_latch: u32 = Self::FREQUENCY / baud_rate;
         let divisor_latch: u16 = divisor_latch as u16;
@@ -235,10 +242,12 @@ impl Com {
         x64::port::outb(self.port_divisor_latch_high_byte(), divisor_latch_high);
     }
 
+    #[allow(dead_code)]
     fn write_fifo_control(&self, register: fifo_control::Register) {
         x64::port::outb(self.port_fifo_control(), register.into());
     }
 
+    #[allow(dead_code)]
     fn write_interrupt_enable(&self, register: interrupt_enable::Register) {
         self.disable_divisor_latch_access();
         x64::port::outb(self.port_interrupt_enable(), register.into());
@@ -248,6 +257,7 @@ impl Com {
         x64::port::outb(self.port_line_control(), register.into());
     }
 
+    #[allow(dead_code)]
     fn write_modem_control(&self, register: modem_control::Register) {
         x64::port::outb(self.port_modem_control(), register.into());
     }

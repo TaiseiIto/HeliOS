@@ -33,7 +33,6 @@ pub struct Interface {
 }
 
 impl Interface {
-    #[allow(dead_code)]
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
@@ -71,7 +70,6 @@ impl Interface {
         start..end
     }
 
-    #[allow(dead_code)]
     pub fn set(&self) {
         self.cr3.set()
     }
@@ -165,7 +163,6 @@ enum Pml4teInterface {
 }
 
 impl Pml4teInterface {
-    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pml4e {
             pdpt,
@@ -448,7 +445,6 @@ enum PdpteInterface {
 }
 
 impl PdpteInterface {
-    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pdpe {
             pdt,
@@ -878,7 +874,6 @@ enum PdteInterface {
 }
 
 impl PdteInterface {
-    #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pde {
             pt,

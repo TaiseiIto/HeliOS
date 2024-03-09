@@ -34,7 +34,9 @@ pub struct Argument<'a> {
     com2: &'a mut rs232c::Com,
     cpuid: Option<x64::Cpuid>,
     efi_system_table: &'a mut efi::SystemTable<'a>,
+    #[allow(dead_code)]
     fonts: BTreeMap<usize, efi::Font<'a>>,
+    #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
     hello_application: elf::File,

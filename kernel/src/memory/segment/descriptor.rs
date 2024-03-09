@@ -13,15 +13,10 @@ use {
 
 #[derive(Debug)]
 pub struct Interface {
-    #[allow(dead_code)]
     base: usize,
-    #[allow(dead_code)]
     size: usize,
-    #[allow(dead_code)]
     dpl: u8,
-    #[allow(dead_code)]
     avl: bool,
-    #[allow(dead_code)]
     segment_type: x64::descriptor::Type,
 }
 

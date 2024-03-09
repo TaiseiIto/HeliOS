@@ -15,7 +15,6 @@ use {
 
 #[derive(Debug)]
 pub struct Eax0x00000007 {
-    #[allow(dead_code)]
     ecx0x00000000: Ecx0x00000000,
     #[allow(dead_code)]
     ecx0x00000001: Option<Ecx0x00000001>,

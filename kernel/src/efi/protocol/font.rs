@@ -230,6 +230,7 @@ pub struct ImageOutput<'a> {
 }
 
 impl ImageOutput<'_> {
+    #[allow(dead_code)]
     fn bitmap(&self) -> &[graphics_output::BltPixel] {
         let bitmap: *const graphics_output::BltPixel = unsafe {
             self.image.bitmap

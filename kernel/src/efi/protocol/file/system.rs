@@ -63,7 +63,9 @@ type OpenVolume = extern "efiapi" fn(/* This */ &Protocol, &mut &file::Protocol)
 
 #[derive(Debug)]
 pub struct Tree<'a> {
+    #[allow(dead_code)]
     node: file::Node<'a>,
+    #[allow(dead_code)]
     children: Vec<Self>,
 }
 
@@ -84,6 +86,7 @@ impl<'a> Tree<'a> {
         }
     }
 
+    #[allow(dead_code)]
     fn name(&self) -> &str {
         self.node.name()
     }

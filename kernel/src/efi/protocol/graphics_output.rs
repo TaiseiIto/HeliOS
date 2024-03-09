@@ -54,14 +54,18 @@ pub struct PixelBitmask {
 /// # EFI_GRAPHICS_PIXEL_FORMAT
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum PixelFormat {
+    #[allow(dead_code)]
     RedGreenBlue,
+    #[allow(dead_code)]
     BlueGreenRed,
+    #[allow(dead_code)]
     BitMask,
+    #[allow(dead_code)]
     BltOnly,
+    #[allow(dead_code)]
     FormatMax,
 }
 
@@ -118,14 +122,18 @@ pub struct BltPixel {
 /// # EFI_GRAPHICS_OUTPUT_BLT_OPERATION
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum BltOperation {
+    #[allow(dead_code)]
     VideoFill,
+    #[allow(dead_code)]
     VideoToBltBuffer,
+    #[allow(dead_code)]
     BufferToVideo,
+    #[allow(dead_code)]
     VideoToVideo,
+    #[allow(dead_code)]
     Max,
 }
 

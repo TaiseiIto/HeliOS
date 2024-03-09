@@ -6,39 +6,56 @@ use {
 /// # EFI_ALLOCATE_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
 pub enum AllocateType {
     AllocateAnyPages,
+    #[allow(dead_code)]
     AllocateMaxAddress,
+    #[allow(dead_code)]
     AllocateAddress,
+    #[allow(dead_code)]
     Max,
 }
 
 /// # EFI_MEMORY_TYPE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 #[repr(u32)]
 pub enum Type {
+    #[allow(dead_code)]
     ReservedMemory,
+    #[allow(dead_code)]
     LoaderCode,
     LoaderData,
+    #[allow(dead_code)]
     BootServicesCode,
+    #[allow(dead_code)]
     BootServicesData,
+    #[allow(dead_code)]
     RuntimeServicesCode,
+    #[allow(dead_code)]
     RuntimeServicesData,
+    #[allow(dead_code)]
     ConventionalMemory,
+    #[allow(dead_code)]
     UnusableMemory,
+    #[allow(dead_code)]
     ACPIReclaimMemory,
+    #[allow(dead_code)]
     ACPIMemoryNVS,
+    #[allow(dead_code)]
     MemoryMappedIO,
+    #[allow(dead_code)]
     MemoryMappedIOPortSpace,
+    #[allow(dead_code)]
     PalCode,
+    #[allow(dead_code)]
     PersistentMemory,
+    #[allow(dead_code)]
     UnacceptedMemory,
+    #[allow(dead_code)]
     MaxMemory,
 }
 

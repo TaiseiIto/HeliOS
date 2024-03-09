@@ -59,7 +59,6 @@ impl Table {
             .find_map(|(index, interface)| (index == selector.get_index() as usize).then_some(interface))
     }
 
-    #[allow(dead_code)]
     pub fn get() -> Self {
         Register::get().into()
     }

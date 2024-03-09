@@ -30,6 +30,7 @@ pub struct File {
 }
 
 impl File {
+    #[allow(dead_code)]
     pub fn run<T>(&self, stack_floor: usize, argument: &T) {
         self.header().run(stack_floor, argument)
     }
