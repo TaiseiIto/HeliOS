@@ -182,3 +182,8 @@ tree: $(MOUNT_DIRECTORY)
 target:
 	@echo $(TARGET)
 
+# Delete all "#[allow(dead_code)]" lines
+.PHONY: delete_allow_dead_code
+delete_allow_dead_code:
+	for i in $$(git ls-files | grep ^.*\.rs$$); do sed -i '/#\[allow(dead_code)\]/d' $$i; done
+
