@@ -10,7 +10,6 @@ extern crate alloc;
 mod application;
 mod efi;
 mod elf;
-mod interrupt;
 mod kernel;
 mod memory;
 mod rs232c;

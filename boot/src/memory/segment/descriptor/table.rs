@@ -11,7 +11,6 @@ use {
     core::{
         fmt,
         mem,
-        ops::Range,
         slice,
     },
     super::{
@@ -19,7 +18,6 @@ use {
         super::{
             long,
             short,
-            Selector,
         },
     },
 };

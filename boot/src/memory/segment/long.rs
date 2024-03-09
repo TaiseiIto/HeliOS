@@ -1,6 +1,5 @@
 use {
     bitfield_struct::bitfield,
-    crate::memory,
     super::{
         descriptor,
         short,

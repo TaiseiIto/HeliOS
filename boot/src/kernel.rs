@@ -1,12 +1,8 @@
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
+    alloc::collections::BTreeMap,
     crate::{
         efi,
         elf,
-        interrupt,
         memory,
         rs232c,
         x64,
