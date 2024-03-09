@@ -46,7 +46,7 @@ pub enum Type {
 
 impl Type {
     fn is_available(&self) -> bool {
-        matches!(self, Self::BootServicesCode | Self::BootServicesData | Self::ConventionalMemory)
+        matches!(self, Self::ConventionalMemory)
     }
 }
 
