@@ -30,8 +30,8 @@ pub fn hlt() {
 }
 
 pub fn set_segment_registers(code_segment_selector: &memory::segment::Selector, data_segment_selector: &memory::segment::Selector) {
-    let code_segment_selector: u16 = code_segment_selector.clone().into();
-    let data_segment_selector: u16 = data_segment_selector.clone().into();
+    let code_segment_selector: u16 = (*code_segment_selector).into();
+    let data_segment_selector: u16 = (*data_segment_selector).into();
     unsafe {
         asm!(
             "mov ds, {data_segment_selector:x}",

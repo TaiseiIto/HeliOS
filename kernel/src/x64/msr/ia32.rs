@@ -109,18 +109,19 @@ impl Star {
         application_code_segment_selector: &memory::segment::Selector,
         application_data_segment_selector: &memory::segment::Selector,
     ) {
-        let kernel_code_segment_selector: u16 = kernel_code_segment_selector.clone().into();
-        let kernel_data_segment_selector: u16 = kernel_data_segment_selector.clone().into();
+        let kernel_code_segment_selector: u16 = (*kernel_code_segment_selector).into();
+        let kernel_data_segment_selector: u16 = (*kernel_data_segment_selector).into();
         assert_eq!(kernel_code_segment_selector + 8, kernel_data_segment_selector);
-        let application_code_segment_selector: u16 = application_code_segment_selector.clone().into();
-        let application_data_segment_selector: u16 = application_data_segment_selector.clone().into();
+        let application_code_segment_selector: u16 = (*application_code_segment_selector).into();
+        let application_data_segment_selector: u16 = (*application_data_segment_selector).into();
         assert_eq!(application_data_segment_selector + 8, application_code_segment_selector);
         let syscall_cs_and_ss: u16 = kernel_code_segment_selector;
         let sysret_cs_and_ss: u16 = application_data_segment_selector - 8;
-        Self::get(cpuid).map(|star| star
-            .with_syscall_cs_and_ss(syscall_cs_and_ss)
-            .with_sysret_cs_and_ss(sysret_cs_and_ss)
-            .set());
+        if let Some(star) = Self::get(cpuid) {
+            star.with_syscall_cs_and_ss(syscall_cs_and_ss)
+                .with_sysret_cs_and_ss(sysret_cs_and_ss)
+                .set();
+        }
     }
 }
 
@@ -150,10 +151,13 @@ impl Lstar {
     }
 
     pub fn set_handler(cpuid: &Option<Cpuid>, handler: unsafe extern "C" fn()) {
+        let handler: usize = handler as usize;
         let handler: u64 = handler as u64;
-        Self::get(cpuid).map(|lstar| lstar
-            .with_target_rip_for_64bit_mode_calling_program(handler)
-            .set());
+        if let Some(lstar) = Self::get(cpuid) {
+            lstar
+                .with_target_rip_for_64bit_mode_calling_program(handler)
+                .set();
+        }
     }
 }
 
@@ -179,9 +183,11 @@ impl Fmask {
     }
 
     pub fn set_all_flags(cpuid: &Option<Cpuid>) {
-        Self::get(cpuid).map(|fmask| fmask
-            .with_syscall_eflags_mask(u32::MAX)
-            .set());
+        if let Some(fmask) = Self::get(cpuid) {
+            fmask
+                .with_syscall_eflags_mask(u32::MAX)
+                .set();
+        }
     }
 
     pub fn set(self) {
