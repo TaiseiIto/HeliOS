@@ -21,7 +21,7 @@ static mut ALLOCATOR: Allocator = Allocator {
     root_node_list: UnsafeCell::new(0 as *mut NodeList),
 };
 
-pub fn initialize(paging: &mut memory::Paging, memory_map: &efi::memory::Map, heap_start: usize) {
+pub fn initialize(paging: &mut memory::Paging, memory_map: &efi::memory::Map, heap_start: usize) -> usize {
     let heap_end: usize = memory_map
         .iter()
         .filter(|memory_descriptor| memory_descriptor.is_available())
@@ -42,6 +42,7 @@ pub fn initialize(paging: &mut memory::Paging, memory_map: &efi::memory::Map, he
     unsafe {
         ALLOCATOR.initialize(heap_start..heap_end);
     }
+    heap_end - heap_start
 }
 
 struct Allocator {

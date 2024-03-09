@@ -63,7 +63,8 @@ fn main(argument: &'static mut Argument<'static>) {
     } = argument;
     efi_system_table.set();
     rs232c::set_com2(com2);
-    allocator::initialize(paging, memory_map, *heap_start);
+    let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
+    com2_println!("heap_size = {:#x?}", heap_size);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("hello_application = {:#x?}", hello_application);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
