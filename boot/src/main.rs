@@ -9,7 +9,6 @@ extern crate alloc;
 
 mod efi;
 mod elf;
-mod interrupt;
 mod kernel;
 mod memory;
 mod rs232c;
@@ -46,31 +45,9 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let gdt = memory::segment::descriptor::Table::get();
-    com2_println!("gdt = {:#x?}", gdt);
-    let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
-    com2_println!("gdtr = {:#x?}", gdtr);
-    gdtr.set();
-    let cs: memory::segment::selector::Interface = memory::segment::Selector::cs().into();
-    com2_println!("cs = {:#x?}", cs);
-    let ds: memory::segment::selector::Interface = memory::segment::Selector::ds().into();
-    com2_println!("ds = {:#x?}", ds);
-    let es: memory::segment::selector::Interface = memory::segment::Selector::es().into();
-    com2_println!("es = {:#x?}", es);
-    let fs: memory::segment::selector::Interface = memory::segment::Selector::fs().into();
-    com2_println!("fs = {:#x?}", fs);
-    let gs: memory::segment::selector::Interface = memory::segment::Selector::gs().into();
-    com2_println!("gs = {:#x?}", gs);
-    let ss: memory::segment::selector::Interface = memory::segment::Selector::ss().into();
-    com2_println!("ss = {:#x?}", ss);
-    let idt = interrupt::descriptor::Table::get();
-    com2_println!("idt = {:#x?}", idt);
-    let idtr: interrupt::descriptor::table::Register = (&idt).into();
-    com2_println!("idtr = {:#x?}", idtr);
-    idtr.set();
     let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
-    com2_println!("execute_disable_bit_available = {:#x?}", execute_disable_bit_available);
+    assert!(execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
@@ -81,7 +58,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .into();
     let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
     com2_println!("kernel_vaddr2frame = {:#x?}", kernel_vaddr2frame);
-    let kernel_stack_pages: usize = 0x400;
+    let kernel_stack_pages: usize = 0x10;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
         .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
         .collect();
@@ -117,6 +94,11 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
+    let hello_application: elf::File = directory_tree
+        .get("applications/hello.elf")
+        .unwrap()
+        .read()
+        .into();
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
@@ -125,14 +107,13 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         cpuid,
         efi::SystemTable::get(),
         fonts,
-        gdt,
         graphics_output_protocol,
         kernel_heap_start,
-        idt,
+        hello_application,
         memory_map,
         my_processor_number,
-        processor_informations,
-        paging);
+        paging,
+        processor_informations);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED

@@ -17,6 +17,13 @@ pub struct Selector {
 }
 
 impl Selector {
+    pub fn create(index: u16, ti: bool, rpl: u8) -> Self {
+        Self::default()
+            .with_index(index)
+            .with_ti(ti)
+            .with_rpl(rpl)
+    }
+
     #[inline(never)]
     pub fn cs() -> Self {
         let cs: u16;
@@ -65,6 +72,10 @@ impl Selector {
         fs.into()
     }
 
+    pub fn get_index(&self) -> u16 {
+        self.index()
+    }
+
     pub fn get_rpl(&self) -> u8 {
         self.rpl()
     }
@@ -91,29 +102,6 @@ impl Selector {
             );
         }
         ss.into()
-    }
-}
-
-#[derive(Debug)]
-pub struct Interface {
-    #[allow(dead_code)]
-    rpl: u8,
-    #[allow(dead_code)]
-    ti: bool,
-    #[allow(dead_code)]
-    index: u16,
-}
-
-impl From<Selector> for Interface {
-    fn from(selector: Selector) -> Self {
-        let rpl: u8 = selector.rpl();
-        let ti: bool = selector.ti();
-        let index: u16 = selector.index() << Selector::INDEX_OFFSET;
-        Self {
-            rpl,
-            ti,
-            index,
-        }
     }
 }
 

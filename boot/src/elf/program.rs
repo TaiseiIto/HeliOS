@@ -89,20 +89,30 @@ impl Header {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Debug)]
 #[repr(u32)]
 enum Pt {
+    #[allow(dead_code)]
     Null = 0,
+    #[allow(dead_code)]
     Load = 1,
+    #[allow(dead_code)]
     Dynamic = 2,
+    #[allow(dead_code)]
     Interp = 3,
+    #[allow(dead_code)]
     Note = 4,
+    #[allow(dead_code)]
     Shlib = 5,
+    #[allow(dead_code)]
     Phdr = 6,
+    #[allow(dead_code)]
     LoOs = 0x60000000,
+    #[allow(dead_code)]
     HiOs = 0x6fffffff,
+    #[allow(dead_code)]
     LoProc = 0x70000000,
+    #[allow(dead_code)]
     HiProc = 0x7fffffff,
 }
 

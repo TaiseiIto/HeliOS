@@ -2,59 +2,66 @@ use {
     alloc::collections::BTreeMap,
     crate::{
         efi,
-        interrupt,
+        elf,
         memory,
         rs232c,
         x64,
     },
 };
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Argument<'a> {
+    #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
+    #[allow(dead_code)]
     cpuid: Option<x64::Cpuid>,
+    #[allow(dead_code)]
     efi_system_table: &'a mut efi::SystemTable<'a>,
+    #[allow(dead_code)]
     fonts: BTreeMap<usize, efi::Font<'a>>,
-    gdt: memory::segment::descriptor::Table,
+    #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
+    #[allow(dead_code)]
     heap_start: usize,
-    idt: interrupt::descriptor::Table,
+    #[allow(dead_code)]
+    hello_application: elf::File,
+    #[allow(dead_code)]
     memory_map: efi::memory::Map,
+    #[allow(dead_code)]
     my_processor_number: Option<usize>,
-    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
+    #[allow(dead_code)]
     paging: memory::Paging,
+    #[allow(dead_code)]
+    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
 
 impl<'a> Argument<'a> {
-    #[allow(clippy::to_many_arguments)]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         com2: &'a mut rs232c::Com,
         cpuid: Option<x64::Cpuid>,
         efi_system_table: &'a mut efi::SystemTable<'a>,
         fonts: BTreeMap<usize, efi::Font<'a>>,
-        gdt: memory::segment::descriptor::Table,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
         heap_start: usize,
-        idt: interrupt::descriptor::Table,
+        hello_application: elf::File,
         memory_map: efi::memory::Map,
         my_processor_number: Option<usize>,
+        paging: memory::Paging,
         processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
-        paging: memory::Paging
     ) -> Self {
         Self {
             com2,
             cpuid,
             efi_system_table,
             fonts,
-            gdt,
             graphics_output_protocol,
             heap_start,
-            idt,
+            hello_application,
             memory_map,
             my_processor_number,
-            processor_informations,
             paging,
+            processor_informations,
         }
     }
 }

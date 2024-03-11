@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 PRODUCT=$(shell basename $$(pwd))
-FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$ | awk -F '"' '{print $$2}')
+FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
 TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 

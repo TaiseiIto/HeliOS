@@ -61,6 +61,7 @@ impl Protocol {
             .collect()
     }
 
+    #[allow(dead_code)]
     pub fn get_processor_information(&self, processor_number: usize) -> Result<ProcessorInformation, Status> {
         let mut processor_information = ProcessorInformation::default();
         (self.get_processor_info)(self, processor_number, &mut processor_information)
@@ -76,6 +77,7 @@ impl Protocol {
             .map(|_| my_processor_number)
     }
 
+    #[allow(dead_code)]
     pub fn number_of_processors(&self) -> Result<NumberOfProcessors, Status> {
         let mut all: usize = 0;
         let mut enabled: usize = 0;

@@ -174,6 +174,7 @@ pub struct Info {
 pub struct Information {
     #[allow(dead_code)]
     size: u64,
+    #[allow(dead_code)]
     file_size: u64,
     #[allow(dead_code)]
     physical_size: u64,

@@ -10,10 +10,24 @@ TARGET=$(PRODUCT).img
 BLOCK_SIZE=4K
 
 # A number of blocks in the OS image
-BLOCK_COUNT=4K
+BLOCK_COUNT=8K
 
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
+
+# Applications
+APPLICATION_SOURCE_DIRECTORY=applications
+APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
+APPLICATIONS=$(shell ls $(APPLICATION_SOURCE_DIRECTORY))
+APPLICATION_DESTINATIONS=$(foreach APPLICATION,$(APPLICATIONS),$(call application2destination,$(APPLICATION)))
+
+define application2destination
+	$(APPLICATION_DESTINATION_DIRECTORY)/$(1).elf
+endef
+
+define destination2source
+	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
+endef
 
 # A bootloader file path
 BOOT_DIRECTORY=boot
@@ -44,9 +58,12 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
-	make $(BOOTLOADER_DESTINATION)
-	make $(KERNEL_DESTINATION)
-	umount $(MOUNT_DIRECTORY)
+	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
+	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
+	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	$(SUDO) mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
+	make $(APPLICATION_DESTINATIONS) SUDO=$(SUDO)
+	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
 $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
@@ -55,17 +72,23 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	mkdir $@
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
+	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
+	make $(APPLICATION_DESTINATIONS)
+
+$(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
+	$(SUDO) cp $(call destination2source,$@) $@
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
-	mkdir -p $(shell dirname $@)
-	cp $^ $@
+	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(shell find $(BOOT_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(BOOT_DIRECTORY)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
-	mkdir -p $(shell dirname $@)
-	cp $^ $@
+	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) cp $^ $@
 
 $(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(KERNEL_DIRECTORY)
@@ -158,4 +181,9 @@ tree: $(MOUNT_DIRECTORY)
 .PHONY: target
 target:
 	@echo $(TARGET)
+
+# Delete all "#[allow(dead_code)]" lines
+.PHONY: delete_allow_dead_code
+delete_allow_dead_code:
+	for i in $$(git ls-files | grep ^.*\.rs$$); do sed -i '/#\[allow(dead_code)\]/d' $$i; done
 

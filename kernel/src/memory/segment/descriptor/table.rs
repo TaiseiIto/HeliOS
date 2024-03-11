@@ -11,6 +11,7 @@ use {
     core::{
         fmt,
         mem,
+        ops::Range,
         slice,
     },
     super::{
@@ -39,9 +40,50 @@ impl Table {
             .as_ptr() as u64
     }
 
-    #[allow(dead_code)]
+    pub fn continuous_free_descriptor_indices(&self, length: usize) -> Option<Range<usize>> {
+        let indices: Range<usize> = self.free_descriptor_indices()
+            .into_iter()
+            .fold(0..0, |indices, index| if indices.len() == length {
+                indices
+            } else if indices.end == index {
+                indices.start..index + 1
+            } else {
+                index..index + 1
+            });
+        (indices.len() == length).then_some(indices)
+    }
+
+    pub fn descriptor(&self, selector: &Selector) -> Option<Interface> {
+        self.index2descriptor()
+            .into_iter()
+            .find_map(|(index, interface)| (index == selector.get_index() as usize).then_some(interface))
+    }
+
     pub fn get() -> Self {
         Register::get().into()
+    }
+
+    pub fn index2descriptor(&self) -> BTreeMap<usize, Interface> {
+        let long_descriptor_indices: BTreeSet<usize> = self.long_descriptor_indices();
+        let short_descriptor_indices: BTreeSet<usize> = self.short_descriptor_indices();
+        (0..self.descriptors.len())
+            .filter_map(move |index| {
+                if short_descriptor_indices.contains(&index) {
+                    let descriptor: short::Descriptor = self.descriptors[index].into();
+                    let descriptor: Option<Interface> = (&descriptor).into();
+                    descriptor.map(|descriptor| (index, descriptor))
+                } else if long_descriptor_indices.contains(&index) {
+                    let lower_descriptor: u64 = self.descriptors[index];
+                    let higher_descriptor: u64 = self.descriptors[index + 1];
+                    let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
+                    let descriptor: long::Descriptor = descriptor.into();
+                    let descriptor: Option<Interface> = (&descriptor).into();
+                    descriptor.map(|descriptor| (index, descriptor))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     pub fn limit(&self) -> u16 {
@@ -51,29 +93,21 @@ impl Table {
         limit as u16
     }
 
-    pub fn selector2descriptor(&self) -> BTreeMap<Selector, Interface> {
-        let long_descriptor_indices: BTreeSet<usize> = self.long_descriptor_indices();
-        let short_descriptor_indices: BTreeSet<usize> = self.short_descriptor_indices();
-        (0..self.descriptors.len())
-            .filter_map(move |index| {
-                let selector: u16 = (index * mem::size_of::<short::Descriptor>()) as u16;
-                let selector: Selector = selector.into();
-                if short_descriptor_indices.contains(&index) {
-                    let descriptor: short::Descriptor = self.descriptors[index].into();
-                    let descriptor: Option<Interface> = (&descriptor).into();
-                    descriptor.map(|descriptor| (selector, descriptor))
-                } else if long_descriptor_indices.contains(&index) {
-                    let lower_descriptor: u64 = self.descriptors[index];
-                    let higher_descriptor: u64 = self.descriptors[index + 1];
-                    let descriptor: u128 = ((higher_descriptor as u128) << u64::BITS) + (lower_descriptor as u128);
-                    let descriptor: long::Descriptor = descriptor.into();
-                    let descriptor: Option<Interface> = (&descriptor).into();
-                    descriptor.map(|descriptor| (selector, descriptor))
-                } else {
-                    None
-                }
-            })
-            .collect()
+    pub fn set_descriptor(&mut self, index: usize, descriptor: &Interface) {
+        if descriptor.is_long_descriptor() {
+            let descriptor: long::Descriptor = descriptor.into();
+            let descriptor: u128 = descriptor.into();
+            let lower_descriptor: u64 = (descriptor & ((1 << u64::BITS) - 1)) as u64;
+            let higher_descriptor: u64 = (descriptor >> u64::BITS) as u64;
+            self.descriptors[index] = lower_descriptor;
+            self.descriptors[index + 1] = higher_descriptor;
+        } else if descriptor.is_short_descriptor() {
+            let descriptor: short::Descriptor = descriptor.into();
+            let descriptor: u64 = descriptor.into();
+            self.descriptors[index] = descriptor;
+        } else {
+            panic!("Can't set a segment descriptor.");
+        }
     }
 
     pub fn set_task_state_segment_descriptor(&mut self, task_state_segment_descriptor: &long::Descriptor) -> Selector {
@@ -171,7 +205,7 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.selector2descriptor())
+            .entries(self.index2descriptor())
             .finish()
     }
 }

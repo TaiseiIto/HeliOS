@@ -21,7 +21,6 @@ impl Register {
         self.base as *const u64
     }
 
-    #[allow(dead_code)]
     #[inline(never)]
     pub fn get() -> Self {
         let mut register = Register::default();
@@ -38,7 +37,6 @@ impl Register {
         (self.limit as usize + 1) / mem::size_of::<short::Descriptor>()
     }
 
-    #[allow(dead_code)]
     #[inline(never)]
     pub fn set(&self) {
         unsafe {

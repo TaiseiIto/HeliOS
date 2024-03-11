@@ -13,15 +13,10 @@ use {
 
 #[derive(Debug)]
 pub struct Interface {
-    #[allow(dead_code)]
     base: usize,
-    #[allow(dead_code)]
     size: usize,
-    #[allow(dead_code)]
     dpl: u8,
-    #[allow(dead_code)]
     avl: bool,
-    #[allow(dead_code)]
     segment_type: x64::descriptor::Type,
 }
 
@@ -52,6 +47,27 @@ impl Interface {
 
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub fn with_dpl(&self, dpl: u8) -> Self {
+        let Self {
+            base,
+            size,
+            dpl: _,
+            avl,
+            segment_type,
+        } = self;
+        let base: usize = *base;
+        let size: usize = *size;
+        let avl: bool = *avl;
+        let segment_type: x64::descriptor::Type = segment_type.clone();
+        Self {
+            base,
+            size,
+            dpl,
+            avl,
+            segment_type
+        }
     }
 }
 

@@ -18,7 +18,6 @@ pub struct Eax0x00000001 {
     ebx: Ebx,
     #[allow(dead_code)]
     ecx: Ecx,
-    #[allow(dead_code)]
     edx: Edx,
 }
 
