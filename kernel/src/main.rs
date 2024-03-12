@@ -159,6 +159,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
+    let ia32_apic_base = x64::msr::ia32::ApicBase::get();
+    com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     unsafe {
         asm!("int 0x80");
