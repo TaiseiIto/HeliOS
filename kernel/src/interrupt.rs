@@ -1,3 +1,4 @@
+pub mod apic;
 pub mod descriptor;
 
 pub use descriptor::Descriptor;

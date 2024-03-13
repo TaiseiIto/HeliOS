@@ -1,5 +1,6 @@
 use {
     bitfield_struct::bitfield,
+    crate::interrupt,
     super::super::rdmsr,
 };
 
@@ -24,6 +25,14 @@ impl ApicBase {
 
     pub fn get() -> Self {
         rdmsr(Self::ECX).into()
+    }
+
+    pub fn registers(&self) -> &interrupt::apic::Registers {
+        let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
+        let registers: *const interrupt::apic::Registers = registers as *const interrupt::apic::Registers;
+        unsafe {
+            &*registers
+        }
     }
 }
 
