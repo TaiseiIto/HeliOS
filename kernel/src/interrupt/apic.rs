@@ -11,6 +11,7 @@ pub mod local_apic_version;
 pub mod local_vector_table;
 pub mod logical_destination;
 pub mod processor_priority;
+pub mod spurious_interrupt_vector;
 pub mod task_priority;
 
 use crate::x64;
@@ -44,7 +45,7 @@ pub struct Registers {
     // 0xfee000e0
     destination_format: destination_format::Register,
     // 0xfee000f0
-    spurious_interrupt_vector: u128,
+    spurious_interrupt_vector: spurious_interrupt_vector::Register,
     // 0xfee00100
     in_service: [u128; 8],
     // 0xfee00180
