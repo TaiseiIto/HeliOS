@@ -2,6 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A Chapter 11 Advanced Programmable Interrupt Controller (APIC)
 
+pub mod arbitration_priority;
 pub mod destination_format;
 pub mod divide_configuration;
 pub mod error_status;
@@ -9,6 +10,7 @@ pub mod interrupt_command;
 pub mod local_apic_version;
 pub mod local_vector_table;
 pub mod logical_destination;
+pub mod task_priority;
 
 use crate::x64;
 
@@ -27,9 +29,9 @@ pub struct Registers {
     // 0xfee00040
     reserved1: [u128; 4],
     // 0xfee00080
-    task_priority: u128,
+    task_priority: task_priority::Register,
     // 0xfee00090
-    arbitration_priority: u128,
+    arbitration_priority: arbitration_priority::Register,
     // 0xfee000a0
     processor_priority: u128,
     // 0xfee000b0
