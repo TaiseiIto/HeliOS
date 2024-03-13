@@ -10,6 +10,7 @@ pub mod interrupt_command;
 pub mod local_apic_version;
 pub mod local_vector_table;
 pub mod logical_destination;
+pub mod processor_priority;
 pub mod task_priority;
 
 use crate::x64;
@@ -33,7 +34,7 @@ pub struct Registers {
     // 0xfee00090
     arbitration_priority: arbitration_priority::Register,
     // 0xfee000a0
-    processor_priority: u128,
+    processor_priority: processor_priority::Register,
     // 0xfee000b0
     eoi: u128,
     // 0xfee000c0
