@@ -4,6 +4,7 @@
 
 pub mod divide_configuration;
 pub mod error_status;
+pub mod interrupt_command;
 pub mod local_apic_version;
 pub mod local_vector_table;
 
@@ -52,7 +53,7 @@ pub struct Registers {
     // 0xfee002f0
     lvt_corrected_machine_check_interrupt: local_vector_table::Register,
     // 0xfee00300
-    interrupt_command: [u128; 2],
+    interrupt_command: interrupt_command::Register,
     // 0xfee00320
     lvt_timer: u128,
     // 0xfee00330
