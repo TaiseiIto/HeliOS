@@ -7,6 +7,7 @@ pub mod error_status;
 pub mod interrupt_command;
 pub mod local_apic_version;
 pub mod local_vector_table;
+pub mod logical_destination;
 
 use crate::x64;
 
@@ -35,7 +36,7 @@ pub struct Registers {
     // 0xfee000c0
     remote_read: u128,
     // 0xfee000d0
-    local_destination: u128,
+    logical_destination: logical_destination::Register,
     // 0xfee000e0
     destination_format: u128,
     // 0xfee000f0
