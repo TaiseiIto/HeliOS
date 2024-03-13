@@ -2,6 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A Chapter 11 Advanced Programmable Interrupt Controller (APIC)
 
+pub mod divide_configuration;
 pub mod error_status;
 pub mod local_apic_version;
 pub mod local_vector_table;
@@ -69,7 +70,7 @@ pub struct Registers {
     // 0xfee003a0
     reserved3: [u128; 4],
     // 0xfee003e0
-    divide_configuration: u128,
+    divide_configuration: divide_configuration::Register,
     // 0xfee003f0
     reserved: u128,
 }
