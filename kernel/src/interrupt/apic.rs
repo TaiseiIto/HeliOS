@@ -2,6 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A Chapter 11 Advanced Programmable Interrupt Controller (APIC)
 
+pub mod destination_format;
 pub mod divide_configuration;
 pub mod error_status;
 pub mod interrupt_command;
@@ -38,7 +39,7 @@ pub struct Registers {
     // 0xfee000d0
     logical_destination: logical_destination::Register,
     // 0xfee000e0
-    destination_format: u128,
+    destination_format: destination_format::Register,
     // 0xfee000f0
     spurious_interrupt_vector: u128,
     // 0xfee00100
