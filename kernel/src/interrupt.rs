@@ -318,13 +318,275 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         (handler_0xfe as extern "x86-interrupt" fn(StackFrame)).into(),
         (handler_0xff as extern "x86-interrupt" fn(StackFrame)).into(),
     ];
-    handlers
-        .as_slice()
-        .iter()
-        .zip(idt.iter_mut())
-        .for_each(|(handler, descriptor)| {
-            let interrupt_stack_table: u8 = 1;
-            let interface = descriptor::Interface::new(handler, interrupt_stack_table);
+    let interrupt_stack_table: [u8; 0x100] = [
+        2, // int 0x00 Divide Error Exception (\#DE)
+        2, // int 0x01 Debug Exception (\#DB)
+        2, // int 0x02 NMI Interrupt
+        2, // int 0x03 Breakpoint Exception (\#BP)
+        2, // int 0x04 Overflow Exception (\#OF)
+        2, // int 0x05 BOUND Range Exceeded Exception (\#BR)
+        2, // int 0x06 Invalid Opcode Exception (\#UD)
+        2, // int 0x07 Device Not Available Exception (\#NM)
+        3, // int 0x08 Double Fault Exception (\#DF)
+        2, // int 0x09 Coprocessor Segment Overrun
+        2, // int 0x0a Invalid TSS Exception (\#TS)
+        2, // int 0x0b Segment Not Present (\#NP)
+        2, // int 0x0c Stack Fault Exception (\#SS)
+        2, // int 0x0d General Protection Exception (\#GP)
+        2, // int 0x0e Page-Fault Exception (\#PF)
+        2, // int 0x0f Reserved Exception 0
+        2, // int 0x10 x87 Floating-Point Error (\#MF)
+        2, // int 0x11 Alignment Check Exception (\#AC)
+        2, // int 0x12 Machine Check Exception (\#MC)
+        2, // int 0x13 SIMD Floating-Point Exception (\#XM)
+        2, // int 0x14 Virtualization Exception (\#VE)
+        2, // int 0x15 Control Protection Exception (\#CP)
+        2, // int 0x16 Reserved Exception 1
+        2, // int 0x17 Reserved Exception 2
+        2, // int 0x18 Reserved Exception 3
+        2, // int 0x19 Reserved Exception 4
+        2, // int 0x1a Reserved Exception 5
+        2, // int 0x1b Reserved Exception 6
+        2, // int 0x1c Hypervisor Injection Exception (\#HV)
+        2, // int 0x1d VMM Communication Exception (\#VC)
+        2, // int 0x1e Security Exception (\#SX)
+        2, // int 0x1f Reserved Exception 7
+        1, // int 0x20
+        1, // int 0x21
+        1, // int 0x22
+        1, // int 0x23
+        1, // int 0x24
+        1, // int 0x25
+        1, // int 0x26
+        1, // int 0x27
+        1, // int 0x28
+        1, // int 0x29
+        1, // int 0x2a
+        1, // int 0x2b
+        1, // int 0x2c
+        1, // int 0x2d
+        1, // int 0x2e
+        1, // int 0x2f
+        1, // int 0x30
+        1, // int 0x31
+        1, // int 0x32
+        1, // int 0x33
+        1, // int 0x34
+        1, // int 0x35
+        1, // int 0x36
+        1, // int 0x37
+        1, // int 0x38
+        1, // int 0x39
+        1, // int 0x3a
+        1, // int 0x3b
+        1, // int 0x3c
+        1, // int 0x3d
+        1, // int 0x3e
+        1, // int 0x3f
+        1, // int 0x40
+        1, // int 0x41
+        1, // int 0x42
+        1, // int 0x43
+        1, // int 0x44
+        1, // int 0x45
+        1, // int 0x46
+        1, // int 0x47
+        1, // int 0x48
+        1, // int 0x49
+        1, // int 0x4a
+        1, // int 0x4b
+        1, // int 0x4c
+        1, // int 0x4d
+        1, // int 0x4e
+        1, // int 0x4f
+        1, // int 0x50
+        1, // int 0x51
+        1, // int 0x52
+        1, // int 0x53
+        1, // int 0x54
+        1, // int 0x55
+        1, // int 0x56
+        1, // int 0x57
+        1, // int 0x58
+        1, // int 0x59
+        1, // int 0x5a
+        1, // int 0x5b
+        1, // int 0x5c
+        1, // int 0x5d
+        1, // int 0x5e
+        1, // int 0x5f
+        1, // int 0x60
+        1, // int 0x61
+        1, // int 0x62
+        1, // int 0x63
+        1, // int 0x64
+        1, // int 0x65
+        1, // int 0x66
+        1, // int 0x67
+        1, // int 0x68
+        1, // int 0x69
+        1, // int 0x6a
+        1, // int 0x6b
+        1, // int 0x6c
+        1, // int 0x6d
+        1, // int 0x6e
+        1, // int 0x6f
+        1, // int 0x70
+        1, // int 0x71
+        1, // int 0x72
+        1, // int 0x73
+        1, // int 0x74
+        1, // int 0x75
+        1, // int 0x76
+        1, // int 0x77
+        1, // int 0x78
+        1, // int 0x79
+        1, // int 0x7a
+        1, // int 0x7b
+        1, // int 0x7c
+        1, // int 0x7d
+        1, // int 0x7e
+        1, // int 0x7f
+        1, // int 0x80
+        1, // int 0x81
+        1, // int 0x82
+        1, // int 0x83
+        1, // int 0x84
+        1, // int 0x85
+        1, // int 0x86
+        1, // int 0x87
+        1, // int 0x88
+        1, // int 0x89
+        1, // int 0x8a
+        1, // int 0x8b
+        1, // int 0x8c
+        1, // int 0x8d
+        1, // int 0x8e
+        1, // int 0x8f
+        1, // int 0x90
+        1, // int 0x91
+        1, // int 0x92
+        1, // int 0x93
+        1, // int 0x94
+        1, // int 0x95
+        1, // int 0x96
+        1, // int 0x97
+        1, // int 0x98
+        1, // int 0x99
+        1, // int 0x9a
+        1, // int 0x9b
+        1, // int 0x9c
+        1, // int 0x9d
+        1, // int 0x9e
+        1, // int 0x9f
+        1, // int 0xa0
+        1, // int 0xa1
+        1, // int 0xa2
+        1, // int 0xa3
+        1, // int 0xa4
+        1, // int 0xa5
+        1, // int 0xa6
+        1, // int 0xa7
+        1, // int 0xa8
+        1, // int 0xa9
+        1, // int 0xaa
+        1, // int 0xab
+        1, // int 0xac
+        1, // int 0xad
+        1, // int 0xae
+        1, // int 0xaf
+        1, // int 0xb0
+        1, // int 0xb1
+        1, // int 0xb2
+        1, // int 0xb3
+        1, // int 0xb4
+        1, // int 0xb5
+        1, // int 0xb6
+        1, // int 0xb7
+        1, // int 0xb8
+        1, // int 0xb9
+        1, // int 0xba
+        1, // int 0xbb
+        1, // int 0xbc
+        1, // int 0xbd
+        1, // int 0xbe
+        1, // int 0xbf
+        1, // int 0xc0
+        1, // int 0xc1
+        1, // int 0xc2
+        1, // int 0xc3
+        1, // int 0xc4
+        1, // int 0xc5
+        1, // int 0xc6
+        1, // int 0xc7
+        1, // int 0xc8
+        1, // int 0xc9
+        1, // int 0xca
+        1, // int 0xcb
+        1, // int 0xcc
+        1, // int 0xcd
+        1, // int 0xce
+        1, // int 0xcf
+        1, // int 0xd0
+        1, // int 0xd1
+        1, // int 0xd2
+        1, // int 0xd3
+        1, // int 0xd4
+        1, // int 0xd5
+        1, // int 0xd6
+        1, // int 0xd7
+        1, // int 0xd8
+        1, // int 0xd9
+        1, // int 0xda
+        1, // int 0xdb
+        1, // int 0xdc
+        1, // int 0xdd
+        1, // int 0xde
+        1, // int 0xdf
+        1, // int 0xe0
+        1, // int 0xe1
+        1, // int 0xe2
+        1, // int 0xe3
+        1, // int 0xe4
+        1, // int 0xe5
+        1, // int 0xe6
+        1, // int 0xe7
+        1, // int 0xe8
+        1, // int 0xe9
+        1, // int 0xea
+        1, // int 0xeb
+        1, // int 0xec
+        1, // int 0xed
+        1, // int 0xee
+        1, // int 0xef
+        1, // int 0xf0
+        1, // int 0xf1
+        1, // int 0xf2
+        1, // int 0xf3
+        1, // int 0xf4
+        1, // int 0xf5
+        1, // int 0xf6
+        1, // int 0xf7
+        1, // int 0xf8
+        1, // int 0xf9
+        1, // int 0xfa
+        1, // int 0xfb
+        1, // int 0xfc
+        1, // int 0xfd
+        1, // int 0xfe
+        1, // int 0xff
+    ];
+    idt
+        .iter_mut()
+        .zip(handlers
+            .as_slice()
+            .iter())
+        .zip(interrupt_stack_table
+            .as_slice()
+            .iter())
+        .map(|((descriptor, handler), interrupt_stack_table)| (descriptor, handler, interrupt_stack_table))
+        .for_each(|(descriptor, handler, interrupt_stack_table)| {
+            let interface = descriptor::Interface::new(handler, *interrupt_stack_table);
             *descriptor = (&interface).into();
         });
 }
