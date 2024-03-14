@@ -69,6 +69,10 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("heap_size = {:#x?}", heap_size);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("hello_application = {:#x?}", hello_application);
+    let memory_map: Vec<&efi::memory::Descriptor> = memory_map
+        .iter()
+        .collect();
+    com2_println!("memory_map = {:#x?}", memory_map);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let mut gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
