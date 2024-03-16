@@ -4,7 +4,7 @@ SOURCES=$(shell ls *.s)
 OBJECTS=$(SOURCES:.s=.o)
 LINKER_SCRIPT=linker_script.ld
 MAP=memory.map
-DISASSEMBLE=disassemble.s
+DISASSEMBLE=disassemble.txt
 
 .PHONY: all
 all: $(TARGET)

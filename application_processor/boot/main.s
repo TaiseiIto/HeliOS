@@ -4,7 +4,7 @@
 	.set	stack_segment,	(stack_floor - segment_length) >> segment_shift
 	.text
 	.code16
-main:
+main:	# IP == 0x1000
 0:	# Initialize the general registers.
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
@@ -20,7 +20,10 @@ main:
 	movw	%ax,	%fs
 	movw	%ax,	%gs
 	movw	stack_segment,	%ss
-2:	# Halt loop
+2:	# Create a main stack frame
+	enter	$0,	$0
+	leave
+3:	# Halt loop
 	hlt
-	jmp	2b
+	jmp	3b
 
