@@ -1,3 +1,7 @@
+	.set	segment_length,	0x00010000
+	.set	segment_shift,	4
+	.set	stack_floor,	0x00080000
+	.set	stack_segment,	(stack_floor - segment_length) >> segment_shift
 	.text
 	.code16
 main:
@@ -15,7 +19,7 @@ main:
 	movw	%ax,	%es
 	movw	%ax,	%fs
 	movw	%ax,	%gs
-	movw	%ax,	%ss
+	movw	stack_segment,	%ss
 2:	# Halt loop
 	hlt
 	jmp	2b
