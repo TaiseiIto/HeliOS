@@ -18,5 +18,5 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: An OS raw image
-          path: helios.img
+          path: HeliOS.img
 

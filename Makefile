@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 
 # Product name
-PRODUCT=$(shell basename $$(pwd) | awk '{print tolower($$0)}')
+PRODUCT=$(shell basename $$(pwd))
 
 # An OS image file name
 TARGET=$(PRODUCT).img
@@ -15,10 +15,13 @@ BLOCK_COUNT=8K
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
 
+# Operating system directory
+OS_DIRECTORY=$(MOUNT_DIRECTORY)/$(PRODUCT)
+
 # Application processor boot loader
 APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY=application_processor/boot
 APPLICATION_PROCESSOR_BOOT_LOADER_SOURCE=$(shell make target -C $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY) -s)
-APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION=$(MOUNT_DIRECTORY)/HeliOS/application_processor/boot/loader.bin
+APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION=$(OS_DIRECTORY)/application_processor/boot/loader.bin
 
 # Applications
 APPLICATION_SOURCE_DIRECTORY=applications
@@ -42,7 +45,7 @@ BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/EFI/BOOT/BOOTX64.EFI
 # A kernel file path
 KERNEL_DIRECTORY=kernel
 KERNEL_SOURCE=$(shell make target -C $(KERNEL_DIRECTORY) -s)
-KERNEL_DESTINATION=$(MOUNT_DIRECTORY)/HeliOS/kernel.elf
+KERNEL_DESTINATION=$(OS_DIRECTORY)/kernel.elf
 
 # VNC port to interact with QEMU running on development environment.
 VNC_PORT=5900
