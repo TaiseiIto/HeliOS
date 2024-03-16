@@ -24,7 +24,12 @@ $(OBJECTS): $(@:.o=.s)
 %.o: %.s
 	gcc $^ -c -nostdlib -Wall -Wextra -o $@
 
-# Get a kernel file path.
+# Get a base address.
+.PHONY: base
+base:
+	@echo $(shell grep '^BASE = .*$$' $(LINKER_SCRIPT) | awk -F '=' '{print $$2}')
+
+# Get a target file path.
 .PHONY: target
 target:
 	@echo $(abspath $(TARGET))
