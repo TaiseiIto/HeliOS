@@ -10,6 +10,9 @@
 	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
 
 	.set	COM3,	0x03e8
+	.set	COM3_BAUD_RATE,	9600
+	.set	COM3_FREQUENCY,	115200
+	.set	COM3_BAUD_RATE_DIVISOR,	COM3_FREQUENCY / COM3_BAUD_RATE
 	.set	COM3_TRANSMITTER_HOLDING_BUFFER,	COM3 + 0x0000
 	.set	COM3_DIVISOR_LATCH_LOW_BYTE,		COM3 + 0x0000
 	.set	COM3_DIVISOR_LATCH_HIGH_BYTE,		COM3 + 0x0001
@@ -46,14 +49,6 @@ main:	# IP == 0x1000
 	hlt
 	jmp	3b
 
-disable_com3_interrupts:
-0:
-	enter	$0x0000,	$0x00
-	push	$0x0000
-	call	write_com3_interrupt_enable
-	leave
-	ret
-
 disable_com3_divisor_access_latch:
 0:
 	enter	$0x0000,	$0x00
@@ -85,9 +80,13 @@ enable_com3_divisor_access_latch:
 initialize_com3:
 0:
 	enter	$0x0000,	$0x00
-	call	disable_com3_interrupts
-	call	enable_com3_divisor_access_latch
-	call	disable_com3_divisor_access_latch
+1:	# Disable all interrupts.
+	push	$0x0000
+	call	write_com3_interrupt_enable
+2:	# Set baud rate divisor.
+	pushw	COM3_BAUD_RATE_DIVISOR
+	call	write_com3_baud_rate_divisor
+3:
 	leave
 	ret
 
@@ -96,6 +95,38 @@ read_com3_line_control:
 	enter	$0x0000,	$0x00
 	movw	COM3_LINE_CONTROL,	%dx
 	inb	%dx,	%al
+	leave
+	ret
+
+write_com3_baud_rate_divisor:
+0:
+	enter	$0x0000,	$0x00
+	movw	0x04(%bp),	%bx
+	pushw	%bx
+	call	write_com3_divisor_latch_low_byte
+	movb	%bh,	%bl
+	pushw	%bx
+	call	write_com3_divisor_latch_high_byte
+	leave
+	ret
+
+write_com3_divisor_latch_high_byte:
+0:
+	enter	$0x0000,	$0x00
+	call	enable_com3_divisor_access_latch
+	movb	0x04(%bp),	%al
+	movw	COM3_DIVISOR_LATCH_HIGH_BYTE,	%dx
+	outb	%al,	%dx
+	leave
+	ret
+
+write_com3_divisor_latch_low_byte:
+0:
+	enter	$0x0000,	$0x00
+	call	enable_com3_divisor_access_latch
+	movb	0x04(%bp),	%al
+	movw	COM3_DIVISOR_LATCH_LOW_BYTE,	%dx
+	outb	%al,	%dx
 	leave
 	ret
 
