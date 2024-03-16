@@ -10,6 +10,7 @@
 	.set	COM3_INTERRUPT_ENABLE,			COM3 + 0x0001
 	.set	COM3_FIFO_CONTROL,			COM3 + 0x0002
 	.set	COM3_LINE_CONTROL,			COM3 + 0x0003
+	.set	COM3_LINE_CONTROL_DIVISOR_ACCESS_LATCH,	0x80
 	.set	COM3_MODEM_CONTROL,			COM3 + 0x0004
 	.set	COM3_LINE_STATUS,			COM3 + 0x0005
 
@@ -39,13 +40,34 @@ main:	# IP == 0x1000
 	hlt
 	jmp	3b
 
-initialize_com3:
+disable_com3_interrupts:
 0:
-	enter	$0,	$0
-	# Disable all interrupts.
-	mov	$0x00,	%al
+	enter	$0x0000,	$0x00
+	xorb	%al,	%al
 	mov	COM3_INTERRUPT_ENABLE,	%dx
 	outb	%al,	%dx
+	leave
+	ret
+
+enable_com3_divisor_access_latch:
+0:
+	enter	$0x0000,	$0x00
+	mov	COM3_LINE_CONTROL,	%dx
+	inb	%dx,	%al
+	testb	COM3_LINE_CONTROL_DIVISOR_ACCESS_LATCH,	%al
+	jnz	2f
+1:	# If divisor access latch is disabled, enable it.
+	orb	COM3_LINE_CONTROL_DIVISOR_ACCESS_LATCH, %al
+	outb	%al,	%dx
+2:	# If divisor access latch is enabled, do nothing.
+	leave
+	ret
+
+initialize_com3:
+0:
+	enter	$0x0000,	$0x00
+	call	disable_com3_interrupts
+	call	enable_com3_divisor_access_latch
 	leave
 	ret
 
