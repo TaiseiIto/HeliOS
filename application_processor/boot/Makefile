@@ -24,3 +24,8 @@ $(OBJECTS): $(@:.o=.s)
 %.o: %.s
 	gcc $^ -c -nostdlib -Wall -Wextra -o $@
 
+# Get a kernel file path.
+.PHONY: target
+target:
+	@echo $(abspath $(TARGET))
+

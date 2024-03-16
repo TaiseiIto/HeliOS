@@ -15,6 +15,11 @@ BLOCK_COUNT=8K
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
 
+# Application processor boot loader
+APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY=application_processor/boot
+APPLICATION_PROCESSOR_BOOT_LOADER_SOURCE=$(shell make target -C $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY) -s)
+APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION=$(MOUNT_DIRECTORY)/HeliOS/application_processor/boot/loader.bin
+
 # Applications
 APPLICATION_SOURCE_DIRECTORY=applications
 APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
@@ -58,6 +63,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	mkfs.fat $@
 	mkdir $(MOUNT_DIRECTORY)
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
+	make $(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION) SUDO=$(SUDO)
 	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
 	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
 	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
@@ -70,6 +76,7 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
+	make $(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION)
 	make $(BOOTLOADER_DESTINATION)
 	make $(KERNEL_DESTINATION)
 	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
@@ -78,6 +85,13 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 
 $(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
 	$(SUDO) cp $(call destination2source,$@) $@
+
+$(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION): $(APPLICATION_PROCESSOR_BOOT_LOADER_SOURCE)
+	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) cp $^ $@
+
+$(APPLICATION_PROCESSOR_BOOT_LOADER_SOURCE): $(shell find $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+	make -C $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
