@@ -23,6 +23,10 @@
 	.set	COM3_MODEM_CONTROL,			COM3 + 0x0004
 	.set	COM3_LINE_STATUS,			COM3 + 0x0005
 
+	.data
+hello_world:
+	.string	"Hello, World!\n"
+
 	.text
 	.code16
 main:	# IP == 0x1000
@@ -44,6 +48,8 @@ main:	# IP == 0x1000
 2:	# Create a main stack frame.
 	enter	$0x0000,	$0x00
 	call	initialize_com3
+	pushw	hello_world
+	call	puts
 	leave
 3:	# Halt loop
 	hlt
@@ -54,23 +60,6 @@ com3_can_send:
 	enter	$0x0000,	$0x00
 	call	read_com3_line_status
 	andw	$0x0020,	%ax
-	leave
-	ret
-
-com3_send:
-0:
-	enter	$0x0000,	$0x00
-1:	# Check if COM3 can send a byte.
-	call	com3_can_send
-	testb	%al,	%al
-	jz	1b
-2:	# Disable COM3 divisor access latch
-	call	disable_com3_divisor_access_latch
-3:	# Send a byte
-	movb	0x04(%bp),	%al
-	pushw	%ax
-	call	write_com3_transmitter_holding_buffer
-4:
 	leave
 	ret
 
@@ -125,6 +114,41 @@ initialize_com3:
 	pushw	$0x000f
 	call	write_com3_modem_control
 7:
+	leave
+	ret
+
+putchar:
+0:
+	enter	$0x0000,	$0x00
+1:	# Check if COM3 can send a byte.
+	call	com3_can_send
+	testb	%al,	%al
+	jz	1b
+2:	# Disable COM3 divisor access latch
+	call	disable_com3_divisor_access_latch
+3:	# Send a byte
+	movb	0x04(%bp),	%al
+	pushw	%ax
+	call	write_com3_transmitter_holding_buffer
+4:
+	leave
+	ret
+
+puts:
+0:
+	enter	$0x0004,	$0x00
+	movw	%si,	-0x2(%bp)
+	movw	0x04(%bp),	%si
+1:
+	movb	(%si),	%al
+	testb	%al,	%al
+	jz	2f
+	movb	%al,	-0x4(%bp)
+	call	putchar
+	incw	%si
+	jmp	1b
+2:
+	movw	-0x2(%bp),	%si
 	leave
 	ret
 
