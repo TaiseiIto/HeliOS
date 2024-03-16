@@ -86,7 +86,20 @@ initialize_com3:
 2:	# Set baud rate divisor.
 	pushw	COM3_BAUD_RATE_DIVISOR
 	call	write_com3_baud_rate_divisor
-3:
+3:	# 8 bits, no parity, one stop bit
+	pushw	$0x0003
+	call	write_com3_line_control
+4:	# Enable FIFO, clear them, with 14-byte threshold
+	pushw	$0x00c7
+	call	write_com3_fifo_control
+5:	# IRQs enabled, RTS/DSR set
+	pushw	$0x000b
+	call	write_com3_modem_control
+6:	# If serial is not faulty set it in normal operation mode
+        # (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
+	pushw	$0x000f
+	call	write_com3_modem_control
+7:
 	leave
 	ret
 
@@ -130,6 +143,15 @@ write_com3_divisor_latch_low_byte:
 	leave
 	ret
 
+write_com3_fifo_control:
+0:
+	enter	$0x0000,	$0x00
+	movb	0x04(%bp),	%al
+	movw	COM3_FIFO_CONTROL,	%dx
+	outb	%al,	%dx
+	leave
+	ret
+
 write_com3_interrupt_enable:
 0:
 	enter	$0x0000,	$0x00
@@ -144,6 +166,15 @@ write_com3_line_control:
 	enter	$0x0000,	$0x00
 	movb	0x04(%bp),	%al
 	movw	COM3_LINE_CONTROL,	%dx
+	outb	%al,	%dx
+	leave
+	ret
+
+write_com3_modem_control:
+0:
+	enter	$0x0000,	$0x00
+	movb	0x04(%bp),	%al
+	movw	COM3_MODEM_CONTROL,	%dx
 	outb	%al,	%dx
 	leave
 	ret
