@@ -94,6 +94,11 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
+    let application_processor_boot_loader: Vec<u8> = directory_tree
+        .get("HeliOS/application_processor/boot/loader.bin")
+        .unwrap()
+        .read();
+    com2_println!("application_processor_boot_loader = {:#x?}", application_processor_boot_loader);
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
