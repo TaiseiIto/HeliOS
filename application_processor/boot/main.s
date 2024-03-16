@@ -1,7 +1,18 @@
-	.set	segment_length,	0x00010000
-	.set	segment_shift,	4
-	.set	stack_floor,	0x00080000
-	.set	stack_segment,	(stack_floor - segment_length) >> segment_shift
+	.set	SEGMENT_LENGTH,	0x00010000
+	.set	SEGMENT_SHIFT,	4
+	.set	STACK_FLOOR,	0x00080000
+	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
+
+	.set	COM3,	0x03e8
+	.set	COM3_TRANSMITTER_HOLDING_BUFFER,	COM3 + 0x0000
+	.set	COM3_DIVISOR_LATCH_LOW_BYTE,		COM3 + 0x0000
+	.set	COM3_DIVISOR_LATCH_HIGH_BYTE,		COM3 + 0x0001
+	.set	COM3_INTERRUPT_ENABLE,			COM3 + 0x0001
+	.set	COM3_FIFO_CONTROL,			COM3 + 0x0002
+	.set	COM3_LINE_CONTROL,			COM3 + 0x0003
+	.set	COM3_MODEM_CONTROL,			COM3 + 0x0004
+	.set	COM3_LINE_STATUS,			COM3 + 0x0005
+
 	.text
 	.code16
 main:	# IP == 0x1000
@@ -19,11 +30,22 @@ main:	# IP == 0x1000
 	movw	%ax,	%es
 	movw	%ax,	%fs
 	movw	%ax,	%gs
-	movw	stack_segment,	%ss
-2:	# Create a main stack frame
-	enter	$0,	$0
+	movw	STACK_SEGMENT,	%ss
+2:	# Create a main stack frame.
+	enter	$0x0000,	$0x00
+	call	initialize_com3
 	leave
 3:	# Halt loop
 	hlt
 	jmp	3b
+
+initialize_com3:
+0:
+	enter	$0,	$0
+	# Disable all interrupts.
+	mov	$0x00,	%al
+	mov	COM3_INTERRUPT_ENABLE,	%dx
+	outb	%al,	%dx
+	leave
+	ret
 
