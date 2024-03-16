@@ -54,6 +54,20 @@ disable_com3_interrupts:
 	leave
 	ret
 
+disable_com3_divisor_access_latch:
+0:
+	enter	$0x0000,	$0x00
+	call	read_com3_line_control
+	testb	COM3_LINE_CONTROL_DIVISOR_ACCESS_LATCH,	%al
+	jz	2f
+1:	# If divisor access latch is enabled, disable it.
+	andb	~COM3_LINE_CONTROL_DIVISOR_ACCESS_LATCH,	%al
+	pushw	%ax
+	call	write_com3_line_control
+2:	# If divisor access latch is disabled, do nothing.
+	leave
+	ret
+
 enable_com3_divisor_access_latch:
 0:
 	enter	$0x0000,	$0x00
@@ -73,6 +87,7 @@ initialize_com3:
 	enter	$0x0000,	$0x00
 	call	disable_com3_interrupts
 	call	enable_com3_divisor_access_latch
+	call	disable_com3_divisor_access_latch
 	leave
 	ret
 
