@@ -13,10 +13,19 @@
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+# Binary files
+*.bin
+
+# Object files
+*.o
+
+# Memory map files
+*.map
+
 # An OS image file
 *.img
 
-# log file
+# log files
 *.log
 
 # OS directory tree
