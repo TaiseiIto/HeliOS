@@ -31,6 +31,7 @@ use {
 
 #[derive(Debug)]
 pub struct Argument<'a> {
+    application_processor_boot_loader: Vec<u8>,
     com2: &'a mut rs232c::Com,
     cpuid: Option<x64::Cpuid>,
     efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -51,6 +52,7 @@ const PRIVILEGE_LEVEL: u8 = 0;
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
+        application_processor_boot_loader,
         com2,
         cpuid,
         efi_system_table,
@@ -66,6 +68,7 @@ fn main(argument: &'static mut Argument<'static>) {
     efi_system_table.set();
     rs232c::set_com2(com2);
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
+    com2_println!("application_processor_boot_loader = {:#x?}", application_processor_boot_loader);
     com2_println!("heap_size = {:#x?}", heap_size);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("hello_application = {:#x?}", hello_application);
