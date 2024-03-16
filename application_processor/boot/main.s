@@ -49,6 +49,31 @@ main:	# IP == 0x1000
 	hlt
 	jmp	3b
 
+com3_can_send:
+0:
+	enter	$0x0000,	$0x00
+	call	read_com3_line_status
+	andw	$0x0020,	%ax
+	leave
+	ret
+
+com3_send:
+0:
+	enter	$0x0000,	$0x00
+1:	# Check if COM3 can send a byte.
+	call	com3_can_send
+	testb	%al,	%al
+	jz	1b
+2:	# Disable COM3 divisor access latch
+	call	disable_com3_divisor_access_latch
+3:	# Send a byte
+	movb	0x04(%bp),	%al
+	pushw	%ax
+	call	write_com3_transmitter_holding_buffer
+4:
+	leave
+	ret
+
 disable_com3_divisor_access_latch:
 0:
 	enter	$0x0000,	$0x00
@@ -107,6 +132,14 @@ read_com3_line_control:
 0:
 	enter	$0x0000,	$0x00
 	movw	COM3_LINE_CONTROL,	%dx
+	inb	%dx,	%al
+	leave
+	ret
+
+read_com3_line_status:
+0:
+	enter	$0x0000,	$0x00
+	movw	COM3_LINE_STATUS,	%dx
 	inb	%dx,	%al
 	leave
 	ret
@@ -175,6 +208,15 @@ write_com3_modem_control:
 	enter	$0x0000,	$0x00
 	movb	0x04(%bp),	%al
 	movw	COM3_MODEM_CONTROL,	%dx
+	outb	%al,	%dx
+	leave
+	ret
+
+write_com3_transmitter_holding_buffer:
+0:
+	enter	$0x0000,	$0x00
+	movb	0x04(%bp),	%al
+	movw	COM3_TRANSMITTER_HOLDING_BUFFER,	%dx
 	outb	%al,	%dx
 	leave
 	ret
