@@ -28,7 +28,6 @@ pub fn initialize(paging: &mut memory::Paging, memory_map: &efi::memory::Map, he
         .flat_map(|memory_descriptor| memory_descriptor
             .physical_range()
             .step_by(memory::page::SIZE))
-        .filter(|paddr| 0x100000 <= *paddr) // Don't overwrite application processor boot loader.
         .enumerate()
         .map(|(index, paddr)| {
             let vaddr: usize = heap_start + index * memory::page::SIZE;
