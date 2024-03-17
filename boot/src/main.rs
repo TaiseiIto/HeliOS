@@ -102,7 +102,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .unwrap()
         .read();
     let application_processor_boot_loader = application_processor::boot::Loader::new(&application_processor_boot_loader, APPLICATION_PROCESSOR_BOOT_LOADER_BASE, APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR);
-    com2_println!("application_processor_boot_loader = {:#x?}", application_processor_boot_loader);
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
@@ -114,6 +113,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .exit_boot_services(image_handle)
         .unwrap();
     let kernel_argument = kernel::Argument::new(
+        application_processor_boot_loader,
         rs232c::get_com2(),
         cpuid,
         efi::SystemTable::get(),
