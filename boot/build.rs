@@ -19,7 +19,9 @@ fn main() {
     let constants = Path::new(&out_dir).join("constants.rs");
     println!("constants = {:#x?}", constants);
     let mut constants = File::create(&constants).unwrap();
+    writeln!(&mut constants, "const APPLICATION_PROCESSOR_BOOT_LOADER: &str = {:#x?};", application_processor_boot_loader).unwrap();
     writeln!(&mut constants, "const APPLICATION_PROCESSOR_BOOT_LOADER_BASE: usize = {};", application_processor_boot_loader_base).unwrap();
     writeln!(&mut constants, "const APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR: usize = {};", application_processor_boot_loader_stack_floor).unwrap();
+    writeln!(&mut constants, "const KERNEL: &str = {:#x?};", kernel).unwrap();
 }
 

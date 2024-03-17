@@ -54,7 +54,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel: elf::File = directory_tree
-        .get("HeliOS/kernel.elf")
+        .get(KERNEL)
         .unwrap()
         .read()
         .into();
@@ -97,7 +97,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
     let application_processor_boot_loader: Vec<u8> = directory_tree
-        .get("HeliOS/application_processor/boot/loader.bin")
+        .get(APPLICATION_PROCESSOR_BOOT_LOADER)
         .unwrap()
         .read();
     let hello_application: elf::File = directory_tree
