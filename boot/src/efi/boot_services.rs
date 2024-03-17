@@ -1,6 +1,9 @@
 use {
     alloc::vec::Vec,
-    core::slice,
+    core::{
+        ops::Range,
+        slice,
+    },
     crate::memory::page,
     super::{
         Event,
@@ -81,18 +84,17 @@ impl BootServices {
             .map(|_| physical_address)
     }
 
-    pub fn allocate_specific_pages(&mut self, physical_address: usize, pages: usize) -> Result<&mut [u8], Status> {
+    pub fn allocate_specific_pages(&self, physical_address: usize, pages: usize) -> Result<Range<memory::PhysicalAddress>, Status> {
         let allocate_type = memory::AllocateType::AllocateAddress;
         let memory_type = memory::Type::LoaderData;
         let mut physical_address: u64 = physical_address as u64;
         (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address)
             .result()
             .map(|_| {
-                let physical_address: *mut u8 = physical_address as *mut u8;
-                let length: usize = pages * page::SIZE;
-                unsafe {
-                    slice::from_raw_parts_mut(physical_address, length)
-                }
+                let start: memory::PhysicalAddress = physical_address as memory::PhysicalAddress;
+                let length: memory::PhysicalAddress = (pages * page::SIZE) as memory::PhysicalAddress;
+                let end: memory::PhysicalAddress = start + length;
+                start..end
             })
     }
 
