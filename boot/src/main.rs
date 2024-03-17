@@ -26,6 +26,8 @@ use {
     },
 };
 
+include!(concat!(env!("OUT_DIR"), "/constants.rs"));
+
 /// # The entry point of the OS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.1 UEFI Image Entry Point
@@ -103,6 +105,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .unwrap()
         .read()
         .into();
+    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_BASE = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_BASE);
+    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
