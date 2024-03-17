@@ -27,7 +27,12 @@ $(OBJECTS): $(@:.o=.s)
 # Get a base address.
 .PHONY: base
 base:
-	@echo $(shell grep '^BASE = .*$$' $(LINKER_SCRIPT) | awk -F '=' '{print $$2}')
+	@echo $(shell grep -E '^BASE = .*$$' $(LINKER_SCRIPT) | awk -F '=' '{print $$2}')
+
+# Get a stack floor address.
+.PHONY: stack_floor
+stack_floor:
+	@echo $(shell grep -E '^\s*\.set\s+STACK_FLOOR,.*$$' main.s | awk -F ',' '{print $$2}')
 
 # Get a target file path.
 .PHONY: target
