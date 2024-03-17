@@ -112,18 +112,21 @@ $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
 $(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(KERNEL_DIRECTORY)
 
-# Run the OS on QEMU.
-# Usage: make run
-.PHONY: run
-run: $(TARGET)
-	-make run -C .tmux -s
+# Get an application processor boot loader base address.
+.PHONY: application_processor_boot_loader_base
+application_processor_boot_loader_base:
+	@echo $(APPLICATION_PROCESSOR_BOOT_LOADER_BASE)
 
-# Run the OS on QEMU.
-# This target is called from .tmux/run.conf
-# Don't execute this directly.
-.PHONY: run_on_tmux
-run_on_tmux:
-	-make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+# Get an application processor boot loader stack floor address.
+.PHONY: application_processor_boot_loader_stack_floor
+application_processor_boot_loader_stack_floor:
+	@echo $(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR)
+
+# Build and enter development environment as a Docker container.
+# Usage: $ make environment
+.PHONY: build_environment
+environment:
+	make build -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
@@ -151,6 +154,44 @@ debug_qemu: $(TARGET)
 debug_qemu_on_tmux:
 	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
+# Delete all "#[allow(dead_code)]" lines
+.PHONY: delete_allow_dead_code
+delete_allow_dead_code:
+	for i in $$(git ls-files | grep ^.*\.rs$$); do sed -i '/#\[allow(dead_code)\]/d' $$i; done
+
+# Delete development environment.
+# Usage: $ make delete_environment
+.PHONY: delete_environment
+delete_environment:
+	make delete -C .docker
+
+# Get development permission.
+# Only developers can execute it.
+# Users don:t have to do it.
+# Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
+.PHONY: permission
+permission:
+	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
+
+# Rebuild and enter development environment.
+# Usage: $ make rebuild_environment
+.PHONY: rebuild_environment
+rebuild_environment:
+	make rebuild -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
+
+# Run the OS on QEMU.
+# Usage: make run
+.PHONY: run
+run: $(TARGET)
+	-make run -C .tmux -s
+
+# Run the OS on QEMU.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: run_on_tmux
+run_on_tmux:
+	-make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+
 # Stop the OS on QEMU.
 # Usage: make stop
 .PHONY: stop
@@ -164,45 +205,14 @@ stop:
 stop_on_tmux:
 	-make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
 
-# Build and enter development environment as a Docker container.
-# Usage: $ make environment
-.PHONY: build_environment
-environment:
-	make build -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
-
-# Delete development environment.
-# Usage: $ make delete_environment
-.PHONY: delete_environment
-delete_environment:
-	make delete -C .docker
-
-# Rebuild and enter development environment.
-# Usage: $ make rebuild_environment
-.PHONY: rebuild_environment
-rebuild_environment:
-	make rebuild -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
-
-# Get development permission.
-# Only developers can execute it.
-# Users don:t have to do it.
-# Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
-.PHONY: permission
-permission:
-	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
-
-# Build an OS directory to run on VirtualBox or VMware.
-# Usage: $ make tree
-.PHONY: tree
-tree: $(MOUNT_DIRECTORY)
-
 # Get an OS image file name.
 # Usage: $ make target
 .PHONY: target
 target:
 	@echo $(TARGET)
 
-# Delete all "#[allow(dead_code)]" lines
-.PHONY: delete_allow_dead_code
-delete_allow_dead_code:
-	for i in $$(git ls-files | grep ^.*\.rs$$); do sed -i '/#\[allow(dead_code)\]/d' $$i; done
+# Build an OS directory to run on VirtualBox or VMware.
+# Usage: $ make tree
+.PHONY: tree
+tree: $(MOUNT_DIRECTORY)
 

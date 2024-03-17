@@ -4,6 +4,9 @@ FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print 
 TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
+APPLICATION_PROCESSOR_BOOT_LOADER_BASE=$(shell make application_processor_boot_loader_base -C .. -s)
+APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(shell make application_processor_boot_loader_stack_floor -C .. -s)
+
 # Build a bootloader.
 $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	cargo build --target $(FORMAT)
