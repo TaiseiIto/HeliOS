@@ -69,7 +69,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	mkdir $(MOUNT_DIRECTORY)
 	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
 	make $(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION) SUDO=$(SUDO)
-	make $(BOOTLOADER_DESTINATION) SUDO=$(SUDO)
+	make $(BOOTLOADER_DESTINATION) APPLICATION_PROCESSOR_BOOT_LOADER_BASE=$(APPLICATION_PROCESSOR_BOOT_LOADER_BASE) APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR) SUDO=$(SUDO)
 	make $(KERNEL_DESTINATION) SUDO=$(SUDO)
 	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
 	$(SUDO) mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
@@ -82,7 +82,7 @@ $(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(
 	rm -rf $@
 	mkdir $@
 	make $(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION)
-	make $(BOOTLOADER_DESTINATION)
+	make $(BOOTLOADER_DESTINATION) APPLICATION_PROCESSOR_BOOT_LOADER_BASE=$(APPLICATION_PROCESSOR_BOOT_LOADER_BASE) APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR) 
 	make $(KERNEL_DESTINATION)
 	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
 	mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
@@ -96,7 +96,7 @@ $(APPLICATION_PROCESSOR_BOOT_LOADER_DESTINATION): $(APPLICATION_PROCESSOR_BOOT_L
 	$(SUDO) cp $^ $@
 
 $(APPLICATION_PROCESSOR_BOOT_LOADER_SOURCE): $(shell find $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	make -C $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY)
+	make -C $(APPLICATION_PROCESSOR_BOOT_LOADER_DIRECTORY) APPLICATION_PROCESSOR_BOOT_LOADER_BASE=$(APPLICATION_PROCESSOR_BOOT_LOADER_BASE) APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR) 
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
@@ -111,16 +111,6 @@ $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
 
 $(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	make -C $(KERNEL_DIRECTORY)
-
-# Get an application processor boot loader base address.
-.PHONY: application_processor_boot_loader_base
-application_processor_boot_loader_base:
-	@echo $(APPLICATION_PROCESSOR_BOOT_LOADER_BASE)
-
-# Get an application processor boot loader stack floor address.
-.PHONY: application_processor_boot_loader_stack_floor
-application_processor_boot_loader_stack_floor:
-	@echo $(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR)
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
