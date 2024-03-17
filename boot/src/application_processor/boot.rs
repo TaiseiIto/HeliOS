@@ -23,8 +23,7 @@ impl Loader {
             .allocate_specific_pages(base, pages)
             .unwrap();
         let physical_start: *mut u8 = physical_range.start as *mut u8;
-        let length: usize = (physical_range.end - physical_range.start) as usize;
-        unsafe { slice::from_raw_parts_mut(physical_start, length) }
+        unsafe { slice::from_raw_parts_mut(physical_start, binary.len()) }
             .copy_from_slice(binary);
         Self {
             base,
