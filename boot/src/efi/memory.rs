@@ -12,7 +12,6 @@ pub enum AllocateType {
     AllocateAnyPages,
     #[allow(dead_code)]
     AllocateMaxAddress,
-    #[allow(dead_code)]
     AllocateAddress,
     #[allow(dead_code)]
     Max,
