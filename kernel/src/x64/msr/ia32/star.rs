@@ -26,7 +26,7 @@ impl Star {
         cpuid
             .as_ref()
             .and_then(|cpuid| cpuid
-                .intel64_architecture_available()
+                .supports_intel64_architecture()
                 .then(|| rdmsr(Self::ECX).into()))
     }
 

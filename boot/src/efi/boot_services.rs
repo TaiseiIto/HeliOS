@@ -1,9 +1,6 @@
 use {
     alloc::vec::Vec,
-    core::{
-        ops::Range,
-        slice,
-    },
+    core::ops::Range,
     crate::memory::page,
     super::{
         Event,

@@ -1,5 +1,4 @@
 use {
-    alloc::vec::Vec,
     core::{
         fmt,
         ops::Range,

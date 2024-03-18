@@ -1,8 +1,5 @@
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
+    alloc::collections::BTreeMap,
     crate::{
         application_processor,
         efi,

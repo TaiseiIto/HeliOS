@@ -1,14 +1,7 @@
-use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        ops::Range,
-        slice,
-    },
-    crate::{
-        efi,
-        memory,
-    },
+use core::{
+    fmt,
+    ops::Range,
+    slice,
 };
 
 pub struct Loader {

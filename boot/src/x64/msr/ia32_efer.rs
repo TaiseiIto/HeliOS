@@ -34,7 +34,7 @@ impl Ia32Efer {
     pub fn enable_execute_disable_bit(cpuid: &Option<Cpuid>) -> bool {
         cpuid
             .as_ref()
-            .map_or(false, |cpuid| cpuid.execute_disable_bit_available())
+            .map_or(false, |cpuid| cpuid.supports_execute_disable_bit())
             .then(|| Self::get(cpuid)
                 .map_or(false, |ia32_efer| {
                     ia32_efer
@@ -49,7 +49,7 @@ impl Ia32Efer {
         cpuid
             .as_ref()
             .and_then(|cpuid| cpuid
-                .ia32_efer_is_supported()
+                .supports_ia32_efer()
                 .then(|| {
                     let ia32_efer: u64 = rdmsr(Self::ECX);
                     ia32_efer.into()

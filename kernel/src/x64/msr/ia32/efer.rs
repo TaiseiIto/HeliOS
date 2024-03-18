@@ -30,7 +30,7 @@ impl Efer {
     pub fn enable_execute_disable_bit(cpuid: &Option<Cpuid>) -> bool {
         cpuid
             .as_ref()
-            .map_or(false, |cpuid| cpuid.execute_disable_bit_available())
+            .map_or(false, |cpuid| cpuid.supports_execute_disable_bit())
             .then(|| Self::get(cpuid)
                 .map_or(false, |efer| {
                     efer
@@ -56,7 +56,7 @@ impl Efer {
         cpuid
             .as_ref()
             .and_then(|cpuid| cpuid
-                .ia32_efer_is_supported()
+                .supports_ia32_efer()
                 .then(|| rdmsr(Self::ECX).into()))
     }
 

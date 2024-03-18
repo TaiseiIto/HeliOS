@@ -153,12 +153,6 @@ pub struct Cpuid {
 }
 
 impl Cpuid {
-    pub fn execute_disable_bit_available(&self) -> bool {
-        self.eax0x80000001
-            .as_ref()
-            .map_or(false, |eax0x80000001| eax0x80000001.execute_disable_bit_available())
-    }
-
     pub fn get() -> Option<Self> {
         Rflags::cpuid_is_supported().then(|| {
             let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
@@ -247,22 +241,34 @@ impl Cpuid {
         })
     }
 
+    pub fn supports_apic(&self) -> bool {
+        self.eax0x00000001
+            .as_ref()
+            .map_or(false, |eax0x00000001| eax0x00000001.supports_apic())
+    }
+
+    pub fn supports_execute_disable_bit(&self) -> bool {
+        self.eax0x80000001
+            .as_ref()
+            .map_or(false, |eax0x80000001| eax0x80000001.supports_execute_disable_bit())
+    }
+
     /// # GEt IA32_EFER availability.
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
-    pub fn ia32_efer_is_supported(&self) -> bool {
+    pub fn supports_ia32_efer(&self) -> bool {
         self.eax0x80000001
             .as_ref()
-            .map_or(false, |eax0x80000001| eax0x80000001.ia32_efer_is_supported())
+            .map_or(false, |eax0x80000001| eax0x80000001.supports_ia32_efer())
     }
 
     /// # Get intel64 architecture availability.
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
-    pub fn intel64_architecture_available(&self) -> bool {
+    pub fn supports_intel64_architecture(&self) -> bool {
         self.eax0x80000001
             .as_ref()
-            .map_or(false, |eax0x80000001| eax0x80000001.intel64_architecture_available())
+            .map_or(false, |eax0x80000001| eax0x80000001.supports_intel64_architecture())
     }
 }
 
