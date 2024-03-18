@@ -36,7 +36,7 @@ pub extern "C" fn syscall_handler(rdi: usize, rsi: usize, rdx: usize, r10: usize
 }
 
 pub fn initialize(
-    cpuid: &Option<x64::Cpuid>,
+    cpuid: &x64::Cpuid,
     kernel_code_segment_selector: &memory::segment::Selector,
     kernel_data_segment_selector: &memory::segment::Selector,
     application_code_segment_selector: &memory::segment::Selector,

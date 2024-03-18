@@ -32,13 +32,11 @@ impl ApicBase {
         wrmsr(Self::ECX, (*self).into());
     }
 
-    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+    pub fn get(cpuid: &Cpuid) -> Option<Self> {
         cpuid
-            .as_ref()
-            .and_then(|cpuid| cpuid
-                .supports_apic()
-                .then(|| rdmsr(Self::ECX)
-                    .into()))
+            .supports_apic()
+            .then(|| rdmsr(Self::ECX)
+                .into())
     }
 
     pub fn registers(&self) -> &interrupt::apic::Registers {

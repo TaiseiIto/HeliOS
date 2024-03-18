@@ -22,12 +22,10 @@ pub struct Star {
 impl Star {
     const ECX: u32 = 0xc0000081;
 
-    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+    pub fn get(cpuid: &Cpuid) -> Option<Self> {
         cpuid
-            .as_ref()
-            .and_then(|cpuid| cpuid
-                .supports_intel64_architecture()
-                .then(|| rdmsr(Self::ECX).into()))
+            .supports_intel64_architecture()
+            .then(|| rdmsr(Self::ECX).into())
     }
 
     pub fn set(self) {
@@ -36,7 +34,7 @@ impl Star {
     }
 
     pub fn set_segment_selectors(
-        cpuid: &Option<Cpuid>,
+        cpuid: &Cpuid,
         kernel_code_segment_selector: &memory::segment::Selector,
         kernel_data_segment_selector: &memory::segment::Selector,
         application_code_segment_selector: &memory::segment::Selector,

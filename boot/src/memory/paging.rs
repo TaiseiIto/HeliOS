@@ -41,7 +41,7 @@ impl Paging {
         com2_println!("End paging information vaddr {:#x?}", vaddr);
     }
 
-    pub fn get(cpuid: &Option<x64::Cpuid>) -> Self {
+    pub fn get(cpuid: &x64::Cpuid) -> Self {
         let ia32_efer: Option<x64::msr::Ia32Efer> = x64::msr::Ia32Efer::get(cpuid);
         let cr0 = x64::control::Register0::get();
         let cr3 = x64::control::Register3::get();

@@ -17,7 +17,7 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
     #[allow(dead_code)]
-    cpuid: Option<x64::Cpuid>,
+    cpuid: x64::Cpuid,
     #[allow(dead_code)]
     efi_system_table: &'a mut efi::SystemTable<'a>,
     #[allow(dead_code)]
@@ -43,7 +43,7 @@ impl<'a> Argument<'a> {
     pub fn new(
         application_processor_boot_loader: application_processor::boot::Loader,
         com2: &'a mut rs232c::Com,
-        cpuid: Option<x64::Cpuid>,
+        cpuid: x64::Cpuid,
         efi_system_table: &'a mut efi::SystemTable<'a>,
         fonts: BTreeMap<usize, efi::Font<'a>>,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,

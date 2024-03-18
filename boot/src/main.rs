@@ -48,7 +48,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
+    let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     assert!(execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);

@@ -20,15 +20,13 @@ pub struct Fmask {
 impl Fmask {
     const ECX: u32 = 0xc0000084;
 
-    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+    pub fn get(cpuid: &Cpuid) -> Option<Self> {
         cpuid
-            .as_ref()
-            .and_then(|cpuid| cpuid
-                .supports_intel64_architecture()
-                .then(|| rdmsr(Self::ECX).into()))
+            .supports_intel64_architecture()
+            .then(|| rdmsr(Self::ECX).into())
     }
 
-    pub fn set_all_flags(cpuid: &Option<Cpuid>) {
+    pub fn set_all_flags(cpuid: &Cpuid) {
         if let Some(fmask) = Self::get(cpuid) {
             fmask
                 .with_syscall_eflags_mask(u32::MAX)

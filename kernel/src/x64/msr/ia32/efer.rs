@@ -27,10 +27,9 @@ pub struct Efer {
 impl Efer {
     const ECX: u32 = 0xc0000080;
 
-    pub fn enable_execute_disable_bit(cpuid: &Option<Cpuid>) -> bool {
+    pub fn enable_execute_disable_bit(cpuid: &Cpuid) -> bool {
         cpuid
-            .as_ref()
-            .map_or(false, |cpuid| cpuid.supports_execute_disable_bit())
+            .supports_execute_disable_bit()
             .then(|| Self::get(cpuid)
                 .map_or(false, |efer| {
                     efer
@@ -41,7 +40,7 @@ impl Efer {
             .unwrap_or(false)
     }
 
-    pub fn enable_system_call_enable_bit(cpuid: &Option<Cpuid>) -> bool {
+    pub fn enable_system_call_enable_bit(cpuid: &Cpuid) -> bool {
         Self::get(cpuid)
             .map_or(false, |efer| {
                 efer
@@ -52,12 +51,10 @@ impl Efer {
             })
     }
 
-    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+    pub fn get(cpuid: &Cpuid) -> Option<Self> {
         cpuid
-            .as_ref()
-            .and_then(|cpuid| cpuid
-                .supports_ia32_efer()
-                .then(|| rdmsr(Self::ECX).into()))
+            .supports_ia32_efer()
+            .then(|| rdmsr(Self::ECX).into())
     }
 
     pub fn pae_paging_is_used(&self) -> bool {

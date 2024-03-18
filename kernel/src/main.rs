@@ -34,7 +34,7 @@ use {
 pub struct Argument<'a> {
     application_processor_boot_loader: application_processor::boot::Loader,
     com2: &'a mut rs232c::Com,
-    cpuid: Option<x64::Cpuid>,
+    cpuid: x64::Cpuid,
     efi_system_table: &'a mut efi::SystemTable<'a>,
     #[allow(dead_code)]
     fonts: BTreeMap<usize, efi::Font<'a>>,
