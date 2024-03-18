@@ -167,7 +167,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
-    let ia32_apic_base = x64::msr::ia32::ApicBase::get();
+    let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
+    ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
     let apic_registers: &interrupt::apic::Registers = ia32_apic_base.registers();
     com2_println!("apic_registers = {:#x?}", apic_registers);

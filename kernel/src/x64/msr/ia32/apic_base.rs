@@ -1,7 +1,11 @@
 use {
     bitfield_struct::bitfield,
     crate::interrupt,
-    super::super::rdmsr,
+    super::super::{
+        rdmsr,
+        super::Cpuid,
+        wrmsr,
+    },
 };
 
 /// # IA32_APIC_BASE
@@ -23,8 +27,18 @@ pub struct ApicBase {
 impl ApicBase {
     const ECX: u32 = 0x0000001b;
 
-    pub fn get() -> Self {
-        rdmsr(Self::ECX).into()
+    pub fn enable(&mut self) {
+        self.set_apic_global_enable(true);
+        wrmsr(Self::ECX, (*self).into());
+    }
+
+    pub fn get(cpuid: &Option<Cpuid>) -> Option<Self> {
+        cpuid
+            .as_ref()
+            .and_then(|cpuid| cpuid
+                .supports_apic()
+                .then(|| rdmsr(Self::ECX)
+                    .into()))
     }
 
     pub fn registers(&self) -> &interrupt::apic::Registers {
