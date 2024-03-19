@@ -7,7 +7,7 @@ use core::{
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.5.3 Root System Description Pointer (RSDP) Structure
 #[repr(packed)]
-pub struct Rsdp {
+pub struct Pointer {
     signature: [u8; 8],
     checksum: u8,
     oemid: [u8; 6],
@@ -19,7 +19,7 @@ pub struct Rsdp {
     reserved: [u8; 3],
 }
 
-impl Rsdp {
+impl Pointer {
     pub fn is_correct(&self) -> bool {
         self.checksum() && self.extended_checksum()
     }
@@ -53,13 +53,13 @@ impl Rsdp {
     }
 }
 
-impl fmt::Debug for Rsdp {
+impl fmt::Debug for Pointer {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let rsdt_address: u32 = self.rsdt_address;
         let length: u32 = self.length;
         let xsdt_address: u64 = self.xsdt_address;
         formatter
-            .debug_struct("Rsdp")
+            .debug_struct("RSDP")
             .field("signature", &self.signature())
             .field("checksum", &self.checksum)
             .field("oemid", &self.oemid())
