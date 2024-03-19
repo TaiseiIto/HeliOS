@@ -100,17 +100,26 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn entries(&self) -> Vec<u32> {
-        let rsdt: *const Self = self as *const Self;
-        let rsdt: usize = rsdt as usize;
-        let first_entry: usize = rsdt + 36;
-        let first_entry: *const u32 = first_entry as *const u32;
-        let entries: usize = ((self.length as usize) - 36) / 4;
-        (0..entries)
-            .map(|index| unsafe {
-                *first_entry.add(index)
-            })
-            .collect()
+    pub fn entries(&self) -> Option<Vec<&Self>> {
+        (self.signature() == "RSDT").then(|| {
+            let rsdt: *const Self = self as *const Self;
+            let rsdt: usize = rsdt as usize;
+            let first_entry: usize = rsdt + 36;
+            let first_entry: *const u32 = first_entry as *const u32;
+            let entries: usize = ((self.length as usize) - 36) / 4;
+            (0..entries)
+                .map(|index| {
+                    let entry: u32 = unsafe {
+                        *first_entry.add(index)
+                    };
+                    let entry: usize = entry as usize;
+                    let entry: *const Self = entry as *const Self;
+                    unsafe {
+                        &*entry
+                    }
+                })
+                .collect()
+        })
     }
 
     fn creater_id(&self) -> &str {
@@ -135,8 +144,8 @@ impl fmt::Debug for Table {
         let length: u32 = self.length;
         let oem_revision: u32 = self.oem_revision;
         let creater_revision: u32 = self.creater_revision;
-        formatter
-            .debug_struct("RSDT")
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("SystemDescriptionTable");
+        debug_struct
             .field("signature", &self.signature())
             .field("length", &length)
             .field("revision", &self.revision)
@@ -145,9 +154,11 @@ impl fmt::Debug for Table {
             .field("oem_table_id", &self.oem_table_id())
             .field("oem_revision", &oem_revision)
             .field("creater_id", &self.creater_id())
-            .field("creater_revision", &creater_revision)
-            .field("entries", &self.entries())
-            .finish()
+            .field("creater_revision", &creater_revision);
+        if let Some(entries) = self.entries() {
+            debug_struct.field("entries", &entries);
+        }
+        debug_struct.finish()
     }
 }
 
