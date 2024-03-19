@@ -1,6 +1,9 @@
-use core::{
-    fmt,
-    str,
+use {
+    alloc::vec::Vec,
+    core::{
+        fmt,
+        str,
+    },
 };
 
 /// # RSDP
@@ -63,7 +66,6 @@ impl Pointer {
 
 impl fmt::Debug for Pointer {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let rsdt_address: u32 = self.rsdt_address;
         let length: u32 = self.length;
         let xsdt_address: u64 = self.xsdt_address;
         formatter
@@ -98,6 +100,19 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn entries(&self) -> Vec<u32> {
+        let rsdt: *const Self = self as *const Self;
+        let rsdt: usize = rsdt as usize;
+        let first_entry: usize = rsdt + 36;
+        let first_entry: *const u32 = first_entry as *const u32;
+        let entries: usize = ((self.length as usize) - 36) / 4;
+        (0..entries)
+            .map(|index| unsafe {
+                *first_entry.add(index)
+            })
+            .collect()
+    }
+
     fn creater_id(&self) -> &str {
         str::from_utf8(self.creater_id.as_slice()).unwrap()
     }
@@ -131,6 +146,7 @@ impl fmt::Debug for Table {
             .field("oem_revision", &oem_revision)
             .field("creater_id", &self.creater_id())
             .field("creater_revision", &creater_revision)
+            .field("entries", &self.entries())
             .finish()
     }
 }
