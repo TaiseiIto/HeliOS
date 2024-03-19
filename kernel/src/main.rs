@@ -169,6 +169,7 @@ fn main(argument: &'static mut Argument<'static>) {
     interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
     let rsdp: &acpi::Rsdp = efi_system_table.rsdp();
+    assert!(rsdp.is_correct());
     com2_println!("rsdp = {:#x?}", rsdp);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();

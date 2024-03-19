@@ -20,6 +20,16 @@ pub struct Rsdp {
 }
 
 impl Rsdp {
+    pub fn is_correct(&self) -> bool {
+        let rsdp: *const Self = self as *const Self;
+        let rsdp: *const [u8; 20] = rsdp as *const [u8; 20];
+        let rsdp: &[u8; 20] = unsafe {
+            &*rsdp
+        };
+        rsdp.iter()
+            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
+    }
+
     fn oemid(&self) -> &str {
         str::from_utf8(self.oemid.as_slice()).unwrap()
     }
