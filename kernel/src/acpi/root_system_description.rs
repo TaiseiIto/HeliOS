@@ -51,6 +51,14 @@ impl Pointer {
     fn signature(&self) -> &str {
         str::from_utf8(self.signature.as_slice()).unwrap()
     }
+
+    fn table(&self) -> &Table {
+        let table: usize = self.rsdt_address as usize;
+        let table: *const Table = table as *const Table;
+        unsafe {
+            &*table
+        }
+    }
 }
 
 impl fmt::Debug for Pointer {
@@ -64,12 +72,29 @@ impl fmt::Debug for Pointer {
             .field("checksum", &self.checksum)
             .field("oemid", &self.oemid())
             .field("revision", &self.revision)
-            .field("rsdt_address", &rsdt_address)
+            .field("rsdt", self.table())
             .field("length", &length)
             .field("xsdt_address", &xsdt_address)
             .field("extended_checksum", &self.extended_checksum)
             .field("reserved", &self.reserved)
             .finish()
     }
+}
+
+/// # RSDT
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.7 Root System Description Table (RSDT)
+#[derive(Debug)]
+#[repr(packed)]
+pub struct Table {
+    signature: [u8; 4],
+    length: u32,
+    revision: u8,
+    checksum: u8,
+    oemid: [u8; 6],
+    oem_table_id: u64,
+    oem_revision: u32,
+    creater_id: u32,
+    creater_revision: u32,
 }
 
