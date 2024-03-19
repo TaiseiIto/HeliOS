@@ -20,6 +20,10 @@ pub struct Rsdp {
 }
 
 impl Rsdp {
+    fn oemid(&self) -> &str {
+        str::from_utf8(self.oemid.as_slice()).unwrap()
+    }
+
     fn signature(&self) -> &str {
         str::from_utf8(self.signature.as_slice()).unwrap()
     }
@@ -34,7 +38,7 @@ impl fmt::Debug for Rsdp {
             .debug_struct("Rsdp")
             .field("signature", &self.signature())
             .field("checksum", &self.checksum)
-            .field("oemid", &self.oemid)
+            .field("oemid", &self.oemid())
             .field("revision", &self.revision)
             .field("rsdt_address", &rsdt_address)
             .field("length", &length)
