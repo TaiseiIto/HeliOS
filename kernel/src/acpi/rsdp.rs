@@ -21,9 +21,23 @@ pub struct Rsdp {
 
 impl Rsdp {
     pub fn is_correct(&self) -> bool {
+        self.checksum() && self.extended_checksum()
+    }
+
+    fn checksum(&self) -> bool {
         let rsdp: *const Self = self as *const Self;
         let rsdp: *const [u8; 20] = rsdp as *const [u8; 20];
         let rsdp: &[u8; 20] = unsafe {
+            &*rsdp
+        };
+        rsdp.iter()
+            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
+    }
+
+    fn extended_checksum(&self) -> bool {
+        let rsdp: *const Self = self as *const Self;
+        let rsdp: *const [u8; 36] = rsdp as *const [u8; 36];
+        let rsdp: &[u8; 36]  = unsafe {
             &*rsdp
         };
         rsdp.iter()
