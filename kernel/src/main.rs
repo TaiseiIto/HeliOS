@@ -6,6 +6,7 @@
 
 extern crate alloc;
 
+mod acpi;
 mod allocator;
 mod application;
 mod application_processor;
@@ -66,10 +67,10 @@ fn main(argument: &'static mut Argument<'static>) {
         paging,
         processor_informations,
     } = argument;
-    efi_system_table.set();
     rs232c::set_com2(com2);
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
     com2_println!("application_processor_boot_loader = {:#x?}", application_processor_boot_loader);
+    com2_println!("efi_system_table = {:#x?}", efi_system_table);
     com2_println!("heap_size = {:#x?}", heap_size);
     com2_println!("cpuid = {:#x?}", cpuid);
     com2_println!("hello_application = {:#x?}", hello_application);
@@ -77,6 +78,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .iter()
         .collect();
     com2_println!("memory_map = {:#x?}", memory_map);
+    com2_println!("processor_informations = {:#x?}", processor_informations);
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let mut gdt = memory::segment::descriptor::Table::get();
     com2_println!("gdt = {:#x?}", gdt);
@@ -146,7 +148,6 @@ fn main(argument: &'static mut Argument<'static>) {
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     com2_println!("idtr = {:#x?}", idtr);
     idtr.set();
-   com2_println!("processor_informations = {:#x?}", processor_informations);
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
         .map(|index| {
             let pages: usize = 0x10;
@@ -167,6 +168,8 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
+    let rsdp: &acpi::Rsdp = efi_system_table.rsdp();
+    com2_println!("rsdp = {:#x?}", rsdp);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
@@ -176,7 +179,7 @@ fn main(argument: &'static mut Argument<'static>) {
     unsafe {
         asm!("int 0x80");
     }
-    efi::SystemTable::get().shutdown();
+    efi_system_table.shutdown();
     panic!("End of kernel.elf");
 }
 

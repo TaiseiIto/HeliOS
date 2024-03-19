@@ -1,13 +1,10 @@
 use {
     alloc::vec::Vec,
     core::{
-        cell::OnceCell,
-        fmt::{
-            self,
-            Write,
-        },
+        fmt,
         iter,
     },
+    crate::acpi,
     super::{
         BootServices,
         Guid,
@@ -33,8 +30,6 @@ macro_rules! efi_println {
     ($fmt:expr) => (efi_print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (efi_print!(concat!($fmt, "\n"), $($arg)*));
 }
-
-static mut SYSTEM_TABLE: OnceCell<&'static mut SystemTable<'static>> = OnceCell::new();
 
 /// # EFI_SYSTEM_TABLE
 /// ## References
@@ -95,31 +90,12 @@ impl SystemTable<'_> {
         self.boot_services.memory_map()
     }
 
+    pub fn rsdp(&self) -> &acpi::Rsdp {
+        self.configuration_tables.rsdp()
+    }
+
     pub fn shutdown(&self) {
         self.runtime_services.shutdown();
-    }
-}
-
-impl SystemTable<'static> {
-    pub fn get() -> &'static mut Self {
-        unsafe {
-            SYSTEM_TABLE
-                .get_mut()
-                .unwrap()
-        }
-    }
-
-    #[allow(dead_code)]
-    pub fn print(args: fmt::Arguments) {
-        Self::get()
-            .write_fmt(args)
-            .unwrap()
-    }
-
-    pub fn set(&'static mut self) {
-        unsafe {
-            SYSTEM_TABLE.set(self)
-        }.unwrap()
     }
 }
 

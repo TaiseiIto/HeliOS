@@ -1,5 +1,6 @@
 use {
     core::fmt,
+    crate::acpi,
     super::{
         Guid,
         Void,
@@ -14,6 +15,17 @@ pub struct Tables<'a> {
 }
 
 impl Tables<'_> {
+    pub fn rsdp(&self) -> &acpi::Rsdp {
+        let acpi_table_guid = Guid::new(0x8868e871, 0xe4f1, 0x11d3, [0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81]);
+        let rsdp: *const acpi::Rsdp = self.iter()
+            .find(|table| table.vendor_guid == acpi_table_guid)
+            .unwrap()
+            .vendor_table as *const acpi::Rsdp;
+        unsafe {
+            &*rsdp
+        }
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Table> {
         (0..self.number_of_table_entries)
             .map(|index| {
