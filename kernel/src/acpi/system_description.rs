@@ -4,12 +4,16 @@ use {
         slice,
         str,
     },
-    super::root_system_description,
+    super::{
+        fixed_acpi_description,
+        root_system_description,
+    },
 };
 
 /// # System Description Table Header
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.6 System Description Table Header
+#[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct Header {
     signature: [u8; 4],
@@ -81,6 +85,7 @@ impl fmt::Debug for Header {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2 ACPI System Description Tables
 #[derive(Debug)]
 pub enum Table<'a> {
+    Fadt(&'a fixed_acpi_description::Table),
     Rsdt(&'a root_system_description::Table),
     Other(&'a Header),
 }
@@ -88,6 +93,7 @@ pub enum Table<'a> {
 impl Table<'_> {
     pub fn is_correct(&self) -> bool {
         match self {
+            Self::Fadt(fadt) => fadt.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
             Self::Other(header) => header.is_correct(),
         }
@@ -97,6 +103,14 @@ impl Table<'_> {
 impl<'a> From<&'a Header> for Table<'a> {
     fn from(header: &'a Header) -> Self {
         match header.signature() {
+            "FACP" => {
+                let header: *const Header = header as *const Header;
+                let fadt: *const fixed_acpi_description::Table = header as *const fixed_acpi_description::Table;
+                let fadt: &fixed_acpi_description::Table = unsafe {
+                    &*fadt
+                };
+                Self::Fadt(fadt)
+            },
             "RSDT" => {
                 let header: *const Header = header as *const Header;
                 let rsdt: *const root_system_description::Table = header as *const root_system_description::Table;
