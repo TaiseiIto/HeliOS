@@ -1,4 +1,5 @@
 use {
+    bitfield_struct::bitfield,
     core::{
         cmp,
         fmt,
@@ -8,6 +9,39 @@ use {
         system_description,
     },
 };
+
+/// # Flags
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.9 Table 5.10 Fixed ACPI Description Table Fixed Feature Flags
+#[bitfield(u32)]
+struct Flags {
+    wbinvd: bool,
+    wbinvd_flush: bool,
+    proc_c1: bool,
+    p_lvl2_up: bool,
+    pwr_button: bool,
+    slp_button: bool,
+    fix_rtc: bool,
+    rtc_s4: bool,
+    tmr_val_ext: bool,
+    dck_cap: bool,
+    reser_reg_sup: bool,
+    sealed_case: bool,
+    headless: bool,
+    cpu_sw_slp: bool,
+    pci_exp_wak: bool,
+    use_platform_clock: bool,
+    s4_rtc_sts_valid: bool,
+    remote_power_on_capable: bool,
+    force_apic_cluster_model: bool,
+    force_apic_physical_destination_mode: bool,
+    hw_reduced_acpi: bool,
+    low_power_s0_idle_capable: bool,
+    #[bits(2)]
+    persistent_cpu_caches: u8,
+    #[bits(access = RO)]
+    reserved0: u8,
+}
 
 /// # FADT
 /// ## References
@@ -52,7 +86,7 @@ pub struct Table {
     century: u8,
     iapc_boot_arch: u16,
     reserved1: u8,
-    flags: u32,
+    flags: Flags,
     reset_reg: [u8; 12],
     reser_value: u8,
     arm_boot_arch: u16,
@@ -74,7 +108,7 @@ pub struct Table {
 
 impl Table {
     pub fn is_correct(&self) -> bool {
-        self.header.is_correct()
+        self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {
@@ -143,7 +177,7 @@ impl fmt::Debug for Table {
         let century: u8 = self.century;
         let iapc_boot_arch: u16 = self.iapc_boot_arch;
         let reserved1: u8 = self.reserved1;
-        let flags: u32 = self.flags;
+        let flags: Flags = self.flags;
         let reset_reg: [u8; 12] = self.reset_reg;
         let reser_value: u8 = self.reser_value;
         let arm_boot_arch: u16 = self.arm_boot_arch;
