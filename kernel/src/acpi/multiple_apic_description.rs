@@ -1,3 +1,4 @@
+mod io_apic;
 mod processor_local_apic;
 
 use {
@@ -96,6 +97,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    IoApic(&'a io_apic::Structure),
     ProcessorLocalApic(&'a processor_local_apic::Structure),
     Other(&'a [u8]),
 }
@@ -114,6 +116,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let processor_local_apic = Self::ProcessorLocalApic(processor_local_apic);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_apic::Structure>()..];
                     (processor_local_apic, remaining_bytes)
+                },
+                0x01 => {
+                    let io_apic: *const u8 = structure_type as *const u8;
+                    let io_apic: *const io_apic::Structure = io_apic as *const io_apic::Structure;
+                    let io_apic: &io_apic::Structure = unsafe {
+                        &*io_apic
+                    };
+                    let io_apic = Self::IoApic(io_apic);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<io_apic::Structure>()..];
+                    (io_apic, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
