@@ -6,28 +6,6 @@ use {
     },
 };
 
-/// # Flags
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10 Table 5.14 Firmware Control Structure Feature Flags
-#[bitfield(u32)]
-struct Flags {
-    s4bios_f: bool,
-    bit64_wake_supported_f: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
-}
-
-/// # Global Lock
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10.1 Global Lock
-#[bitfield(u32)]
-struct GlobalLock {
-    pending: bool,
-    owned: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
-}
-
 /// # FACS
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10 Firmware ACPI Control Structure (FACS)
@@ -67,5 +45,27 @@ impl fmt::Debug for Structure {
             .field("x_firmware_waking_vendor", &x_firmware_waking_vendor)
             .finish()
     }
+}
+
+/// # Flags
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10 Table 5.14 Firmware Control Structure Feature Flags
+#[bitfield(u32)]
+struct Flags {
+    s4bios_f: bool,
+    bit64_wake_supported_f: bool,
+    #[bits(30, access = RO)]
+    reserved0: u32,
+}
+
+/// # Global Lock
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10.1 Global Lock
+#[bitfield(u32)]
+struct GlobalLock {
+    pending: bool,
+    owned: bool,
+    #[bits(30, access = RO)]
+    reserved0: u32,
 }
 
