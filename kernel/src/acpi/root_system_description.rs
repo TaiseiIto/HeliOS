@@ -57,12 +57,13 @@ impl Pointer {
         str::from_utf8(self.signature.as_slice()).unwrap()
     }
 
-    fn table(&self) -> &Table {
-        let table: usize = self.rsdt_address as usize;
-        let table: *const Table = table as *const Table;
-        unsafe {
-            &*table
-        }
+    fn table(&self) -> system_description::Table {
+        let rsdt_header: usize = self.rsdt_address as usize;
+        let rsdt_header: *const system_description::Header = rsdt_header as *const system_description::Header;
+        let rsdt_header: &system_description::Header = unsafe {
+            &*rsdt_header
+        };
+        rsdt_header.into()
     }
 }
 
@@ -76,7 +77,7 @@ impl fmt::Debug for Pointer {
             .field("checksum", &self.checksum)
             .field("oemid", &self.oemid())
             .field("revision", &self.revision)
-            .field("rsdt", self.table())
+            .field("rsdt", &self.table())
             .field("length", &length)
             .field("xsdt_address", &xsdt_address)
             .field("extended_checksum", &self.extended_checksum)
@@ -94,7 +95,7 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn entries(&self) -> Vec<&system_description::Header> {
+    pub fn entries<'a>(&'a self) -> Vec<system_description::Table<'a>> {
         let rsdt: *const Self = self as *const Self;
         let rsdt: usize = rsdt as usize;
         let first_entry: usize = rsdt + mem::size_of::<Self>();
@@ -106,10 +107,11 @@ impl Table {
                     *first_entry.add(index)
                 };
                 let entry: usize = entry as usize;
-                let entry: *const system_description::Header = entry as *const system_description::Header;
-                unsafe {
-                    &*entry
-                }
+                let header: *const system_description::Header = entry as *const system_description::Header;
+                let header: &system_description::Header = unsafe {
+                    &*header
+                };
+                header.into()
             })
             .collect()
     }

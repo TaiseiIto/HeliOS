@@ -1,7 +1,10 @@
-use core::{
-    fmt,
-    slice,
-    str,
+use {
+    core::{
+        fmt,
+        slice,
+        str,
+    },
+    super::root_system_description,
 };
 
 /// # System Description Table Header
@@ -70,6 +73,40 @@ impl fmt::Debug for Header {
             .field("creater_id", &self.creater_id())
             .field("creater_revision", &creater_revision)
             .finish()
+    }
+}
+
+/// # ACPI System Description Tables
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2 ACPI System Description Tables
+#[derive(Debug)]
+pub enum Table<'a> {
+    Rsdt(&'a root_system_description::Table),
+    Other(&'a Header),
+}
+
+impl Table<'_> {
+    pub fn is_correct(&self) -> bool {
+        match self {
+            Self::Rsdt(rsdt) => rsdt.is_correct(),
+            Self::Other(header) => header.is_correct(),
+        }
+    }
+}
+
+impl<'a> From<&'a Header> for Table<'a> {
+    fn from(header: &'a Header) -> Self {
+        match header.signature() {
+            "RSDT" => {
+                let header: *const Header = header as *const Header;
+                let rsdt: *const root_system_description::Table = header as *const root_system_description::Table;
+                let rsdt: &root_system_description::Table = unsafe {
+                    &*rsdt
+                };
+                Self::Rsdt(rsdt)
+            },
+            _ => Self::Other(header),
+        }
     }
 }
 
