@@ -1,6 +1,7 @@
 mod interrupt_source_override;
 mod io_apic;
 mod local_apic_nmi;
+mod non_maskable_interrupt_source;
 mod processor_local_apic;
 
 use {
@@ -102,8 +103,9 @@ enum InterruptControllerStructure<'a> {
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     LocalApicNmi(&'a local_apic_nmi::Structure),
-    ProcessorLocalApic(&'a processor_local_apic::Structure),
+    NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
     Other(&'a [u8]),
+    ProcessorLocalApic(&'a processor_local_apic::Structure),
 }
 
 impl<'a> InterruptControllerStructure<'a> {
@@ -140,6 +142,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let interrupt_source_override = Self::InterruptSourceOverride(interrupt_source_override);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<interrupt_source_override::Structure>()..];
                     (interrupt_source_override, remaining_bytes)
+                },
+                0x03 => {
+                    let non_maskable_interrupt_source: *const u8 = structure_type as *const u8;
+                    let non_maskable_interrupt_source: *const non_maskable_interrupt_source::Structure = non_maskable_interrupt_source as *const non_maskable_interrupt_source::Structure;
+                    let non_maskable_interrupt_source: &non_maskable_interrupt_source::Structure = unsafe {
+                        &*non_maskable_interrupt_source
+                    };
+                    let non_maskable_interrupt_source = Self::NonMaskableInterruptSource(non_maskable_interrupt_source);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<non_maskable_interrupt_source::Structure>()..];
+                    (non_maskable_interrupt_source, remaining_bytes)
                 },
                 0x04 => {
                     let local_apic_nmi: *const u8 = structure_type as *const u8;
