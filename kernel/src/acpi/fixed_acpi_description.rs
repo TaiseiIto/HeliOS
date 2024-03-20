@@ -77,6 +77,19 @@ impl Table {
         self.header.is_correct()
     }
 
+    fn dsdt(&self) -> Option<system_description::Table> {
+        let dsdt: usize = self.dsdt as usize;
+        let x_dsdt: usize = self.x_dsdt as usize;
+        let dsdt: usize = cmp::max(dsdt, x_dsdt);
+        (dsdt != 0).then(|| {
+            let header: *const system_description::Header = dsdt as *const system_description::Header;
+            let header: &system_description::Header = unsafe {
+                &*header
+            };
+            header.into()
+        })
+    }
+
     fn firmware_ctrl(&self) -> Option<&firmware_acpi_control::Structure> {
         let firmware_ctrl: usize = self.firmware_ctrl as usize;
         let x_firmware_ctrl: usize = self.x_firmware_ctrl as usize;
@@ -94,7 +107,7 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
         let firmware_ctrl: Option<&firmware_acpi_control::Structure> = self.firmware_ctrl();
-        let dsdt: u32 = self.dsdt;
+        let dsdt: Option<system_description::Table> = self.dsdt();
         let reserved0: u8 = self.reserved0;
         let preferred_pm_profile: u8 = self.preferred_pm_profile;
         let sci_int: u16 = self.sci_int;
@@ -135,7 +148,6 @@ impl fmt::Debug for Table {
         let reser_value: u8 = self.reser_value;
         let arm_boot_arch: u16 = self.arm_boot_arch;
         let fadt_minor_version: u8 = self.fadt_minor_version;
-        let x_dsdt: u64 = self.x_dsdt;
         let x_pm1a_evt_blk: [u8; 12] = self.x_pm1a_evt_blk;
         let x_pm1b_evt_blk: [u8; 12] = self.x_pm1b_evt_blk;
         let x_pm1a_cnt_blk: [u8; 12] = self.x_pm1a_cnt_blk;
@@ -192,7 +204,6 @@ impl fmt::Debug for Table {
             .field("reser_value", &reser_value)
             .field("arm_boot_arch", &arm_boot_arch)
             .field("fadt_minor_version", &fadt_minor_version)
-            .field("x_dsdt", &x_dsdt)
             .field("x_pm1a_evt_blk", &x_pm1a_evt_blk)
             .field("x_pm1b_evt_blk", &x_pm1b_evt_blk)
             .field("x_pm1a_cnt_blk", &x_pm1a_cnt_blk)
