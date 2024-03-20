@@ -1,3 +1,5 @@
+mod processor_local_apic;
+
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
@@ -94,16 +96,31 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    ProcessorLocalApic(&'a processor_local_apic::Structure),
     Other(&'a [u8]),
 }
 
 impl<'a> InterruptControllerStructure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
-        (0 < bytes.len()).then(|| {
-            let interrupt_controller_structure = Self::Other(bytes);
-            let remaining_bytes: &[u8] = &bytes[bytes.len()..];
-            (interrupt_controller_structure, remaining_bytes)
-        })
+        bytes
+            .first()
+            .map(|structure_type| match structure_type {
+                0x00 => {
+                    let processor_local_apic: *const u8 = structure_type as *const u8;
+                    let processor_local_apic: *const processor_local_apic::Structure = processor_local_apic as *const processor_local_apic::Structure;
+                    let processor_local_apic: &processor_local_apic::Structure = unsafe {
+                        &*processor_local_apic
+                    };
+                    let processor_local_apic = Self::ProcessorLocalApic(processor_local_apic);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_apic::Structure>()..];
+                    (processor_local_apic, remaining_bytes)
+                },
+                _ => {
+                    let interrupt_controller_structure = Self::Other(bytes);
+                    let remaining_bytes: &[u8] = &bytes[bytes.len()..];
+                    (interrupt_controller_structure, remaining_bytes)
+                }
+            })
     }
 }
 
