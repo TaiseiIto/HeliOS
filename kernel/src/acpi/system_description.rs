@@ -7,6 +7,7 @@ use {
     super::{
         differentiated_system_description,
         fixed_acpi_description,
+        multiple_apic_description,
         root_system_description,
     },
 };
@@ -88,8 +89,9 @@ impl fmt::Debug for Header {
 pub enum Table<'a> {
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
-    Rsdt(&'a root_system_description::Table),
+    Madt(&'a multiple_apic_description::Table),
     Other(&'a Header),
+    Rsdt(&'a root_system_description::Table),
 }
 
 impl Table<'_> {
@@ -97,8 +99,9 @@ impl Table<'_> {
         match self {
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
-            Self::Rsdt(rsdt) => rsdt.is_correct(),
+            Self::Madt(madt) => madt.is_correct(),
             Self::Other(header) => header.is_correct(),
+            Self::Rsdt(rsdt) => rsdt.is_correct(),
         }
     }
 }
@@ -106,6 +109,14 @@ impl Table<'_> {
 impl<'a> From<&'a Header> for Table<'a> {
     fn from(header: &'a Header) -> Self {
         match header.signature() {
+            "APIC" => {
+                let header: *const Header = header as *const Header;
+                let madt: *const multiple_apic_description::Table = header as *const multiple_apic_description::Table;
+                let madt: &multiple_apic_description::Table = unsafe {
+                    &*madt
+                };
+                Self::Madt(madt)
+            },
             "DSDT" => {
                 let header: *const Header = header as *const Header;
                 let dsdt: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
