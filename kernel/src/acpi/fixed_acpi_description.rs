@@ -3,7 +3,10 @@ use {
         cmp,
         fmt,
     },
-    super::system_description,
+    super::{
+        firmware_acpi_control,
+        system_description,
+    },
 };
 
 /// # FADT
@@ -74,16 +77,15 @@ impl Table {
         self.header.is_correct()
     }
 
-    fn firmware_ctrl(&self) -> Option<system_description::Table> {
+    fn firmware_ctrl(&self) -> Option<&firmware_acpi_control::Structure> {
         let firmware_ctrl: usize = self.firmware_ctrl as usize;
         let x_firmware_ctrl: usize = self.x_firmware_ctrl as usize;
         let firmware_ctrl: usize = cmp::max(firmware_ctrl, x_firmware_ctrl);
         (firmware_ctrl != 0).then(|| {
-            let firmware_ctrl: *const system_description::Header = firmware_ctrl as *const system_description::Header;
-            let firmware_ctrl: &system_description::Header = unsafe {
+            let firmware_ctrl: *const firmware_acpi_control::Structure = firmware_ctrl as *const firmware_acpi_control::Structure;
+            unsafe {
                 &*firmware_ctrl
-            };
-            firmware_ctrl.into()
+            }
         })
     }
 }
@@ -91,7 +93,7 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let firmware_ctrl: Option<system_description::Table> = self.firmware_ctrl();
+        let firmware_ctrl: Option<&firmware_acpi_control::Structure> = self.firmware_ctrl();
         let dsdt: u32 = self.dsdt;
         let reserved0: u8 = self.reserved0;
         let preferred_pm_profile: u8 = self.preferred_pm_profile;

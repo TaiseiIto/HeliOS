@@ -66,7 +66,7 @@ impl fmt::Debug for Header {
         let oem_revision: u32 = self.oem_revision;
         let creater_revision: u32 = self.creater_revision;
         formatter
-            .debug_struct("SystemDescriptionHeader")
+            .debug_struct("Header")
             .field("signature", &self.signature())
             .field("length", &length)
             .field("revision", &self.revision)
