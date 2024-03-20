@@ -1,3 +1,4 @@
+mod interrupt_source_override;
 mod io_apic;
 mod processor_local_apic;
 
@@ -97,6 +98,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     ProcessorLocalApic(&'a processor_local_apic::Structure),
     Other(&'a [u8]),
@@ -126,6 +128,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let io_apic = Self::IoApic(io_apic);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<io_apic::Structure>()..];
                     (io_apic, remaining_bytes)
+                },
+                0x02 => {
+                    let interrupt_source_override: *const u8 = structure_type as *const u8;
+                    let interrupt_source_override: *const interrupt_source_override::Structure = interrupt_source_override as *const interrupt_source_override::Structure;
+                    let interrupt_source_override: &interrupt_source_override::Structure = unsafe {
+                        &*interrupt_source_override
+                    };
+                    let interrupt_source_override = Self::InterruptSourceOverride(interrupt_source_override);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<interrupt_source_override::Structure>()..];
+                    (interrupt_source_override, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
