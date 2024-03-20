@@ -19,7 +19,11 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn bytes(&self) -> &[u8] {
+    pub fn is_correct(&self) -> bool {
+        self.header.is_correct()
+    }
+
+    fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
         let first_byte: usize = table + mem::size_of::<Self>();
@@ -30,8 +34,8 @@ impl Table {
         }
     }
 
-    pub fn is_correct(&self) -> bool {
-        self.header.is_correct()
+    fn iter<'a>(&'a self) -> InterruptControllerStructures<'a> {
+        self.into()
     }
 }
 
@@ -44,7 +48,7 @@ impl fmt::Debug for Table {
             .field("header", &self.header)
             .field("local_interrupt_controller_address", &local_interrupt_controller_address)
             .field("flags", &flags)
-            .field("bytes", &self.bytes())
+            .field("bytes", &self.iter())
             .finish()
     }
 }
@@ -57,5 +61,19 @@ struct Flags {
     pcat_compat: bool,
     #[bits(31, access = RO)]
     reserved0: u32,
+}
+
+#[derive(Debug)]
+struct InterruptControllerStructures<'a> {
+    bytes: &'a [u8],
+}
+
+impl<'a> From<&'a Table> for InterruptControllerStructures<'a> {
+    fn from(table: &'a Table) -> Self {
+        let bytes: &[u8] = table.bytes();
+        Self {
+            bytes
+        }
+    }
 }
 
