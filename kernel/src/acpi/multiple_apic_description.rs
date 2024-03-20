@@ -1,4 +1,5 @@
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -43,12 +44,15 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let local_interrupt_controller_address: u32 = self.local_interrupt_controller_address;
         let flags: Flags = self.flags;
+        let interrupt_controller_structures: Vec<InterruptControllerStructure> = self
+            .iter()
+            .collect();
         formatter
             .debug_struct("Table")
             .field("header", &self.header)
             .field("local_interrupt_controller_address", &local_interrupt_controller_address)
             .field("flags", &flags)
-            .field("bytes", &self.iter())
+            .field("interrupt_controller_structures", &interrupt_controller_structures)
             .finish()
     }
 }
@@ -63,7 +67,6 @@ struct Flags {
     reserved0: u32,
 }
 
-#[derive(Debug)]
 struct InterruptControllerStructures<'a> {
     bytes: &'a [u8],
 }
@@ -74,6 +77,33 @@ impl<'a> From<&'a Table> for InterruptControllerStructures<'a> {
         Self {
             bytes
         }
+    }
+}
+
+impl<'a> Iterator for InterruptControllerStructures<'a> {
+    type Item = InterruptControllerStructure<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let bytes: &[u8] = self.bytes;
+        Self::Item::scan(bytes).map(|(interrupt_controller_structure, remaining_bytes)| {
+            self.bytes = remaining_bytes;
+            interrupt_controller_structure
+        })
+    }
+}
+
+#[derive(Debug)]
+enum InterruptControllerStructure<'a> {
+    Other(&'a [u8]),
+}
+
+impl<'a> InterruptControllerStructure<'a> {
+    fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
+        (0 < bytes.len()).then(|| {
+            let interrupt_controller_structure = Self::Other(bytes);
+            let remaining_bytes: &[u8] = &bytes[bytes.len()..];
+            (interrupt_controller_structure, remaining_bytes)
+        })
     }
 }
 
