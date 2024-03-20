@@ -1,7 +1,32 @@
-use core::{
-    fmt,
-    str,
+use {
+    bitfield_struct::bitfield,
+    core::{
+        fmt,
+        str,
+    },
 };
+
+/// # Flags
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10 Table 5.14 Firmware Control Structure Feature Flags
+#[bitfield(u32)]
+struct Flags {
+    s4bios_f: bool,
+    bit64_wake_supported_f: bool,
+    #[bits(30, access = RO)]
+    reserved0: u32,
+}
+
+/// # Global Lock
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.10.1 Global Lock
+#[bitfield(u32)]
+struct GlobalLock {
+    pending: bool,
+    owned: bool,
+    #[bits(30, access = RO)]
+    reserved0: u32,
+}
 
 /// # FACS
 /// ## References
@@ -12,8 +37,8 @@ pub struct Structure {
     length: u32,
     hardware_signature: u32,
     firmware_waking_vendor: u32,
-    global_lock: u32,
-    flags: u32,
+    global_lock: GlobalLock,
+    flags: Flags,
     x_firmware_waking_vendor: u64,
 }
 
@@ -28,8 +53,8 @@ impl fmt::Debug for Structure {
         let length: u32 = self.length;
         let hardware_signature: u32 = self.hardware_signature;
         let firmware_waking_vendor: u32 = self.firmware_waking_vendor;
-        let global_lock: u32 = self.global_lock;
-        let flags: u32 = self.flags;
+        let global_lock: GlobalLock = self.global_lock;
+        let flags: Flags = self.flags;
         let x_firmware_waking_vendor: u64 = self.x_firmware_waking_vendor;
         formatter
             .debug_struct("Structure")
