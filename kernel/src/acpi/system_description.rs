@@ -5,6 +5,7 @@ use {
         str,
     },
     super::{
+        differentiated_system_description,
         fixed_acpi_description,
         root_system_description,
     },
@@ -39,7 +40,7 @@ impl Header {
             .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
     }
 
-    pub fn size(&self) -> usize {
+    pub fn table_size(&self) -> usize {
         self.length as usize
     }
 
@@ -85,6 +86,7 @@ impl fmt::Debug for Header {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2 ACPI System Description Tables
 #[derive(Debug)]
 pub enum Table<'a> {
+    Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
     Rsdt(&'a root_system_description::Table),
     Other(&'a Header),
@@ -93,6 +95,7 @@ pub enum Table<'a> {
 impl Table<'_> {
     pub fn is_correct(&self) -> bool {
         match self {
+            Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
             Self::Other(header) => header.is_correct(),
@@ -103,6 +106,14 @@ impl Table<'_> {
 impl<'a> From<&'a Header> for Table<'a> {
     fn from(header: &'a Header) -> Self {
         match header.signature() {
+            "DSDT" => {
+                let header: *const Header = header as *const Header;
+                let dsdt: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
+                let dsdt: &differentiated_system_description::Table = unsafe {
+                    &*dsdt
+                };
+                Self::Dsdt(dsdt)
+            },
             "FACP" => {
                 let header: *const Header = header as *const Header;
                 let fadt: *const fixed_acpi_description::Table = header as *const fixed_acpi_description::Table;

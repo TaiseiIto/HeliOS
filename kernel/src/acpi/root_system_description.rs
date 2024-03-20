@@ -100,7 +100,7 @@ impl Table {
         let rsdt: usize = rsdt as usize;
         let first_entry: usize = rsdt + mem::size_of::<Self>();
         let first_entry: *const u32 = first_entry as *const u32;
-        let entries: usize = (self.header.size() - mem::size_of::<Self>()) / 4;
+        let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / 4;
         (0..entries)
             .map(|index| {
                 let entry: u32 = unsafe {
