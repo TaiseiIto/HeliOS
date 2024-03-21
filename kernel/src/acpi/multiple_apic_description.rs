@@ -4,6 +4,7 @@ mod io_sapic;
 mod local_apic_address_override;
 mod local_apic_nmi;
 mod local_sapic;
+mod local_x2apic_nmi;
 mod non_maskable_interrupt_source;
 mod platform_interrupt_sources;
 mod processor_local_apic;
@@ -111,6 +112,7 @@ enum InterruptControllerStructure<'a> {
     LocalApicAddressOverride(&'a local_apic_address_override::Structure),
     LocalApicNmi(&'a local_apic_nmi::Structure),
     LocalSapic(&'a local_sapic::Structure),
+    LocalX2apicNmi(&'a local_x2apic_nmi::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
     Other(&'a [u8]),
     PlatformInterruptSources(&'a platform_interrupt_sources::Structure),
@@ -222,6 +224,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let processor_local_x2apic = Self::ProcessorLocalX2apic(processor_local_x2apic);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_x2apic::Structure>()..];
                     (processor_local_x2apic, remaining_bytes)
+                },
+                0x0a => {
+                    let local_x2apic_nmi: *const u8 = structure_type as *const u8;
+                    let local_x2apic_nmi: *const local_x2apic_nmi::Structure = local_x2apic_nmi as *const local_x2apic_nmi::Structure;
+                    let local_x2apic_nmi: &local_x2apic_nmi::Structure = unsafe {
+                        &*local_x2apic_nmi
+                    };
+                    let local_x2apic_nmi = Self::LocalX2apicNmi(local_x2apic_nmi);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_x2apic_nmi::Structure>()..];
+                    (local_x2apic_nmi, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
