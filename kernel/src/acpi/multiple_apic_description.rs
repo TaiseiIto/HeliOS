@@ -7,6 +7,7 @@ mod local_sapic;
 mod non_maskable_interrupt_source;
 mod platform_interrupt_sources;
 mod processor_local_apic;
+mod processor_local_x2apic;
 
 use {
     alloc::vec::Vec,
@@ -114,6 +115,7 @@ enum InterruptControllerStructure<'a> {
     Other(&'a [u8]),
     PlatformInterruptSources(&'a platform_interrupt_sources::Structure),
     ProcessorLocalApic(&'a processor_local_apic::Structure),
+    ProcessorLocalX2apic(&'a processor_local_x2apic::Structure),
 }
 
 impl<'a> InterruptControllerStructure<'a> {
@@ -210,6 +212,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let platform_interrupt_sources = Self::PlatformInterruptSources(platform_interrupt_sources);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<platform_interrupt_sources::Structure>()..];
                     (platform_interrupt_sources, remaining_bytes)
+                },
+                0x09 => {
+                    let processor_local_x2apic: *const u8 = structure_type as *const u8;
+                    let processor_local_x2apic: *const processor_local_x2apic::Structure = processor_local_x2apic as *const processor_local_x2apic::Structure;
+                    let processor_local_x2apic: &processor_local_x2apic::Structure = unsafe {
+                        &*processor_local_x2apic
+                    };
+                    let processor_local_x2apic = Self::ProcessorLocalX2apic(processor_local_x2apic);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_x2apic::Structure>()..];
+                    (processor_local_x2apic, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
