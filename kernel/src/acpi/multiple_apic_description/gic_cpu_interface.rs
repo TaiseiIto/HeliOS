@@ -27,6 +27,12 @@ pub struct Structure {
     trbe_interrupt: u16,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+
 /// # GICC CPU Interface Flags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.12.14 Table 5.37 GICC CPU Interface Flags

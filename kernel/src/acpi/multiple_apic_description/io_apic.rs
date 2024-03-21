@@ -12,3 +12,9 @@ pub struct Structure {
     global_system_interrupt_base: u32,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

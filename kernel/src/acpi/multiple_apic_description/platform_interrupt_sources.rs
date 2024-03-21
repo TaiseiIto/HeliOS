@@ -20,6 +20,12 @@ pub struct Structure {
     platform_interrupt_source_flags: Flags,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+
 /// # Platform Interrupt Source Flags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.12.11 Table 5.33 Platform Interrupt Source Flags

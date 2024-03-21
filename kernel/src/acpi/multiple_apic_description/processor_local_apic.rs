@@ -13,6 +13,12 @@ pub struct Structure {
     flags: Flags,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+
 /// # Local APIC Flags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.12.2 Table 5.23 Local APIC Flags

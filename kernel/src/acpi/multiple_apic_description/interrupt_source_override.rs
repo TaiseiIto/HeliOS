@@ -14,6 +14,12 @@ pub struct Structure {
     flags: Flags,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+
 /// # MPS INTI Flags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.12.5 Table 5.26 MPS INTI Flags

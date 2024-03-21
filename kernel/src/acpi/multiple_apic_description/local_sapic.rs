@@ -24,6 +24,10 @@ pub struct Structure {
 }
 
 impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+
     fn acpi_processor_uid_string(&self) -> &str {
         let structure: *const Self = self as *const Self;
         let structure: usize = structure as usize;

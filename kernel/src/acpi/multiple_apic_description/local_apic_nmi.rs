@@ -13,3 +13,9 @@ pub struct Structure {
     local_apic_lint: u8,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

@@ -13,3 +13,10 @@ pub struct Structure {
     local_x2apic_lint: u8,
     reserved0: [u8; 3],
 }
+
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

@@ -11,3 +11,9 @@ pub struct Structure {
     discovery_range_length: u32,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

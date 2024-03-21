@@ -10,3 +10,9 @@ pub struct Structure {
     local_apic_address: u64,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

@@ -142,7 +142,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*processor_local_apic
                     };
                     let processor_local_apic = Self::ProcessorLocalApic(processor_local_apic);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_apic::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[processor_local_apic.size()..];
                     (processor_local_apic, remaining_bytes)
                 },
                 0x01 => {
@@ -152,7 +152,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*io_apic
                     };
                     let io_apic = Self::IoApic(io_apic);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<io_apic::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[io_apic.size()..];
                     (io_apic, remaining_bytes)
                 },
                 0x02 => {
@@ -162,7 +162,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*interrupt_source_override
                     };
                     let interrupt_source_override = Self::InterruptSourceOverride(interrupt_source_override);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<interrupt_source_override::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[interrupt_source_override.size()..];
                     (interrupt_source_override, remaining_bytes)
                 },
                 0x03 => {
@@ -172,7 +172,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*non_maskable_interrupt_source
                     };
                     let non_maskable_interrupt_source = Self::NonMaskableInterruptSource(non_maskable_interrupt_source);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<non_maskable_interrupt_source::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[non_maskable_interrupt_source.size()..];
                     (non_maskable_interrupt_source, remaining_bytes)
                 },
                 0x04 => {
@@ -182,7 +182,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*local_apic_nmi
                     };
                     let local_apic_nmi = Self::LocalApicNmi(local_apic_nmi);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_apic_nmi::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[local_apic_nmi.size()..];
                     (local_apic_nmi, remaining_bytes)
                 },
                 0x05 => {
@@ -192,7 +192,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*local_apic_address_override
                     };
                     let local_apic_address_override = Self::LocalApicAddressOverride(local_apic_address_override);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_apic_address_override::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[local_apic_address_override.size()..];
                     (local_apic_address_override, remaining_bytes)
                 },
                 0x06 => {
@@ -202,7 +202,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*io_sapic
                     };
                     let io_sapic = Self::IoSapic(io_sapic);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<io_sapic::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[io_sapic.size()..];
                     (io_sapic, remaining_bytes)
                 },
                 0x07 => {
@@ -212,7 +212,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*local_sapic
                     };
                     let local_sapic = Self::LocalSapic(local_sapic);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_sapic::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[local_sapic.size()..];
                     (local_sapic, remaining_bytes)
                 },
                 0x08 => {
@@ -222,7 +222,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*platform_interrupt_sources
                     };
                     let platform_interrupt_sources = Self::PlatformInterruptSources(platform_interrupt_sources);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<platform_interrupt_sources::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[platform_interrupt_sources.size()..];
                     (platform_interrupt_sources, remaining_bytes)
                 },
                 0x09 => {
@@ -232,7 +232,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*processor_local_x2apic
                     };
                     let processor_local_x2apic = Self::ProcessorLocalX2apic(processor_local_x2apic);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<processor_local_x2apic::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[processor_local_x2apic.size()..];
                     (processor_local_x2apic, remaining_bytes)
                 },
                 0x0a => {
@@ -242,7 +242,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*local_x2apic_nmi
                     };
                     let local_x2apic_nmi = Self::LocalX2apicNmi(local_x2apic_nmi);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_x2apic_nmi::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[local_x2apic_nmi.size()..];
                     (local_x2apic_nmi, remaining_bytes)
                 },
                 0x0b => {
@@ -252,7 +252,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*gic_cpu_interface
                     };
                     let gic_cpu_interface = Self::GicCpuInterface(gic_cpu_interface);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_cpu_interface::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[gic_cpu_interface.size()..];
                     (gic_cpu_interface, remaining_bytes)
                 },
                 0x0c => {
@@ -262,7 +262,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*gic_distributer
                     };
                     let gic_distributer = Self::GicDistributer(gic_distributer);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_distributer::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[gic_distributer.size()..];
                     (gic_distributer, remaining_bytes)
                 },
                 0x0d => {
@@ -272,7 +272,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*gic_msi_frame
                     };
                     let gic_msi_frame = Self::GicMsiFrame(gic_msi_frame);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_msi_frame::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[gic_msi_frame.size()..];
                     (gic_msi_frame, remaining_bytes)
                 },
                 0x0e => {
@@ -282,7 +282,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*gic_redistributor
                     };
                     let gic_redistributor = Self::GicRedistributor(gic_redistributor);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_redistributor::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[gic_redistributor.size()..];
                     (gic_redistributor, remaining_bytes)
                 },
                 0x0f => {
@@ -292,7 +292,7 @@ impl<'a> InterruptControllerStructure<'a> {
                         &*gic_interrupt_translation_service
                     };
                     let gic_interrupt_translation_service = Self::GicInterruptTranslationService(gic_interrupt_translation_service);
-                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_interrupt_translation_service::Structure>()..];
+                    let remaining_bytes: &[u8] = &bytes[gic_interrupt_translation_service.size()..];
                     (gic_interrupt_translation_service, remaining_bytes)
                 },
                 _ => {
@@ -301,6 +301,28 @@ impl<'a> InterruptControllerStructure<'a> {
                     (interrupt_controller_structure, remaining_bytes)
                 }
             })
+    }
+
+    fn size(&self) -> usize {
+        match self {
+            Self::GicCpuInterface(gic_cpu_interface) => gic_cpu_interface.length(),
+            Self::GicDistributer(gic_distributer) => gic_distributer.length(),
+            Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
+            Self::GicMsiFrame(gic_msi_frame) => gic_msi_frame.length(),
+            Self::GicRedistributor(gic_redistributor) => gic_redistributor.length(),
+            Self::InterruptSourceOverride(interrupt_source_override) => interrupt_source_override.length(),
+            Self::IoApic(io_apic) => io_apic.length(),
+            Self::IoSapic(io_sapic) => io_sapic.length(),
+            Self::LocalApicAddressOverride(local_apic_address_override) => local_apic_address_override.length(),
+            Self::LocalApicNmi(local_apic_nmi) => local_apic_nmi.length(),
+            Self::LocalSapic(local_sapic) => local_sapic.length(),
+            Self::LocalX2apicNmi(local_x2apic_nmi) => local_x2apic_nmi.length(),
+            Self::NonMaskableInterruptSource(non_maskable_interrupt_source) => non_maskable_interrupt_source.length(),
+            Self::Other(other) => other.len(),
+            Self::PlatformInterruptSources(platform_interrupt_sources) => platform_interrupt_sources.length(),
+            Self::ProcessorLocalApic(processor_local_apic) => processor_local_apic.length(),
+            Self::ProcessorLocalX2apic(processor_local_x2apic) => processor_local_x2apic.length(),
+        }
     }
 }
 

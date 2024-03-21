@@ -12,3 +12,9 @@ pub struct Structure {
     io_sapic_address: u64,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+

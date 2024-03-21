@@ -14,3 +14,9 @@ pub struct Structure {
     acpi_processor_uid: u32,
 }
 
+impl Structure {
+    pub fn length(&self) -> usize {
+        self.length as usize
+    }
+}
+
