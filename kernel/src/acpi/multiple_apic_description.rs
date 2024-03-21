@@ -1,5 +1,6 @@
 mod gic_cpu_interface;
 mod gic_distributer;
+mod gic_msi_frame;
 mod interrupt_source_override;
 mod io_apic;
 mod io_sapic;
@@ -110,6 +111,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 enum InterruptControllerStructure<'a> {
     GicCpuInterface(&'a gic_cpu_interface::Structure),
     GicDistributer(&'a gic_distributer::Structure),
+    GicMsiFrame(&'a gic_msi_frame::Structure),
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     IoSapic(&'a io_sapic::Structure),
@@ -258,6 +260,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let gic_distributer = Self::GicDistributer(gic_distributer);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_distributer::Structure>()..];
                     (gic_distributer, remaining_bytes)
+                },
+                0x0d => {
+                    let gic_msi_frame: *const u8 = structure_type as *const u8;
+                    let gic_msi_frame: *const gic_msi_frame::Structure = gic_msi_frame as *const gic_msi_frame::Structure;
+                    let gic_msi_frame: &gic_msi_frame::Structure = unsafe {
+                        &*gic_msi_frame
+                    };
+                    let gic_msi_frame = Self::GicMsiFrame(gic_msi_frame);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_msi_frame::Structure>()..];
+                    (gic_msi_frame, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
