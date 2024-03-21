@@ -11,6 +11,7 @@ mod local_apic_nmi;
 mod local_sapic;
 mod local_x2apic_nmi;
 mod non_maskable_interrupt_source;
+mod other;
 mod platform_interrupt_sources;
 mod processor_local_apic;
 mod processor_local_x2apic;
@@ -124,7 +125,7 @@ enum InterruptControllerStructure<'a> {
     LocalSapic(&'a local_sapic::Structure),
     LocalX2apicNmi(&'a local_x2apic_nmi::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
-    Other(&'a [u8]),
+    Other(&'a other::Structure),
     PlatformInterruptSources(&'a platform_interrupt_sources::Structure),
     ProcessorLocalApic(&'a processor_local_apic::Structure),
     ProcessorLocalX2apic(&'a processor_local_x2apic::Structure),
@@ -296,9 +297,14 @@ impl<'a> InterruptControllerStructure<'a> {
                     (gic_interrupt_translation_service, remaining_bytes)
                 },
                 _ => {
-                    let interrupt_controller_structure = Self::Other(bytes);
-                    let remaining_bytes: &[u8] = &bytes[bytes.len()..];
-                    (interrupt_controller_structure, remaining_bytes)
+                    let other: *const u8 = structure_type as *const u8;
+                    let other: *const other::Structure = other as *const other::Structure;
+                    let other: &other::Structure = unsafe {
+                        &*other
+                    };
+                    let other = Self::Other(other);
+                    let remaining_bytes: &[u8] = &bytes[other.size()..];
+                    (other, remaining_bytes)
                 }
             })
     }
@@ -318,7 +324,7 @@ impl<'a> InterruptControllerStructure<'a> {
             Self::LocalSapic(local_sapic) => local_sapic.length(),
             Self::LocalX2apicNmi(local_x2apic_nmi) => local_x2apic_nmi.length(),
             Self::NonMaskableInterruptSource(non_maskable_interrupt_source) => non_maskable_interrupt_source.length(),
-            Self::Other(other) => other.len(),
+            Self::Other(other) => other.length(),
             Self::PlatformInterruptSources(platform_interrupt_sources) => platform_interrupt_sources.length(),
             Self::ProcessorLocalApic(processor_local_apic) => processor_local_apic.length(),
             Self::ProcessorLocalX2apic(processor_local_x2apic) => processor_local_x2apic.length(),
