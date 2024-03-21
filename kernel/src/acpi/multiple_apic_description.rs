@@ -1,3 +1,4 @@
+mod gic_cpu_interface;
 mod interrupt_source_override;
 mod io_apic;
 mod io_sapic;
@@ -106,6 +107,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    GicCpuInterface(&'a gic_cpu_interface::Structure),
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     IoSapic(&'a io_sapic::Structure),
@@ -234,6 +236,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let local_x2apic_nmi = Self::LocalX2apicNmi(local_x2apic_nmi);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_x2apic_nmi::Structure>()..];
                     (local_x2apic_nmi, remaining_bytes)
+                },
+                0x0b => {
+                    let gic_cpu_interface: *const u8 = structure_type as *const u8;
+                    let gic_cpu_interface: *const gic_cpu_interface::Structure = gic_cpu_interface as *const gic_cpu_interface::Structure;
+                    let gic_cpu_interface: &gic_cpu_interface::Structure = unsafe {
+                        &*gic_cpu_interface
+                    };
+                    let gic_cpu_interface = Self::GicCpuInterface(gic_cpu_interface);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_cpu_interface::Structure>()..];
+                    (gic_cpu_interface, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
