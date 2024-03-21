@@ -10,6 +10,7 @@ mod local_apic_address_override;
 mod local_apic_nmi;
 mod local_sapic;
 mod local_x2apic_nmi;
+mod multiprocessor_wakeup;
 mod non_maskable_interrupt_source;
 mod other;
 mod platform_interrupt_sources;
@@ -124,6 +125,7 @@ enum InterruptControllerStructure<'a> {
     LocalApicNmi(&'a local_apic_nmi::Structure),
     LocalSapic(&'a local_sapic::Structure),
     LocalX2apicNmi(&'a local_x2apic_nmi::Structure),
+    MultiprocessorWakeup(&'a multiprocessor_wakeup::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
     Other(&'a other::Structure),
     PlatformInterruptSources(&'a platform_interrupt_sources::Structure),
@@ -296,6 +298,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[gic_interrupt_translation_service.size()..];
                     (gic_interrupt_translation_service, remaining_bytes)
                 },
+                0x10 => {
+                    let multiprocessor_wakeup: *const u8 = structure_type as *const u8;
+                    let multiprocessor_wakeup: *const multiprocessor_wakeup::Structure = multiprocessor_wakeup as *const multiprocessor_wakeup::Structure;
+                    let multiprocessor_wakeup: &multiprocessor_wakeup::Structure = unsafe {
+                        &*multiprocessor_wakeup
+                    };
+                    let multiprocessor_wakeup = Self::MultiprocessorWakeup(multiprocessor_wakeup);
+                    let remaining_bytes: &[u8] = &bytes[multiprocessor_wakeup.size()..];
+                    (multiprocessor_wakeup, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -323,6 +335,7 @@ impl<'a> InterruptControllerStructure<'a> {
             Self::LocalApicNmi(local_apic_nmi) => local_apic_nmi.length(),
             Self::LocalSapic(local_sapic) => local_sapic.length(),
             Self::LocalX2apicNmi(local_x2apic_nmi) => local_x2apic_nmi.length(),
+            Self::MultiprocessorWakeup(multiprocessor_wakeup) => multiprocessor_wakeup.length(),
             Self::NonMaskableInterruptSource(non_maskable_interrupt_source) => non_maskable_interrupt_source.length(),
             Self::Other(other) => other.length(),
             Self::PlatformInterruptSources(platform_interrupt_sources) => platform_interrupt_sources.length(),
