@@ -14,7 +14,7 @@ pub struct Structure {
 }
 
 #[bitfield(u32)]
-struct Flags {
+pub struct Flags {
     enabled: bool,
     online_capable: bool,
     #[bits(30, access = RO)]
