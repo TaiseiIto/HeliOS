@@ -1,5 +1,6 @@
 mod gic_cpu_interface;
 mod gic_distributer;
+mod gic_interrupt_translation_service;
 mod gic_msi_frame;
 mod gic_redistributor;
 mod interrupt_source_override;
@@ -112,6 +113,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 enum InterruptControllerStructure<'a> {
     GicCpuInterface(&'a gic_cpu_interface::Structure),
     GicDistributer(&'a gic_distributer::Structure),
+    GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
     GicMsiFrame(&'a gic_msi_frame::Structure),
     GicRedistributor(&'a gic_redistributor::Structure),
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
@@ -282,6 +284,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let gic_redistributor = Self::GicRedistributor(gic_redistributor);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_redistributor::Structure>()..];
                     (gic_redistributor, remaining_bytes)
+                },
+                0x0f => {
+                    let gic_interrupt_translation_service: *const u8 = structure_type as *const u8;
+                    let gic_interrupt_translation_service: *const gic_interrupt_translation_service::Structure = gic_interrupt_translation_service as *const gic_interrupt_translation_service::Structure;
+                    let gic_interrupt_translation_service: &gic_interrupt_translation_service::Structure = unsafe {
+                        &*gic_interrupt_translation_service
+                    };
+                    let gic_interrupt_translation_service = Self::GicInterruptTranslationService(gic_interrupt_translation_service);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<gic_interrupt_translation_service::Structure>()..];
+                    (gic_interrupt_translation_service, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
