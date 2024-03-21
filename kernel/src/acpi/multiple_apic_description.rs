@@ -5,6 +5,7 @@ mod local_apic_address_override;
 mod local_apic_nmi;
 mod local_sapic;
 mod non_maskable_interrupt_source;
+mod platform_interrupt_sources;
 mod processor_local_apic;
 
 use {
@@ -111,6 +112,7 @@ enum InterruptControllerStructure<'a> {
     LocalSapic(&'a local_sapic::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
     Other(&'a [u8]),
+    PlatformInterruptSources(&'a platform_interrupt_sources::Structure),
     ProcessorLocalApic(&'a processor_local_apic::Structure),
 }
 
@@ -198,6 +200,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let local_sapic = Self::LocalSapic(local_sapic);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_sapic::Structure>()..];
                     (local_sapic, remaining_bytes)
+                },
+                0x08 => {
+                    let platform_interrupt_sources: *const u8 = structure_type as *const u8;
+                    let platform_interrupt_sources: *const platform_interrupt_sources::Structure = platform_interrupt_sources as *const platform_interrupt_sources::Structure;
+                    let platform_interrupt_sources: &platform_interrupt_sources::Structure = unsafe {
+                        &*platform_interrupt_sources
+                    };
+                    let platform_interrupt_sources = Self::PlatformInterruptSources(platform_interrupt_sources);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<platform_interrupt_sources::Structure>()..];
+                    (platform_interrupt_sources, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
