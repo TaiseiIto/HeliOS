@@ -1,5 +1,6 @@
 mod interrupt_source_override;
 mod io_apic;
+mod io_sapic;
 mod local_apic_address_override;
 mod local_apic_nmi;
 mod non_maskable_interrupt_source;
@@ -103,6 +104,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 enum InterruptControllerStructure<'a> {
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
+    IoSapic(&'a io_sapic::Structure),
     LocalApicAddressOverride(&'a local_apic_address_override::Structure),
     LocalApicNmi(&'a local_apic_nmi::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
@@ -174,6 +176,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let local_apic_address_override = Self::LocalApicAddressOverride(local_apic_address_override);
                     let remaining_bytes: &[u8] = &bytes[mem::size_of::<local_apic_address_override::Structure>()..];
                     (local_apic_address_override, remaining_bytes)
+                },
+                0x06 => {
+                    let io_sapic: *const u8 = structure_type as *const u8;
+                    let io_sapic: *const io_sapic::Structure = io_sapic as *const io_sapic::Structure;
+                    let io_sapic: &io_sapic::Structure = unsafe {
+                        &*io_sapic
+                    };
+                    let io_sapic = Self::IoSapic(io_sapic);
+                    let remaining_bytes: &[u8] = &bytes[mem::size_of::<io_sapic::Structure>()..];
+                    (io_sapic, remaining_bytes)
                 },
                 _ => {
                     let interrupt_controller_structure = Self::Other(bytes);
