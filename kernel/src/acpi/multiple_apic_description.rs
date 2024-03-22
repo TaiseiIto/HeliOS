@@ -7,6 +7,7 @@ mod gic_redistributor;
 mod interrupt_source_override;
 mod io_apic;
 mod io_sapic;
+mod legacy_io_programmable_interrupt_controller;
 mod local_apic_address_override;
 mod local_apic_nmi;
 mod local_sapic;
@@ -123,6 +124,7 @@ enum InterruptControllerStructure<'a> {
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     IoSapic(&'a io_sapic::Structure),
+    LegacyIoProgrammableInterruptController(&'a legacy_io_programmable_interrupt_controller::Structure),
     LocalApicAddressOverride(&'a local_apic_address_override::Structure),
     LocalApicNmi(&'a local_apic_nmi::Structure),
     LocalSapic(&'a local_sapic::Structure),
@@ -320,6 +322,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[core_programmable_interrupt_controller.size()..];
                     (core_programmable_interrupt_controller, remaining_bytes)
                 },
+                0x12 => {
+                    let legacy_io_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
+                    let legacy_io_programmable_interrupt_controller: *const legacy_io_programmable_interrupt_controller::Structure = legacy_io_programmable_interrupt_controller as *const legacy_io_programmable_interrupt_controller::Structure;
+                    let legacy_io_programmable_interrupt_controller: &legacy_io_programmable_interrupt_controller::Structure = unsafe {
+                        &*legacy_io_programmable_interrupt_controller
+                    };
+                    let legacy_io_programmable_interrupt_controller = Self::LegacyIoProgrammableInterruptController(legacy_io_programmable_interrupt_controller);
+                    let remaining_bytes: &[u8] = &bytes[legacy_io_programmable_interrupt_controller.size()..];
+                    (legacy_io_programmable_interrupt_controller, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -344,6 +356,7 @@ impl<'a> InterruptControllerStructure<'a> {
             Self::InterruptSourceOverride(interrupt_source_override) => interrupt_source_override.length(),
             Self::IoApic(io_apic) => io_apic.length(),
             Self::IoSapic(io_sapic) => io_sapic.length(),
+            Self::LegacyIoProgrammableInterruptController(legacy_io_programmable_interrupt_controller) => legacy_io_programmable_interrupt_controller.length(),
             Self::LocalApicAddressOverride(local_apic_address_override) => local_apic_address_override.length(),
             Self::LocalApicNmi(local_apic_nmi) => local_apic_nmi.length(),
             Self::LocalSapic(local_sapic) => local_sapic.length(),
