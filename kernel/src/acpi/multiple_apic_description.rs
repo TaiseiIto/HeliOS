@@ -1,3 +1,4 @@
+mod bridge_io_programmable_interrupt_controller;
 mod core_programmable_interrupt_controller;
 mod extended_io_programmable_interrupt_controller;
 mod gic_cpu_interface;
@@ -118,6 +119,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    BridgeIoProgrammableInterruptController(&'a bridge_io_programmable_interrupt_controller::Structure),
     CoreProgrammableInterruptController(&'a core_programmable_interrupt_controller::Structure),
     ExtendedIoProgrammableInterruptController(&'a extended_io_programmable_interrupt_controller::Structure),
     GicCpuInterface(&'a gic_cpu_interface::Structure),
@@ -368,6 +370,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[msi_programmable_interrupt_controller.size()..];
                     (msi_programmable_interrupt_controller, remaining_bytes)
                 },
+                0x16 => {
+                    let bridge_io_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
+                    let bridge_io_programmable_interrupt_controller: *const bridge_io_programmable_interrupt_controller::Structure = bridge_io_programmable_interrupt_controller as *const bridge_io_programmable_interrupt_controller::Structure;
+                    let bridge_io_programmable_interrupt_controller: &bridge_io_programmable_interrupt_controller::Structure = unsafe {
+                        &*bridge_io_programmable_interrupt_controller
+                    };
+                    let bridge_io_programmable_interrupt_controller = Self::BridgeIoProgrammableInterruptController(bridge_io_programmable_interrupt_controller);
+                    let remaining_bytes: &[u8] = &bytes[bridge_io_programmable_interrupt_controller.size()..];
+                    (bridge_io_programmable_interrupt_controller, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -383,6 +395,7 @@ impl<'a> InterruptControllerStructure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::BridgeIoProgrammableInterruptController(bridge_io_programmable_interrupt_controller) => bridge_io_programmable_interrupt_controller.length(),
             Self::CoreProgrammableInterruptController(core_programmable_interrupt_controller) => core_programmable_interrupt_controller.length(),
             Self::ExtendedIoProgrammableInterruptController(extended_io_programmable_interrupt_controller) => extended_io_programmable_interrupt_controller.length(),
             Self::GicCpuInterface(gic_cpu_interface) => gic_cpu_interface.length(),
