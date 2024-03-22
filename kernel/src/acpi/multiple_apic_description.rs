@@ -1,3 +1,4 @@
+mod core_programmable_interrupt_controller;
 mod gic_cpu_interface;
 mod gic_distributer;
 mod gic_interrupt_translation_service;
@@ -113,6 +114,7 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
+    CoreProgrammableInterruptController(&'a core_programmable_interrupt_controller::Structure),
     GicCpuInterface(&'a gic_cpu_interface::Structure),
     GicDistributer(&'a gic_distributer::Structure),
     GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
@@ -308,6 +310,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[multiprocessor_wakeup.size()..];
                     (multiprocessor_wakeup, remaining_bytes)
                 },
+                0x11 => {
+                    let core_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
+                    let core_programmable_interrupt_controller: *const core_programmable_interrupt_controller::Structure = core_programmable_interrupt_controller as *const core_programmable_interrupt_controller::Structure;
+                    let core_programmable_interrupt_controller: &core_programmable_interrupt_controller::Structure = unsafe {
+                        &*core_programmable_interrupt_controller
+                    };
+                    let core_programmable_interrupt_controller = Self::CoreProgrammableInterruptController(core_programmable_interrupt_controller);
+                    let remaining_bytes: &[u8] = &bytes[core_programmable_interrupt_controller.size()..];
+                    (core_programmable_interrupt_controller, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -323,6 +335,7 @@ impl<'a> InterruptControllerStructure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::CoreProgrammableInterruptController(core_programmable_interrupt_controller) => core_programmable_interrupt_controller.length(),
             Self::GicCpuInterface(gic_cpu_interface) => gic_cpu_interface.length(),
             Self::GicDistributer(gic_distributer) => gic_distributer.length(),
             Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
