@@ -14,6 +14,7 @@ mod local_apic_address_override;
 mod local_apic_nmi;
 mod local_sapic;
 mod local_x2apic_nmi;
+mod msi_programmable_interrupt_controller;
 mod multiprocessor_wakeup;
 mod non_maskable_interrupt_source;
 mod other;
@@ -133,6 +134,7 @@ enum InterruptControllerStructure<'a> {
     LocalApicNmi(&'a local_apic_nmi::Structure),
     LocalSapic(&'a local_sapic::Structure),
     LocalX2apicNmi(&'a local_x2apic_nmi::Structure),
+    MsiProgrammableInterruptController(&'a msi_programmable_interrupt_controller::Structure),
     MultiprocessorWakeup(&'a multiprocessor_wakeup::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
     Other(&'a other::Structure),
@@ -356,6 +358,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[extended_io_programmable_interrupt_controller.size()..];
                     (extended_io_programmable_interrupt_controller, remaining_bytes)
                 },
+                0x15 => {
+                    let msi_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
+                    let msi_programmable_interrupt_controller: *const msi_programmable_interrupt_controller::Structure = msi_programmable_interrupt_controller as *const msi_programmable_interrupt_controller::Structure;
+                    let msi_programmable_interrupt_controller: &msi_programmable_interrupt_controller::Structure = unsafe {
+                        &*msi_programmable_interrupt_controller
+                    };
+                    let msi_programmable_interrupt_controller = Self::MsiProgrammableInterruptController(msi_programmable_interrupt_controller);
+                    let remaining_bytes: &[u8] = &bytes[msi_programmable_interrupt_controller.size()..];
+                    (msi_programmable_interrupt_controller, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -387,6 +399,7 @@ impl<'a> InterruptControllerStructure<'a> {
             Self::LocalApicNmi(local_apic_nmi) => local_apic_nmi.length(),
             Self::LocalSapic(local_sapic) => local_sapic.length(),
             Self::LocalX2apicNmi(local_x2apic_nmi) => local_x2apic_nmi.length(),
+            Self::MsiProgrammableInterruptController(msi_programmable_interrupt_controller) => msi_programmable_interrupt_controller.length(),
             Self::MultiprocessorWakeup(multiprocessor_wakeup) => multiprocessor_wakeup.length(),
             Self::NonMaskableInterruptSource(non_maskable_interrupt_source) => non_maskable_interrupt_source.length(),
             Self::Other(other) => other.length(),
