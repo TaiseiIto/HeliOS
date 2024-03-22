@@ -4,6 +4,7 @@ mod gic_distributer;
 mod gic_interrupt_translation_service;
 mod gic_msi_frame;
 mod gic_redistributor;
+mod hyper_transport_programmable_interrupt_controller;
 mod interrupt_source_override;
 mod io_apic;
 mod io_sapic;
@@ -121,6 +122,7 @@ enum InterruptControllerStructure<'a> {
     GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
     GicMsiFrame(&'a gic_msi_frame::Structure),
     GicRedistributor(&'a gic_redistributor::Structure),
+    HyperTransportProgrammableInterruptController(&'a hyper_transport_programmable_interrupt_controller::Structure),
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     IoSapic(&'a io_sapic::Structure),
@@ -332,6 +334,16 @@ impl<'a> InterruptControllerStructure<'a> {
                     let remaining_bytes: &[u8] = &bytes[legacy_io_programmable_interrupt_controller.size()..];
                     (legacy_io_programmable_interrupt_controller, remaining_bytes)
                 },
+                0x13 => {
+                    let hyper_transport_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
+                    let hyper_transport_programmable_interrupt_controller: *const hyper_transport_programmable_interrupt_controller::Structure = hyper_transport_programmable_interrupt_controller as *const hyper_transport_programmable_interrupt_controller::Structure;
+                    let hyper_transport_programmable_interrupt_controller: &hyper_transport_programmable_interrupt_controller::Structure = unsafe {
+                        &*hyper_transport_programmable_interrupt_controller
+                    };
+                    let hyper_transport_programmable_interrupt_controller = Self::HyperTransportProgrammableInterruptController(hyper_transport_programmable_interrupt_controller);
+                    let remaining_bytes: &[u8] = &bytes[hyper_transport_programmable_interrupt_controller.size()..];
+                    (hyper_transport_programmable_interrupt_controller, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -353,6 +365,7 @@ impl<'a> InterruptControllerStructure<'a> {
             Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
             Self::GicMsiFrame(gic_msi_frame) => gic_msi_frame.length(),
             Self::GicRedistributor(gic_redistributor) => gic_redistributor.length(),
+            Self::HyperTransportProgrammableInterruptController(hyper_transport_programmable_interrupt_controller) => hyper_transport_programmable_interrupt_controller.length(),
             Self::InterruptSourceOverride(interrupt_source_override) => interrupt_source_override.length(),
             Self::IoApic(io_apic) => io_apic.length(),
             Self::IoSapic(io_sapic) => io_sapic.length(),
