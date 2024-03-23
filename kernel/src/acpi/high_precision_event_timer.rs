@@ -1,6 +1,9 @@
 use {
     bitfield_struct::bitfield,
-    super::system_description,
+    super::{
+        generic_address,
+        system_description,
+    },
 };
 
 /// # HPET
@@ -11,6 +14,10 @@ use {
 pub struct Table {
     header: system_description::Header,
     event_timer_block_id: EventTimerBlockId,
+    base_address: generic_address::Structure,
+    hpet_number: u8,
+    main_counter_minimum_clock_tick_in_periodic_mode: u16,
+    page_protection_and_oem_attribute: u8,
 }
 
 impl Table {

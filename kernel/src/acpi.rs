@@ -5,6 +5,7 @@
 pub mod differentiated_system_description;
 pub mod firmware_acpi_control;
 pub mod fixed_acpi_description;
+pub mod generic_address;
 pub mod high_precision_event_timer;
 pub mod multiple_apic_description;
 pub mod root_system_description;
