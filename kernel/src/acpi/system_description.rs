@@ -7,6 +7,7 @@ use {
     super::{
         differentiated_system_description,
         fixed_acpi_description,
+        high_precision_event_timer,
         multiple_apic_description,
         root_system_description,
     },
@@ -89,6 +90,7 @@ impl fmt::Debug for Header {
 pub enum Table<'a> {
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
+    Hpet(&'a high_precision_event_timer::Table),
     Madt(&'a multiple_apic_description::Table),
     Other(&'a Header),
     Rsdt(&'a root_system_description::Table),
@@ -99,6 +101,7 @@ impl Table<'_> {
         match self {
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
+            Self::Hpet(hpet) => hpet.is_correct(),
             Self::Madt(madt) => madt.is_correct(),
             Self::Other(header) => header.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
@@ -132,6 +135,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*fadt
                 };
                 Self::Fadt(fadt)
+            },
+            "HPET" => {
+                let header: *const Header = header as *const Header;
+                let hpet: *const high_precision_event_timer::Table = header as *const high_precision_event_timer::Table;
+                let hpet: &high_precision_event_timer::Table = unsafe {
+                    &*hpet
+                };
+                Self::Hpet(hpet)
             },
             "RSDT" => {
                 let header: *const Header = header as *const Header;
