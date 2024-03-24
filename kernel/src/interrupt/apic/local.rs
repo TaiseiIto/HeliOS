@@ -7,6 +7,7 @@ pub mod destination_format;
 pub mod divide_configuration;
 pub mod error_status;
 pub mod interrupt_command;
+pub mod local_apic_id;
 pub mod local_apic_version;
 pub mod local_vector_table;
 pub mod logical_destination;
@@ -25,7 +26,7 @@ pub struct Registers {
     // 0xfee00000
     reserved0: [u128; 2],
     // 0xfee00020
-    local_apic_id: u128,
+    local_apic_id: local_apic_id::FatRegister,
     // 0xfee00030
     local_apic_version: local_apic_version::Register,
     // 0xfee00040
