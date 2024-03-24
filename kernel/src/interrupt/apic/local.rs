@@ -5,8 +5,11 @@
 pub mod arbitration_priority;
 pub mod destination_format;
 pub mod divide_configuration;
+pub mod end_of_interrupt;
 pub mod error_status;
+pub mod in_service;
 pub mod interrupt_command;
+pub mod interrupt_request;
 pub mod local_apic_id;
 pub mod local_apic_version;
 pub mod local_vector_table;
@@ -14,6 +17,7 @@ pub mod logical_destination;
 pub mod processor_priority;
 pub mod spurious_interrupt_vector;
 pub mod task_priority;
+pub mod trigger_mode;
 
 use crate::x64;
 
@@ -38,7 +42,7 @@ pub struct Registers {
     // 0xfee000a0
     processor_priority: processor_priority::FatRegister,
     // 0xfee000b0
-    eoi: u128,
+    end_of_interrupt: end_of_interrupt::FatRegister,
     // 0xfee000c0
     remote_read: u128,
     // 0xfee000d0
@@ -48,11 +52,11 @@ pub struct Registers {
     // 0xfee000f0
     spurious_interrupt_vector: spurious_interrupt_vector::FatRegister,
     // 0xfee00100
-    in_service: [u128; 8],
+    in_service: in_service::FatRegisters,
     // 0xfee00180
-    trigger_mode_register: [u128; 8],
+    trigger_mode_register: trigger_mode::FatRegisters,
     // 0xfee00200
-    interrupt_request_register: [u128; 8],
+    interrupt_request_register: interrupt_request::FatRegisters,
     // 0xfee00280
     error_status: error_status::FatRegister,
     // 0xfee00290
