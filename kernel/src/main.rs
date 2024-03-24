@@ -174,7 +174,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
-    let apic_registers: &interrupt::apic::Registers = ia32_apic_base.registers();
+    let apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
     com2_println!("apic_registers = {:#x?}", apic_registers);
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     unsafe {

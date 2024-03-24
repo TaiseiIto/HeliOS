@@ -39,9 +39,9 @@ impl ApicBase {
                 .into())
     }
 
-    pub fn registers(&self) -> &interrupt::apic::Registers {
+    pub fn registers(&self) -> &interrupt::apic::local::Registers {
         let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
-        let registers: *const interrupt::apic::Registers = registers as *const interrupt::apic::Registers;
+        let registers: *const interrupt::apic::local::Registers = registers as *const interrupt::apic::local::Registers;
         unsafe {
             &*registers
         }
