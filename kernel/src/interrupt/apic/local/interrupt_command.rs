@@ -6,11 +6,18 @@ use bitfield_struct::bitfield;
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
-    low: Low,
-    high: High,
+    low: FatLow,
+    high: FatHigh,
 }
 
-#[bitfield(u128)]
+#[derive(Clone, Copy, Debug)]
+#[repr(packed)]
+struct FatLow {
+    register: Low,
+    reserved0: [u32; 3],
+}
+
+#[bitfield(u32)]
 struct Low {
     vector: u8,
     #[bits(3)]
@@ -25,16 +32,21 @@ struct Low {
     reserved1: u8,
     #[bits(2)]
     destination_shorthand: u8,
-    #[bits(108, access = RO)]
-    reserved2: u128
+    #[bits(12, access = RO)]
+    reserved2: u16,
 }
 
-#[bitfield(u128)]
+#[derive(Clone, Copy, Debug)]
+#[repr(packed)]
+struct FatHigh {
+    register: High,
+    reserved0: [u32; 3],
+}
+
+#[bitfield(u32)]
 struct High {
     #[bits(24, access = RO)]
     reserved0: u32,
     destination_field: u8,
-    #[bits(96)]
-    reserved1: u128,
 }
 

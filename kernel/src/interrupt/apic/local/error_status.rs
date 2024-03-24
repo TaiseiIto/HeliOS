@@ -1,10 +1,17 @@
 use bitfield_struct::bitfield;
 
+#[derive(Clone, Copy, Debug)]
+#[repr(packed)]
+pub struct FatRegister {
+    register: Register,
+    reserved0: [u32; 3],
+}
+
 /// # Error Status Register
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) 3.11.5.3 Figure 11-9. Error Status Register (ESR)
-#[bitfield(u128)]
-pub struct Register {
+#[bitfield(u32)]
+struct Register {
     send_checksum_error: bool,
     receive_checksum_error: bool,
     send_accept_error: bool,
@@ -13,7 +20,7 @@ pub struct Register {
     send_illegal_vector: bool,
     received_illegal_vector: bool,
     illegal_register_address: bool,
-    #[bits(120, access = RO)]
-    reserved0: u128,
+    #[bits(24, access = RO)]
+    reserved0: u32,
 }
 
