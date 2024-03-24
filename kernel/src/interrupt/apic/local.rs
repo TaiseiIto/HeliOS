@@ -3,11 +3,13 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A Chapter 11 Advanced Programmable Interrupt Controller (APIC)
 
 pub mod arbitration_priority;
+pub mod current_count;
 pub mod destination_format;
 pub mod divide_configuration;
 pub mod end_of_interrupt;
 pub mod error_status;
 pub mod in_service;
+pub mod initial_count;
 pub mod interrupt_command;
 pub mod interrupt_request;
 pub mod local_apic_id;
@@ -66,7 +68,7 @@ pub struct Registers {
     // 0xfee00300
     interrupt_command: interrupt_command::Register,
     // 0xfee00320
-    lvt_timer: u128,
+    lvt_timer: local_vector_table::FatRegister,
     // 0xfee00330
     lvt_thermal_sensor: local_vector_table::FatRegister,
     // 0xfee00340
@@ -76,15 +78,15 @@ pub struct Registers {
     // 0xfee00370
     lvt_error: local_vector_table::FatRegister,
     // 0xfee00380
-    initial_count: u128,
+    initial_count: initial_count::FatRegister,
     // 0xfee00390
-    current_count: u128,
+    current_count: current_count::FatRegister,
     // 0xfee003a0
     reserved3: [u128; 4],
     // 0xfee003e0
     divide_configuration: divide_configuration::FatRegister,
     // 0xfee003f0
-    reserved: u128,
+    reserved4: u128,
 }
 
 impl Registers {

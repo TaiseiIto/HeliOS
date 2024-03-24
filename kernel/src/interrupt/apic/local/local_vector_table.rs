@@ -22,7 +22,9 @@ struct Register {
     remote_irr: bool,
     trigger_mode: bool,
     mask: bool,
-    #[bits(15, access = RO)]
+    #[bits(2)]
+    timer_mode: u8,
+    #[bits(13, access = RO)]
     reserved1: u16,
 }
 
