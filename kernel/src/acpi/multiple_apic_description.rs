@@ -78,7 +78,6 @@ impl Table {
 
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let local_interrupt_controller_address: u32 = self.local_interrupt_controller_address;
         let flags: Flags = self.flags;
         let interrupt_controller_structures: Vec<InterruptControllerStructure> = self
             .iter()
