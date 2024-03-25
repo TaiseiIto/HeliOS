@@ -11,3 +11,13 @@ pub struct Structure {
     address: u64,
 }
 
+impl Structure {
+    pub fn address<T>(&self) -> &T {
+        let address: usize = self.address as usize;
+        let address: *const T = address as *const T;
+        unsafe {
+            &*address
+        }
+    }
+}
+

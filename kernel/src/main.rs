@@ -16,6 +16,7 @@ mod interrupt;
 mod memory;
 mod rs232c;
 mod syscall;
+mod timer;
 mod x64;
 
 use {
