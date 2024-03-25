@@ -1,4 +1,7 @@
-use core::fmt;
+use {
+    alloc::format,
+    core::fmt,
+};
 
 /// # General Interrupt Status Register
 /// ## References
@@ -15,7 +18,7 @@ impl fmt::Debug for Register {
         formatter
             .debug_map()
             .entries((0..u32::BITS)
-                .map(|bit| (bit, (self.int_sts & (1 << bit)) != 0)))
+                .map(|bit| (format!("Timer {:#x?} Interrupt Active", bit), (self.int_sts & (1 << bit)) != 0)))
             .finish()
     }
 }
