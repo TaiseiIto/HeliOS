@@ -1,10 +1,38 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let send_checksum_error: bool = self.send_checksum_error();
+        let receive_checksum_error: bool = self.receive_checksum_error();
+        let send_accept_error: bool = self.send_accept_error();
+        let receive_accept_error: bool = self.receive_accept_error();
+        let redirectable_ipi: bool = self.redirectable_ipi();
+        let send_illegal_vector: bool = self.send_illegal_vector();
+        let received_illegal_vector: bool = self.received_illegal_vector();
+        let illegal_register_address: bool = self.illegal_register_address();
+        formatter
+            .debug_struct("Register")
+            .field("register", &register)
+            .field("send_checksum_error", &send_checksum_error)
+            .field("receive_checksum_error", &receive_checksum_error)
+            .field("send_accept_error", &send_accept_error)
+            .field("receive_accept_error", &receive_accept_error)
+            .field("redirectable_ipi", &redirectable_ipi)
+            .field("send_illegal_vector", &send_illegal_vector)
+            .field("received_illegal_vector", &received_illegal_vector)
+            .finish()
+    }
 }
 
 /// # Error Status Register

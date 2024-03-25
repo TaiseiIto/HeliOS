@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
 /// # Interrupt Command Register
 /// ## References
@@ -10,11 +13,34 @@ pub struct Register {
     high: FatHigh,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct FatLow {
     register: Low,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatLow {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Low = self.register;
+        let vector: u8 = register.vector();
+        let delivery_mode: u8 = register.delivery_mode();
+        let destination_mode: bool = register.destination_mode();
+        let delivery_status: bool = register.delivery_status();
+        let level: bool = register.level();
+        let trigger_mode: bool = register.trigger_mode();
+        let destination_shorthand: u8 = register.destination_shorthand();
+        formatter
+            .debug_struct("Low")
+            .field("vector", &vector)
+            .field("delivery_mode", &delivery_mode)
+            .field("destination_mode", &destination_mode)
+            .field("delivery_status", &delivery_status)
+            .field("level", &level)
+            .field("trigger_mode", &trigger_mode)
+            .field("destination_shorthand", &destination_shorthand)
+            .finish()
+    }
 }
 
 #[bitfield(u32)]
@@ -41,6 +67,17 @@ struct Low {
 struct FatHigh {
     register: High,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatHigh {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: High = self.register;
+        let destination_field: u8 = register.destination_field();
+        formatter
+            .debug_struct("High")
+            .field("destination_field", &destination_field)
+            .finish()
+    }
 }
 
 #[bitfield(u32)]

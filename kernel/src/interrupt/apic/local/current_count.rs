@@ -1,10 +1,24 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let current_count: u32 = register.current_count();
+        formatter
+            .debug_struct("Register")
+            .field("current_count", &current_count)
+            .finish()
+    }
 }
 
 /// # Current Count Register

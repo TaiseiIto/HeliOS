@@ -1,4 +1,8 @@
-use bitfield_struct::bitfield;
+use {
+    alloc::vec::Vec,
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
 /// # IRR, ISR and TMR Registers
 /// ## References
@@ -9,6 +13,28 @@ pub struct FatRegisters {
     registers: [FatRegister; 8],
 }
 
+impl FatRegisters {
+    fn registers(&self) -> [u32; 8] {
+        let registers: [FatRegister; 8] = self.registers;
+        let registers: Vec<u32> = registers
+            .into_iter()
+            .map(|register| register.register())
+            .collect();
+        registers
+            .try_into()
+            .unwrap()
+    }
+}
+
+impl fmt::Debug for FatRegisters {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Registers")
+            .field("registers", &self.registers())
+            .finish()
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 struct FatRegister {
@@ -16,8 +42,16 @@ struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    fn register(&self) -> u32 {
+        let register: Register = self.register;
+        register.register()
+    }
+}
+
 #[bitfield(u32)]
 struct Register {
     register: u32,
 }
+
 

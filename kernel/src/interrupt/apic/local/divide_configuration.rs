@@ -1,10 +1,24 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let divide_value: u8 = register.divide_value();
+        formatter
+            .debug_struct("Register")
+            .field("divide_value", &divide_value)
+            .finish()
+    }
 }
 
 /// # Divide Configuration Register
@@ -19,5 +33,15 @@ struct Register {
     divide_value1: bool,
     #[bits(28, access = RO)]
     reserved1: u32,
+}
+
+impl Register {
+    fn divide_value(&self) -> u8 {
+        self.divide_value0() + if self.divide_value1() {
+            4
+        } else {
+            0
+        }
+    }
 }
 
