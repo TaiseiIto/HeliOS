@@ -32,6 +32,7 @@ use {
         mem,
         slice,
     },
+    crate::interrupt,
     super::system_description,
 };
 
@@ -64,6 +65,15 @@ impl Table {
     fn iter<'a>(&'a self) -> InterruptControllerStructures<'a> {
         self.into()
     }
+
+    fn local_interrupt_controller(&self) -> &interrupt::apic::local::Registers {
+        let local_interrupt_controller: u32 = self.local_interrupt_controller_address;
+        let local_interrupt_controller: usize = local_interrupt_controller as usize;
+        let local_interrupt_controller: *const interrupt::apic::local::Registers = local_interrupt_controller as *const interrupt::apic::local::Registers;
+        unsafe {
+            &*local_interrupt_controller
+        }
+    }
 }
 
 impl fmt::Debug for Table {
@@ -76,7 +86,7 @@ impl fmt::Debug for Table {
         formatter
             .debug_struct("Table")
             .field("header", &self.header)
-            .field("local_interrupt_controller_address", &local_interrupt_controller_address)
+            .field("local_interrupt_controller_address", self.local_interrupt_controller())
             .field("flags", &flags)
             .field("interrupt_controller_structures", &interrupt_controller_structures)
             .finish()
