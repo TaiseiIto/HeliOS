@@ -21,12 +21,14 @@ pub mod spurious_interrupt_vector;
 pub mod task_priority;
 pub mod trigger_mode;
 
-use crate::x64;
+use {
+    core::fmt,
+    crate::x64,
+};
 
 /// # Local APIC Registers
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) 3.11.4.1 Table 11-1. Local APIC Register Address Map
-#[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
     // 0xfee00000
@@ -92,6 +94,62 @@ pub struct Registers {
 impl Registers {
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+}
+
+impl fmt::Debug for Registers {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
+        let local_apic_version: local_apic_version::FatRegister = self.local_apic_version;
+        let task_priority: task_priority::FatRegister = self.task_priority;
+        let arbitration_priority: arbitration_priority::FatRegister = self.arbitration_priority;
+        let processor_priority: processor_priority::FatRegister = self.processor_priority;
+        let end_of_interrupt: end_of_interrupt::FatRegister = self.end_of_interrupt;
+        let remote_read: u128 = self.remote_read;
+        let logical_destination: logical_destination::FatRegister = self.logical_destination;
+        let destination_format: destination_format::FatRegister = self.destination_format;
+        let spurious_interrupt_vector: spurious_interrupt_vector::FatRegister = self.spurious_interrupt_vector;
+        let in_service: in_service::FatRegisters = self.in_service;
+        let trigger_mode_register: trigger_mode::FatRegisters = self.trigger_mode_register;
+        let interrupt_request_register: interrupt_request::FatRegisters = self.interrupt_request_register;
+        let error_status: error_status::FatRegister = self.error_status;
+        let lvt_corrected_machine_check_interrupt: local_vector_table::FatRegister = self.lvt_corrected_machine_check_interrupt;
+        let interrupt_command: interrupt_command::Register = self.interrupt_command;
+        let lvt_timer: local_vector_table::FatRegister = self.lvt_timer;
+        let lvt_thermal_sensor: local_vector_table::FatRegister = self.lvt_thermal_sensor;
+        let lvt_performance_monitoring_counters: local_vector_table::FatRegister = self.lvt_performance_monitoring_counters;
+        let lvt_lint: [local_vector_table::FatRegister; 2] = self.lvt_lint;
+        let lvt_error: local_vector_table::FatRegister = self.lvt_error;
+        let initial_count: initial_count::FatRegister = self.initial_count;
+        let current_count: current_count::FatRegister = self.current_count;
+        let divide_configuration: divide_configuration::FatRegister = self.divide_configuration;
+        formatter
+            .debug_struct("Registers")
+            .field("local_apic_id", &local_apic_id)
+            .field("local_apic_version", &local_apic_version)
+            .field("task_priority", &task_priority)
+            .field("arbitration_priority", &arbitration_priority)
+            .field("processor_priority", &processor_priority)
+            .field("end_of_interrupt", &end_of_interrupt)
+            .field("remote_read", &remote_read)
+            .field("logical_destination", &logical_destination)
+            .field("destination_format", &destination_format)
+            .field("spurious_interrupt_vector", &spurious_interrupt_vector)
+            .field("in_service", &in_service)
+            .field("trigger_mode_register", &trigger_mode_register)
+            .field("interrupt_request_register", &interrupt_request_register)
+            .field("error_status", &error_status)
+            .field("lvt_corrected_machine_check_interrupt", &lvt_corrected_machine_check_interrupt)
+            .field("interrupt_command", &interrupt_command)
+            .field("lvt_timer", &lvt_timer)
+            .field("lvt_thermal_sensor", &lvt_thermal_sensor)
+            .field("lvt_performance_monitoring_counters", &lvt_performance_monitoring_counters)
+            .field("lvt_lint", &lvt_lint)
+            .field("lvt_error", &lvt_error)
+            .field("initial_count", &initial_count)
+            .field("current_count", &current_count)
+            .field("divide_configuration", &divide_configuration)
+            .finish()
     }
 }
 
