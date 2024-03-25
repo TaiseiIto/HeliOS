@@ -1,10 +1,24 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let index: u8 = register.index();
+        formatter
+            .debug_struct("Register")
+            .field("index", &index)
+            .finish()
+    }
 }
 
 /// # Index Register (IDX) - Offset FEC00000h
