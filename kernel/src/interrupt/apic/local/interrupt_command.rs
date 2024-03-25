@@ -62,7 +62,7 @@ struct Low {
     reserved2: u16,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 struct FatHigh {
     register: High,

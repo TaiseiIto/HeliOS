@@ -13,14 +13,14 @@ pub struct FatRegister {
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
-        let send_checksum_error: bool = self.send_checksum_error();
-        let receive_checksum_error: bool = self.receive_checksum_error();
-        let send_accept_error: bool = self.send_accept_error();
-        let receive_accept_error: bool = self.receive_accept_error();
-        let redirectable_ipi: bool = self.redirectable_ipi();
-        let send_illegal_vector: bool = self.send_illegal_vector();
-        let received_illegal_vector: bool = self.received_illegal_vector();
-        let illegal_register_address: bool = self.illegal_register_address();
+        let send_checksum_error: bool = register.send_checksum_error();
+        let receive_checksum_error: bool = register.receive_checksum_error();
+        let send_accept_error: bool = register.send_accept_error();
+        let receive_accept_error: bool = register.receive_accept_error();
+        let redirectable_ipi: bool = register.redirectable_ipi();
+        let send_illegal_vector: bool = register.send_illegal_vector();
+        let received_illegal_vector: bool = register.received_illegal_vector();
+        let illegal_register_address: bool = register.illegal_register_address();
         formatter
             .debug_struct("Register")
             .field("register", &register)
