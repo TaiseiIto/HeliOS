@@ -1,10 +1,30 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let spurious_vector: u8 = register.spurious_vector();
+        let apic_software_enable: bool = register.apic_software_enable();
+        let focus_processor_checking_enable: bool = register.focus_processor_checking_enable();
+        let eoi_broadcast_suppression: bool = register.eoi_broadcast_suppression();
+        formatter
+            .debug_struct("Register")
+            .field("spurious_vector", &spurious_vector)
+            .field("apic_software_enable", &apic_software_enable)
+            .field("focus_processor_checking_enable", &focus_processor_checking_enable)
+            .field("eoi_broadcast_suppression", &eoi_broadcast_suppression)
+            .finish()
+    }
 }
 
 /// # Spurious Interrupt Vector Register

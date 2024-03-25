@@ -1,10 +1,26 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
     reserved0: [u32; 3],
+}
+
+impl fmt::Debug for FatRegister {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let register: Register = self.register;
+        let sub_class: u8 = register.sub_class();
+        let class: u8 = register.class();
+        formatter
+            .debug_struct("Register")
+            .field("sub_class", &sub_class)
+            .field("class", &class)
+            .finish()
+    }
 }
 
 /// # Processor Priority Register
