@@ -1,5 +1,8 @@
-pub mod timer;
 pub mod general_capabilities_and_id;
+pub mod general_configuration;
+pub mod general_interrupt_status;
+pub mod main_counter_value;
+pub mod timer;
 
 use core::fmt;
 
@@ -10,11 +13,11 @@ use core::fmt;
 pub struct Registers {
     general_capabilities_and_id: general_capabilities_and_id::Register,
     reserved0: u64,
-    general_configuration: u64,
+    general_configuration: general_configuration::Register,
     reserved1: u64,
-    general_interrupt_status: u64,
+    general_interrupt_status: general_interrupt_status::Register,
     reserved2: [u64; 0x19],
-    main_counter_value: u64,
+    main_counter_value: main_counter_value::Register,
     reserved3: u64,
     timer: [timer::Registers; 0x18],
 }
@@ -22,9 +25,9 @@ pub struct Registers {
 impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
-        let general_configuration: u64 = self.general_configuration;
-        let general_interrupt_status: u64 = self.general_interrupt_status;
-        let main_counter_value: u64 = self.main_counter_value;
+        let general_configuration: general_configuration::Register = self.general_configuration;
+        let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
+        let main_counter_value: main_counter_value::Register = self.main_counter_value;
         let timer: [timer::Registers; 0x18] = self.timer;
         formatter
             .debug_struct("Registers")
