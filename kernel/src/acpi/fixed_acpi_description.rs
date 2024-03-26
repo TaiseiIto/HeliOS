@@ -3,6 +3,7 @@ use {
     core::{
         cmp,
         fmt,
+        mem,
     },
     super::{
         firmware_acpi_control,
@@ -79,28 +80,36 @@ impl Table {
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {
-        let dsdt: usize = self.dsdt as usize;
-        let x_dsdt: usize = self.x_dsdt as usize;
-        let dsdt: usize = cmp::max(dsdt, x_dsdt);
-        (dsdt != 0).then(|| {
-            let header: *const system_description::Header = dsdt as *const system_description::Header;
-            let header: &system_description::Header = unsafe {
-                &*header
-            };
-            header.into()
-        })
+        let dsdt: Option<usize> = (40 <= self.header.table_size()).then(|| self.dsdt as usize);
+        let x_dsdt: Option<usize> = (140 <= self.header.table_size()).then(|| self.x_dsdt as usize);
+        dsdt
+            .iter()
+            .chain(x_dsdt.iter())
+            .max()
+            .filter(|dsdt| **dsdt != 0)
+            .map(|dsdt| {
+                let header: *const system_description::Header = (*dsdt) as *const system_description::Header;
+                let header: &system_description::Header = unsafe {
+                    &*header
+                };
+                header.into()
+            })
     }
 
     fn firmware_ctrl(&self) -> Option<&firmware_acpi_control::Structure> {
-        let firmware_ctrl: usize = self.firmware_ctrl as usize;
-        let x_firmware_ctrl: usize = self.x_firmware_ctrl as usize;
-        let firmware_ctrl: usize = cmp::max(firmware_ctrl, x_firmware_ctrl);
-        (firmware_ctrl != 0).then(|| {
-            let firmware_ctrl: *const firmware_acpi_control::Structure = firmware_ctrl as *const firmware_acpi_control::Structure;
-            unsafe {
-                &*firmware_ctrl
-            }
-        })
+        let firmware_ctrl: Option<usize> = (36 <= self.header.table_size()).then(|| self.firmware_ctrl as usize);
+        let x_firmware_ctrl: Option<usize> = (132 <= self.header.table_size()).then(|| self.x_firmware_ctrl as usize);
+        firmware_ctrl
+            .iter()
+            .chain(x_firmware_ctrl.iter())
+            .max()
+            .filter(|firmware_ctrl| **firmware_ctrl != 0)
+            .map(|firmware_ctrl| {
+                let firmware_ctrl: *const firmware_acpi_control::Structure = (*firmware_ctrl) as *const firmware_acpi_control::Structure;
+                unsafe {
+                    &*firmware_ctrl
+                }
+            })
     }
 }
 
