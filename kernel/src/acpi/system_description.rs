@@ -11,6 +11,7 @@ use {
         high_precision_event_timer,
         multiple_apic_description,
         root_system_description,
+        secondary_system_description,
         windows_acpi_emulated_devices,
     },
 };
@@ -97,6 +98,7 @@ pub enum Table<'a> {
     Madt(&'a multiple_apic_description::Table),
     Other(&'a Header),
     Rsdt(&'a root_system_description::Table),
+    Ssdt(&'a secondary_system_description::Table),
     Waet(&'a windows_acpi_emulated_devices::Table),
 }
 
@@ -110,6 +112,7 @@ impl Table<'_> {
             Self::Madt(madt) => madt.is_correct(),
             Self::Other(header) => header.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
+            Self::Ssdt(ssdt) => ssdt.is_correct(),
             Self::Waet(waet) => waet.is_correct(),
         }
     }
@@ -165,6 +168,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*rsdt
                 };
                 Self::Rsdt(rsdt)
+            },
+            "SSDT" => {
+                let header: *const Header = header as *const Header;
+                let ssdt: *const secondary_system_description::Table = header as *const secondary_system_description::Table;
+                let ssdt: &secondary_system_description::Table = unsafe {
+                    &*ssdt
+                };
+                Self::Ssdt(ssdt)
             },
             "WAET" => {
                 let header: *const Header = header as *const Header;

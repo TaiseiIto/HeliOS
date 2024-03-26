@@ -80,8 +80,8 @@ impl Table {
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {
-        let dsdt: Option<usize> = (40 <= self.header.table_size()).then(|| self.dsdt as usize);
-        let x_dsdt: Option<usize> = (140 <= self.header.table_size()).then(|| self.x_dsdt as usize);
+        let dsdt: Option<usize> = (44 <= self.header.table_size()).then(|| self.dsdt as usize);
+        let x_dsdt: Option<usize> = (148 <= self.header.table_size()).then(|| self.x_dsdt as usize);
         dsdt
             .iter()
             .chain(x_dsdt.iter())
@@ -97,8 +97,8 @@ impl Table {
     }
 
     fn firmware_ctrl(&self) -> Option<&firmware_acpi_control::Structure> {
-        let firmware_ctrl: Option<usize> = (36 <= self.header.table_size()).then(|| self.firmware_ctrl as usize);
-        let x_firmware_ctrl: Option<usize> = (132 <= self.header.table_size()).then(|| self.x_firmware_ctrl as usize);
+        let firmware_ctrl: Option<usize> = (40 <= self.header.table_size()).then(|| self.firmware_ctrl as usize);
+        let x_firmware_ctrl: Option<usize> = (140 <= self.header.table_size()).then(|| self.x_firmware_ctrl as usize);
         firmware_ctrl
             .iter()
             .chain(x_firmware_ctrl.iter())
