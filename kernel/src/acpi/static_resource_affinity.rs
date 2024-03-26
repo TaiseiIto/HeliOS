@@ -1,6 +1,7 @@
 mod other;
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
@@ -33,12 +34,18 @@ impl Table {
             slice::from_raw_parts(first_byte, size)
         }
     }
+
+    fn iter<'a>(&'a self) -> Structures<'a> {
+        self.into()
+    }
 }
 
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let structures: Structures = self.into();
+        let structures: Vec<Structure> = self
+            .iter()
+            .collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
