@@ -5,6 +5,7 @@ use {
         str,
     },
     super::{
+        boot_graphics_resource,
         differentiated_system_description,
         fixed_acpi_description,
         high_precision_event_timer,
@@ -89,6 +90,7 @@ impl fmt::Debug for Header {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2 ACPI System Description Tables
 #[derive(Debug)]
 pub enum Table<'a> {
+    Bgrt(&'a boot_graphics_resource::Table),
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
     Hpet(&'a high_precision_event_timer::Table),
@@ -101,6 +103,7 @@ pub enum Table<'a> {
 impl Table<'_> {
     pub fn is_correct(&self) -> bool {
         match self {
+            Self::Bgrt(bgrt) => bgrt.is_correct(),
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
             Self::Hpet(hpet) => hpet.is_correct(),
@@ -122,6 +125,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*madt
                 };
                 Self::Madt(madt)
+            },
+            "BGRT" => {
+                let header: *const Header = header as *const Header;
+                let bgrt: *const boot_graphics_resource::Table = header as *const boot_graphics_resource::Table;
+                let bgrt: &boot_graphics_resource::Table = unsafe {
+                    &*bgrt
+                };
+                Self::Bgrt(bgrt)
             },
             "DSDT" => {
                 let header: *const Header = header as *const Header;
