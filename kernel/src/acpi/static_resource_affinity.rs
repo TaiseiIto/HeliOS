@@ -1,3 +1,5 @@
+mod other;
+
 use {
     core::{
         fmt,
@@ -55,6 +57,46 @@ impl<'a> From<&'a Table> for Structures<'a> {
         let bytes: &[u8] = table.bytes();
         Self {
             bytes,
+        }
+    }
+}
+
+impl<'a> Iterator for Structures<'a> {
+    type Item = Structure<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let bytes: &[u8] = self.bytes;
+        Self::Item::scan(bytes).map(|(structure, remaining_bytes)| {
+            self.bytes = remaining_bytes;
+            structure
+        })
+    }
+}
+
+#[derive(Debug)]
+enum Structure<'a> {
+    Other(&'a other::Structure),
+}
+
+impl<'a> Structure<'a> {
+    fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
+        bytes
+            .first()
+            .map(|structure_type| {
+                let other: *const u8 = structure_type as *const u8;
+                let other: *const other::Structure = other as *const other::Structure;
+                let other: &other::Structure = unsafe {
+                    &*other
+                };
+                let other = Self::Other(other);
+                let remaining_bytes: &[u8] = &bytes[other.size()..];
+                (other, remaining_bytes)
+            })
+    }
+
+    fn size(&self) -> usize {
+        match self {
+            Self::Other(other) => other.length(),
         }
     }
 }
