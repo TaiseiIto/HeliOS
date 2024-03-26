@@ -78,13 +78,14 @@ impl Table {
 
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let header: system_description::Header = self.header;
         let flags: Flags = self.flags;
         let interrupt_controller_structures: Vec<InterruptControllerStructure> = self
             .iter()
             .collect();
         formatter
             .debug_struct("Table")
-            .field("header", &self.header)
+            .field("header", &header)
             .field("local_interrupt_controller_address", self.local_interrupt_controller())
             .field("flags", &flags)
             .field("interrupt_controller_structures", &interrupt_controller_structures)
@@ -110,7 +111,7 @@ impl<'a> From<&'a Table> for InterruptControllerStructures<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
         Self {
-            bytes
+            bytes,
         }
     }
 }
