@@ -10,6 +10,7 @@ use {
         high_precision_event_timer,
         multiple_apic_description,
         root_system_description,
+        windows_acpi_emulated_devices,
     },
 };
 
@@ -94,6 +95,7 @@ pub enum Table<'a> {
     Madt(&'a multiple_apic_description::Table),
     Other(&'a Header),
     Rsdt(&'a root_system_description::Table),
+    Waet(&'a windows_acpi_emulated_devices::Table),
 }
 
 impl Table<'_> {
@@ -105,6 +107,7 @@ impl Table<'_> {
             Self::Madt(madt) => madt.is_correct(),
             Self::Other(header) => header.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
+            Self::Waet(waet) => waet.is_correct(),
         }
     }
 }
@@ -152,6 +155,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Rsdt(rsdt)
             },
+            "WAET" => {
+                let header: *const Header = header as *const Header;
+                let waet: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
+                let waet: &windows_acpi_emulated_devices::Table = unsafe {
+                    &*waet
+                };
+                Self::Waet(waet)
+            }
             _ => Self::Other(header),
         }
     }

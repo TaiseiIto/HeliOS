@@ -10,4 +10,5 @@ pub mod high_precision_event_timer;
 pub mod multiple_apic_description;
 pub mod root_system_description;
 pub mod system_description;
+pub mod windows_acpi_emulated_devices;
 
