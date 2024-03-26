@@ -12,6 +12,7 @@ use {
         multiple_apic_description,
         root_system_description,
         secondary_system_description,
+        static_resource_affinity,
         windows_acpi_emulated_devices,
     },
 };
@@ -98,6 +99,7 @@ pub enum Table<'a> {
     Madt(&'a multiple_apic_description::Table),
     Other(&'a Header),
     Rsdt(&'a root_system_description::Table),
+    Srat(&'a static_resource_affinity::Table),
     Ssdt(&'a secondary_system_description::Table),
     Waet(&'a windows_acpi_emulated_devices::Table),
 }
@@ -112,6 +114,7 @@ impl Table<'_> {
             Self::Madt(madt) => madt.is_correct(),
             Self::Other(header) => header.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
+            Self::Srat(srat) => srat.is_correct(),
             Self::Ssdt(ssdt) => ssdt.is_correct(),
             Self::Waet(waet) => waet.is_correct(),
         }
@@ -168,6 +171,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*rsdt
                 };
                 Self::Rsdt(rsdt)
+            },
+            "SRAT" => {
+                let header: *const Header = header as *const Header;
+                let srat: *const static_resource_affinity::Table = header as *const static_resource_affinity::Table;
+                let srat: &static_resource_affinity::Table = unsafe {
+                    &*srat
+                };
+                Self::Srat(srat)
             },
             "SSDT" => {
                 let header: *const Header = header as *const Header;
