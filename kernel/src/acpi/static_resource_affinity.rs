@@ -1,6 +1,7 @@
 mod memory;
 mod other;
 mod processor_local_apic_sapic;
+mod processor_local_x2apic;
 
 use {
     alloc::vec::Vec,
@@ -87,6 +88,7 @@ enum Structure<'a> {
     Memory(&'a memory::Structure),
     Other(&'a other::Structure),
     ProcessorLocalApicSapic(&'a processor_local_apic_sapic::Structure),
+    ProcessorLocalX2apic(&'a processor_local_x2apic::Structure),
 }
 
 impl<'a> Structure<'a> {
@@ -114,6 +116,16 @@ impl<'a> Structure<'a> {
                     let remaining_bytes: &[u8] = &bytes[memory.size()..];
                     (memory, remaining_bytes)
                 },
+                0x02 => {
+                    let processor_local_x2apic: *const u8 = structure_type as *const u8;
+                    let processor_local_x2apic: *const processor_local_x2apic::Structure = processor_local_x2apic as *const processor_local_x2apic::Structure;
+                    let processor_local_x2apic: &processor_local_x2apic::Structure = unsafe {
+                        &*processor_local_x2apic
+                    };
+                    let processor_local_x2apic = Self::ProcessorLocalX2apic(processor_local_x2apic);
+                    let remaining_bytes: &[u8] = &bytes[processor_local_x2apic.size()..];
+                    (processor_local_x2apic, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -132,6 +144,7 @@ impl<'a> Structure<'a> {
             Self::Memory(memory) => memory.length(),
             Self::Other(other) => other.length(),
             Self::ProcessorLocalApicSapic(processor_local_apic_sapic) => processor_local_apic_sapic.length(),
+            Self::ProcessorLocalX2apic(processor_local_x2apic) => processor_local_x2apic.length(),
         }
     }
 }

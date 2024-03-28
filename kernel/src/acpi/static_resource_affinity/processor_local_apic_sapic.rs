@@ -62,7 +62,7 @@ impl fmt::Debug for Structure {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.16.1 Processor Local APIC/SAPIC Affinity Structure
 #[bitfield(u32)]
-struct Flags {
+pub struct Flags {
     enabled: bool,
     #[bits(31, access = RO)]
     reserved0: u32,
