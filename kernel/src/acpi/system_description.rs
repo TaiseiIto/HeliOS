@@ -15,6 +15,7 @@ use {
         secondary_system_description,
         static_resource_affinity,
         windows_acpi_emulated_devices,
+        windows_smm_security_mitigations,
     },
 };
 
@@ -104,6 +105,7 @@ pub enum Table<'a> {
     Srat(&'a static_resource_affinity::Table),
     Ssdt(&'a secondary_system_description::Table),
     Waet(&'a windows_acpi_emulated_devices::Table),
+    Wsmt(&'a windows_smm_security_mitigations::Table),
 }
 
 impl Table<'_> {
@@ -120,6 +122,7 @@ impl Table<'_> {
             Self::Srat(srat) => srat.is_correct(),
             Self::Ssdt(ssdt) => ssdt.is_correct(),
             Self::Waet(waet) => waet.is_correct(),
+            Self::Wsmt(wsmt) => wsmt.is_correct(),
         }
     }
 }
@@ -206,6 +209,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*waet
                 };
                 Self::Waet(waet)
+            }
+            "WSMT" => {
+                let header: *const Header = header as *const Header;
+                let wsmt: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;
+                let wsmt: &windows_smm_security_mitigations::Table = unsafe {
+                    &*wsmt
+                };
+                Self::Wsmt(wsmt)
             }
             _ => Self::Other(header),
         }

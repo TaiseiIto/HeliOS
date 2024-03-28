@@ -15,4 +15,5 @@ pub mod secondary_system_description;
 pub mod static_resource_affinity;
 pub mod system_description;
 pub mod windows_acpi_emulated_devices;
+pub mod windows_smm_security_mitigations;
 
