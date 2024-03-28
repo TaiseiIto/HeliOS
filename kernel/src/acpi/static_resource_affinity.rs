@@ -1,5 +1,6 @@
+mod memory;
 mod other;
-mod processor_local_apic_sapic_affinity;
+mod processor_local_apic_sapic;
 
 use {
     alloc::vec::Vec,
@@ -11,9 +12,9 @@ use {
     super::system_description,
 };
 
-/// # System Resource Affinity Table (SRAT)
+/// # System Resource  Table (SRAT)
 /// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.16 System Resource Affinity Table (SRAT)
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.16 System Resource  Table (SRAT)
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
@@ -83,8 +84,9 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    Memory(&'a memory::Structure),
     Other(&'a other::Structure),
-    ProcessorLocalApicSapicAffinity(&'a processor_local_apic_sapic_affinity::Structure),
+    ProcessorLocalApicSapic(&'a processor_local_apic_sapic::Structure),
 }
 
 impl<'a> Structure<'a> {
@@ -93,14 +95,24 @@ impl<'a> Structure<'a> {
             .first()
             .map(|structure_type| match structure_type {
                 0x00 => {
-                    let processor_local_apic_sapic_affinity: *const u8 = structure_type as *const u8;
-                    let processor_local_apic_sapic_affinity: *const processor_local_apic_sapic_affinity::Structure = processor_local_apic_sapic_affinity as *const processor_local_apic_sapic_affinity::Structure;
-                    let processor_local_apic_sapic_affinity: &processor_local_apic_sapic_affinity::Structure = unsafe {
-                        &*processor_local_apic_sapic_affinity
+                    let processor_local_apic_sapic: *const u8 = structure_type as *const u8;
+                    let processor_local_apic_sapic: *const processor_local_apic_sapic::Structure = processor_local_apic_sapic as *const processor_local_apic_sapic::Structure;
+                    let processor_local_apic_sapic: &processor_local_apic_sapic::Structure = unsafe {
+                        &*processor_local_apic_sapic
                     };
-                    let processor_local_apic_sapic_affinity = Self::ProcessorLocalApicSapicAffinity(processor_local_apic_sapic_affinity);
-                    let remaining_bytes: &[u8] = &bytes[processor_local_apic_sapic_affinity.size()..];
-                    (processor_local_apic_sapic_affinity, remaining_bytes)
+                    let processor_local_apic_sapic = Self::ProcessorLocalApicSapic(processor_local_apic_sapic);
+                    let remaining_bytes: &[u8] = &bytes[processor_local_apic_sapic.size()..];
+                    (processor_local_apic_sapic, remaining_bytes)
+                },
+                0x01 => {
+                    let memory: *const u8 = structure_type as *const u8;
+                    let memory: *const memory::Structure = memory as *const memory::Structure;
+                    let memory: &memory::Structure = unsafe {
+                        &*memory
+                    };
+                    let memory = Self::Memory(memory);
+                    let remaining_bytes: &[u8] = &bytes[memory.size()..];
+                    (memory, remaining_bytes)
                 },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
@@ -117,8 +129,9 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::Memory(memory) => memory.length(),
             Self::Other(other) => other.length(),
-            Self::ProcessorLocalApicSapicAffinity(processor_local_apic_sapic_affinity) => processor_local_apic_sapic_affinity.length(),
+            Self::ProcessorLocalApicSapic(processor_local_apic_sapic) => processor_local_apic_sapic.length(),
         }
     }
 }
