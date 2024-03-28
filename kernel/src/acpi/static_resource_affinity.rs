@@ -1,3 +1,4 @@
+mod gicc;
 mod memory;
 mod other;
 mod processor_local_apic_sapic;
@@ -85,6 +86,7 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    Gicc(&'a gicc::Structure),
     Memory(&'a memory::Structure),
     Other(&'a other::Structure),
     ProcessorLocalApicSapic(&'a processor_local_apic_sapic::Structure),
@@ -126,6 +128,16 @@ impl<'a> Structure<'a> {
                     let remaining_bytes: &[u8] = &bytes[processor_local_x2apic.size()..];
                     (processor_local_x2apic, remaining_bytes)
                 },
+                0x03 => {
+                    let gicc: *const u8 = structure_type as *const u8;
+                    let gicc: *const gicc::Structure = gicc as *const gicc::Structure;
+                    let gicc: &gicc::Structure = unsafe {
+                        &*gicc
+                    };
+                    let gicc = Self::Gicc(gicc);
+                    let remaining_bytes: &[u8] = &bytes[gicc.size()..];
+                    (gicc, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -141,6 +153,7 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::Gicc(gicc) => gicc.length(),
             Self::Memory(memory) => memory.length(),
             Self::Other(other) => other.length(),
             Self::ProcessorLocalApicSapic(processor_local_apic_sapic) => processor_local_apic_sapic.length(),

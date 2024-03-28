@@ -32,6 +32,6 @@ struct Flags {
     hot_pluggable: bool,
     non_volatile: bool,
     #[bits(29, access = RO)]
-    reserved: u32,
+    reserved0: u32,
 }
 
