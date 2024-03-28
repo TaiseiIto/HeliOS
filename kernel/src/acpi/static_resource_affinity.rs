@@ -1,3 +1,5 @@
+mod generic_initiator;
+mod generic_port;
 mod gicc;
 mod gic_interrupt_translation_service;
 mod memory;
@@ -87,6 +89,8 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    GenericInitiator(&'a generic_initiator::Structure),
+    GenericPort(&'a generic_port::Structure),
     Gicc(&'a gicc::Structure),
     GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
     Memory(&'a memory::Structure),
@@ -150,6 +154,26 @@ impl<'a> Structure<'a> {
                     let remaining_bytes: &[u8] = &bytes[gic_interrupt_translation_service.size()..];
                     (gic_interrupt_translation_service, remaining_bytes)
                 },
+                0x05 => {
+                    let generic_initiator: *const u8 = structure_type as *const u8;
+                    let generic_initiator: *const generic_initiator::Structure = generic_initiator as *const generic_initiator::Structure;
+                    let generic_initiator: &generic_initiator::Structure = unsafe {
+                        &*generic_initiator
+                    };
+                    let generic_initiator = Self::GenericInitiator(generic_initiator);
+                    let remaining_bytes: &[u8] = &bytes[generic_initiator.size()..];
+                    (generic_initiator, remaining_bytes)
+                },
+                0x06 => {
+                    let generic_port: *const u8 = structure_type as *const u8;
+                    let generic_port: *const generic_port::Structure = generic_port as *const generic_port::Structure;
+                    let generic_port: &generic_port::Structure = unsafe {
+                        &*generic_port
+                    };
+                    let generic_port = Self::GenericPort(generic_port);
+                    let remaining_bytes: &[u8] = &bytes[generic_port.size()..];
+                    (generic_port, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -165,6 +189,8 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::GenericInitiator(generic_initiator) => generic_initiator.length(),
+            Self::GenericPort(generic_port) => generic_port.length(),
             Self::Gicc(gicc) => gicc.length(),
             Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
             Self::Memory(memory) => memory.length(),
