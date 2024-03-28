@@ -1,4 +1,5 @@
 mod other;
+mod processor_local_apic_sapic_affinity;
 
 use {
     alloc::vec::Vec,
@@ -83,27 +84,41 @@ impl<'a> Iterator for Structures<'a> {
 #[derive(Debug)]
 enum Structure<'a> {
     Other(&'a other::Structure),
+    ProcessorLocalApicSapicAffinity(&'a processor_local_apic_sapic_affinity::Structure),
 }
 
 impl<'a> Structure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         bytes
             .first()
-            .map(|structure_type| {
-                let other: *const u8 = structure_type as *const u8;
-                let other: *const other::Structure = other as *const other::Structure;
-                let other: &other::Structure = unsafe {
-                    &*other
-                };
-                let other = Self::Other(other);
-                let remaining_bytes: &[u8] = &bytes[other.size()..];
-                (other, remaining_bytes)
+            .map(|structure_type| match structure_type {
+                0x00 => {
+                    let processor_local_apic_sapic_affinity: *const u8 = structure_type as *const u8;
+                    let processor_local_apic_sapic_affinity: *const processor_local_apic_sapic_affinity::Structure = processor_local_apic_sapic_affinity as *const processor_local_apic_sapic_affinity::Structure;
+                    let processor_local_apic_sapic_affinity: &processor_local_apic_sapic_affinity::Structure = unsafe {
+                        &*processor_local_apic_sapic_affinity
+                    };
+                    let processor_local_apic_sapic_affinity = Self::ProcessorLocalApicSapicAffinity(processor_local_apic_sapic_affinity);
+                    let remaining_bytes: &[u8] = &bytes[processor_local_apic_sapic_affinity.size()..];
+                    (processor_local_apic_sapic_affinity, remaining_bytes)
+                },
+                _ => {
+                    let other: *const u8 = structure_type as *const u8;
+                    let other: *const other::Structure = other as *const other::Structure;
+                    let other: &other::Structure = unsafe {
+                        &*other
+                    };
+                    let other = Self::Other(other);
+                    let remaining_bytes: &[u8] = &bytes[other.size()..];
+                    (other, remaining_bytes)
+                }
             })
     }
 
     fn size(&self) -> usize {
         match self {
             Self::Other(other) => other.length(),
+            Self::ProcessorLocalApicSapicAffinity(processor_local_apic_sapic_affinity) => processor_local_apic_sapic_affinity.length(),
         }
     }
 }
