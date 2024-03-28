@@ -1,4 +1,5 @@
 mod gicc;
+mod gic_interrupt_translation_service;
 mod memory;
 mod other;
 mod processor_local_apic_sapic;
@@ -87,6 +88,7 @@ impl<'a> Iterator for Structures<'a> {
 #[derive(Debug)]
 enum Structure<'a> {
     Gicc(&'a gicc::Structure),
+    GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
     Memory(&'a memory::Structure),
     Other(&'a other::Structure),
     ProcessorLocalApicSapic(&'a processor_local_apic_sapic::Structure),
@@ -138,6 +140,16 @@ impl<'a> Structure<'a> {
                     let remaining_bytes: &[u8] = &bytes[gicc.size()..];
                     (gicc, remaining_bytes)
                 },
+                0x04 => {
+                    let gic_interrupt_translation_service: *const u8 = structure_type as *const u8;
+                    let gic_interrupt_translation_service: *const gic_interrupt_translation_service::Structure = gic_interrupt_translation_service as *const gic_interrupt_translation_service::Structure;
+                    let gic_interrupt_translation_service: &gic_interrupt_translation_service::Structure = unsafe {
+                        &*gic_interrupt_translation_service
+                    };
+                    let gic_interrupt_translation_service = Self::GicInterruptTranslationService(gic_interrupt_translation_service);
+                    let remaining_bytes: &[u8] = &bytes[gic_interrupt_translation_service.size()..];
+                    (gic_interrupt_translation_service, remaining_bytes)
+                },
                 _ => {
                     let other: *const u8 = structure_type as *const u8;
                     let other: *const other::Structure = other as *const other::Structure;
@@ -154,6 +166,7 @@ impl<'a> Structure<'a> {
     fn size(&self) -> usize {
         match self {
             Self::Gicc(gicc) => gicc.length(),
+            Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
             Self::Memory(memory) => memory.length(),
             Self::Other(other) => other.length(),
             Self::ProcessorLocalApicSapic(processor_local_apic_sapic) => processor_local_apic_sapic.length(),
