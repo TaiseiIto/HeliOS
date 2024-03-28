@@ -9,6 +9,7 @@ use {
         differentiated_system_description,
         fixed_acpi_description,
         high_precision_event_timer,
+        memory_mapped_configuration,
         multiple_apic_description,
         root_system_description,
         secondary_system_description,
@@ -97,6 +98,7 @@ pub enum Table<'a> {
     Fadt(&'a fixed_acpi_description::Table),
     Hpet(&'a high_precision_event_timer::Table),
     Madt(&'a multiple_apic_description::Table),
+    Mcfg(&'a memory_mapped_configuration::Table),
     Other(&'a Header),
     Rsdt(&'a root_system_description::Table),
     Srat(&'a static_resource_affinity::Table),
@@ -112,6 +114,7 @@ impl Table<'_> {
             Self::Fadt(fadt) => fadt.is_correct(),
             Self::Hpet(hpet) => hpet.is_correct(),
             Self::Madt(madt) => madt.is_correct(),
+            Self::Mcfg(mcfg) => mcfg.is_correct(),
             Self::Other(header) => header.is_correct(),
             Self::Rsdt(rsdt) => rsdt.is_correct(),
             Self::Srat(srat) => srat.is_correct(),
@@ -163,6 +166,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*hpet
                 };
                 Self::Hpet(hpet)
+            },
+            "MCFG" => {
+                let header: *const Header = header as *const Header;
+                let mcfg: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
+                let mcfg: &memory_mapped_configuration::Table = unsafe {
+                    &*mcfg
+                };
+                Self::Mcfg(mcfg)
             },
             "RSDT" => {
                 let header: *const Header = header as *const Header;
