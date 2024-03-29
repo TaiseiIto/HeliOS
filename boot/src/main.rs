@@ -35,6 +35,11 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 #[no_mangle]
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
+    // Allocate pages requested to be allocated at specific physical address preferentially.
+    let application_processor_boot_loader_pages: usize = (APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR - APPLICATION_PROCESSOR_BOOT_LOADER_BASE) / memory::page::SIZE;
+    let application_processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
+        .allocate_specific_pages(APPLICATION_PROCESSOR_BOOT_LOADER_BASE, application_processor_boot_loader_pages)
+        .unwrap();
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let font_protocol = efi::font::Protocol::get();
@@ -101,7 +106,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .get(APPLICATION_PROCESSOR_BOOT_LOADER)
         .unwrap()
         .read();
-    let application_processor_boot_loader = application_processor::boot::Loader::new(&application_processor_boot_loader, APPLICATION_PROCESSOR_BOOT_LOADER_BASE, APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR);
+    let application_processor_boot_loader = application_processor::boot::Loader::new(&application_processor_boot_loader, application_processor_boot_loader_pages);
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()

@@ -16,11 +16,9 @@ pub struct Loader {
 }
 
 impl Loader {
-    pub fn new(binary: &[u8], base: usize, stack_floor: usize) -> Self {
-        let pages: usize = (stack_floor - base) / memory::page::SIZE;
-        let physical_range: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
-            .allocate_specific_pages(base, pages)
-            .unwrap();
+    pub fn new(binary: &[u8], physical_range: Range<efi::memory::PhysicalAddress>) -> Self {
+        let base: usize = physical_range.start as usize;
+        let stack_floor: usize = physical_range.end as usize;
         let program_address_range: Range<usize> = base..base + binary.len();
         let physical_start: *mut u8 = physical_range.start as *mut u8;
         unsafe { slice::from_raw_parts_mut(physical_start, binary.len()) }
