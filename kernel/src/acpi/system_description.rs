@@ -146,6 +146,9 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Bgrt(bgrt)
             },
+            // "DBG2"
+            // "DBGP"
+            // "DMAR"
             "DSDT" => {
                 let header: *const Header = header as *const Header;
                 let dsdt: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
@@ -162,6 +165,8 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Fadt(fadt)
             },
+            // "FIDT"
+            // "FPDT"
             "HPET" => {
                 let header: *const Header = header as *const Header;
                 let hpet: *const high_precision_event_timer::Table = header as *const high_precision_event_timer::Table;
@@ -170,6 +175,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Hpet(hpet)
             },
+            // "LPIT"
             "MCFG" => {
                 let header: *const Header = header as *const Header;
                 let mcfg: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
@@ -178,6 +184,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Mcfg(mcfg)
             },
+            // "NPKT"
             "RSDT" => {
                 let header: *const Header = header as *const Header;
                 let rsdt: *const root_system_description::Table = header as *const root_system_description::Table;
@@ -202,6 +209,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Ssdt(ssdt)
             },
+            // "TPM2"
             "WAET" => {
                 let header: *const Header = header as *const Header;
                 let waet: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
@@ -210,6 +218,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Waet(waet)
             }
+            // "WDAT"
             "WSMT" => {
                 let header: *const Header = header as *const Header;
                 let wsmt: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;
