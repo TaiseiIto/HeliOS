@@ -1,7 +1,7 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
-    strycture_type: u16,
+    structure_type: u16,
     length: u16,
 }
 

@@ -1,3 +1,4 @@
+mod hardware_unit_definition;
 mod other;
 
 use {
@@ -93,27 +94,45 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    Drhd(&'a hardware_unit_definition::Structure),
     Other(&'a other::Structure),
 }
 
 impl<'a> Structure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         bytes
-            .first()
-            .map(|structure_type| {
-                let other: *const u8 = structure_type as *const u8;
-                let other: *const other::Structure = other as *const other::Structure;
-                let other: &other::Structure = unsafe {
-                    &*other
-                };
-                let other = Self::Other(other);
-                let remaining_bytes: &[u8] = &bytes[other.size()..];
-                (other, remaining_bytes)
+            .get(0)
+            .zip(bytes.get(1))
+            .map(|(structure_type_low, structure_type_high)| {
+                let structure_type: u16 = (*structure_type_low as u16) + ((*structure_type_high as u16) << u8::BITS);
+                match structure_type {
+                    0x0000 => {
+                        let drhd: *const u8 = structure_type as *const u8;
+                        let drhd: *const hardware_unit_definition::Structure = drhd as *const hardware_unit_definition::Structure;
+                        let drhd: &hardware_unit_definition::Structure = unsafe {
+                            &*drhd
+                        };
+                        let drhd = Self::Drhd(drhd);
+                        let remaining_bytes: &[u8] = &bytes[drhd.size()..];
+                        (drhd, remaining_bytes)
+                    },
+                    _ => {
+                        let other: *const u8 = structure_type as *const u8;
+                        let other: *const other::Structure = other as *const other::Structure;
+                        let other: &other::Structure = unsafe {
+                            &*other
+                        };
+                        let other = Self::Other(other);
+                        let remaining_bytes: &[u8] = &bytes[other.size()..];
+                        (other, remaining_bytes)
+                    },
+                }
             })
     }
 
     fn size(&self) -> usize {
         match self {
+            Self::Drhd(drhd) => drhd.length(),
             Self::Other(other) => other.length(),
         }
     }
