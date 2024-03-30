@@ -1,9 +1,15 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::{
+        fmt,
+        mem,
+        slice,
+    },
+};
 
 /// # Device Scope Structure
 /// ## References
 /// * [Intel Virtualization Technology for Directed I/O](https://software.intel.com/content/dam/develop/external/us/en/documents-tps/vt-directed-io-spec.pdf) 8.3.1 Device Scope Structure
-#[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
     structure_type: u8,
@@ -31,6 +37,39 @@ impl Structure {
 
     fn length(&self) -> usize {
         self.length as usize
+    }
+
+    fn path(&self) -> &[u16] {
+        let structure: *const Self = self as *const Self;
+        let path: *const Self = unsafe {
+            structure.add(1)
+        };
+        let path: *const u16 = path as *const u16;
+        let length: usize = (self.length() - mem::size_of::<Self>()) / mem::size_of::<u16>();
+        unsafe {
+            slice::from_raw_parts(path, length)
+        }
+    }
+}
+
+impl fmt::Debug for Structure {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let structure_type: u8 = self.structure_type;
+        let length: u8 = self.length;
+        let flags: Flags = self.flags;
+        let reserved0: u8 = self.reserved0;
+        let enumeration_id: u8 = self.enumeration_id;
+        let start_bus_number: u8 = self.start_bus_number;
+        formatter
+            .debug_struct("Structure")
+            .field("structure_type", &structure_type)
+            .field("length", &length)
+            .field("flags", &flags)
+            .field("reserved0", &reserved0)
+            .field("enumeration_id", &enumeration_id)
+            .field("start_bus_number", &start_bus_number)
+            .field("path", &self.path())
+            .finish()
     }
 }
 
