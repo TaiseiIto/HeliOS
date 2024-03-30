@@ -12,6 +12,24 @@ use {
     },
 };
 
+/// # Debug Port Table
+/// ## References
+/// * [Debug Port Specification - ARCHIVE (DBGP)](https://learn.microsoft.com/en-us/previous-versions/windows/hardware/design/dn639130(v=vs.85)?redirectedfrom=MSDN)
+#[derive(Debug)]
+#[repr(packed)]
+pub struct Table {
+    header: system_description::Header,
+    interface_type: u8,
+    reserved0: [u8; 3],
+    base_address: generic_address::Structure,
+}
+
+impl Table {
+    pub fn is_correct(&self) -> bool {
+        self.header.is_correct()
+    }
+}
+
 /// # Debug Port Table 2 (DBG2)
 /// ## References
 /// * [Microsoft Debug Port Table 2](https://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/acpi-debug-port-table)
