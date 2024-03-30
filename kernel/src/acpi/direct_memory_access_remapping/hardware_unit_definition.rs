@@ -121,6 +121,15 @@ impl<'a> From<&'a soc_integrated::address_translation_cache::Structure> for Scop
     }
 }
 
+impl<'a> From<&'a soc_integrated::device_property::Structure> for Scopes<'a> {
+    fn from(structure: &'a soc_integrated::device_property::Structure) -> Self {
+        let bytes: &[u8] = structure.bytes();
+        Self {
+            bytes,
+        }
+    }
+}
+
 impl<'a> Iterator for Scopes<'a> {
     type Item = &'a scope::Structure;
 
