@@ -8,6 +8,7 @@ use {
         boot_graphics_resource,
         debug_port,
         differentiated_system_description,
+        direct_memory_access_remapping,
         fixed_acpi_description,
         high_precision_event_timer,
         memory_mapped_configuration,
@@ -98,6 +99,7 @@ pub enum Table<'a> {
     Bgrt(&'a boot_graphics_resource::Table),
     Dbg2(&'a debug_port::Table2),
     Dbgp(&'a debug_port::Table),
+    Dmar(&'a direct_memory_access_remapping::Table),
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
     Hpet(&'a high_precision_event_timer::Table),
@@ -117,6 +119,7 @@ impl Table<'_> {
             Self::Bgrt(bgrt) => bgrt.is_correct(),
             Self::Dbg2(dbg2) => dbg2.is_correct(),
             Self::Dbgp(dbgp) => dbgp.is_correct(),
+            Self::Dmar(dmar) => dmar.is_correct(),
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
             Self::Hpet(hpet) => hpet.is_correct(),
@@ -167,7 +170,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Dbgp(dbgp)
             },
-            // "DMAR"
+            "DMAR" => {
+                let header: *const Header = header as *const Header;
+                let dmar: *const direct_memory_access_remapping::Table = header as *const direct_memory_access_remapping::Table;
+                let dmar: &direct_memory_access_remapping::Table = unsafe {
+                    &*dmar
+                };
+                Self::Dmar(dmar)
+            },
             "DSDT" => {
                 let header: *const Header = header as *const Header;
                 let dsdt: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
