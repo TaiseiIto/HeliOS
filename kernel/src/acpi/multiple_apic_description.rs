@@ -53,12 +53,13 @@ impl Table {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: usize = table as usize;
-        let first_byte: usize = table + mem::size_of::<Self>();
-        let first_byte: *const u8 = first_byte as *const u8;
+        let table: *const Self = unsafe {
+            table.add(1)
+        };
+        let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - mem::size_of::<Self>();
         unsafe {
-            slice::from_raw_parts(first_byte, size)
+            slice::from_raw_parts(table, size)
         }
     }
 

@@ -6,6 +6,7 @@ use {
     },
     super::{
         boot_graphics_resource,
+        debug_port,
         differentiated_system_description,
         fixed_acpi_description,
         high_precision_event_timer,
@@ -95,6 +96,7 @@ impl fmt::Debug for Header {
 #[derive(Debug)]
 pub enum Table<'a> {
     Bgrt(&'a boot_graphics_resource::Table),
+    Dbg2(&'a debug_port::Table2),
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
     Hpet(&'a high_precision_event_timer::Table),
@@ -112,6 +114,7 @@ impl Table<'_> {
     pub fn is_correct(&self) -> bool {
         match self {
             Self::Bgrt(bgrt) => bgrt.is_correct(),
+            Self::Dbg2(dbg2) => dbg2.is_correct(),
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
             Self::Hpet(hpet) => hpet.is_correct(),
@@ -146,7 +149,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Bgrt(bgrt)
             },
-            // "DBG2"
+            "DBG2" => {
+                let header: *const Header = header as *const Header;
+                let dbg2: *const debug_port::Table2 = header as *const debug_port::Table2;
+                let dbg2: &debug_port::Table2 = unsafe {
+                    &*dbg2
+                };
+                Self::Dbg2(dbg2)
+            },
             // "DBGP"
             // "DMAR"
             "DSDT" => {
