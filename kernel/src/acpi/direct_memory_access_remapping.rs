@@ -1,3 +1,4 @@
+mod hardware_static_affinity;
 mod hardware_unit_definition;
 mod other;
 mod reserved_memory_region;
@@ -99,6 +100,7 @@ enum Structure<'a> {
     Atsr(&'a root_port_ats_capability::Structure),
     Drhd(&'a hardware_unit_definition::Structure),
     Other(&'a other::Structure),
+    Rhsa(&'a hardware_static_affinity::Structure),
     Rmrr(&'a reserved_memory_region::Structure),
 }
 
@@ -140,6 +142,16 @@ impl<'a> Structure<'a> {
                         let remaining_bytes: &[u8] = &bytes[atsr.size()..];
                         (atsr, remaining_bytes)
                     },
+                    0x0003 => {
+                        let rhsa: *const u8 = structure_type as *const u8;
+                        let rhsa: *const hardware_static_affinity::Structure = rhsa as *const hardware_static_affinity::Structure;
+                        let rhsa: &hardware_static_affinity::Structure = unsafe {
+                            &*rhsa
+                        };
+                        let rhsa = Self::Rhsa(rhsa);
+                        let remaining_bytes: &[u8] = &bytes[rhsa.size()..];
+                        (rhsa, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = structure_type as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
@@ -159,6 +171,7 @@ impl<'a> Structure<'a> {
             Self::Atsr(atsr) => atsr.length(),
             Self::Drhd(drhd) => drhd.length(),
             Self::Other(other) => other.length(),
+            Self::Rhsa(rhsa) => rhsa.length(),
             Self::Rmrr(rmrr) => rmrr.length(),
         }
     }
