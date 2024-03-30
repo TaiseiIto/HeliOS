@@ -8,7 +8,10 @@ use {
         mem,
         slice,
     },
-    super::reserved_memory_region,
+    super::{
+        reserved_memory_region,
+        root_port_ats_capability,
+    },
 };
 
 /// # DMA Remapping Hardware Unit Definition Structure
@@ -92,6 +95,15 @@ impl<'a> From<&'a Structure> for Scopes<'a> {
 
 impl<'a> From<&'a reserved_memory_region::Structure> for Scopes<'a> {
     fn from(structure: &'a reserved_memory_region::Structure) -> Self {
+        let bytes: &[u8] = structure.bytes();
+        Self {
+            bytes,
+        }
+    }
+}
+
+impl<'a> From<&'a root_port_ats_capability::Structure> for Scopes<'a> {
+    fn from(structure: &'a root_port_ats_capability::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
         Self {
             bytes,

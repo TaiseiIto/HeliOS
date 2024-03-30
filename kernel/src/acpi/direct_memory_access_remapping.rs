@@ -1,6 +1,7 @@
 mod hardware_unit_definition;
 mod other;
 mod reserved_memory_region;
+mod root_port_ats_capability;
 
 use {
     bitfield_struct::bitfield,
@@ -95,6 +96,7 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    Atsr(&'a root_port_ats_capability::Structure),
     Drhd(&'a hardware_unit_definition::Structure),
     Other(&'a other::Structure),
     Rmrr(&'a reserved_memory_region::Structure),
@@ -128,6 +130,16 @@ impl<'a> Structure<'a> {
                         let remaining_bytes: &[u8] = &bytes[rmrr.size()..];
                         (rmrr, remaining_bytes)
                     },
+                    0x0002 => {
+                        let atsr: *const u8 = structure_type as *const u8;
+                        let atsr: *const root_port_ats_capability::Structure = atsr as *const root_port_ats_capability::Structure;
+                        let atsr: &root_port_ats_capability::Structure = unsafe {
+                            &*atsr
+                        };
+                        let atsr = Self::Atsr(atsr);
+                        let remaining_bytes: &[u8] = &bytes[atsr.size()..];
+                        (atsr, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = structure_type as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
@@ -144,6 +156,7 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::Atsr(atsr) => atsr.length(),
             Self::Drhd(drhd) => drhd.length(),
             Self::Other(other) => other.length(),
             Self::Rmrr(rmrr) => rmrr.length(),
