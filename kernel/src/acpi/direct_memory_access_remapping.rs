@@ -1,3 +1,4 @@
+mod acpi_namespace_device_declaration;
 mod hardware_static_affinity;
 mod hardware_unit_definition;
 mod other;
@@ -97,6 +98,7 @@ impl<'a> Iterator for Structures<'a> {
 
 #[derive(Debug)]
 enum Structure<'a> {
+    Andd(&'a acpi_namespace_device_declaration::Structure),
     Atsr(&'a root_port_ats_capability::Structure),
     Drhd(&'a hardware_unit_definition::Structure),
     Other(&'a other::Structure),
@@ -152,6 +154,16 @@ impl<'a> Structure<'a> {
                         let remaining_bytes: &[u8] = &bytes[rhsa.size()..];
                         (rhsa, remaining_bytes)
                     },
+                    0x0004 => {
+                        let andd: *const u8 = structure_type as *const u8;
+                        let andd: *const acpi_namespace_device_declaration::Structure = andd as *const acpi_namespace_device_declaration::Structure;
+                        let andd: &acpi_namespace_device_declaration::Structure = unsafe {
+                            &*andd
+                        };
+                        let andd = Self::Andd(andd);
+                        let remaining_bytes: &[u8] = &bytes[andd.size()..];
+                        (andd, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = structure_type as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
@@ -168,6 +180,7 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::Andd(andd) => andd.length(),
             Self::Atsr(atsr) => atsr.length(),
             Self::Drhd(drhd) => drhd.length(),
             Self::Other(other) => other.length(),
