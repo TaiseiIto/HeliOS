@@ -4,6 +4,7 @@ use {
         fmt,
         mem,
         slice,
+        str,
     },
     super::{
         generic_address,
@@ -86,6 +87,9 @@ impl<'a> Iterator for DeviceInformations<'a> {
     }
 }
 
+/// # Debug Device Information structure
+/// ## References
+/// * [Microsoft Debug Port Table 2](https://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/acpi-debug-port-table)
 #[repr(packed)]
 struct DeviceInformation {
     revision: u8,
@@ -103,6 +107,17 @@ struct DeviceInformation {
 }
 
 impl DeviceInformation {
+    fn address_sizes(&self) -> &[u32] {
+        let offset: usize = self.address_size_offset as usize;
+        let address_sizes: &u8 = &self.bytes()[offset];
+        let address_sizes: *const u8 = address_sizes as *const u8;
+        let address_sizes: *const u32 = address_sizes as *const u32;
+        let length: usize = self.number_of_generic_address_registers as usize;
+        unsafe {
+            slice::from_raw_parts(address_sizes, length)
+        }
+    }
+
     fn base_address_registers(&self) -> &[generic_address::Structure] {
         let offset: usize = self.base_address_register_offset as usize;
         let base_address_registers: &u8 = &self.bytes()[offset];
@@ -127,6 +142,27 @@ impl DeviceInformation {
         self.length as usize
     }
 
+    fn namespace_string(&self) -> &str {
+        let offset: usize = self.namespace_string_offset as usize;
+        let namespace_string: &u8= &self.bytes()[offset];
+        let namespace_string: *const u8 = namespace_string as *const u8;
+        let length: usize = self.namespace_string_length as usize;
+        let namespace_string: &[u8] = unsafe {
+            slice::from_raw_parts(namespace_string, length)
+        };
+        str::from_utf8(namespace_string).unwrap()
+    }
+
+    fn oem_data(&self) -> &[u8] {
+        let offset: usize = self.oem_data_offset as usize;
+        let oem_data: &u8= &self.bytes()[offset];
+        let oem_data: *const u8 = oem_data as *const u8;
+        let length: usize = self.oem_data_length as usize;
+        unsafe {
+            slice::from_raw_parts(oem_data, length)
+        }
+    }
+
     fn scan(bytes: &[u8]) -> Option<(&Self, &[u8])> {
         bytes
             .first()
@@ -146,27 +182,18 @@ impl fmt::Debug for DeviceInformation {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let revision: u8 = self.revision;
         let length: u16 = self.length;
-        let namespace_string_length: u16 = self.namespace_string_length;
-        let namespace_string_offset: u16 = self.namespace_string_offset;
-        let oem_data_length: u16 = self.oem_data_length;
-        let oem_data_offset: u16 = self.oem_data_offset;
         let port_type: u16 = self.port_type;
         let port_subtype: u16 = self.port_subtype;
-        let reserved0: u16 = self.reserved0;
-        let address_size_offset: u16 = self.address_size_offset;
         formatter
             .debug_struct("DeviceInformation")
             .field("revision", &revision)
             .field("length", &length)
-            .field("namespace_string_length", &namespace_string_length)
-            .field("namespace_string_offset", &namespace_string_offset)
-            .field("oem_data_length", &oem_data_length)
-            .field("oem_data_offset", &oem_data_offset)
             .field("port_type", &port_type)
             .field("port_subtype", &port_subtype)
-            .field("reserved0", &reserved0)
-            .field("address_size_offset", &address_size_offset)
             .field("base_address_registers", &self.base_address_registers())
+            .field("address_sizes", &self.address_sizes())
+            .field("namespace_string", &self.namespace_string())
+            .field("oem_data", &self.oem_data())
             .finish()
     }
 }
