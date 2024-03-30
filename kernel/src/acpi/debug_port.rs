@@ -5,7 +5,10 @@ use {
         mem,
         slice,
     },
-    super::system_description,
+    super::{
+        generic_address,
+        system_description,
+    },
 };
 
 /// # Debug Port Table 2 (DBG2)
@@ -83,12 +86,11 @@ impl<'a> Iterator for DeviceInformations<'a> {
     }
 }
 
-#[derive(Debug)]
 #[repr(packed)]
 struct DeviceInformation {
     revision: u8,
     length: u16,
-    number_of_generig_address_registers: u8,
+    number_of_generic_address_registers: u8,
     namespace_string_length: u16,
     namespace_string_offset: u16,
     oem_data_length: u16,
@@ -101,6 +103,26 @@ struct DeviceInformation {
 }
 
 impl DeviceInformation {
+    fn base_address_registers(&self) -> &[generic_address::Structure] {
+        let offset: usize = self.base_address_register_offset as usize;
+        let base_address_registers: &u8 = &self.bytes()[offset];
+        let base_address_registers: *const u8 = base_address_registers as *const u8;
+        let base_address_registers: *const generic_address::Structure = base_address_registers as *const generic_address::Structure;
+        let length: usize = self.number_of_generic_address_registers as usize;
+        unsafe {
+            slice::from_raw_parts(base_address_registers, length)
+        }
+    }
+
+    fn bytes(&self) -> &[u8] {
+        let bytes: *const Self = self as *const Self;
+        let bytes: *const u8 = bytes as *const u8;
+        let length: usize = self.length();
+        unsafe {
+            slice::from_raw_parts(bytes, length)
+        }
+    }
+
     fn length(&self) -> usize {
         self.length as usize
     }
@@ -117,6 +139,35 @@ impl DeviceInformation {
                 let remaining_bytes: &[u8] = &bytes[device_information.length()..];
                 (device_information, remaining_bytes)
             })
+    }
+}
+
+impl fmt::Debug for DeviceInformation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let revision: u8 = self.revision;
+        let length: u16 = self.length;
+        let namespace_string_length: u16 = self.namespace_string_length;
+        let namespace_string_offset: u16 = self.namespace_string_offset;
+        let oem_data_length: u16 = self.oem_data_length;
+        let oem_data_offset: u16 = self.oem_data_offset;
+        let port_type: u16 = self.port_type;
+        let port_subtype: u16 = self.port_subtype;
+        let reserved0: u16 = self.reserved0;
+        let address_size_offset: u16 = self.address_size_offset;
+        formatter
+            .debug_struct("DeviceInformation")
+            .field("revision", &revision)
+            .field("length", &length)
+            .field("namespace_string_length", &namespace_string_length)
+            .field("namespace_string_offset", &namespace_string_offset)
+            .field("oem_data_length", &oem_data_length)
+            .field("oem_data_offset", &oem_data_offset)
+            .field("port_type", &port_type)
+            .field("port_subtype", &port_subtype)
+            .field("reserved0", &reserved0)
+            .field("address_size_offset", &address_size_offset)
+            .field("base_address_registers", &self.base_address_registers())
+            .finish()
     }
 }
 
