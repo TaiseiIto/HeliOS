@@ -1,5 +1,6 @@
 mod hardware_unit_definition;
 mod other;
+mod reserved_memory_region;
 
 use {
     bitfield_struct::bitfield,
@@ -96,6 +97,7 @@ impl<'a> Iterator for Structures<'a> {
 enum Structure<'a> {
     Drhd(&'a hardware_unit_definition::Structure),
     Other(&'a other::Structure),
+    Rmrr(&'a reserved_memory_region::Structure),
 }
 
 impl<'a> Structure<'a> {
@@ -116,6 +118,16 @@ impl<'a> Structure<'a> {
                         let remaining_bytes: &[u8] = &bytes[drhd.size()..];
                         (drhd, remaining_bytes)
                     },
+                    0x0001 => {
+                        let rmrr: *const u8 = structure_type as *const u8;
+                        let rmrr: *const reserved_memory_region::Structure = rmrr as *const reserved_memory_region::Structure;
+                        let rmrr: &reserved_memory_region::Structure = unsafe {
+                            &*rmrr
+                        };
+                        let rmrr = Self::Rmrr(rmrr);
+                        let remaining_bytes: &[u8] = &bytes[rmrr.size()..];
+                        (rmrr, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = structure_type as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
@@ -134,6 +146,7 @@ impl<'a> Structure<'a> {
         match self {
             Self::Drhd(drhd) => drhd.length(),
             Self::Other(other) => other.length(),
+            Self::Rmrr(rmrr) => rmrr.length(),
         }
     }
 }

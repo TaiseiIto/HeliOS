@@ -1,4 +1,4 @@
-mod scope;
+pub mod scope;
 
 use {
     alloc::vec::Vec,
@@ -8,6 +8,7 @@ use {
         mem,
         slice,
     },
+    super::reserved_memory_region,
 };
 
 /// # DMA Remapping Hardware Unit Definition Structure
@@ -76,12 +77,21 @@ struct Flags {
     reserved: u8,
 }
 
-struct Scopes<'a> {
+pub struct Scopes<'a> {
     bytes: &'a [u8],
 }
 
 impl<'a> From<&'a Structure> for Scopes<'a> {
     fn from(structure: &'a Structure) -> Self {
+        let bytes: &[u8] = structure.bytes();
+        Self {
+            bytes,
+        }
+    }
+}
+
+impl<'a> From<&'a reserved_memory_region::Structure> for Scopes<'a> {
+    fn from(structure: &'a reserved_memory_region::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
         Self {
             bytes,
