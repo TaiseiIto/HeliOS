@@ -4,6 +4,7 @@ mod hardware_unit_definition;
 mod other;
 mod reserved_memory_region;
 mod root_port_ats_capability;
+mod soc_integrated;
 
 use {
     bitfield_struct::bitfield,
@@ -104,6 +105,7 @@ enum Structure<'a> {
     Other(&'a other::Structure),
     Rhsa(&'a hardware_static_affinity::Structure),
     Rmrr(&'a reserved_memory_region::Structure),
+    Satc(&'a soc_integrated::address_translation_cache::Structure),
 }
 
 impl<'a> Structure<'a> {
@@ -164,6 +166,16 @@ impl<'a> Structure<'a> {
                         let remaining_bytes: &[u8] = &bytes[andd.size()..];
                         (andd, remaining_bytes)
                     },
+                    0x0005 => {
+                        let satc: *const u8 = structure_type as *const u8;
+                        let satc: *const soc_integrated::address_translation_cache::Structure = satc as *const soc_integrated::address_translation_cache::Structure;
+                        let satc: &soc_integrated::address_translation_cache::Structure = unsafe {
+                            &*satc
+                        };
+                        let satc = Self::Satc(satc);
+                        let remaining_bytes: &[u8] = &bytes[satc.size()..];
+                        (satc, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = structure_type as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
@@ -186,6 +198,7 @@ impl<'a> Structure<'a> {
             Self::Other(other) => other.length(),
             Self::Rhsa(rhsa) => rhsa.length(),
             Self::Rmrr(rmrr) => rmrr.length(),
+            Self::Satc(satc) => satc.length(),
         }
     }
 }

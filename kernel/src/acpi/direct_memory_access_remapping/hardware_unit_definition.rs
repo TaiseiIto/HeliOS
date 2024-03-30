@@ -11,6 +11,7 @@ use {
     super::{
         reserved_memory_region,
         root_port_ats_capability,
+        soc_integrated,
     },
 };
 
@@ -104,6 +105,15 @@ impl<'a> From<&'a reserved_memory_region::Structure> for Scopes<'a> {
 
 impl<'a> From<&'a root_port_ats_capability::Structure> for Scopes<'a> {
     fn from(structure: &'a root_port_ats_capability::Structure) -> Self {
+        let bytes: &[u8] = structure.bytes();
+        Self {
+            bytes,
+        }
+    }
+}
+
+impl<'a> From<&'a soc_integrated::address_translation_cache::Structure> for Scopes<'a> {
+    fn from(structure: &'a soc_integrated::address_translation_cache::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
         Self {
             bytes,
