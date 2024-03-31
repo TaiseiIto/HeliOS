@@ -9,6 +9,10 @@ use {
         mem,
         slice,
     },
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::system_description,
 };
 
@@ -45,11 +49,13 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let bytes: &[u8] = self.bytes();
+        let performance_records: Vec<PerformanceRecord> = self
+            .iter()
+            .collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
-            .field("bytes", &bytes)
+            .field("performance_records", &performance_records)
             .finish()
     }
 }
@@ -73,6 +79,9 @@ impl<'a> Iterator for PerformanceRecords<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let bytes: &[u8] = self.bytes;
         Self::Item::scan(bytes).map(|(performance_record, remaining_bytes)| {
+            com2_println!("PerformanceRecords.next()");
+            com2_println!("performance_record = {:#x?}", performance_record);
+            com2_println!("remaining_bytes = {:#x?}", remaining_bytes);
             self.bytes = remaining_bytes;
             performance_record
         })
@@ -100,6 +109,7 @@ impl<'a> PerformanceRecord<'a> {
                             &*firmware_basic_boot_performance_table_pointer
                         };
                         let firmware_basic_boot_performance_table_pointer = Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer);
+                        com2_println!("firmware_basic_boot_performance_table_pointer.size() = {:#x?}", firmware_basic_boot_performance_table_pointer.size());
                         let remaining_bytes: &[u8] = &bytes[firmware_basic_boot_performance_table_pointer.size()..];
                         (firmware_basic_boot_performance_table_pointer, remaining_bytes)
                     },
@@ -110,6 +120,7 @@ impl<'a> PerformanceRecord<'a> {
                             &*other
                         };
                         let other = Self::Other(other);
+                        com2_println!("other.size() = {:#x?}", other.size());
                         let remaining_bytes: &[u8] = &bytes[other.size()..];
                         (other, remaining_bytes)
                     },
