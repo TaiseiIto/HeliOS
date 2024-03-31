@@ -1,3 +1,4 @@
+mod firmware_basic_boot_performance_table_pointer;
 mod other;
 mod record;
 
@@ -82,6 +83,7 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
+    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance_table_pointer::Record),
     Other(&'a other::Record)
 }
 
@@ -93,6 +95,16 @@ impl<'a> PerformanceRecord<'a> {
             .map(|(record_type_low, record_type_high)| {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
+                    0x0000 => {
+                        let firmware_basic_boot_performance_table_pointer: *const u8 = record_type as *const u8;
+                        let firmware_basic_boot_performance_table_pointer: *const firmware_basic_boot_performance_table_pointer::Record = firmware_basic_boot_performance_table_pointer as *const firmware_basic_boot_performance_table_pointer::Record;
+                        let firmware_basic_boot_performance_table_pointer: &firmware_basic_boot_performance_table_pointer::Record = unsafe {
+                            &*firmware_basic_boot_performance_table_pointer
+                        };
+                        let firmware_basic_boot_performance_table_pointer = Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer);
+                        let remaining_bytes: &[u8] = &bytes[firmware_basic_boot_performance_table_pointer.size()..];
+                        (firmware_basic_boot_performance_table_pointer, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = record_type as *const u8;
                         let other: *const other::Record = other as *const other::Record;
@@ -109,6 +121,7 @@ impl<'a> PerformanceRecord<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer) => firmware_basic_boot_performance_table_pointer.length(),
             Self::Other(other) => other.length(),
         }
     }
