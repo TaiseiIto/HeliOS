@@ -9,6 +9,7 @@ use {
         debug_port,
         differentiated_system_description,
         direct_memory_access_remapping,
+        firmware_performance_data,
         fixed_acpi_description,
         high_precision_event_timer,
         memory_mapped_configuration,
@@ -102,6 +103,7 @@ pub enum Table<'a> {
     Dmar(&'a direct_memory_access_remapping::Table),
     Dsdt(&'a differentiated_system_description::Table),
     Fadt(&'a fixed_acpi_description::Table),
+    Fpdt(&'a firmware_performance_data::Table),
     Hpet(&'a high_precision_event_timer::Table),
     Madt(&'a multiple_apic_description::Table),
     Mcfg(&'a memory_mapped_configuration::Table),
@@ -122,6 +124,7 @@ impl Table<'_> {
             Self::Dmar(dmar) => dmar.is_correct(),
             Self::Dsdt(dsdt) => dsdt.is_correct(),
             Self::Fadt(fadt) => fadt.is_correct(),
+            Self::Fpdt(fpdt) => fpdt.is_correct(),
             Self::Hpet(hpet) => hpet.is_correct(),
             Self::Madt(madt) => madt.is_correct(),
             Self::Mcfg(mcfg) => mcfg.is_correct(),
@@ -195,7 +198,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Fadt(fadt)
             },
             // "FIDT"
-            // "FPDT"
+            "FPDT" => {
+                let header: *const Header = header as *const Header;
+                let fpdt: *const firmware_performance_data::Table = header as *const firmware_performance_data::Table;
+                let fpdt: &firmware_performance_data::Table = unsafe {
+                    &*fpdt
+                };
+                Self::Fpdt(fpdt)
+            },
             "HPET" => {
                 let header: *const Header = header as *const Header;
                 let hpet: *const high_precision_event_timer::Table = header as *const high_precision_event_timer::Table;
