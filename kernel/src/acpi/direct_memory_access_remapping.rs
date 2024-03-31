@@ -7,6 +7,7 @@ mod root_port_ats_capability;
 mod soc_integrated;
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -54,11 +55,15 @@ impl fmt::Debug for Table {
         let header: system_description::Header = self.header;
         let host_address_width: u8 = self.host_address_width;
         let flags: Flags = self.flags;
+        let structures: Vec<Structure> = self
+            .iter()
+            .collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
             .field("host_address_width", &host_address_width)
             .field("flags", &flags)
+            .field("structures", &structures)
             .finish()
     }
 }
