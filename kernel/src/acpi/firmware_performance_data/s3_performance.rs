@@ -7,9 +7,9 @@ use core::{
     str,
 };
 
-/// # Firmware Basic Boot Performance Table
+/// # S3 Performance Table
 /// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.24.6 Firmware Basic Boot Performance Table
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.24.8 S3 Performance Table
 #[repr(packed)]
 pub struct Table {
     signature: [u8; 4],

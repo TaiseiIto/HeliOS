@@ -1,6 +1,7 @@
 mod firmware_basic_boot_performance;
 mod other;
 mod record;
+mod s3_performance;
 
 use {
     alloc::vec::Vec,
@@ -84,7 +85,8 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
     FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance::table::pointer::Record<'a>),
-    Other(&'a other::Record)
+    Other(&'a other::Record),
+    S3PerformanceTablePointer(&'a s3_performance::table::pointer::Record<'a>),
 }
 
 impl<'a> PerformanceRecord<'a> {
@@ -105,6 +107,16 @@ impl<'a> PerformanceRecord<'a> {
                         let remaining_bytes: &[u8] = &bytes[firmware_basic_boot_performance_table_pointer.size()..];
                         (firmware_basic_boot_performance_table_pointer, remaining_bytes)
                     },
+                    0x0001 => {
+                        let s3_performance_table_pointer: *const u8 = record_type_low as *const u8;
+                        let s3_performance_table_pointer: *const s3_performance::table::pointer::Record = s3_performance_table_pointer as *const s3_performance::table::pointer::Record;
+                        let s3_performance_table_pointer: &s3_performance::table::pointer::Record = unsafe {
+                            &*s3_performance_table_pointer
+                        };
+                        let s3_performance_table_pointer = Self::S3PerformanceTablePointer(s3_performance_table_pointer);
+                        let remaining_bytes: &[u8] = &bytes[s3_performance_table_pointer.size()..];
+                        (s3_performance_table_pointer, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = record_type_low as *const u8;
                         let other: *const other::Record = other as *const other::Record;
@@ -123,6 +135,7 @@ impl<'a> PerformanceRecord<'a> {
         match self {
             Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer) => firmware_basic_boot_performance_table_pointer.length(),
             Self::Other(other) => other.length(),
+            Self::S3PerformanceTablePointer(s3_performance_table_pointer) => s3_performance_table_pointer.length(),
         }
     }
 }
