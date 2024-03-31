@@ -1,6 +1,7 @@
 pub mod table;
 
 use {
+    alloc::vec::Vec,
     core::{
         fmt,
         mem,
@@ -50,12 +51,14 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let signature: &str = self.signature();
         let length: usize = self.length();
-        let bytes: &[u8] = self.bytes();
+        let performance_records: Vec<PerformanceRecord> = self
+            .iter()
+            .collect();
         formatter
             .debug_struct("Table")
             .field("signature", &signature)
             .field("length", &length)
-            .field("bytes", &bytes)
+            .field("performance_records", &performance_records)
             .finish()
     }
 }
