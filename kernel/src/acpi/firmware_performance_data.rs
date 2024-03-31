@@ -83,7 +83,7 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
-    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance::table::pointer::Record),
+    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance::table::pointer::Record<'a>),
     Other(&'a other::Record)
 }
 
