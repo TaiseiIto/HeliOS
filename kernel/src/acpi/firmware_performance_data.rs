@@ -45,13 +45,11 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let performance_records: Vec<PerformanceRecord> = self
-            .iter()
-            .collect();
+        let bytes: &[u8] = self.bytes();
         formatter
             .debug_struct("Table")
             .field("header", &header)
-            .field("performance_records", &performance_records)
+            .field("bytes", &bytes)
             .finish()
     }
 }
