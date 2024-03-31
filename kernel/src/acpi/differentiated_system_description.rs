@@ -37,7 +37,6 @@ impl fmt::Debug for Table {
         formatter
             .debug_struct("Table")
             .field("header", &self.header)
-            .field("definition_block", &self.definition_block())
             .finish()
     }
 }
