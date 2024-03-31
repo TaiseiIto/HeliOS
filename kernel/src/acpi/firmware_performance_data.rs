@@ -114,7 +114,7 @@ impl<'a> PerformanceRecord<'a> {
                         (firmware_basic_boot_performance_table_pointer, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = record_type as *const u8;
+                        let other: *const u8 = record_type_low as *const u8;
                         let other: *const other::Record = other as *const other::Record;
                         let other: &other::Record = unsafe {
                             &*other
