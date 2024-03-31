@@ -103,7 +103,7 @@ impl<'a> PerformanceRecord<'a> {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
                     0x0000 => {
-                        let firmware_basic_boot_performance_table_pointer: *const u8 = record_type as *const u8;
+                        let firmware_basic_boot_performance_table_pointer: *const u8 = record_type_low as *const u8;
                         let firmware_basic_boot_performance_table_pointer: *const firmware_basic_boot_performance::table::pointer::Record = firmware_basic_boot_performance_table_pointer as *const firmware_basic_boot_performance::table::pointer::Record;
                         let firmware_basic_boot_performance_table_pointer: &firmware_basic_boot_performance::table::pointer::Record = unsafe {
                             &*firmware_basic_boot_performance_table_pointer

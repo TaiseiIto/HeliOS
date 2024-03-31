@@ -123,7 +123,7 @@ impl<'a> Structure<'a> {
                 let structure_type: u16 = (*structure_type_low as u16) + ((*structure_type_high as u16) << u8::BITS);
                 match structure_type {
                     0x0000 => {
-                        let drhd: *const u8 = structure_type as *const u8;
+                        let drhd: *const u8 = structure_type_low as *const u8;
                         let drhd: *const hardware_unit_definition::Structure = drhd as *const hardware_unit_definition::Structure;
                         let drhd: &hardware_unit_definition::Structure = unsafe {
                             &*drhd
@@ -133,7 +133,7 @@ impl<'a> Structure<'a> {
                         (drhd, remaining_bytes)
                     },
                     0x0001 => {
-                        let rmrr: *const u8 = structure_type as *const u8;
+                        let rmrr: *const u8 = structure_type_low as *const u8;
                         let rmrr: *const reserved_memory_region::Structure = rmrr as *const reserved_memory_region::Structure;
                         let rmrr: &reserved_memory_region::Structure = unsafe {
                             &*rmrr
@@ -143,7 +143,7 @@ impl<'a> Structure<'a> {
                         (rmrr, remaining_bytes)
                     },
                     0x0002 => {
-                        let atsr: *const u8 = structure_type as *const u8;
+                        let atsr: *const u8 = structure_type_low as *const u8;
                         let atsr: *const root_port_ats_capability::Structure = atsr as *const root_port_ats_capability::Structure;
                         let atsr: &root_port_ats_capability::Structure = unsafe {
                             &*atsr
@@ -153,7 +153,7 @@ impl<'a> Structure<'a> {
                         (atsr, remaining_bytes)
                     },
                     0x0003 => {
-                        let rhsa: *const u8 = structure_type as *const u8;
+                        let rhsa: *const u8 = structure_type_low as *const u8;
                         let rhsa: *const hardware_static_affinity::Structure = rhsa as *const hardware_static_affinity::Structure;
                         let rhsa: &hardware_static_affinity::Structure = unsafe {
                             &*rhsa
@@ -163,7 +163,7 @@ impl<'a> Structure<'a> {
                         (rhsa, remaining_bytes)
                     },
                     0x0004 => {
-                        let andd: *const u8 = structure_type as *const u8;
+                        let andd: *const u8 = structure_type_low as *const u8;
                         let andd: *const acpi_namespace_device_declaration::Structure = andd as *const acpi_namespace_device_declaration::Structure;
                         let andd: &acpi_namespace_device_declaration::Structure = unsafe {
                             &*andd
@@ -173,7 +173,7 @@ impl<'a> Structure<'a> {
                         (andd, remaining_bytes)
                     },
                     0x0005 => {
-                        let satc: *const u8 = structure_type as *const u8;
+                        let satc: *const u8 = structure_type_low as *const u8;
                         let satc: *const soc_integrated::address_translation_cache::Structure = satc as *const soc_integrated::address_translation_cache::Structure;
                         let satc: &soc_integrated::address_translation_cache::Structure = unsafe {
                             &*satc
@@ -183,7 +183,7 @@ impl<'a> Structure<'a> {
                         (satc, remaining_bytes)
                     },
                     0x0006 => {
-                        let sidp: *const u8 = structure_type as *const u8;
+                        let sidp: *const u8 = structure_type_low as *const u8;
                         let sidp: *const soc_integrated::device_property::Structure = sidp as *const soc_integrated::device_property::Structure;
                         let sidp: &soc_integrated::device_property::Structure = unsafe {
                             &*sidp
@@ -193,7 +193,7 @@ impl<'a> Structure<'a> {
                         (sidp, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = structure_type as *const u8;
+                        let other: *const u8 = structure_type_low as *const u8;
                         let other: *const other::Structure = other as *const other::Structure;
                         let other: &other::Structure = unsafe {
                             &*other
