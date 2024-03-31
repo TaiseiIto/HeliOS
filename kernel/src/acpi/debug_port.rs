@@ -125,15 +125,22 @@ struct DeviceInformation {
 }
 
 impl DeviceInformation {
-    fn address_sizes(&self) -> &[u32] {
+    fn address_sizes(&self) -> Vec<u32> {
         let offset: usize = self.address_size_offset as usize;
         let address_sizes: &u8 = &self.bytes()[offset];
         let address_sizes: *const u8 = address_sizes as *const u8;
-        let address_sizes: *const u32 = address_sizes as *const u32;
         let length: usize = self.number_of_generic_address_registers as usize;
-        unsafe {
-            slice::from_raw_parts(address_sizes, length)
-        }
+        let size: usize = mem::size_of::<u32>() * length;
+        let address_sizes: &[u8] = unsafe {
+            slice::from_raw_parts(address_sizes, size)
+        };
+        address_sizes
+            .chunks(mem::size_of::<u32>())
+            .map(|chunk| chunk
+                .iter()
+                .rev()
+                .fold(0, |address_size, byte| (address_size << u8::BITS) + (*byte as u32)))
+            .collect()
     }
 
     fn base_address_registers(&self) -> &[generic_address::Structure] {
