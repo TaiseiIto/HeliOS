@@ -1,4 +1,4 @@
-use super::record;
+use super::super::super::record;
 
 /// # Firmware Basic Boot Performance Table Pointer Record
 /// ## References

@@ -1,4 +1,4 @@
-mod firmware_basic_boot_performance_table_pointer;
+mod firmware_basic_boot_performance;
 mod other;
 mod record;
 
@@ -83,7 +83,7 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
-    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance_table_pointer::Record),
+    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance::table::pointer::Record),
     Other(&'a other::Record)
 }
 
@@ -97,8 +97,8 @@ impl<'a> PerformanceRecord<'a> {
                 match record_type {
                     0x0000 => {
                         let firmware_basic_boot_performance_table_pointer: *const u8 = record_type as *const u8;
-                        let firmware_basic_boot_performance_table_pointer: *const firmware_basic_boot_performance_table_pointer::Record = firmware_basic_boot_performance_table_pointer as *const firmware_basic_boot_performance_table_pointer::Record;
-                        let firmware_basic_boot_performance_table_pointer: &firmware_basic_boot_performance_table_pointer::Record = unsafe {
+                        let firmware_basic_boot_performance_table_pointer: *const firmware_basic_boot_performance::table::pointer::Record = firmware_basic_boot_performance_table_pointer as *const firmware_basic_boot_performance::table::pointer::Record;
+                        let firmware_basic_boot_performance_table_pointer: &firmware_basic_boot_performance::table::pointer::Record = unsafe {
                             &*firmware_basic_boot_performance_table_pointer
                         };
                         let firmware_basic_boot_performance_table_pointer = Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer);
