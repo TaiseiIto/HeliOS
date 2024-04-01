@@ -123,84 +123,84 @@ impl<'a> Structure<'a> {
                 let structure_type: u16 = (*structure_type_low as u16) + ((*structure_type_high as u16) << u8::BITS);
                 match structure_type {
                     0x0000 => {
-                        let drhd: *const u8 = structure_type_low as *const u8;
-                        let drhd: *const hardware_unit_definition::Structure = drhd as *const hardware_unit_definition::Structure;
-                        let drhd: &hardware_unit_definition::Structure = unsafe {
-                            &*drhd
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const hardware_unit_definition::Structure = structure as *const hardware_unit_definition::Structure;
+                        let structure: &hardware_unit_definition::Structure = unsafe {
+                            &*structure
                         };
-                        let drhd = Self::Drhd(drhd);
-                        let remaining_bytes: &[u8] = &bytes[drhd.size()..];
-                        (drhd, remaining_bytes)
+                        let structure = Self::Drhd(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0001 => {
-                        let rmrr: *const u8 = structure_type_low as *const u8;
-                        let rmrr: *const reserved_memory_region::Structure = rmrr as *const reserved_memory_region::Structure;
-                        let rmrr: &reserved_memory_region::Structure = unsafe {
-                            &*rmrr
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const reserved_memory_region::Structure = structure as *const reserved_memory_region::Structure;
+                        let structure: &reserved_memory_region::Structure = unsafe {
+                            &*structure
                         };
-                        let rmrr = Self::Rmrr(rmrr);
-                        let remaining_bytes: &[u8] = &bytes[rmrr.size()..];
-                        (rmrr, remaining_bytes)
+                        let structure = Self::Rmrr(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0002 => {
-                        let atsr: *const u8 = structure_type_low as *const u8;
-                        let atsr: *const root_port_ats_capability::Structure = atsr as *const root_port_ats_capability::Structure;
-                        let atsr: &root_port_ats_capability::Structure = unsafe {
-                            &*atsr
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const root_port_ats_capability::Structure = structure as *const root_port_ats_capability::Structure;
+                        let structure: &root_port_ats_capability::Structure = unsafe {
+                            &*structure
                         };
-                        let atsr = Self::Atsr(atsr);
-                        let remaining_bytes: &[u8] = &bytes[atsr.size()..];
-                        (atsr, remaining_bytes)
+                        let structure = Self::Atsr(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0003 => {
-                        let rhsa: *const u8 = structure_type_low as *const u8;
-                        let rhsa: *const hardware_static_affinity::Structure = rhsa as *const hardware_static_affinity::Structure;
-                        let rhsa: &hardware_static_affinity::Structure = unsafe {
-                            &*rhsa
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const hardware_static_affinity::Structure = structure as *const hardware_static_affinity::Structure;
+                        let structure: &hardware_static_affinity::Structure = unsafe {
+                            &*structure
                         };
-                        let rhsa = Self::Rhsa(rhsa);
-                        let remaining_bytes: &[u8] = &bytes[rhsa.size()..];
-                        (rhsa, remaining_bytes)
+                        let structure = Self::Rhsa(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0004 => {
-                        let andd: *const u8 = structure_type_low as *const u8;
-                        let andd: *const acpi_namespace_device_declaration::Structure = andd as *const acpi_namespace_device_declaration::Structure;
-                        let andd: &acpi_namespace_device_declaration::Structure = unsafe {
-                            &*andd
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const acpi_namespace_device_declaration::Structure = structure as *const acpi_namespace_device_declaration::Structure;
+                        let structure: &acpi_namespace_device_declaration::Structure = unsafe {
+                            &*structure
                         };
-                        let andd = Self::Andd(andd);
-                        let remaining_bytes: &[u8] = &bytes[andd.size()..];
-                        (andd, remaining_bytes)
+                        let structure = Self::Andd(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0005 => {
-                        let satc: *const u8 = structure_type_low as *const u8;
-                        let satc: *const soc_integrated::address_translation_cache::Structure = satc as *const soc_integrated::address_translation_cache::Structure;
-                        let satc: &soc_integrated::address_translation_cache::Structure = unsafe {
-                            &*satc
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const soc_integrated::address_translation_cache::Structure = structure as *const soc_integrated::address_translation_cache::Structure;
+                        let structure: &soc_integrated::address_translation_cache::Structure = unsafe {
+                            &*structure
                         };
-                        let satc = Self::Satc(satc);
-                        let remaining_bytes: &[u8] = &bytes[satc.size()..];
-                        (satc, remaining_bytes)
+                        let structure = Self::Satc(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     0x0006 => {
-                        let sidp: *const u8 = structure_type_low as *const u8;
-                        let sidp: *const soc_integrated::device_property::Structure = sidp as *const soc_integrated::device_property::Structure;
-                        let sidp: &soc_integrated::device_property::Structure = unsafe {
-                            &*sidp
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const soc_integrated::device_property::Structure = structure as *const soc_integrated::device_property::Structure;
+                        let structure: &soc_integrated::device_property::Structure = unsafe {
+                            &*structure
                         };
-                        let sidp = Self::Sidp(sidp);
-                        let remaining_bytes: &[u8] = &bytes[sidp.size()..];
-                        (sidp, remaining_bytes)
+                        let structure = Self::Sidp(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = structure_type_low as *const u8;
-                        let other: *const other::Structure = other as *const other::Structure;
-                        let other: &other::Structure = unsafe {
-                            &*other
+                        let structure: *const u8 = structure_type_low as *const u8;
+                        let structure: *const other::Structure = structure as *const other::Structure;
+                        let structure: &other::Structure = unsafe {
+                            &*structure
                         };
-                        let other = Self::Other(other);
-                        let remaining_bytes: &[u8] = &bytes[other.size()..];
-                        (other, remaining_bytes)
+                        let structure = Self::Other(structure);
+                        let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                        (structure, remaining_bytes)
                     },
                 }
             })
@@ -208,14 +208,14 @@ impl<'a> Structure<'a> {
 
     fn size(&self) -> usize {
         match self {
-            Self::Andd(andd) => andd.length(),
-            Self::Atsr(atsr) => atsr.length(),
-            Self::Drhd(drhd) => drhd.length(),
-            Self::Other(other) => other.length(),
-            Self::Rhsa(rhsa) => rhsa.length(),
-            Self::Rmrr(rmrr) => rmrr.length(),
-            Self::Satc(satc) => satc.length(),
-            Self::Sidp(sidp) => sidp.length(),
+            Self::Andd(structure) => structure.length(),
+            Self::Atsr(structure) => structure.length(),
+            Self::Drhd(structure) => structure.length(),
+            Self::Other(structure) => structure.length(),
+            Self::Rhsa(structure) => structure.length(),
+            Self::Rmrr(structure) => structure.length(),
+            Self::Satc(structure) => structure.length(),
+            Self::Sidp(structure) => structure.length(),
         }
     }
 }
