@@ -98,34 +98,34 @@ impl<'a> PerformanceRecord<'a> {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
                     0x0000 => {
-                        let firmware_basic_boot_performance_table_pointer: *const u8 = record_type_low as *const u8;
-                        let firmware_basic_boot_performance_table_pointer: *const firmware_basic_boot_performance::table::pointer::Record = firmware_basic_boot_performance_table_pointer as *const firmware_basic_boot_performance::table::pointer::Record;
-                        let firmware_basic_boot_performance_table_pointer: &firmware_basic_boot_performance::table::pointer::Record = unsafe {
-                            &*firmware_basic_boot_performance_table_pointer
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const firmware_basic_boot_performance::table::pointer::Record = record as *const firmware_basic_boot_performance::table::pointer::Record;
+                        let record: &firmware_basic_boot_performance::table::pointer::Record = unsafe {
+                            &*record
                         };
-                        let firmware_basic_boot_performance_table_pointer = Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer);
-                        let remaining_bytes: &[u8] = &bytes[firmware_basic_boot_performance_table_pointer.size()..];
-                        (firmware_basic_boot_performance_table_pointer, remaining_bytes)
+                        let record = Self::FirmwareBasicBootPerformanceTablePointer(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                     0x0001 => {
-                        let s3_performance_table_pointer: *const u8 = record_type_low as *const u8;
-                        let s3_performance_table_pointer: *const s3_performance::table::pointer::Record = s3_performance_table_pointer as *const s3_performance::table::pointer::Record;
-                        let s3_performance_table_pointer: &s3_performance::table::pointer::Record = unsafe {
-                            &*s3_performance_table_pointer
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const s3_performance::table::pointer::Record = record as *const s3_performance::table::pointer::Record;
+                        let record: &s3_performance::table::pointer::Record = unsafe {
+                            &*record
                         };
-                        let s3_performance_table_pointer = Self::S3PerformanceTablePointer(s3_performance_table_pointer);
-                        let remaining_bytes: &[u8] = &bytes[s3_performance_table_pointer.size()..];
-                        (s3_performance_table_pointer, remaining_bytes)
+                        let record = Self::S3PerformanceTablePointer(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = record_type_low as *const u8;
-                        let other: *const other::Record = other as *const other::Record;
-                        let other: &other::Record = unsafe {
-                            &*other
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const other::Record = record as *const other::Record;
+                        let record: &other::Record = unsafe {
+                            &*record
                         };
-                        let other = Self::Other(other);
-                        let remaining_bytes: &[u8] = &bytes[other.size()..];
-                        (other, remaining_bytes)
+                        let record = Self::Other(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                 }
             })
@@ -133,9 +133,9 @@ impl<'a> PerformanceRecord<'a> {
 
     fn size(&self) -> usize {
         match self {
-            Self::FirmwareBasicBootPerformanceTablePointer(firmware_basic_boot_performance_table_pointer) => firmware_basic_boot_performance_table_pointer.length(),
-            Self::Other(other) => other.length(),
-            Self::S3PerformanceTablePointer(s3_performance_table_pointer) => s3_performance_table_pointer.length(),
+            Self::FirmwareBasicBootPerformanceTablePointer(record) => record.length(),
+            Self::Other(record) => record.length(),
+            Self::S3PerformanceTablePointer(record) => record.length(),
         }
     }
 }
