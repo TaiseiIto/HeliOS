@@ -164,285 +164,285 @@ impl<'a> InterruptControllerStructure<'a> {
             .first()
             .map(|structure_type| match structure_type {
                 0x00 => {
-                    let processor_local_apic: *const u8 = structure_type as *const u8;
-                    let processor_local_apic: *const processor_local_apic::Structure = processor_local_apic as *const processor_local_apic::Structure;
-                    let processor_local_apic: &processor_local_apic::Structure = unsafe {
-                        &*processor_local_apic
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const processor_local_apic::Structure = structure as *const processor_local_apic::Structure;
+                    let structure: &processor_local_apic::Structure = unsafe {
+                        &*structure
                     };
-                    let processor_local_apic = Self::ProcessorLocalApic(processor_local_apic);
-                    let remaining_bytes: &[u8] = &bytes[processor_local_apic.size()..];
-                    (processor_local_apic, remaining_bytes)
+                    let structure = Self::ProcessorLocalApic(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x01 => {
-                    let io_apic: *const u8 = structure_type as *const u8;
-                    let io_apic: *const io_apic::Structure = io_apic as *const io_apic::Structure;
-                    let io_apic: &io_apic::Structure = unsafe {
-                        &*io_apic
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const io_apic::Structure = structure as *const io_apic::Structure;
+                    let structure: &io_apic::Structure = unsafe {
+                        &*structure
                     };
-                    let io_apic = Self::IoApic(io_apic);
-                    let remaining_bytes: &[u8] = &bytes[io_apic.size()..];
-                    (io_apic, remaining_bytes)
+                    let structure = Self::IoApic(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x02 => {
-                    let interrupt_source_override: *const u8 = structure_type as *const u8;
-                    let interrupt_source_override: *const interrupt_source_override::Structure = interrupt_source_override as *const interrupt_source_override::Structure;
-                    let interrupt_source_override: &interrupt_source_override::Structure = unsafe {
-                        &*interrupt_source_override
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const interrupt_source_override::Structure = structure as *const interrupt_source_override::Structure;
+                    let structure: &interrupt_source_override::Structure = unsafe {
+                        &*structure
                     };
-                    let interrupt_source_override = Self::InterruptSourceOverride(interrupt_source_override);
-                    let remaining_bytes: &[u8] = &bytes[interrupt_source_override.size()..];
-                    (interrupt_source_override, remaining_bytes)
+                    let structure = Self::InterruptSourceOverride(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x03 => {
-                    let non_maskable_interrupt_source: *const u8 = structure_type as *const u8;
-                    let non_maskable_interrupt_source: *const non_maskable_interrupt_source::Structure = non_maskable_interrupt_source as *const non_maskable_interrupt_source::Structure;
-                    let non_maskable_interrupt_source: &non_maskable_interrupt_source::Structure = unsafe {
-                        &*non_maskable_interrupt_source
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const non_maskable_interrupt_source::Structure = structure as *const non_maskable_interrupt_source::Structure;
+                    let structure: &non_maskable_interrupt_source::Structure = unsafe {
+                        &*structure
                     };
-                    let non_maskable_interrupt_source = Self::NonMaskableInterruptSource(non_maskable_interrupt_source);
-                    let remaining_bytes: &[u8] = &bytes[non_maskable_interrupt_source.size()..];
-                    (non_maskable_interrupt_source, remaining_bytes)
+                    let structure = Self::NonMaskableInterruptSource(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x04 => {
-                    let local_apic_nmi: *const u8 = structure_type as *const u8;
-                    let local_apic_nmi: *const local_apic_nmi::Structure = local_apic_nmi as *const local_apic_nmi::Structure;
-                    let local_apic_nmi: &local_apic_nmi::Structure = unsafe {
-                        &*local_apic_nmi
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const local_apic_nmi::Structure = structure as *const local_apic_nmi::Structure;
+                    let structure: &local_apic_nmi::Structure = unsafe {
+                        &*structure
                     };
-                    let local_apic_nmi = Self::LocalApicNmi(local_apic_nmi);
-                    let remaining_bytes: &[u8] = &bytes[local_apic_nmi.size()..];
-                    (local_apic_nmi, remaining_bytes)
+                    let structure = Self::LocalApicNmi(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x05 => {
-                    let local_apic_address_override: *const u8 = structure_type as *const u8;
-                    let local_apic_address_override: *const local_apic_address_override::Structure = local_apic_address_override as *const local_apic_address_override::Structure;
-                    let local_apic_address_override: &local_apic_address_override::Structure = unsafe {
-                        &*local_apic_address_override
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const local_apic_address_override::Structure = structure as *const local_apic_address_override::Structure;
+                    let structure: &local_apic_address_override::Structure = unsafe {
+                        &*structure
                     };
-                    let local_apic_address_override = Self::LocalApicAddressOverride(local_apic_address_override);
-                    let remaining_bytes: &[u8] = &bytes[local_apic_address_override.size()..];
-                    (local_apic_address_override, remaining_bytes)
+                    let structure = Self::LocalApicAddressOverride(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x06 => {
-                    let io_sapic: *const u8 = structure_type as *const u8;
-                    let io_sapic: *const io_sapic::Structure = io_sapic as *const io_sapic::Structure;
-                    let io_sapic: &io_sapic::Structure = unsafe {
-                        &*io_sapic
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const io_sapic::Structure = structure as *const io_sapic::Structure;
+                    let structure: &io_sapic::Structure = unsafe {
+                        &*structure
                     };
-                    let io_sapic = Self::IoSapic(io_sapic);
-                    let remaining_bytes: &[u8] = &bytes[io_sapic.size()..];
-                    (io_sapic, remaining_bytes)
+                    let structure = Self::IoSapic(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x07 => {
-                    let local_sapic: *const u8 = structure_type as *const u8;
-                    let local_sapic: *const local_sapic::Structure = local_sapic as *const local_sapic::Structure;
-                    let local_sapic: &local_sapic::Structure = unsafe {
-                        &*local_sapic
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const local_sapic::Structure = structure as *const local_sapic::Structure;
+                    let structure: &local_sapic::Structure = unsafe {
+                        &*structure
                     };
-                    let local_sapic = Self::LocalSapic(local_sapic);
-                    let remaining_bytes: &[u8] = &bytes[local_sapic.size()..];
-                    (local_sapic, remaining_bytes)
+                    let structure = Self::LocalSapic(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x08 => {
-                    let platform_interrupt_sources: *const u8 = structure_type as *const u8;
-                    let platform_interrupt_sources: *const platform_interrupt_sources::Structure = platform_interrupt_sources as *const platform_interrupt_sources::Structure;
-                    let platform_interrupt_sources: &platform_interrupt_sources::Structure = unsafe {
-                        &*platform_interrupt_sources
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const platform_interrupt_sources::Structure = structure as *const platform_interrupt_sources::Structure;
+                    let structure: &platform_interrupt_sources::Structure = unsafe {
+                        &*structure
                     };
-                    let platform_interrupt_sources = Self::PlatformInterruptSources(platform_interrupt_sources);
-                    let remaining_bytes: &[u8] = &bytes[platform_interrupt_sources.size()..];
-                    (platform_interrupt_sources, remaining_bytes)
+                    let structure = Self::PlatformInterruptSources(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x09 => {
-                    let processor_local_x2apic: *const u8 = structure_type as *const u8;
-                    let processor_local_x2apic: *const processor_local_x2apic::Structure = processor_local_x2apic as *const processor_local_x2apic::Structure;
-                    let processor_local_x2apic: &processor_local_x2apic::Structure = unsafe {
-                        &*processor_local_x2apic
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const processor_local_x2apic::Structure = structure as *const processor_local_x2apic::Structure;
+                    let structure: &processor_local_x2apic::Structure = unsafe {
+                        &*structure
                     };
-                    let processor_local_x2apic = Self::ProcessorLocalX2apic(processor_local_x2apic);
-                    let remaining_bytes: &[u8] = &bytes[processor_local_x2apic.size()..];
-                    (processor_local_x2apic, remaining_bytes)
+                    let structure = Self::ProcessorLocalX2apic(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0a => {
-                    let local_x2apic_nmi: *const u8 = structure_type as *const u8;
-                    let local_x2apic_nmi: *const local_x2apic_nmi::Structure = local_x2apic_nmi as *const local_x2apic_nmi::Structure;
-                    let local_x2apic_nmi: &local_x2apic_nmi::Structure = unsafe {
-                        &*local_x2apic_nmi
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const local_x2apic_nmi::Structure = structure as *const local_x2apic_nmi::Structure;
+                    let structure: &local_x2apic_nmi::Structure = unsafe {
+                        &*structure
                     };
-                    let local_x2apic_nmi = Self::LocalX2apicNmi(local_x2apic_nmi);
-                    let remaining_bytes: &[u8] = &bytes[local_x2apic_nmi.size()..];
-                    (local_x2apic_nmi, remaining_bytes)
+                    let structure = Self::LocalX2apicNmi(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0b => {
-                    let gic_cpu_interface: *const u8 = structure_type as *const u8;
-                    let gic_cpu_interface: *const gic_cpu_interface::Structure = gic_cpu_interface as *const gic_cpu_interface::Structure;
-                    let gic_cpu_interface: &gic_cpu_interface::Structure = unsafe {
-                        &*gic_cpu_interface
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const gic_cpu_interface::Structure = structure as *const gic_cpu_interface::Structure;
+                    let structure: &gic_cpu_interface::Structure = unsafe {
+                        &*structure
                     };
-                    let gic_cpu_interface = Self::GicCpuInterface(gic_cpu_interface);
-                    let remaining_bytes: &[u8] = &bytes[gic_cpu_interface.size()..];
-                    (gic_cpu_interface, remaining_bytes)
+                    let structure = Self::GicCpuInterface(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0c => {
-                    let gic_distributer: *const u8 = structure_type as *const u8;
-                    let gic_distributer: *const gic_distributer::Structure = gic_distributer as *const gic_distributer::Structure;
-                    let gic_distributer: &gic_distributer::Structure = unsafe {
-                        &*gic_distributer
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const gic_distributer::Structure = structure as *const gic_distributer::Structure;
+                    let structure: &gic_distributer::Structure = unsafe {
+                        &*structure
                     };
-                    let gic_distributer = Self::GicDistributer(gic_distributer);
-                    let remaining_bytes: &[u8] = &bytes[gic_distributer.size()..];
-                    (gic_distributer, remaining_bytes)
+                    let structure = Self::GicDistributer(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0d => {
-                    let gic_msi_frame: *const u8 = structure_type as *const u8;
-                    let gic_msi_frame: *const gic_msi_frame::Structure = gic_msi_frame as *const gic_msi_frame::Structure;
-                    let gic_msi_frame: &gic_msi_frame::Structure = unsafe {
-                        &*gic_msi_frame
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const gic_msi_frame::Structure = structure as *const gic_msi_frame::Structure;
+                    let structure: &gic_msi_frame::Structure = unsafe {
+                        &*structure
                     };
-                    let gic_msi_frame = Self::GicMsiFrame(gic_msi_frame);
-                    let remaining_bytes: &[u8] = &bytes[gic_msi_frame.size()..];
-                    (gic_msi_frame, remaining_bytes)
+                    let structure = Self::GicMsiFrame(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0e => {
-                    let gic_redistributor: *const u8 = structure_type as *const u8;
-                    let gic_redistributor: *const gic_redistributor::Structure = gic_redistributor as *const gic_redistributor::Structure;
-                    let gic_redistributor: &gic_redistributor::Structure = unsafe {
-                        &*gic_redistributor
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const gic_redistributor::Structure = structure as *const gic_redistributor::Structure;
+                    let structure: &gic_redistributor::Structure = unsafe {
+                        &*structure
                     };
-                    let gic_redistributor = Self::GicRedistributor(gic_redistributor);
-                    let remaining_bytes: &[u8] = &bytes[gic_redistributor.size()..];
-                    (gic_redistributor, remaining_bytes)
+                    let structure = Self::GicRedistributor(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x0f => {
-                    let gic_interrupt_translation_service: *const u8 = structure_type as *const u8;
-                    let gic_interrupt_translation_service: *const gic_interrupt_translation_service::Structure = gic_interrupt_translation_service as *const gic_interrupt_translation_service::Structure;
-                    let gic_interrupt_translation_service: &gic_interrupt_translation_service::Structure = unsafe {
-                        &*gic_interrupt_translation_service
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const gic_interrupt_translation_service::Structure = structure as *const gic_interrupt_translation_service::Structure;
+                    let structure: &gic_interrupt_translation_service::Structure = unsafe {
+                        &*structure
                     };
-                    let gic_interrupt_translation_service = Self::GicInterruptTranslationService(gic_interrupt_translation_service);
-                    let remaining_bytes: &[u8] = &bytes[gic_interrupt_translation_service.size()..];
-                    (gic_interrupt_translation_service, remaining_bytes)
+                    let structure = Self::GicInterruptTranslationService(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x10 => {
-                    let multiprocessor_wakeup: *const u8 = structure_type as *const u8;
-                    let multiprocessor_wakeup: *const multiprocessor_wakeup::Structure = multiprocessor_wakeup as *const multiprocessor_wakeup::Structure;
-                    let multiprocessor_wakeup: &multiprocessor_wakeup::Structure = unsafe {
-                        &*multiprocessor_wakeup
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const multiprocessor_wakeup::Structure = structure as *const multiprocessor_wakeup::Structure;
+                    let structure: &multiprocessor_wakeup::Structure = unsafe {
+                        &*structure
                     };
-                    let multiprocessor_wakeup = Self::MultiprocessorWakeup(multiprocessor_wakeup);
-                    let remaining_bytes: &[u8] = &bytes[multiprocessor_wakeup.size()..];
-                    (multiprocessor_wakeup, remaining_bytes)
+                    let structure = Self::MultiprocessorWakeup(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x11 => {
-                    let core_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let core_programmable_interrupt_controller: *const core_programmable_interrupt_controller::Structure = core_programmable_interrupt_controller as *const core_programmable_interrupt_controller::Structure;
-                    let core_programmable_interrupt_controller: &core_programmable_interrupt_controller::Structure = unsafe {
-                        &*core_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const core_programmable_interrupt_controller::Structure = structure as *const core_programmable_interrupt_controller::Structure;
+                    let structure: &core_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let core_programmable_interrupt_controller = Self::CoreProgrammableInterruptController(core_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[core_programmable_interrupt_controller.size()..];
-                    (core_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::CoreProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x12 => {
-                    let legacy_io_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let legacy_io_programmable_interrupt_controller: *const legacy_io_programmable_interrupt_controller::Structure = legacy_io_programmable_interrupt_controller as *const legacy_io_programmable_interrupt_controller::Structure;
-                    let legacy_io_programmable_interrupt_controller: &legacy_io_programmable_interrupt_controller::Structure = unsafe {
-                        &*legacy_io_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const legacy_io_programmable_interrupt_controller::Structure = structure as *const legacy_io_programmable_interrupt_controller::Structure;
+                    let structure: &legacy_io_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let legacy_io_programmable_interrupt_controller = Self::LegacyIoProgrammableInterruptController(legacy_io_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[legacy_io_programmable_interrupt_controller.size()..];
-                    (legacy_io_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::LegacyIoProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x13 => {
-                    let hyper_transport_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let hyper_transport_programmable_interrupt_controller: *const hyper_transport_programmable_interrupt_controller::Structure = hyper_transport_programmable_interrupt_controller as *const hyper_transport_programmable_interrupt_controller::Structure;
-                    let hyper_transport_programmable_interrupt_controller: &hyper_transport_programmable_interrupt_controller::Structure = unsafe {
-                        &*hyper_transport_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const hyper_transport_programmable_interrupt_controller::Structure = structure as *const hyper_transport_programmable_interrupt_controller::Structure;
+                    let structure: &hyper_transport_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let hyper_transport_programmable_interrupt_controller = Self::HyperTransportProgrammableInterruptController(hyper_transport_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[hyper_transport_programmable_interrupt_controller.size()..];
-                    (hyper_transport_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::HyperTransportProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x14 => {
-                    let extended_io_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let extended_io_programmable_interrupt_controller: *const extended_io_programmable_interrupt_controller::Structure = extended_io_programmable_interrupt_controller as *const extended_io_programmable_interrupt_controller::Structure;
-                    let extended_io_programmable_interrupt_controller: &extended_io_programmable_interrupt_controller::Structure = unsafe {
-                        &*extended_io_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const extended_io_programmable_interrupt_controller::Structure = structure as *const extended_io_programmable_interrupt_controller::Structure;
+                    let structure: &extended_io_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let extended_io_programmable_interrupt_controller = Self::ExtendedIoProgrammableInterruptController(extended_io_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[extended_io_programmable_interrupt_controller.size()..];
-                    (extended_io_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::ExtendedIoProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x15 => {
-                    let msi_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let msi_programmable_interrupt_controller: *const msi_programmable_interrupt_controller::Structure = msi_programmable_interrupt_controller as *const msi_programmable_interrupt_controller::Structure;
-                    let msi_programmable_interrupt_controller: &msi_programmable_interrupt_controller::Structure = unsafe {
-                        &*msi_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const msi_programmable_interrupt_controller::Structure = structure as *const msi_programmable_interrupt_controller::Structure;
+                    let structure: &msi_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let msi_programmable_interrupt_controller = Self::MsiProgrammableInterruptController(msi_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[msi_programmable_interrupt_controller.size()..];
-                    (msi_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::MsiProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x16 => {
-                    let bridge_io_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let bridge_io_programmable_interrupt_controller: *const bridge_io_programmable_interrupt_controller::Structure = bridge_io_programmable_interrupt_controller as *const bridge_io_programmable_interrupt_controller::Structure;
-                    let bridge_io_programmable_interrupt_controller: &bridge_io_programmable_interrupt_controller::Structure = unsafe {
-                        &*bridge_io_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const bridge_io_programmable_interrupt_controller::Structure = structure as *const bridge_io_programmable_interrupt_controller::Structure;
+                    let structure: &bridge_io_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let bridge_io_programmable_interrupt_controller = Self::BridgeIoProgrammableInterruptController(bridge_io_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[bridge_io_programmable_interrupt_controller.size()..];
-                    (bridge_io_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::BridgeIoProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 0x17 => {
-                    let low_pin_count_programmable_interrupt_controller: *const u8 = structure_type as *const u8;
-                    let low_pin_count_programmable_interrupt_controller: *const low_pin_count_programmable_interrupt_controller::Structure = low_pin_count_programmable_interrupt_controller as *const low_pin_count_programmable_interrupt_controller::Structure;
-                    let low_pin_count_programmable_interrupt_controller: &low_pin_count_programmable_interrupt_controller::Structure = unsafe {
-                        &*low_pin_count_programmable_interrupt_controller
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const low_pin_count_programmable_interrupt_controller::Structure = structure as *const low_pin_count_programmable_interrupt_controller::Structure;
+                    let structure: &low_pin_count_programmable_interrupt_controller::Structure = unsafe {
+                        &*structure
                     };
-                    let low_pin_count_programmable_interrupt_controller = Self::LowPinCountProgrammableInterruptController(low_pin_count_programmable_interrupt_controller);
-                    let remaining_bytes: &[u8] = &bytes[low_pin_count_programmable_interrupt_controller.size()..];
-                    (low_pin_count_programmable_interrupt_controller, remaining_bytes)
+                    let structure = Self::LowPinCountProgrammableInterruptController(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 },
                 _ => {
-                    let other: *const u8 = structure_type as *const u8;
-                    let other: *const other::Structure = other as *const other::Structure;
-                    let other: &other::Structure = unsafe {
-                        &*other
+                    let structure: *const u8 = structure_type as *const u8;
+                    let structure: *const other::Structure = structure as *const other::Structure;
+                    let structure: &other::Structure = unsafe {
+                        &*structure
                     };
-                    let other = Self::Other(other);
-                    let remaining_bytes: &[u8] = &bytes[other.size()..];
-                    (other, remaining_bytes)
+                    let structure = Self::Other(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
                 }
             })
     }
 
     fn size(&self) -> usize {
         match self {
-            Self::BridgeIoProgrammableInterruptController(bridge_io_programmable_interrupt_controller) => bridge_io_programmable_interrupt_controller.length(),
-            Self::CoreProgrammableInterruptController(core_programmable_interrupt_controller) => core_programmable_interrupt_controller.length(),
-            Self::ExtendedIoProgrammableInterruptController(extended_io_programmable_interrupt_controller) => extended_io_programmable_interrupt_controller.length(),
-            Self::GicCpuInterface(gic_cpu_interface) => gic_cpu_interface.length(),
-            Self::GicDistributer(gic_distributer) => gic_distributer.length(),
-            Self::GicInterruptTranslationService(gic_interrupt_translation_service) => gic_interrupt_translation_service.length(),
-            Self::GicMsiFrame(gic_msi_frame) => gic_msi_frame.length(),
-            Self::GicRedistributor(gic_redistributor) => gic_redistributor.length(),
-            Self::HyperTransportProgrammableInterruptController(hyper_transport_programmable_interrupt_controller) => hyper_transport_programmable_interrupt_controller.length(),
-            Self::InterruptSourceOverride(interrupt_source_override) => interrupt_source_override.length(),
-            Self::IoApic(io_apic) => io_apic.length(),
-            Self::IoSapic(io_sapic) => io_sapic.length(),
-            Self::LegacyIoProgrammableInterruptController(legacy_io_programmable_interrupt_controller) => legacy_io_programmable_interrupt_controller.length(),
-            Self::LocalApicAddressOverride(local_apic_address_override) => local_apic_address_override.length(),
-            Self::LocalApicNmi(local_apic_nmi) => local_apic_nmi.length(),
-            Self::LocalSapic(local_sapic) => local_sapic.length(),
-            Self::LocalX2apicNmi(local_x2apic_nmi) => local_x2apic_nmi.length(),
-            Self::LowPinCountProgrammableInterruptController(low_pin_count_programmable_interrupt_controller) => low_pin_count_programmable_interrupt_controller.length(),
-            Self::MsiProgrammableInterruptController(msi_programmable_interrupt_controller) => msi_programmable_interrupt_controller.length(),
-            Self::MultiprocessorWakeup(multiprocessor_wakeup) => multiprocessor_wakeup.length(),
-            Self::NonMaskableInterruptSource(non_maskable_interrupt_source) => non_maskable_interrupt_source.length(),
-            Self::Other(other) => other.length(),
-            Self::PlatformInterruptSources(platform_interrupt_sources) => platform_interrupt_sources.length(),
-            Self::ProcessorLocalApic(processor_local_apic) => processor_local_apic.length(),
-            Self::ProcessorLocalX2apic(processor_local_x2apic) => processor_local_x2apic.length(),
+            Self::BridgeIoProgrammableInterruptController(structure) => structure.length(),
+            Self::CoreProgrammableInterruptController(structure) => structure.length(),
+            Self::ExtendedIoProgrammableInterruptController(structure) => structure.length(),
+            Self::GicCpuInterface(structure) => structure.length(),
+            Self::GicDistributer(structure) => structure.length(),
+            Self::GicInterruptTranslationService(structure) => structure.length(),
+            Self::GicMsiFrame(structure) => structure.length(),
+            Self::GicRedistributor(structure) => structure.length(),
+            Self::HyperTransportProgrammableInterruptController(structure) => structure.length(),
+            Self::InterruptSourceOverride(structure) => structure.length(),
+            Self::IoApic(structure) => structure.length(),
+            Self::IoSapic(structure) => structure.length(),
+            Self::LegacyIoProgrammableInterruptController(structure) => structure.length(),
+            Self::LocalApicAddressOverride(structure) => structure.length(),
+            Self::LocalApicNmi(structure) => structure.length(),
+            Self::LocalSapic(structure) => structure.length(),
+            Self::LocalX2apicNmi(structure) => structure.length(),
+            Self::LowPinCountProgrammableInterruptController(structure) => structure.length(),
+            Self::MsiProgrammableInterruptController(structure) => structure.length(),
+            Self::MultiprocessorWakeup(structure) => structure.length(),
+            Self::NonMaskableInterruptSource(structure) => structure.length(),
+            Self::Other(structure) => structure.length(),
+            Self::PlatformInterruptSources(structure) => structure.length(),
+            Self::ProcessorLocalApic(structure) => structure.length(),
+            Self::ProcessorLocalX2apic(structure) => structure.length(),
         }
     }
 }

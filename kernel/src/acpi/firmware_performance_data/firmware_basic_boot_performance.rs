@@ -104,24 +104,24 @@ impl<'a> PerformanceRecord<'a> {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
                     0x0002 => {
-                        let data: *const u8 = record_type_low as *const u8;
-                        let data: *const data::Record = data as *const data::Record;
-                        let data: &data::Record = unsafe {
-                            &*data
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const data::Record = record as *const data::Record;
+                        let record: &data::Record = unsafe {
+                            &*record
                         };
-                        let data = Self::Data(data);
-                        let remaining_bytes: &[u8] = &bytes[data.size()..];
-                        (data, remaining_bytes)
+                        let record = Self::Data(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = record_type_low as *const u8;
-                        let other: *const other::Record = other as *const other::Record;
-                        let other: &other::Record = unsafe {
-                            &*other
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const other::Record = record as *const other::Record;
+                        let record: &other::Record = unsafe {
+                            &*record
                         };
-                        let other = Self::Other(other);
-                        let remaining_bytes: &[u8] = &bytes[other.size()..];
-                        (other, remaining_bytes)
+                        let record = Self::Other(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                 }
             })
@@ -129,8 +129,8 @@ impl<'a> PerformanceRecord<'a> {
 
     fn size(&self) -> usize {
         match self {
-            Self::Data(data) => data.length(),
-            Self::Other(other) => other.length(),
+            Self::Data(record) => record.length(),
+            Self::Other(record) => record.length(),
         }
     }
 }

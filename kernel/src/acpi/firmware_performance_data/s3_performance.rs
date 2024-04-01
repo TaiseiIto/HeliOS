@@ -106,34 +106,34 @@ impl<'a> PerformanceRecord<'a> {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
                     0x0000 => {
-                        let resume_performance: *const u8 = record_type_low as *const u8;
-                        let resume_performance: *const resume_performance::Record = resume_performance as *const resume_performance::Record;
-                        let resume_performance: &resume_performance::Record = unsafe {
-                            &*resume_performance
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const resume_performance::Record = record as *const resume_performance::Record;
+                        let record: &resume_performance::Record = unsafe {
+                            &*record
                         };
-                        let resume_performance = Self::ResumePerformance(resume_performance);
-                        let remaining_bytes: &[u8] = &bytes[resume_performance.size()..];
-                        (resume_performance, remaining_bytes)
+                        let record = Self::ResumePerformance(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                     0x0001 => {
-                        let suspend_performance: *const u8 = record_type_low as *const u8;
-                        let suspend_performance: *const suspend_performance::Record = suspend_performance as *const suspend_performance::Record;
-                        let suspend_performance: &suspend_performance::Record = unsafe {
-                            &*suspend_performance
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const suspend_performance::Record = record as *const suspend_performance::Record;
+                        let record: &suspend_performance::Record = unsafe {
+                            &*record
                         };
-                        let suspend_performance = Self::SuspendPerformance(suspend_performance);
-                        let remaining_bytes: &[u8] = &bytes[suspend_performance.size()..];
-                        (suspend_performance, remaining_bytes)
+                        let record = Self::SuspendPerformance(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                     _ => {
-                        let other: *const u8 = record_type_low as *const u8;
-                        let other: *const other::Record = other as *const other::Record;
-                        let other: &other::Record = unsafe {
-                            &*other
+                        let record: *const u8 = record_type_low as *const u8;
+                        let record: *const other::Record = record as *const other::Record;
+                        let record: &other::Record = unsafe {
+                            &*record
                         };
-                        let other = Self::Other(other);
-                        let remaining_bytes: &[u8] = &bytes[other.size()..];
-                        (other, remaining_bytes)
+                        let record = Self::Other(record);
+                        let remaining_bytes: &[u8] = &bytes[record.size()..];
+                        (record, remaining_bytes)
                     },
                 }
             })
@@ -141,9 +141,9 @@ impl<'a> PerformanceRecord<'a> {
 
     fn size(&self) -> usize {
         match self {
-            Self::Other(other) => other.length(),
-            Self::ResumePerformance(resume_performance) => resume_performance.length(),
-            Self::SuspendPerformance(suspend_performance) => suspend_performance.length(),
+            Self::Other(record) => record.length(),
+            Self::ResumePerformance(record) => record.length(),
+            Self::SuspendPerformance(record) => record.length(),
         }
     }
 }
