@@ -1,3 +1,4 @@
+pub mod data;
 pub mod table;
 
 use {
@@ -90,6 +91,7 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
+    Data(&'a data::Record),
     Other(&'a other::Record),
 }
 
@@ -101,6 +103,16 @@ impl<'a> PerformanceRecord<'a> {
             .map(|(record_type_low, record_type_high)| {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
+                    0x0002 => {
+                        let data: *const u8 = record_type_low as *const u8;
+                        let data: *const data::Record = data as *const data::Record;
+                        let data: &data::Record = unsafe {
+                            &*data
+                        };
+                        let data = Self::Data(data);
+                        let remaining_bytes: &[u8] = &bytes[data.size()..];
+                        (data, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = record_type_low as *const u8;
                         let other: *const other::Record = other as *const other::Record;
@@ -117,6 +129,7 @@ impl<'a> PerformanceRecord<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::Data(data) => data.length(),
             Self::Other(other) => other.length(),
         }
     }
