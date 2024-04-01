@@ -1,3 +1,5 @@
+pub mod resume_performance;
+pub mod suspend_performance;
 pub mod table;
 
 use {
@@ -91,6 +93,8 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
     Other(&'a other::Record),
+    ResumePerformance(&'a resume_performance::Record),
+    SuspendPerformance(&'a suspend_performance::Record),
 }
 
 impl<'a> PerformanceRecord<'a> {
@@ -101,6 +105,26 @@ impl<'a> PerformanceRecord<'a> {
             .map(|(record_type_low, record_type_high)| {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
+                    0x0000 => {
+                        let resume_performance: *const u8 = record_type_low as *const u8;
+                        let resume_performance: *const resume_performance::Record = resume_performance as *const resume_performance::Record;
+                        let resume_performance: &resume_performance::Record = unsafe {
+                            &*resume_performance
+                        };
+                        let resume_performance = Self::ResumePerformance(resume_performance);
+                        let remaining_bytes: &[u8] = &bytes[resume_performance.size()..];
+                        (resume_performance, remaining_bytes)
+                    },
+                    0x0001 => {
+                        let suspend_performance: *const u8 = record_type_low as *const u8;
+                        let suspend_performance: *const suspend_performance::Record = suspend_performance as *const suspend_performance::Record;
+                        let suspend_performance: &suspend_performance::Record = unsafe {
+                            &*suspend_performance
+                        };
+                        let suspend_performance = Self::SuspendPerformance(suspend_performance);
+                        let remaining_bytes: &[u8] = &bytes[suspend_performance.size()..];
+                        (suspend_performance, remaining_bytes)
+                    },
                     _ => {
                         let other: *const u8 = record_type_low as *const u8;
                         let other: *const other::Record = other as *const other::Record;
@@ -118,6 +142,8 @@ impl<'a> PerformanceRecord<'a> {
     fn size(&self) -> usize {
         match self {
             Self::Other(other) => other.length(),
+            Self::ResumePerformance(resume_performance) => resume_performance.length(),
+            Self::SuspendPerformance(suspend_performance) => suspend_performance.length(),
         }
     }
 }
