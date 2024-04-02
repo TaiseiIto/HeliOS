@@ -1,6 +1,5 @@
 use {
     alloc::vec::Vec,
-    bitfield_struct::bitfield,
     core::{
         fmt,
         mem,

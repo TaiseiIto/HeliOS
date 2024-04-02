@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::processor_local_apic_sapic,
-};
+use super::processor_local_apic_sapic;
 
 /// # Processor Local x2APIC Affinity Structure
 /// ## References

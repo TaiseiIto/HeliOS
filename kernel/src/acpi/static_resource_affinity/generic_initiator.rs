@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::generic_port,
-};
+use super::generic_port;
 
 /// # Generic Initiator Affinity Structure
 /// ## References

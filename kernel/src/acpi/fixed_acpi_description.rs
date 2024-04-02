@@ -1,10 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    core::{
-        cmp,
-        fmt,
-        mem,
-    },
+    core::fmt,
     super::{
         firmware_acpi_control,
         system_description,

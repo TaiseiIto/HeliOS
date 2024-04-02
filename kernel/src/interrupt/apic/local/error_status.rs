@@ -31,6 +31,7 @@ impl fmt::Debug for FatRegister {
             .field("redirectable_ipi", &redirectable_ipi)
             .field("send_illegal_vector", &send_illegal_vector)
             .field("received_illegal_vector", &received_illegal_vector)
+            .field("illegal_register_address", &illegal_register_address)
             .finish()
     }
 }
