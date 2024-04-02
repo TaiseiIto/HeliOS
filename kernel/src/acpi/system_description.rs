@@ -143,131 +143,131 @@ impl<'a> From<&'a Header> for Table<'a> {
         match header.signature() {
             "APIC" => {
                 let header: *const Header = header as *const Header;
-                let madt: *const multiple_apic_description::Table = header as *const multiple_apic_description::Table;
-                let madt: &multiple_apic_description::Table = unsafe {
-                    &*madt
+                let table: *const multiple_apic_description::Table = header as *const multiple_apic_description::Table;
+                let table: &multiple_apic_description::Table = unsafe {
+                    &*table
                 };
-                Self::Madt(madt)
+                Self::Madt(table)
             },
             "BGRT" => {
                 let header: *const Header = header as *const Header;
-                let bgrt: *const boot_graphics_resource::Table = header as *const boot_graphics_resource::Table;
-                let bgrt: &boot_graphics_resource::Table = unsafe {
-                    &*bgrt
+                let table: *const boot_graphics_resource::Table = header as *const boot_graphics_resource::Table;
+                let table: &boot_graphics_resource::Table = unsafe {
+                    &*table
                 };
-                Self::Bgrt(bgrt)
+                Self::Bgrt(table)
             },
             "DBG2" => {
                 let header: *const Header = header as *const Header;
-                let dbg2: *const debug_port::Table2 = header as *const debug_port::Table2;
-                let dbg2: &debug_port::Table2 = unsafe {
-                    &*dbg2
+                let table: *const debug_port::Table2 = header as *const debug_port::Table2;
+                let table: &debug_port::Table2 = unsafe {
+                    &*table
                 };
-                Self::Dbg2(dbg2)
+                Self::Dbg2(table)
             },
             "DBGP" => {
                 let header: *const Header = header as *const Header;
-                let dbgp: *const debug_port::Table = header as *const debug_port::Table;
-                let dbgp: &debug_port::Table = unsafe {
-                    &*dbgp
+                let table: *const debug_port::Table = header as *const debug_port::Table;
+                let table: &debug_port::Table = unsafe {
+                    &*table
                 };
-                Self::Dbgp(dbgp)
+                Self::Dbgp(table)
             },
             "DMAR" => {
                 let header: *const Header = header as *const Header;
-                let dmar: *const direct_memory_access_remapping::Table = header as *const direct_memory_access_remapping::Table;
-                let dmar: &direct_memory_access_remapping::Table = unsafe {
-                    &*dmar
+                let table: *const direct_memory_access_remapping::Table = header as *const direct_memory_access_remapping::Table;
+                let table: &direct_memory_access_remapping::Table = unsafe {
+                    &*table
                 };
-                Self::Dmar(dmar)
+                Self::Dmar(table)
             },
             "DSDT" => {
                 let header: *const Header = header as *const Header;
-                let dsdt: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
-                let dsdt: &differentiated_system_description::Table = unsafe {
-                    &*dsdt
+                let table: *const differentiated_system_description::Table = header as *const differentiated_system_description::Table;
+                let table: &differentiated_system_description::Table = unsafe {
+                    &*table
                 };
-                Self::Dsdt(dsdt)
+                Self::Dsdt(table)
             },
             "FACP" => {
                 let header: *const Header = header as *const Header;
-                let fadt: *const fixed_acpi_description::Table = header as *const fixed_acpi_description::Table;
-                let fadt: &fixed_acpi_description::Table = unsafe {
-                    &*fadt
+                let table: *const fixed_acpi_description::Table = header as *const fixed_acpi_description::Table;
+                let table: &fixed_acpi_description::Table = unsafe {
+                    &*table
                 };
-                Self::Fadt(fadt)
+                Self::Fadt(table)
             },
             // "FIDT"
             "FPDT" => {
                 let header: *const Header = header as *const Header;
-                let fpdt: *const firmware_performance_data::Table = header as *const firmware_performance_data::Table;
-                let fpdt: &firmware_performance_data::Table = unsafe {
-                    &*fpdt
+                let table: *const firmware_performance_data::Table = header as *const firmware_performance_data::Table;
+                let table: &firmware_performance_data::Table = unsafe {
+                    &*table
                 };
-                Self::Fpdt(fpdt)
+                Self::Fpdt(table)
             },
             "HPET" => {
                 let header: *const Header = header as *const Header;
-                let hpet: *const high_precision_event_timer::Table = header as *const high_precision_event_timer::Table;
-                let hpet: &high_precision_event_timer::Table = unsafe {
-                    &*hpet
+                let table: *const high_precision_event_timer::Table = header as *const high_precision_event_timer::Table;
+                let table: &high_precision_event_timer::Table = unsafe {
+                    &*table
                 };
-                Self::Hpet(hpet)
+                Self::Hpet(table)
             },
             // "LPIT"
             // https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
             "MCFG" => {
                 let header: *const Header = header as *const Header;
-                let mcfg: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
-                let mcfg: &memory_mapped_configuration::Table = unsafe {
-                    &*mcfg
+                let table: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
+                let table: &memory_mapped_configuration::Table = unsafe {
+                    &*table
                 };
-                Self::Mcfg(mcfg)
+                Self::Mcfg(table)
             },
             // "NPKT"
             "RSDT" => {
                 let header: *const Header = header as *const Header;
-                let rsdt: *const root_system_description::Table = header as *const root_system_description::Table;
-                let rsdt: &root_system_description::Table = unsafe {
-                    &*rsdt
+                let table: *const root_system_description::Table = header as *const root_system_description::Table;
+                let table: &root_system_description::Table = unsafe {
+                    &*table
                 };
-                Self::Rsdt(rsdt)
+                Self::Rsdt(table)
             },
             "SRAT" => {
                 let header: *const Header = header as *const Header;
-                let srat: *const static_resource_affinity::Table = header as *const static_resource_affinity::Table;
-                let srat: &static_resource_affinity::Table = unsafe {
-                    &*srat
+                let table: *const static_resource_affinity::Table = header as *const static_resource_affinity::Table;
+                let table: &static_resource_affinity::Table = unsafe {
+                    &*table
                 };
-                Self::Srat(srat)
+                Self::Srat(table)
             },
             "SSDT" => {
                 let header: *const Header = header as *const Header;
-                let ssdt: *const secondary_system_description::Table = header as *const secondary_system_description::Table;
-                let ssdt: &secondary_system_description::Table = unsafe {
-                    &*ssdt
+                let table: *const secondary_system_description::Table = header as *const secondary_system_description::Table;
+                let table: &secondary_system_description::Table = unsafe {
+                    &*table
                 };
-                Self::Ssdt(ssdt)
+                Self::Ssdt(table)
             },
             // "TPM2"
             // https://trustedcomputinggroup.org/wp-content/uploads/TCG_ACPIGeneralSpec_v1p3_r8_pub.pdf
             "WAET" => {
                 let header: *const Header = header as *const Header;
-                let waet: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
-                let waet: &windows_acpi_emulated_devices::Table = unsafe {
-                    &*waet
+                let table: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
+                let table: &windows_acpi_emulated_devices::Table = unsafe {
+                    &*table
                 };
-                Self::Waet(waet)
+                Self::Waet(table)
             }
             // "WDAT"
             // https://download.microsoft.com/download/a/f/7/af7777e5-7dcd-4800-8a0a-b18336565f5b/hardwarewdtspec.doc
             "WSMT" => {
                 let header: *const Header = header as *const Header;
-                let wsmt: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;
-                let wsmt: &windows_smm_security_mitigations::Table = unsafe {
-                    &*wsmt
+                let table: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;
+                let table: &windows_smm_security_mitigations::Table = unsafe {
+                    &*table
                 };
-                Self::Wsmt(wsmt)
+                Self::Wsmt(table)
             }
             _ => Self::Other(header),
         }
