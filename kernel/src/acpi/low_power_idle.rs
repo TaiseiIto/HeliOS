@@ -1,3 +1,4 @@
+mod native_c_state_instruction;
 mod other;
 
 use {
@@ -81,6 +82,7 @@ impl<'a> Iterator for StateStructures<'a> {
 
 #[derive(Debug)]
 enum StateStructure<'a> {
+    NativeCStateInstruction(&'a native_c_state_instruction::Structure),
     Other(&'a other::Structure),
 }
 
@@ -93,6 +95,18 @@ impl<'a> StateStructure<'a> {
             .fold((0u32, 0usize), |(structure_type, structure_type_length), byte| ((structure_type << u8::BITS) + (*byte as u32), structure_type_length + 1));
         (structure_type_length == mem::size_of::<u32>())
             .then(|| match structure_type {
+                0x00000000 => {
+                    let structure: *const u8 = bytes
+                        .first()
+                        .unwrap() as *const u8;
+                    let structure: *const native_c_state_instruction::Structure = structure as *const native_c_state_instruction::Structure;
+                    let structure: &native_c_state_instruction::Structure = unsafe {
+                        &*structure
+                    };
+                    let structure = Self::NativeCStateInstruction(structure);
+                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                    (structure, remaining_bytes)
+                },
                 _ => {
                     let structure: *const u8 = bytes
                         .first()
@@ -110,6 +124,7 @@ impl<'a> StateStructure<'a> {
 
     fn size(&self) -> usize {
         match self {
+            Self::NativeCStateInstruction(structure) => structure.length(),
             Self::Other(structure) => structure.length(),
         }
     }
