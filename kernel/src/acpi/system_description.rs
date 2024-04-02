@@ -18,6 +18,7 @@ use {
         root_system_description,
         secondary_system_description,
         static_resource_affinity,
+        trusted_platform_module,
         windows_acpi_emulated_devices,
         windows_smm_security_mitigations,
     },
@@ -113,6 +114,7 @@ pub enum Table<'a> {
     Rsdt(&'a root_system_description::Table),
     Srat(&'a static_resource_affinity::Table),
     Ssdt(&'a secondary_system_description::Table),
+    Tpm2(&'a trusted_platform_module::Table),
     Waet(&'a windows_acpi_emulated_devices::Table),
     Wsmt(&'a windows_smm_security_mitigations::Table),
 }
@@ -135,6 +137,7 @@ impl Table<'_> {
             Self::Rsdt(table) => table.is_correct(),
             Self::Srat(table) => table.is_correct(),
             Self::Ssdt(table) => table.is_correct(),
+            Self::Tpm2(table) => table.is_correct(),
             Self::Waet(table) => table.is_correct(),
             Self::Wsmt(table) => table.is_correct(),
         }
@@ -258,8 +261,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Ssdt(table)
             },
-            // "TPM2"
-            // https://trustedcomputinggroup.org/wp-content/uploads/TCG_ACPIGeneralSpec_v1p3_r8_pub.pdf
+            "TPM2" => {
+                let header: *const Header = header as *const Header;
+                let table: *const trusted_platform_module::Table = header as *const trusted_platform_module::Table;
+                let table: &trusted_platform_module::Table = unsafe {
+                    &*table
+                };
+                Self::Tpm2(table)
+            },
             "WAET" => {
                 let header: *const Header = header as *const Header;
                 let table: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
@@ -267,7 +276,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*table
                 };
                 Self::Waet(table)
-            }
+            },
             // "WDAT"
             // https://download.microsoft.com/download/a/f/7/af7777e5-7dcd-4800-8a0a-b18336565f5b/hardwarewdtspec.doc
             "WSMT" => {
@@ -277,7 +286,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*table
                 };
                 Self::Wsmt(table)
-            }
+            },
             _ => Self::Other(header),
         }
     }
