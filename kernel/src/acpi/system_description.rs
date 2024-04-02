@@ -215,6 +215,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Hpet(hpet)
             },
             // "LPIT"
+            // https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
             "MCFG" => {
                 let header: *const Header = header as *const Header;
                 let mcfg: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
@@ -249,6 +250,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Ssdt(ssdt)
             },
             // "TPM2"
+            // https://trustedcomputinggroup.org/wp-content/uploads/TCG_ACPIGeneralSpec_v1p3_r8_pub.pdf
             "WAET" => {
                 let header: *const Header = header as *const Header;
                 let waet: *const windows_acpi_emulated_devices::Table = header as *const windows_acpi_emulated_devices::Table;
@@ -258,6 +260,7 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Waet(waet)
             }
             // "WDAT"
+            // https://download.microsoft.com/download/a/f/7/af7777e5-7dcd-4800-8a0a-b18336565f5b/hardwarewdtspec.doc
             "WSMT" => {
                 let header: *const Header = header as *const Header;
                 let wsmt: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;
