@@ -12,6 +12,7 @@ use {
         firmware_performance_data,
         fixed_acpi_description,
         high_precision_event_timer,
+        low_power_idle,
         memory_mapped_configuration,
         multiple_apic_description,
         root_system_description,
@@ -105,6 +106,7 @@ pub enum Table<'a> {
     Fadt(&'a fixed_acpi_description::Table),
     Fpdt(&'a firmware_performance_data::Table),
     Hpet(&'a high_precision_event_timer::Table),
+    Lpit(&'a low_power_idle::Table),
     Madt(&'a multiple_apic_description::Table),
     Mcfg(&'a memory_mapped_configuration::Table),
     Other(&'a Header),
@@ -118,22 +120,23 @@ pub enum Table<'a> {
 impl Table<'_> {
     pub fn is_correct(&self) -> bool {
         match self {
-            Self::Bgrt(bgrt) => bgrt.is_correct(),
-            Self::Dbg2(dbg2) => dbg2.is_correct(),
-            Self::Dbgp(dbgp) => dbgp.is_correct(),
-            Self::Dmar(dmar) => dmar.is_correct(),
-            Self::Dsdt(dsdt) => dsdt.is_correct(),
-            Self::Fadt(fadt) => fadt.is_correct(),
-            Self::Fpdt(fpdt) => fpdt.is_correct(),
-            Self::Hpet(hpet) => hpet.is_correct(),
-            Self::Madt(madt) => madt.is_correct(),
-            Self::Mcfg(mcfg) => mcfg.is_correct(),
-            Self::Other(header) => header.is_correct(),
-            Self::Rsdt(rsdt) => rsdt.is_correct(),
-            Self::Srat(srat) => srat.is_correct(),
-            Self::Ssdt(ssdt) => ssdt.is_correct(),
-            Self::Waet(waet) => waet.is_correct(),
-            Self::Wsmt(wsmt) => wsmt.is_correct(),
+            Self::Bgrt(table) => table.is_correct(),
+            Self::Dbg2(table) => table.is_correct(),
+            Self::Dbgp(table) => table.is_correct(),
+            Self::Dmar(table) => table.is_correct(),
+            Self::Dsdt(table) => table.is_correct(),
+            Self::Fadt(table) => table.is_correct(),
+            Self::Fpdt(table) => table.is_correct(),
+            Self::Hpet(table) => table.is_correct(),
+            Self::Lpit(table) => table.is_correct(),
+            Self::Madt(table) => table.is_correct(),
+            Self::Mcfg(table) => table.is_correct(),
+            Self::Other(table) => table.is_correct(),
+            Self::Rsdt(table) => table.is_correct(),
+            Self::Srat(table) => table.is_correct(),
+            Self::Ssdt(table) => table.is_correct(),
+            Self::Waet(table) => table.is_correct(),
+            Self::Wsmt(table) => table.is_correct(),
         }
     }
 }
@@ -216,6 +219,14 @@ impl<'a> From<&'a Header> for Table<'a> {
             },
             // "LPIT"
             // https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+            "LPIT" => {
+                let header: *const Header = header as *const Header;
+                let table: *const low_power_idle::Table = header as *const low_power_idle::Table;
+                let table: &low_power_idle::Table = unsafe {
+                    &*table
+                };
+                Self::Lpit(table)
+            },
             "MCFG" => {
                 let header: *const Header = header as *const Header;
                 let table: *const memory_mapped_configuration::Table = header as *const memory_mapped_configuration::Table;
