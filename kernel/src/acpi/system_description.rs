@@ -217,8 +217,6 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Hpet(table)
             },
-            // "LPIT"
-            // https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
             "LPIT" => {
                 let header: *const Header = header as *const Header;
                 let table: *const low_power_idle::Table = header as *const low_power_idle::Table;
