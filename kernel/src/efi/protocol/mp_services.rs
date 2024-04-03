@@ -32,10 +32,10 @@ pub struct Protocol {
 
 impl Protocol {
     #[allow(dead_code)]
-    pub fn get() -> &'static Self {
+    pub fn get<'a>(system_table: &'a SystemTable<'a>) -> &'a Self {
         let guid = Guid::new(0x3fdda605, 0xa76e, 0x4f46, [0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08]);
         let registration: &Void = null();
-        let protocol: &Void = SystemTable::get()
+        let protocol: &Void = system_table
             .locate_protocol(registration, guid)
             .unwrap();
         let protocol: *const Void = protocol as *const Void;

@@ -1,5 +1,6 @@
 use {
     core::fmt,
+    crate::acpi,
     super::{
         Guid,
         Void,
@@ -13,32 +14,36 @@ pub struct Tables<'a> {
     configuration_table: &'a Table,
 }
 
+impl Tables<'_> {
+    pub fn rsdp(&self) -> &acpi::root_system_description::Pointer {
+        let acpi_table_guid = Guid::new(0x8868e871, 0xe4f1, 0x11d3, [0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81]);
+        let rsdp: *const acpi::root_system_description::Pointer = self.iter()
+            .find(|table| table.vendor_guid == acpi_table_guid)
+            .unwrap()
+            .vendor_table as *const acpi::root_system_description::Pointer;
+        unsafe {
+            &*rsdp
+        }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Table> {
+        (0..self.number_of_table_entries)
+            .map(|index| {
+                let table: &Table = self.configuration_table;
+                let table: *const Table = table as *const Table;
+                unsafe {
+                    &*table.add(index)
+                }
+            })
+    }
+}
+
 impl fmt::Debug for Tables<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_list()
-            .entries(self.clone())
+            .entries(self.iter())
             .finish()
-    }
-}
-
-impl<'a> Iterator for Tables<'a> {
-    type Item = &'a Table;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.number_of_table_entries {
-            0 => None,
-            _ => {
-                let output: &Table = self.configuration_table;
-                let configuration_table: &Table = self.configuration_table;
-                let configuration_table: *const Table = configuration_table as *const Table;
-                self.number_of_table_entries -= 1;
-                self.configuration_table = unsafe {
-                    &*configuration_table.add(1)
-                };
-                Some(output)
-            },
-        }
     }
 }
 

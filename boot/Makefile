@@ -6,7 +6,7 @@ DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a bootloader.
 $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	cargo build --target $(FORMAT)
+	APPLICATION_PROCESSOR_BOOT_LOADER_BASE=$(APPLICATION_PROCESSOR_BOOT_LOADER_BASE) APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR) KERNEL=$(KERNEL) cargo build --target $(FORMAT)
 
 # Generate documents.
 # Usage: $ make doc

@@ -47,7 +47,7 @@ pub struct PixelBitmask {
     red: u32,
     green: u32,
     blue: u32,
-    reserved: u32,
+    reserved0: u32,
 }
 
 /// # EFI_GRAPHICS_PIXEL_FORMAT
@@ -115,7 +115,7 @@ pub struct BltPixel {
     blue: u8,
     green: u8,
     red: u8,
-    reserved: u8,
+    reserved0: u8,
 }
 
 /// # EFI_GRAPHICS_OUTPUT_BLT_OPERATION

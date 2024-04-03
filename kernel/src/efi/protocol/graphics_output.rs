@@ -25,10 +25,10 @@ pub struct Protocol<'a> {
 
 impl Protocol<'static> {
     #[allow(dead_code)]
-    pub fn get() -> &'static Self {
+    pub fn get<'a>(system_table: &'a SystemTable<'a>) -> &'a Self {
         let guid = Guid::new(0x9042a9de, 0x23dc, 0x4a38, [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a]);
         let registration: &Void = null();
-        let protocol: &Void = SystemTable::get()
+        let protocol: &Void = system_table
             .locate_protocol(registration, guid)
             .unwrap();
         let protocol: *const Void = protocol as *const Void;
@@ -48,7 +48,7 @@ pub struct PixelBitmask {
     red: u32,
     green: u32,
     blue: u32,
-    reserved: u32,
+    reserved0: u32,
 }
 
 /// # EFI_GRAPHICS_PIXEL_FORMAT
@@ -116,7 +116,7 @@ pub struct BltPixel {
     blue: u8,
     green: u8,
     red: u8,
-    reserved: u8,
+    reserved0: u8,
 }
 
 /// # EFI_GRAPHICS_OUTPUT_BLT_OPERATION

@@ -1,5 +1,7 @@
 use {
     alloc::vec::Vec,
+    core::ops::Range,
+    crate::memory::page,
     super::{
         Event,
         Guid,
@@ -40,7 +42,7 @@ pub struct BootServices {
     reinstall_protocol_interface: ReinstallProtocolInterface,
     uninstall_protocol_interface: UninstallProtocolInterface,
     handle_protocol: HandleProtocol,
-    reserved: *const Void,
+    reserved0: *const Void,
     register_protocol_notify: RegisterProtocolNotify,
     locate_handle: LocateHandle,
     locate_device_path: LocateDevicePath,
@@ -77,6 +79,20 @@ impl BootServices {
         (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address)
             .result()
             .map(|_| physical_address)
+    }
+
+    pub fn allocate_specific_pages(&self, physical_address: usize, pages: usize) -> Result<Range<memory::PhysicalAddress>, Status> {
+        let allocate_type = memory::AllocateType::AllocateAddress;
+        let memory_type = memory::Type::LoaderData;
+        let mut physical_address: u64 = physical_address as u64;
+        (self.allocate_pages)(allocate_type, memory_type, pages, &mut physical_address)
+            .result()
+            .map(|_| {
+                let start: memory::PhysicalAddress = physical_address as memory::PhysicalAddress;
+                let length: memory::PhysicalAddress = (pages * page::SIZE) as memory::PhysicalAddress;
+                let end: memory::PhysicalAddress = start + length;
+                start..end
+            })
     }
 
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {

@@ -7,6 +7,7 @@
 
 extern crate alloc;
 
+mod application_processor;
 mod efi;
 mod elf;
 mod kernel;
@@ -26,12 +27,19 @@ use {
     },
 };
 
+include!(concat!(env!("OUT_DIR"), "/constants.rs"));
+
 /// # The entry point of the OS
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.1 UEFI Image Entry Point
 #[no_mangle]
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
+    // Allocate pages requested to be allocated at specific physical address preferentially.
+    let application_processor_boot_loader_pages: usize = (APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR - APPLICATION_PROCESSOR_BOOT_LOADER_BASE) / memory::page::SIZE;
+    let application_processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
+        .allocate_specific_pages(APPLICATION_PROCESSOR_BOOT_LOADER_BASE, application_processor_boot_loader_pages)
+        .unwrap();
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
     let font_protocol = efi::font::Protocol::get();
@@ -45,14 +53,14 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     com2_println!("my_processor_number = {:#x?}", my_processor_number);
     let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     com2_println!("processor_informations = {:#x?}", processor_informations);
-    let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
+    let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     assert!(execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel: elf::File = directory_tree
-        .get("HeliOS/kernel.elf")
+        .get(KERNEL)
         .unwrap()
         .read()
         .into();
@@ -94,15 +102,23 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
+    let application_processor_boot_loader: Vec<u8> = directory_tree
+        .get(APPLICATION_PROCESSOR_BOOT_LOADER)
+        .unwrap()
+        .read();
+    let application_processor_boot_loader = application_processor::boot::Loader::new(&application_processor_boot_loader, application_processor_boot_loader_pages);
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
         .read()
         .into();
+    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_BASE = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_BASE);
+    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
     let kernel_argument = kernel::Argument::new(
+        application_processor_boot_loader,
         rs232c::get_com2(),
         cpuid,
         efi::SystemTable::get(),

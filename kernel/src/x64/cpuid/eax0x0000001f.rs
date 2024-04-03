@@ -62,7 +62,7 @@ struct Ecx {
     the_input_ecx_sub_leaf_index: u8,
     domain_type: u8,
     #[bits(access = RO)]
-    reserved: u16,
+    reserved0: u16,
 }
 
 #[bitfield(u32)]

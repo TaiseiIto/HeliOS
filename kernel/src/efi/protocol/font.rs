@@ -63,10 +63,10 @@ pub struct Protocol {
 
 impl Protocol {
     #[allow(dead_code)]
-    pub fn get() -> &'static Self {
+    pub fn get<'a>(system_table: &'a SystemTable<'a>) -> &'a Self {
         let guid = Guid::new(0xe9ca4775, 0x8657, 0x47fc, [0x97, 0xe7, 0x7e, 0xd6, 0x5a, 0x8, 0x43, 0x24]);
         let registration: &Void = null();
-        let protocol: &Void = SystemTable::get()
+        let protocol: &Void = system_table
             .locate_protocol(registration, guid)
             .unwrap();
         let protocol: *const Void = protocol as *const Void;
@@ -119,7 +119,7 @@ pub struct OutFlags {
     ignore_line_break: bool,
     direct_to_screen: bool,
     #[bits(24)]
-    reserved: u32,
+    reserved0: u32,
 }
 
 /// # EFI_STRING

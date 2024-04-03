@@ -43,6 +43,10 @@ impl Eax0x00000001 {
     pub fn psn(&self) -> bool {
         self.edx.psn()
     }
+
+    pub fn supports_apic(&self) -> bool {
+        self.edx.apic()
+    }
 }
 
 #[bitfield(u32)]

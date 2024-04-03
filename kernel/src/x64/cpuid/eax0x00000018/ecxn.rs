@@ -68,6 +68,6 @@ struct Edx {
     #[bits(12)]
     maximum_number_of_addressable_ids_for_logical_processors_sharing_this_translation_cache: u16,
     #[bits(6)]
-    reserved: u8,
+    reserved1: u8,
 }
 

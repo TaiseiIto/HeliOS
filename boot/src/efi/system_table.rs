@@ -7,6 +7,7 @@ use {
             Write,
         },
         iter,
+        ops::Range,
     },
     super::{
         BootServices,
@@ -61,6 +62,11 @@ impl SystemTable<'_> {
         self.boot_services
             .allocate_pages(pages)
             .map(|physical_address| physical_address.into())
+    }
+
+    pub fn allocate_specific_pages(&self, physical_address: usize, pages: usize) -> Result<Range<memory::PhysicalAddress>, Status> {
+        self.boot_services
+            .allocate_specific_pages(physical_address, pages)
     }
 
     pub fn allocate_pool(&self, size: usize) -> Result<&Void, Status> {

@@ -11,7 +11,7 @@ pub struct Register {
     clear_transmit_fifo: bool,
     dma_mode_select: bool,
     #[bits(default = false, access = RO)]
-    reserved: bool,
+    reserved0: bool,
     enable_64byte_fifo: bool,
     #[bits(2)]
     interrupt_trigger_level: u8,
