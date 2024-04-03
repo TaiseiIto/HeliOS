@@ -110,9 +110,9 @@ pub struct Table {
 
 impl Table {
     pub fn entries<'a>(&'a self) -> Vec<system_description::Table<'a>> {
-        let rsdt: *const Self = self as *const Self;
-        let rsdt: usize = rsdt as usize;
-        let first_entry: usize = rsdt + mem::size_of::<Self>();
+        let table: *const Self = self as *const Self;
+        let table: usize = table as usize;
+        let first_entry: usize = table + mem::size_of::<Self>();
         let first_entry: *const u32 = first_entry as *const u32;
         let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / 4;
         (0..entries)
@@ -140,10 +140,12 @@ impl Table {
 
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let header: system_description::Header = self.header;
+        let entries: Vec<system_description::Table> = self.entries();
         formatter
             .debug_struct("Table")
-            .field("header", &self.header)
-            .field("entries", &self.entries())
+            .field("header", &header)
+            .field("entries", &entries)
             .finish()
     }
 }
