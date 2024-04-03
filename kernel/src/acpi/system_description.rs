@@ -19,6 +19,7 @@ use {
         secondary_system_description,
         static_resource_affinity,
         trusted_platform_module,
+        watchdog_action,
         windows_acpi_emulated_devices,
         windows_smm_security_mitigations,
     },
@@ -116,6 +117,7 @@ pub enum Table<'a> {
     Ssdt(&'a secondary_system_description::Table),
     Tpm2(&'a trusted_platform_module::Table),
     Waet(&'a windows_acpi_emulated_devices::Table),
+    Wdat(&'a watchdog_action::Table),
     Wsmt(&'a windows_smm_security_mitigations::Table),
 }
 
@@ -139,6 +141,7 @@ impl Table<'_> {
             Self::Ssdt(table) => table.is_correct(),
             Self::Tpm2(table) => table.is_correct(),
             Self::Waet(table) => table.is_correct(),
+            Self::Wdat(table) => table.is_correct(),
             Self::Wsmt(table) => table.is_correct(),
         }
     }
@@ -277,8 +280,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                 };
                 Self::Waet(table)
             },
-            // "WDAT"
-            // https://download.microsoft.com/download/a/f/7/af7777e5-7dcd-4800-8a0a-b18336565f5b/hardwarewdtspec.doc
+            "WDAT" => {
+                let header: *const Header = header as *const Header;
+                let table: *const watchdog_action::Table = header as *const watchdog_action::Table;
+                let table: &watchdog_action::Table = unsafe {
+                    &*table
+                };
+                Self::Wdat(table)
+            },
             "WSMT" => {
                 let header: *const Header = header as *const Header;
                 let table: *const windows_smm_security_mitigations::Table = header as *const windows_smm_security_mitigations::Table;

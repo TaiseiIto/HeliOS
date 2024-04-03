@@ -19,6 +19,7 @@ pub mod secondary_system_description;
 pub mod static_resource_affinity;
 pub mod system_description;
 pub mod trusted_platform_module;
+pub mod watchdog_action;
 pub mod windows_acpi_emulated_devices;
 pub mod windows_smm_security_mitigations;
 
