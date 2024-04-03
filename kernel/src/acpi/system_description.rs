@@ -9,6 +9,7 @@ use {
         debug_port,
         differentiated_system_description,
         direct_memory_access_remapping,
+        extended_system_description,
         firmware_performance_data,
         fixed_acpi_description,
         high_precision_event_timer,
@@ -119,6 +120,7 @@ pub enum Table<'a> {
     Waet(&'a windows_acpi_emulated_devices::Table),
     Wdat(&'a watchdog_action::Table),
     Wsmt(&'a windows_smm_security_mitigations::Table),
+    Xsdt(&'a extended_system_description::Table),
 }
 
 impl Table<'_> {
@@ -143,6 +145,7 @@ impl Table<'_> {
             Self::Waet(table) => table.is_correct(),
             Self::Wdat(table) => table.is_correct(),
             Self::Wsmt(table) => table.is_correct(),
+            Self::Xsdt(table) => table.is_correct(),
         }
     }
 }
@@ -295,6 +298,14 @@ impl<'a> From<&'a Header> for Table<'a> {
                     &*table
                 };
                 Self::Wsmt(table)
+            },
+            "XSDT" => {
+                let header: *const Header = header as *const Header;
+                let table: *const extended_system_description::Table = header as *const extended_system_description::Table;
+                let table: &extended_system_description::Table = unsafe {
+                    &*table
+                };
+                Self::Xsdt(table)
             },
             _ => Self::Other(header),
         }

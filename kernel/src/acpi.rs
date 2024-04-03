@@ -6,6 +6,7 @@ pub mod boot_graphics_resource;
 pub mod debug_port;
 pub mod differentiated_system_description;
 pub mod direct_memory_access_remapping;
+pub mod extended_system_description;
 pub mod firmware_acpi_control;
 pub mod firmware_performance_data;
 pub mod fixed_acpi_description;

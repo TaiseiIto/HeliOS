@@ -17,16 +17,16 @@ pub struct Pointer {
     checksum: u8,
     oemid: [u8; 6],
     revision: u8,
-    rsdt_address: u32,
+    rsdt: u32,
     length: u32,
-    xsdt_address: u64,
+    xsdt: u64,
     extended_checksum: u8,
-    reserved: [u8; 3],
+    reserved0: [u8; 3],
 }
 
 impl Pointer {
     pub fn is_correct(&self) -> bool {
-        self.checksum() && self.extended_checksum() && self.table().is_correct()
+        self.checksum() && self.extended_checksum() && self.rsdt().is_correct() && self.xsdt().is_correct()
     }
 
     fn checksum(&self) -> bool {
@@ -57,31 +57,45 @@ impl Pointer {
         str::from_utf8(self.signature.as_slice()).unwrap()
     }
 
-    fn table(&self) -> system_description::Table {
-        let rsdt_header: usize = self.rsdt_address as usize;
+    fn rsdt(&self) -> system_description::Table {
+        let rsdt_header: usize = self.rsdt as usize;
         let rsdt_header: *const system_description::Header = rsdt_header as *const system_description::Header;
         let rsdt_header: &system_description::Header = unsafe {
             &*rsdt_header
         };
         rsdt_header.into()
     }
+
+    fn xsdt(&self) -> system_description::Table {
+        let xsdt_header: usize = self.xsdt as usize;
+        let xsdt_header: *const system_description::Header = xsdt_header as *const system_description::Header;
+        let xsdt_header: &system_description::Header = unsafe {
+            &*xsdt_header
+        };
+        xsdt_header.into()
+    }
 }
 
 impl fmt::Debug for Pointer {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let signature: [u8; 8] = self.signature;
+        let checksum: u8 = self.checksum;
+        let oemid: [u8; 6] = self.oemid;
+        let revision: u8 = self.revision;
+        let rsdt: system_description::Table = self.rsdt();
         let length: u32 = self.length;
-        let xsdt_address: u64 = self.xsdt_address;
+        let xsdt: system_description::Table = self.xsdt();
+        let extended_checksum: u8 = self.extended_checksum;
         formatter
-            .debug_struct("RSDP")
-            .field("signature", &self.signature())
-            .field("checksum", &self.checksum)
-            .field("oemid", &self.oemid())
-            .field("revision", &self.revision)
-            .field("rsdt", &self.table())
+            .debug_struct("Rsdp")
+            .field("signature", &signature)
+            .field("checksum", &checksum)
+            .field("oemid", &oemid)
+            .field("revision", &revision)
+            .field("rsdt", &rsdt)
             .field("length", &length)
-            .field("xsdt_address", &xsdt_address)
-            .field("extended_checksum", &self.extended_checksum)
-            .field("reserved", &self.reserved)
+            .field("xsdt", &xsdt)
+            .field("extended_checksum", &extended_checksum)
             .finish()
     }
 }
