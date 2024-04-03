@@ -3,6 +3,7 @@ use {
     core::{
         fmt,
         mem,
+        slice,
     },
     super::system_description,
 };
@@ -17,17 +18,13 @@ pub struct Table {
 
 impl Table {
     pub fn entries<'a>(&'a self) -> Vec<system_description::Table<'a>> {
-        let table: *const Self = self as *const Self;
-        let table: usize = table as usize;
-        let first_entry: usize = table + mem::size_of::<Self>();
-        let first_entry: *const u64 = first_entry as *const u64;
-        let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / mem::size_of::<u64>();
-        (0..entries)
-            .map(|index| {
-                let entry: u64 = unsafe {
-                    *first_entry.add(index)
-                };
-                let entry: usize = entry as usize;
+        self.bytes()
+            .chunks(mem::size_of::<usize>())
+            .map(|entry_address_bytes| {
+                let entry: usize = entry_address_bytes
+                    .iter()
+                    .rev()
+                    .fold(0usize, |entry_address, byte| (entry_address << u8::BITS) + (*byte as usize));
                 let header: *const system_description::Header = entry as *const system_description::Header;
                 let header: &system_description::Header = unsafe {
                     &*header
@@ -42,6 +39,17 @@ impl Table {
             .entries()
             .iter()
             .all(|entry| entry.is_correct())
+    }
+
+    fn bytes(&self) -> &[u8] {
+        let table: *const Self = self as *const Self;
+        let table: usize = table as usize;
+        let first_byte: usize = table + mem::size_of::<Self>();
+        let first_byte: *const u8 = first_byte as *const u8;
+        let length: usize = self.header.table_size() - mem::size_of::<Self>();
+        unsafe {
+            slice::from_raw_parts(first_byte, length)
+        }
     }
 }
 
