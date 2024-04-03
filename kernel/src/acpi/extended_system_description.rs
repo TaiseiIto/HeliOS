@@ -20,11 +20,11 @@ impl Table {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
         let first_entry: usize = table + mem::size_of::<Self>();
-        let first_entry: *const u32 = first_entry as *const u32;
-        let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / 4;
+        let first_entry: *const u64 = first_entry as *const u64;
+        let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / mem::size_of::<u64>();
         (0..entries)
             .map(|index| {
-                let entry: u32 = unsafe {
+                let entry: u64 = unsafe {
                     *first_entry.add(index)
                 };
                 let entry: usize = entry as usize;
