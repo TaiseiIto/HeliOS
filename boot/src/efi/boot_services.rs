@@ -42,7 +42,7 @@ pub struct BootServices {
     reinstall_protocol_interface: ReinstallProtocolInterface,
     uninstall_protocol_interface: UninstallProtocolInterface,
     handle_protocol: HandleProtocol,
-    reserved: *const Void,
+    reserved0: *const Void,
     register_protocol_notify: RegisterProtocolNotify,
     locate_handle: LocateHandle,
     locate_device_path: LocateDevicePath,

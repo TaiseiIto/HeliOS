@@ -62,13 +62,13 @@ struct Eax {
 struct Ebx {
     enumerates_the_presence_of_the_ia32_ppin_and_ia32_ppin_ctl_msrs: bool,
     #[bits(31, access = RO)]
-    reserved: u32,
+    reserved0: u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
     #[bits(18, access = RO)]
-    reserved: u32,
+    reserved0: u32,
     cet_sss: bool,
     #[bits(13, access = RO)]
     reserved1: u16,

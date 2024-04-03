@@ -117,7 +117,7 @@ pub struct OutFlags {
     ignore_line_break: bool,
     direct_to_screen: bool,
     #[bits(24)]
-    reserved: u32,
+    reserved0: u32,
 }
 
 /// # EFI_STRING

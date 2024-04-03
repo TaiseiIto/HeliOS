@@ -27,6 +27,6 @@ impl Structure {
 pub struct Flags {
     enabled: bool,
     #[bits(31, access = RO)]
-    reserved: u32,
+    reserved0: u32,
 }
 

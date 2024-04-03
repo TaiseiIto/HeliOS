@@ -13,7 +13,7 @@ pub struct Register {
     loopback_mode: bool,
     autoflow_control_enabled: bool,
     #[bits(2, access = RO)]
-    reserved: u8,
+    reserved0: u8,
 }
 
 impl Register {

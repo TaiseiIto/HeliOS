@@ -28,6 +28,6 @@ impl fmt::Debug for FatRegister {
 struct Register {
     index: u8,
     #[bits(24, access = RO)]
-    reserved: u32,
+    reserved0: u32,
 }
 

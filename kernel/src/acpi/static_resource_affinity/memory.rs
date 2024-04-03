@@ -12,9 +12,9 @@ pub struct Structure {
     reserved0: u16,
     base_address: u64,
     length1: u64,
-    reserved: u32,
+    reserved1: u32,
     flags: Flags,
-    reserved1: u64,
+    reserved2: u64,
 }
 
 impl Structure {

@@ -78,7 +78,7 @@ impl fmt::Debug for Structure {
 struct Flags {
     include_pci_all: bool,
     #[bits(7, access = RO)]
-    reserved: u8,
+    reserved0: u8,
 }
 
 pub struct Scopes<'a> {
