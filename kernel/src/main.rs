@@ -169,7 +169,10 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     com2_println!("idt = {:#x?}", idt);
-    let madt: &mut acpi::multiple_apic_description::Table = efi_system_table.rsdp_mut().xsdt_mut().madt_mut();
+    let madt: &mut acpi::multiple_apic_description::Table = efi_system_table
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut();
     com2_println!("madt = {:#x?}", madt);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();

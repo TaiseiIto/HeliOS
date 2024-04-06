@@ -1,28 +1,28 @@
-mod bridge_io_programmable_interrupt_controller;
-mod core_programmable_interrupt_controller;
-mod extended_io_programmable_interrupt_controller;
-mod gic_cpu_interface;
-mod gic_distributer;
-mod gic_interrupt_translation_service;
-mod gic_msi_frame;
-mod gic_redistributor;
-mod hyper_transport_programmable_interrupt_controller;
-mod interrupt_source_override;
-mod io_apic;
-mod io_sapic;
-mod legacy_io_programmable_interrupt_controller;
-mod local_apic_address_override;
-mod local_apic_nmi;
-mod local_sapic;
-mod local_x2apic_nmi;
-mod low_pin_count_programmable_interrupt_controller;
-mod msi_programmable_interrupt_controller;
-mod multiprocessor_wakeup;
-mod non_maskable_interrupt_source;
-mod other;
-mod platform_interrupt_sources;
-mod processor_local_apic;
-mod processor_local_x2apic;
+pub mod bridge_io_programmable_interrupt_controller;
+pub mod core_programmable_interrupt_controller;
+pub mod extended_io_programmable_interrupt_controller;
+pub mod gic_cpu_interface;
+pub mod gic_distributer;
+pub mod gic_interrupt_translation_service;
+pub mod gic_msi_frame;
+pub mod gic_redistributor;
+pub mod hyper_transport_programmable_interrupt_controller;
+pub mod interrupt_source_override;
+pub mod io_apic;
+pub mod io_sapic;
+pub mod legacy_io_programmable_interrupt_controller;
+pub mod local_apic_address_override;
+pub mod local_apic_nmi;
+pub mod local_sapic;
+pub mod local_x2apic_nmi;
+pub mod low_pin_count_programmable_interrupt_controller;
+pub mod msi_programmable_interrupt_controller;
+pub mod multiprocessor_wakeup;
+pub mod non_maskable_interrupt_source;
+pub mod other;
+pub mod platform_interrupt_sources;
+pub mod processor_local_apic;
+pub mod processor_local_x2apic;
 
 use {
     alloc::vec::Vec,
@@ -60,6 +60,18 @@ impl Table {
         let size: usize = self.header.table_size() - mem::size_of::<Self>();
         unsafe {
             slice::from_raw_parts(table, size)
+        }
+    }
+
+    fn bytes_mut(&mut self) -> &mut [u8] {
+        let table: *mut Self = self as *mut Self;
+        let table: *mut Self = unsafe {
+            table.add(1)
+        };
+        let table: *mut u8 = table as *mut u8;
+        let size: usize = self.header.table_size() - mem::size_of::<Self>();
+        unsafe {
+            slice::from_raw_parts_mut(table, size)
         }
     }
 
