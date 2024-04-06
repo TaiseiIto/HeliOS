@@ -5,7 +5,10 @@ use {
         mem,
         str,
     },
-    super::system_description,
+    super::{
+        extended_system_description,
+        system_description,
+    },
 };
 
 /// # RSDP
@@ -27,6 +30,14 @@ pub struct Pointer {
 impl Pointer {
     pub fn is_correct(&self) -> bool {
         self.checksum() && self.extended_checksum() && self.rsdt().is_correct() && self.xsdt().is_correct()
+    }
+
+    pub fn xsdt_mut(&mut self) -> &mut extended_system_description::Table {
+        let xsdt: usize = self.xsdt as usize;
+        let xsdt: *mut extended_system_description::Table = xsdt as *mut extended_system_description::Table;
+        unsafe {
+            &mut *xsdt
+        }
     }
 
     fn checksum(&self) -> bool {

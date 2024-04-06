@@ -14,7 +14,7 @@ pub struct Tables<'a> {
 }
 
 impl Tables<'_> {
-    pub fn rsdp(&mut self) -> &mut acpi::root_system_description::Pointer {
+    pub fn rsdp_mut(&mut self) -> &mut acpi::root_system_description::Pointer {
         let acpi_table_guid = Guid::new(0x8868e871, 0xe4f1, 0x11d3, [0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81]);
         let rsdp: *mut acpi::root_system_description::Pointer = self.iter_mut()
             .find(|table| table.vendor_guid == acpi_table_guid)
