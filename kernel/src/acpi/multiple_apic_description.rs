@@ -47,6 +47,23 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn io_apic_mut(&mut self) -> &mut io_apic::Structure {
+        let bytes: &[u8] = self.bytes();
+        let mut index: usize = 0;
+        while bytes[index] != 0x01 {
+            index += bytes[index + 1] as usize;
+        }
+        let io_apic: &mut u8 = self
+            .bytes_mut()
+            .get_mut(index)
+            .unwrap();
+        let io_apic: *mut u8 = io_apic as *mut u8;
+        let io_apic: *mut io_apic::Structure = io_apic as *mut io_apic::Structure;
+        unsafe {
+            &mut *io_apic
+        }
+    }
+
     pub fn is_correct(&self) -> bool {
         self.header.is_correct()
     }
