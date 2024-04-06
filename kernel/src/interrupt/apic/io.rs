@@ -2,9 +2,16 @@ pub mod data;
 pub mod eoi;
 pub mod identification;
 pub mod index;
+pub mod redirection;
 pub mod version;
 
-use core::fmt;
+use {
+    alloc::vec::Vec,
+    core::{
+        fmt,
+        mem,
+    },
+};
 
 /// # Advanced Programmable Interrupt Controller (APIC) Registers
 /// ## References
@@ -24,6 +31,22 @@ pub struct Registers {
 impl Registers {
     pub fn identification(&mut self) -> identification::Register {
         self.get_u32(0).into()
+    }
+
+    pub fn redirection_table_entries(&mut self) -> Vec<redirection::table::Entry> {
+        (0..)
+            .map_while(|index| self.redirection_table_entry(index))
+            .collect()
+    }
+
+    pub fn redirection_table_entry(&mut self, index: usize) -> Option<redirection::table::Entry> {
+        (index < self.version().redirection_table_length()).then(|| {
+            let index: u8 = 0x10 + 2 * (index as u8);
+            let low: u32 = self.get_u32(index);
+            let high: u32 = self.get_u32(index + (mem::size_of::<u32>() as u8));
+            let redirection_table_entry: u64 = (low as u64) + ((high as u64) << u32::BITS);
+            redirection_table_entry.into()
+        })
     }
 
     pub fn version(&mut self) -> version::Register {

@@ -13,3 +13,9 @@ pub struct Register {
     reserved1: u8,
 }
 
+impl Register {
+    pub fn redirection_table_length(&self) -> usize {
+        (self.maximum_redirection_entries() as usize) + 1
+    }
+}
+
