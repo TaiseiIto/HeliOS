@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .madt_mut()
         .io_apic_mut()
         .registers_mut();
-    com2_println!("io_apic = {:#x?}", io_apic);
+    com2_println!("io_apic.get_u32(0) = {:#x?}", io_apic.get_u32(0));
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);

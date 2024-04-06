@@ -19,6 +19,13 @@ pub struct Registers {
     eoi: eoi::FatRegister,
 }
 
+impl Registers {
+    pub fn get_u32(&mut self, index: u8) -> u32 {
+        self.index.set(index);
+        self.data.get()
+    }
+}
+
 impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let index: index::FatRegister = self.index;

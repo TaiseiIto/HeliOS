@@ -10,6 +10,13 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn set(&mut self, index: u8) {
+        let register: Register = self.register.with_index(index);
+        self.register = register;
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
