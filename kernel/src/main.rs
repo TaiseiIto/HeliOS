@@ -177,6 +177,8 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut();
     let io_apic_identification: interrupt::apic::io::identification::Register = io_apic.identification();
     com2_println!("io_apic_identification = {:#x?}", io_apic_identification);
+    let io_apic_version: interrupt::apic::io::version::Register = io_apic.version();
+    com2_println!("io_apic_version = {:#x?}", io_apic_version);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);

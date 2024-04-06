@@ -2,6 +2,7 @@ pub mod data;
 pub mod eoi;
 pub mod identification;
 pub mod index;
+pub mod version;
 
 use core::fmt;
 
@@ -23,6 +24,10 @@ pub struct Registers {
 impl Registers {
     pub fn identification(&mut self) -> identification::Register {
         self.get_u32(0).into()
+    }
+
+    pub fn version(&mut self) -> version::Register {
+        self.get_u32(1).into()
     }
 
     fn get_u32(&mut self, index: u8) -> u32 {
