@@ -120,6 +120,12 @@ pub struct ProcessorInformation {
     extended_information: ExtendedProcessorInformation,
 }
 
+impl ProcessorInformation {
+    pub fn identifier(&self) -> u64 {
+        self.processor_id
+    }
+}
+
 /// # EFI_CPU_PHYSICAL_LOCATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()

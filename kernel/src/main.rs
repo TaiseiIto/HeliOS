@@ -45,7 +45,7 @@ pub struct Argument<'a> {
     heap_start: usize,
     hello_application: elf::File,
     memory_map: efi::memory::Map,
-    my_processor_number: Option<usize>,
+    my_processor_number: usize,
     paging: memory::Paging,
     processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
@@ -146,20 +146,25 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
-    let apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
-    com2_println!("apic_registers = {:#x?}", apic_registers);
-    let hpet: &mut timer::hpet::Registers = efi_system_table
+    let local_apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
+    com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
+    // Start HPET.
+    efi_system_table
         .rsdp_mut()
         .xsdt_mut()
         .hpet_mut()
-        .registers_mut();
-    hpet.start_counting();
-    com2_println!("hpet = {:#x?}", hpet);
+        .registers_mut()
+        .start_counting();
+    // Boot application processors.
     let processors: BTreeMap<usize, processor::Controller> = processor_informations
         .iter()
         .map(|(number, information)| (*number, processor::Controller::new(information.clone())))
         .collect();
     com2_println!("processors = {:#x?}", processors);
+    processors
+        .iter()
+        .filter_map(|(number, processor)| (number != my_processor_number).then_some(processor))
+        .for_each(|processor| processor.boot());
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     unsafe {
         asm!("int 0x80");

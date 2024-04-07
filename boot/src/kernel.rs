@@ -31,7 +31,7 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     memory_map: efi::memory::Map,
     #[allow(dead_code)]
-    my_processor_number: Option<usize>,
+    my_processor_number: usize,
     #[allow(dead_code)]
     paging: memory::Paging,
     #[allow(dead_code)]
@@ -50,7 +50,7 @@ impl<'a> Argument<'a> {
         heap_start: usize,
         hello_application: elf::File,
         memory_map: efi::memory::Map,
-        my_processor_number: Option<usize>,
+        my_processor_number: usize,
         paging: memory::Paging,
         processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
     ) -> Self {
