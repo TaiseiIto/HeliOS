@@ -32,7 +32,8 @@ impl Registers {
 
     pub fn wait_femtoseconds(&self, femtoseconds: u64) {
         let mut current_counter_value: u64 = self.get_counter_value();
-        let increments: u64 = femtoseconds / self.get_femtoseconds_per_increment();
+        let femtoseconds_per_increment: u64 = self.get_femtoseconds_per_increment();
+        let increments: u64 = (femtoseconds + femtoseconds_per_increment - 1) / femtoseconds_per_increment;
         let minimum_counter_value: u64 = current_counter_value.wrapping_add(increments);
         let maximum_counter_value: u64 = minimum_counter_value.wrapping_add(1 << (u64::BITS - 1));
         while if minimum_counter_value < maximum_counter_value {
