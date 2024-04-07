@@ -22,6 +22,12 @@ pub struct Registers {
     timer: [timer::Registers; 0x18],
 }
 
+impl Registers {
+    pub fn start_counting(&mut self) {
+        self.general_configuration = self.general_configuration.start_counting();
+    }
+}
+
 impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;

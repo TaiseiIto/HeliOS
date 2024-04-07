@@ -186,6 +186,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .xsdt_mut()
         .hpet_mut()
         .registers_mut();
+    hpet.start_counting();
     com2_println!("hpet = {:#x?}", hpet);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
