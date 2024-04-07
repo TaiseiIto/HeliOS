@@ -69,10 +69,12 @@ fn main(argument: &'static mut Argument<'static>) {
         processor_informations,
     } = argument;
     rs232c::set_com2(com2);
+    // Initialize allocator.
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
     let memory_map: Vec<&efi::memory::Descriptor> = memory_map
         .iter()
         .collect();
+    // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     gdtr.set();
@@ -114,6 +116,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
+    // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     idtr.set();
@@ -131,6 +134,7 @@ fn main(argument: &'static mut Argument<'static>) {
     task_register.set();
     let task_register = x64::task::Register::get();
     interrupt::register_handlers(&mut idt);
+    // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
         .rsdp_mut()
         .xsdt_mut()
@@ -164,11 +168,14 @@ fn main(argument: &'static mut Argument<'static>) {
     processors
         .iter()
         .filter_map(|(number, processor)| (number != my_processor_number).then_some(processor))
-        .for_each(|processor| processor.boot());
+        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, efi_system_table));
+    // Initialize syscall.
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    // Test interrupt.
     unsafe {
         asm!("int 0x80");
     }
+    // Shutdown.
     efi_system_table.shutdown();
     panic!("End of kernel.elf");
 }
