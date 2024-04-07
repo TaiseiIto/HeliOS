@@ -111,7 +111,7 @@ type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNum
 /// # EFI_PROCESSOR_INFORMATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 #[repr(C)]
 pub struct ProcessorInformation {
     processor_id: u64,
@@ -123,7 +123,7 @@ pub struct ProcessorInformation {
 /// # EFI_CPU_PHYSICAL_LOCATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 #[repr(C)]
 pub struct CpuPhysicalLocation {
     package: u32,
@@ -134,6 +134,7 @@ pub struct CpuPhysicalLocation {
 /// # EXTENDED_PROCESSOR_INFORMATION
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
+#[derive(Clone, Copy)]
 #[repr(C)]
 pub union ExtendedProcessorInformation {
     location2: CpuPhysicalLocation2,
