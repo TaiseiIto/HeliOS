@@ -13,11 +13,40 @@ pub struct Register {
     high: FatHigh,
 }
 
+impl Register {
+    pub fn select_processor(self, identifier: u8) -> Self {
+        let Self {
+            low,
+            high,
+        } = self;
+        let low: FatLow = low.select_processor();
+        let high: FatHigh = high.select_processor(identifier);
+        Self {
+            low,
+            high,
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct FatLow {
     register: Low,
     reserved0: [u32; 3],
+}
+
+impl FatLow {
+    pub fn select_processor(self) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register: Low = register.select_processor();
+        Self {
+            register,
+            reserved0,
+        }
+    }
 }
 
 impl fmt::Debug for FatLow {
@@ -62,11 +91,32 @@ struct Low {
     reserved2: u16,
 }
 
+impl Low {
+    pub fn select_processor(self) -> Self {
+        self.with_destination_mode(false)
+            .with_destination_shorthand(0)
+    }
+}
+
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct FatHigh {
     register: High,
     reserved0: [u32; 3],
+}
+
+impl FatHigh {
+    pub fn select_processor(self, identifier: u8) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register: High = register.select_processor(identifier);
+        Self {
+            register,
+            reserved0,
+        }
+    }
 }
 
 impl fmt::Debug for FatHigh {
@@ -85,5 +135,11 @@ struct High {
     #[bits(24, access = RO)]
     reserved0: u32,
     destination_field: u8,
+}
+
+impl High {
+    pub fn select_processor(self, identifier: u8) -> Self {
+        self.with_destination_field(identifier)
+    }
 }
 

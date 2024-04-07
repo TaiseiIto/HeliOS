@@ -99,6 +99,10 @@ impl Registers {
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
     }
+
+    pub fn select_processor(&mut self, identifier: u8) {
+        self.interrupt_command = self.interrupt_command.select_processor(identifier);
+    }
 }
 
 impl fmt::Debug for Registers {
