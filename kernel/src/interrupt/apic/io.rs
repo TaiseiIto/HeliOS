@@ -7,10 +7,7 @@ pub mod version;
 
 use {
     alloc::vec::Vec,
-    core::{
-        fmt,
-        mem,
-    },
+    core::fmt,
 };
 
 /// # Advanced Programmable Interrupt Controller (APIC) Registers
@@ -43,7 +40,7 @@ impl Registers {
         (index < self.version().redirection_table_length()).then(|| {
             let index: u8 = 0x10 + 2 * (index as u8);
             let low: u32 = self.get_u32(index);
-            let high: u32 = self.get_u32(index + (mem::size_of::<u32>() as u8));
+            let high: u32 = self.get_u32(index + 1);
             let redirection_table_entry: u64 = (low as u64) + ((high as u64) << u32::BITS);
             redirection_table_entry.into()
         })
