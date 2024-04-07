@@ -24,7 +24,54 @@ pub struct Registers {
 
 impl Registers {
     pub fn start_counting(&mut self) {
-        self.general_configuration = self.general_configuration.start_counting();
+        let general_configuration: general_configuration::Register = self.general_configuration;
+        if !general_configuration.is_counting() {
+            self.general_configuration = general_configuration.start_counting();
+        }
+    }
+
+    pub fn wait_femtoseconds(&self, femtoseconds: u64) {
+        let mut current_counter_value: u64 = self.get_counter_value();
+        let increments: u64 = femtoseconds / self.get_femtoseconds_per_increment();
+        let minimum_counter_value: u64 = current_counter_value.wrapping_add(increments);
+        let maximum_counter_value: u64 = minimum_counter_value.wrapping_add(1 << (u64::BITS - 1));
+        while if minimum_counter_value < maximum_counter_value {
+            !(minimum_counter_value..maximum_counter_value).contains(&current_counter_value)
+        } else {
+            (maximum_counter_value..minimum_counter_value).contains(&current_counter_value)
+        } {
+            current_counter_value = self.get_counter_value();
+        }
+    }
+
+    pub fn wait_microseconds(&self, microseconds: u64) {
+        self.wait_nanoseconds(1000 * microseconds)
+    }
+
+    pub fn wait_milliseconds(&self, milliseconds: u64) {
+        self.wait_microseconds(1000 * milliseconds)
+    }
+
+    pub fn wait_nanoseconds(&self, nanoseconds: u64) {
+        self.wait_picoseconds(1000 * nanoseconds)
+    }
+
+    pub fn wait_picoseconds(&self, picoseconds: u64) {
+        self.wait_femtoseconds(1000 * picoseconds)
+    }
+
+    pub fn wait_seconds(&self, seconds: u64) {
+        self.wait_milliseconds(1000 * seconds)
+    }
+
+    fn get_counter_value(&self) -> u64 {
+        let main_counter_value: main_counter_value::Register = self.main_counter_value;
+        main_counter_value.get()
+    }
+
+    fn get_femtoseconds_per_increment(&self) -> u64 {
+        let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
+        general_capabilities_and_id.get_femtoseconds_per_increment()
     }
 }
 

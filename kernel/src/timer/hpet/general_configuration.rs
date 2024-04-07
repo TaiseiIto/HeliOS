@@ -12,6 +12,10 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn is_counting(&self) -> bool {
+        self.enable_cnf()
+    }
+
     pub fn start_counting(self) -> Self {
         self.with_enable_cnf(true)
     }

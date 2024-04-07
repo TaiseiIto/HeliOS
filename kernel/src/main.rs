@@ -188,6 +188,10 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut();
     hpet.start_counting();
     com2_println!("hpet = {:#x?}", hpet);
+    // HPET wait test
+    com2_println!("hpet.wait_seconds(1) START!!!");
+    hpet.wait_seconds(1);
+    com2_println!("hpet.wait_seconds(1) END!!!");
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
