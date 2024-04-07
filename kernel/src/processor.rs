@@ -13,8 +13,9 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &interrupt::apic::local::Registers, efi_system_table: &efi::SystemTable) {
+    pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, efi_system_table: &efi::SystemTable) {
         com2_println!("Boot processor {:#x?}", self.identifier());
+        local_apic_registers.clear_all_errors();
     }
 
     pub fn identifier(&self) -> u64 {

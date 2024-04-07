@@ -92,6 +92,10 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn clear_all_errors(&mut self) {
+        self.error_status = self.error_status.clear_all_errors();
+    }
+
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
     }

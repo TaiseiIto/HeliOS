@@ -10,6 +10,20 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn clear_all_errors(self) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register: Register = register.clear_all_errors();
+        Self {
+            register,
+            reserved0,
+        }
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
@@ -51,5 +65,18 @@ struct Register {
     illegal_register_address: bool,
     #[bits(24, access = RO)]
     reserved0: u32,
+}
+
+impl Register {
+    pub fn clear_all_errors(self) -> Self {
+        self.with_send_checksum_error(false)
+            .with_receive_checksum_error(false)
+            .with_send_accept_error(false)
+            .with_receive_accept_error(false)
+            .with_redirectable_ipi(false)
+            .with_send_illegal_vector(false)
+            .with_received_illegal_vector(false)
+            .with_illegal_register_address(false)
+    }
 }
 

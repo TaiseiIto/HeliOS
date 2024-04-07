@@ -150,7 +150,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
-    let local_apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
+    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
     com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Start HPET.
     efi_system_table
