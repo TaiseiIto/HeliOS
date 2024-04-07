@@ -6,6 +6,7 @@ use {
         slice,
     },
     super::{
+        high_precision_event_timer,
         multiple_apic_description,
         system_description,
     },
@@ -35,6 +36,28 @@ impl Table {
                 header.into()
             })
             .collect()
+    }
+
+    pub fn hpet_mut(&mut self) -> &mut high_precision_event_timer::Table {
+        self.bytes_mut()
+            .chunks(mem::size_of::<usize>())
+            .find_map(|entry_address_bytes| {
+                let entry: usize = entry_address_bytes
+                    .iter()
+                    .rev()
+                    .fold(0usize, |entry_address, byte| (entry_address << u8::BITS) + (*byte as usize));
+                let header: *const system_description::Header = entry as *const system_description::Header;
+                let header: &system_description::Header = unsafe {
+                    &*header
+                };
+                (header.signature() == "HPET").then(|| {
+                    let table: *mut high_precision_event_timer::Table = entry as *mut high_precision_event_timer::Table;
+                    unsafe {
+                        &mut *table
+                    }
+                })
+            })
+            .unwrap()
     }
 
     pub fn is_correct(&self) -> bool {

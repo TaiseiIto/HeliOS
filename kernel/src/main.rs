@@ -181,6 +181,11 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("io_apic_version = {:#x?}", io_apic_version);
     let io_apic_redirection_table_entries: Vec<interrupt::apic::io::redirection::table::Entry> = io_apic.redirection_table_entries();
     com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
+    let hpet: &mut acpi::high_precision_event_timer::Table = efi_system_table
+        .rsdp_mut()
+        .xsdt_mut()
+        .hpet_mut();
+    com2_println!("hpet = {:#x?}", hpet);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
