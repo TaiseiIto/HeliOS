@@ -9,7 +9,7 @@ extern crate alloc;
 mod acpi;
 mod allocator;
 mod application;
-mod application_processor;
+mod processor;
 mod efi;
 mod elf;
 mod interrupt;
@@ -34,7 +34,7 @@ use {
 
 #[derive(Debug)]
 pub struct Argument<'a> {
-    application_processor_boot_loader: application_processor::boot::Loader,
+    processor_boot_loader: processor::boot::Loader,
     com2: &'a mut rs232c::Com,
     cpuid: x64::Cpuid,
     efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -55,7 +55,7 @@ const PRIVILEGE_LEVEL: u8 = 0;
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
-        application_processor_boot_loader,
+        processor_boot_loader,
         com2,
         cpuid,
         efi_system_table,
@@ -70,7 +70,7 @@ fn main(argument: &'static mut Argument<'static>) {
     } = argument;
     rs232c::set_com2(com2);
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
-    com2_println!("application_processor_boot_loader = {:#x?}", application_processor_boot_loader);
+    com2_println!("processor_boot_loader = {:#x?}", processor_boot_loader);
     com2_println!("efi_system_table = {:#x?}", efi_system_table);
     com2_println!("heap_size = {:#x?}", heap_size);
     com2_println!("cpuid = {:#x?}", cpuid);

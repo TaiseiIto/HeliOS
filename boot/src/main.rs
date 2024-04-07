@@ -7,7 +7,7 @@
 
 extern crate alloc;
 
-mod application_processor;
+mod processor;
 mod efi;
 mod elf;
 mod kernel;
@@ -36,9 +36,9 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
     // Allocate pages requested to be allocated at specific physical address preferentially.
-    let application_processor_boot_loader_pages: usize = (APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR - APPLICATION_PROCESSOR_BOOT_LOADER_BASE) / memory::page::SIZE;
-    let application_processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
-        .allocate_specific_pages(APPLICATION_PROCESSOR_BOOT_LOADER_BASE, application_processor_boot_loader_pages)
+    let processor_boot_loader_pages: usize = (PROCESSOR_BOOT_LOADER_STACK_FLOOR - PROCESSOR_BOOT_LOADER_BASE) / memory::page::SIZE;
+    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
+        .allocate_specific_pages(PROCESSOR_BOOT_LOADER_BASE, processor_boot_loader_pages)
         .unwrap();
     com2_println!("image_handle = {:#x?}", image_handle);
     com2_println!("system_table = {:#x?}", efi::SystemTable::get());
@@ -102,23 +102,23 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
             let executable: bool = false;
             paging.set_page(vaddr, paddr, present, writable, executable);
         });
-    let application_processor_boot_loader: Vec<u8> = directory_tree
-        .get(APPLICATION_PROCESSOR_BOOT_LOADER)
+    let processor_boot_loader: Vec<u8> = directory_tree
+        .get(PROCESSOR_BOOT_LOADER)
         .unwrap()
         .read();
-    let application_processor_boot_loader = application_processor::boot::Loader::new(&application_processor_boot_loader, application_processor_boot_loader_pages);
+    let processor_boot_loader = processor::boot::Loader::new(&processor_boot_loader, processor_boot_loader_pages);
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
         .read()
         .into();
-    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_BASE = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_BASE);
-    com2_println!("APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR = {:#x?}", APPLICATION_PROCESSOR_BOOT_LOADER_STACK_FLOOR);
+    com2_println!("PROCESSOR_BOOT_LOADER_BASE = {:#x?}", PROCESSOR_BOOT_LOADER_BASE);
+    com2_println!("PROCESSOR_BOOT_LOADER_STACK_FLOOR = {:#x?}", PROCESSOR_BOOT_LOADER_STACK_FLOOR);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
     let kernel_argument = kernel::Argument::new(
-        application_processor_boot_loader,
+        processor_boot_loader,
         rs232c::get_com2(),
         cpuid,
         efi::SystemTable::get(),

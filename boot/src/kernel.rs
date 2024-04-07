@@ -1,7 +1,7 @@
 use {
     alloc::collections::BTreeMap,
     crate::{
-        application_processor,
+        processor,
         efi,
         elf,
         memory,
@@ -13,7 +13,7 @@ use {
 #[derive(Debug)]
 pub struct Argument<'a> {
     #[allow(dead_code)]
-    application_processor_boot_loader: application_processor::boot::Loader,
+    processor_boot_loader: processor::boot::Loader,
     #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
     #[allow(dead_code)]
@@ -41,7 +41,7 @@ pub struct Argument<'a> {
 impl<'a> Argument<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        application_processor_boot_loader: application_processor::boot::Loader,
+        processor_boot_loader: processor::boot::Loader,
         com2: &'a mut rs232c::Com,
         cpuid: x64::Cpuid,
         efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -55,7 +55,7 @@ impl<'a> Argument<'a> {
         processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
     ) -> Self {
         Self {
-            application_processor_boot_loader,
+            processor_boot_loader,
             com2,
             cpuid,
             efi_system_table,
