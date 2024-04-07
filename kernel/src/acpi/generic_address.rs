@@ -19,5 +19,13 @@ impl Structure {
             &*address
         }
     }
+
+    pub fn address_mut<T>(&mut self) -> &mut T {
+        let address: usize = self.address as usize;
+        let address: *mut T = address as *mut T;
+        unsafe {
+            &mut *address
+        }
+    }
 }
 
