@@ -210,6 +210,63 @@ impl From<Level> for bool {
     }
 }
 
+#[derive(Debug)]
+enum TriggerMode {
+    Edge,
+    Level,
+}
+
+impl From<bool> for TriggerMode {
+    fn from(trigger_mode: bool) -> Self {
+        match trigger_mode {
+            false => Self::Edge,
+            true => Self::Level,
+        }
+    }
+}
+
+impl From<TriggerMode> for bool {
+    fn from(trigger_mode: TriggerMode) -> Self {
+        match trigger_mode {
+            TriggerMode::Edge => false,
+            TriggerMode::Level => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum DestinationShorthand {
+    NoShorthand,
+    SelfShorthand,
+    AllIncludingSelf,
+    AllExcludingSelf,
+}
+
+impl TryFrom<u8> for DestinationShorthand {
+    type Error = ();
+
+    fn try_from(destination_shorthand: u8) -> Result<Self, Self::Error> {
+        match destination_shorthand {
+            0b00 => Ok(Self::NoShorthand),
+            0b01 => Ok(Self::SelfShorthand),
+            0b10 => Ok(Self::AllIncludingSelf),
+            0b11 => Ok(Self::AllExcludingSelf),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<DestinationShorthand> for u8 {
+    fn from(destination_shorthand: DestinationShorthand) -> Self {
+        match destination_shorthand {
+            DestinationShorthand::NoShorthand => 0b00,
+            DestinationShorthand::SelfShorthand => 0b01,
+            DestinationShorthand::AllIncludingSelf => 0b10,
+            DestinationShorthand::AllExcludingSelf => 0b11,
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 #[repr(packed)]
 struct FatHigh {
