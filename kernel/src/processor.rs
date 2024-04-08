@@ -14,7 +14,7 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &mut timer::hpet::Registers) {
+    pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers) {
         let apic_id: u8 = self.apic_id() as u8;
         com2_println!("Boot processor {:#x?}", apic_id);
         local_apic_registers.clear_all_errors();

@@ -165,11 +165,11 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet_mut()
         .registers_mut()
         .start_counting();
-    let hpet: &mut timer::hpet::Registers = efi_system_table
-        .rsdp_mut()
-        .xsdt_mut()
-        .hpet_mut()
-        .registers_mut();
+    let hpet: &timer::hpet::Registers = efi_system_table
+        .rsdp()
+        .xsdt()
+        .hpet()
+        .registers();
     // Boot application processors.
     let processors: BTreeMap<usize, processor::Controller> = processor_informations
         .iter()

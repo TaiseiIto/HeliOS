@@ -32,6 +32,14 @@ impl Pointer {
         self.checksum() && self.extended_checksum() && self.rsdt().is_correct() && self.xsdt().is_correct()
     }
 
+    pub fn xsdt(&self) -> &extended_system_description::Table {
+        let xsdt: usize = self.xsdt as usize;
+        let xsdt: *const extended_system_description::Table = xsdt as *const extended_system_description::Table;
+        unsafe {
+            &*xsdt
+        }
+    }
+
     pub fn xsdt_mut(&mut self) -> &mut extended_system_description::Table {
         let xsdt: usize = self.xsdt as usize;
         let xsdt: *mut extended_system_description::Table = xsdt as *mut extended_system_description::Table;
@@ -76,15 +84,6 @@ impl Pointer {
         };
         rsdt_header.into()
     }
-
-    fn xsdt(&self) -> system_description::Table {
-        let xsdt_header: usize = self.xsdt as usize;
-        let xsdt_header: *const system_description::Header = xsdt_header as *const system_description::Header;
-        let xsdt_header: &system_description::Header = unsafe {
-            &*xsdt_header
-        };
-        xsdt_header.into()
-    }
 }
 
 impl fmt::Debug for Pointer {
@@ -95,7 +94,7 @@ impl fmt::Debug for Pointer {
         let revision: u8 = self.revision;
         let rsdt: system_description::Table = self.rsdt();
         let length: u32 = self.length;
-        let xsdt: system_description::Table = self.xsdt();
+        let xsdt: &extended_system_description::Table = self.xsdt();
         let extended_checksum: u8 = self.extended_checksum;
         formatter
             .debug_struct("Rsdp")

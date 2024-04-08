@@ -90,6 +90,10 @@ impl SystemTable<'_> {
         self.boot_services.memory_map()
     }
 
+    pub fn rsdp(&self) -> &acpi::root_system_description::Pointer {
+        self.configuration_tables.rsdp()
+    }
+
     pub fn rsdp_mut(&mut self) -> &mut acpi::root_system_description::Pointer {
         self.configuration_tables.rsdp_mut()
     }
