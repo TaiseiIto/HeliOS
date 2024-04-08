@@ -140,6 +140,8 @@ fn main(argument: &'static mut Argument<'static>) {
     unsafe {
         asm!("int 0x80");
     }
+    // Print MADT
+    com2_println!("MADT = {:#x?}", efi_system_table.rsdp().xsdt().madt());
     // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
         .rsdp_mut()

@@ -89,6 +89,28 @@ impl Table {
             .all(|entry| entry.is_correct())
     }
 
+    pub fn madt(&self) -> &multiple_apic_description::Table {
+        self.bytes()
+            .chunks(mem::size_of::<usize>())
+            .find_map(|entry_address_bytes| {
+                let entry: usize = entry_address_bytes
+                    .iter()
+                    .rev()
+                    .fold(0usize, |entry_address, byte| (entry_address << u8::BITS) + (*byte as usize));
+                let header: *const system_description::Header = entry as *const system_description::Header;
+                let header: &system_description::Header = unsafe {
+                    &*header
+                };
+                (header.signature() == "APIC").then(|| {
+                    let table: *const multiple_apic_description::Table = entry as *const multiple_apic_description::Table;
+                    unsafe {
+                        &*table
+                    }
+                })
+            })
+            .unwrap()
+    }
+
     pub fn madt_mut(&mut self) -> &mut multiple_apic_description::Table {
         self.bytes_mut()
             .chunks(mem::size_of::<usize>())
