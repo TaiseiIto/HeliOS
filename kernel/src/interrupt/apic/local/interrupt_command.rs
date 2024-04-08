@@ -1,7 +1,10 @@
 use {
     bitfield_struct::bitfield,
     core::fmt,
-    crate::x64,
+    crate::{
+        x64,
+        memory,
+    },
 };
 
 /// # Interrupt Command Register
@@ -15,13 +18,18 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn assert_init(&mut self, processor_identifier: u8) {
-        self.high = self.high.select_processor(processor_identifier);
+    pub fn assert_init(&mut self, processor_local_apic_id: u8) {
+        self.high = self.high.select_processor(processor_local_apic_id);
         self.low = self.low.assert_init();
     }
 
     pub fn deassert_init(&mut self) {
         self.low = self.low.deassert_init();
+    }
+
+    pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
+        self.high = self.high.select_processor(processor_local_apic_id);
+        self.low = self.low.send_sipi(entry_point);
     }
 
     pub fn wait_to_send(&self) {
@@ -72,6 +80,18 @@ impl FatLow {
         let register: Low = self.register;
         register.is_sending()
     }
+
+    fn send_sipi(self, entry_point: usize) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register: Low = register.send_sipi(entry_point);
+        Self {
+            register,
+            reserved0,
+        }
+    }
 }
 
 impl fmt::Debug for FatLow {
@@ -119,7 +139,8 @@ struct Low {
 
 impl Low {
     fn assert_init(self) -> Self {
-        self.with_delivery_mode(DeliveryMode::Init.into())
+        self.with_vector(0)
+            .with_delivery_mode(DeliveryMode::Init.into())
             .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Assert.into())
             .with_trigger_mode(TriggerMode::Level.into())
@@ -127,7 +148,8 @@ impl Low {
     }
 
     fn deassert_init(self) -> Self {
-        self.with_delivery_mode(DeliveryMode::Init.into())
+        self.with_vector(0)
+            .with_delivery_mode(DeliveryMode::Init.into())
             .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Deassert.into())
             .with_trigger_mode(TriggerMode::Level.into())
@@ -137,6 +159,12 @@ impl Low {
     fn is_sending(&self) -> bool {
         let delivery_status: DeliveryStatus = self.delivery_status().into();
         delivery_status == DeliveryStatus::SendPending
+    }
+
+    fn send_sipi(self, entry_point: usize) -> Self {
+        self.with_vector((entry_point / memory::page::SIZE) as u8)
+            .with_delivery_mode(DeliveryMode::StartUp.into())
+            .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 }
 
@@ -316,12 +344,12 @@ struct FatHigh {
 }
 
 impl FatHigh {
-    fn select_processor(self, processor_identifier: u8) -> Self {
+    fn select_processor(self, processor_local_apic_id: u8) -> Self {
         let Self {
             register,
             reserved0,
         } = self;
-        let register: High = register.select_processor(processor_identifier);
+        let register: High = register.select_processor(processor_local_apic_id);
         Self {
             register,
             reserved0,
@@ -348,8 +376,8 @@ struct High {
 }
 
 impl High {
-    fn select_processor(self, processor_identifier: u8) -> Self {
-        self.with_destination_field(processor_identifier)
+    fn select_processor(self, processor_local_apic_id: u8) -> Self {
+        self.with_destination_field(processor_local_apic_id)
     }
 }
 

@@ -10,6 +10,10 @@ pub struct Loader {
 }
 
 impl Loader {
+    pub fn entry_point(&self) -> usize {
+        self.program_address_range.start
+    }
+
     pub fn program(&self) -> &[u8] {
         let start: *const u8 = self.program_address_range.start as *const u8;
         let length: usize = self.program_address_range.end - self.program_address_range.start;

@@ -105,11 +105,17 @@ impl Registers {
         apic_base.registers()
     }
 
-    pub fn send_init(&mut self, identifier: u8) {
+    pub fn send_init(&mut self, processor_local_apic_id: u8) {
         self.clear_all_errors();
-        self.interrupt_command.assert_init(identifier);
+        self.interrupt_command.assert_init(processor_local_apic_id);
         self.interrupt_command.wait_to_send();
         self.interrupt_command.deassert_init();
+        self.interrupt_command.wait_to_send();
+    }
+
+    pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
+        self.clear_all_errors();
+        self.interrupt_command.send_sipi(processor_local_apic_id, entry_point);
         self.interrupt_command.wait_to_send();
     }
 }

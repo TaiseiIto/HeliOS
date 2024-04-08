@@ -15,13 +15,18 @@ pub struct Controller {
 
 impl Controller {
     pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers) {
-        let apic_id: u8 = self.apic_id() as u8;
-        com2_println!("Boot processor {:#x?}", apic_id);
-        local_apic_registers.send_init(apic_id);
+        let local_apic_id: u8 = self.local_apic_id() as u8;
+        com2_println!("Boot processor {:#x?}", local_apic_id);
+        let entry_point: usize = boot_loader.entry_point();
+        local_apic_registers.send_init(local_apic_id);
         hpet.wait_milliseconds(10);
+        local_apic_registers.send_sipi(local_apic_id, entry_point);
+        hpet.wait_microseconds(200);
+        local_apic_registers.send_sipi(local_apic_id, entry_point);
+        hpet.wait_microseconds(200);
     }
 
-    pub fn apic_id(&self) -> u8 {
+    pub fn local_apic_id(&self) -> u8 {
         self.local_apic_structure.apic_id()
     }
 

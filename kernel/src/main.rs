@@ -183,7 +183,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processors = {:#x?}", processors);
     processors
         .iter()
-        .filter_map(|processor| (processor.apic_id() as u32 != my_local_apic_id).then_some(processor))
+        .filter_map(|processor| (processor.local_apic_id() as u32 != my_local_apic_id).then_some(processor))
         .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
     loop {
