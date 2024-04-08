@@ -56,7 +56,7 @@ impl fmt::Debug for FatLow {
         let delivery_mode: Result<DeliveryMode, ()> = register.delivery_mode().try_into();
         let delivery_mode: DeliveryMode = delivery_mode.unwrap();
         let destination_mode: DestinationMode = register.destination_mode().into();
-        let delivery_status: bool = register.delivery_status();
+        let delivery_status: DeliveryStatus = register.delivery_status().into();
         let level: bool = register.level();
         let trigger_mode: bool = register.trigger_mode();
         let destination_shorthand: u8 = register.destination_shorthand();
@@ -158,6 +158,30 @@ impl From<DestinationMode> for bool {
         match destination_mode {
             DestinationMode::Physical => false,
             DestinationMode::Logical => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum DeliveryStatus {
+    Idle,
+    SendPending,
+}
+
+impl From<bool> for DeliveryStatus {
+    fn from(delivery_status: bool) -> Self {
+        match delivery_status {
+            false => Self::Idle,
+            true => Self::SendPending,
+        }
+    }
+}
+
+impl From<DeliveryStatus> for bool {
+    fn from(delivery_status: DeliveryStatus) -> Self {
+        match delivery_status {
+            DeliveryStatus::Idle => false,
+            DeliveryStatus::SendPending => true,
         }
     }
 }
