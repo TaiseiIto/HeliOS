@@ -92,6 +92,11 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn apic_id(&self) -> u32 {
+        let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
+        local_apic_id.apic_id()
+    }
+
     pub fn clear_all_errors(&mut self) {
         self.error_status = self.error_status.clear_all_errors();
     }
