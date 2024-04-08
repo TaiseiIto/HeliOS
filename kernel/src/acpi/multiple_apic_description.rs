@@ -68,10 +68,10 @@ impl Table {
         self.header.is_correct()
     }
 
-    pub fn processors(&self) -> Vec<processor_local_apic::Structure> {
+    pub fn processor_local_apic_structures(&self) -> Vec<processor_local_apic::Structure> {
         self.iter()
             .filter_map(|structure| match structure {
-                InterruptControllerStructure::ProcessorLocalApic(processor) => Some(processor.clone()),
+                InterruptControllerStructure::ProcessorLocalApic(structure) => Some(structure.clone()),
                 _ => None,
             })
             .collect()

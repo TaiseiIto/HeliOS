@@ -1,16 +1,16 @@
 pub mod boot;
 
 use crate::{
+    acpi,
     com2_print,
     com2_println,
-    efi,
     interrupt,
     timer,
 };
 
 #[derive(Debug)]
 pub struct Controller {
-    information: efi::mp_services::ProcessorInformation,
+    local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
 }
 
 impl Controller {
@@ -21,13 +21,13 @@ impl Controller {
         hpet.wait_milliseconds(10);
     }
 
-    pub fn apic_id(&self) -> u64 {
-        self.information.identifier()
+    pub fn apic_id(&self) -> u8 {
+        self.local_apic_structure.apic_id()
     }
 
-    pub fn new(information: efi::mp_services::ProcessorInformation) -> Self {
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure) -> Self {
         Self {
-            information,
+            local_apic_structure,
         }
     }
 }

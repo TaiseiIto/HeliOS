@@ -14,6 +14,10 @@ pub struct Structure {
 }
 
 impl Structure {
+    pub fn apic_id(&self) -> u8 {
+        self.apic_id
+    }
+
     pub fn length(&self) -> usize {
         self.length as usize
     }

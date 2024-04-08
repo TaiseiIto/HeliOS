@@ -171,20 +171,18 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet()
         .registers();
     // Boot application processors.
-    let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = efi_system_table
+    let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
         .xsdt()
         .madt()
-        .processors();
-    com2_println!("processors = {:#x?}", processors);
-    let processors: BTreeMap<usize, processor::Controller> = processor_informations
+        .processor_local_apic_structures()
         .iter()
-        .map(|(number, information)| (*number, processor::Controller::new(information.clone())))
+        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone()))
         .collect();
     com2_println!("processors = {:#x?}", processors);
     processors
         .iter()
-        .filter_map(|(number, processor)| (number != my_processor_number).then_some(processor))
+        .filter_map(|processor| (processor.apic_id() as usize != *my_processor_number).then_some(processor))
         .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
     loop {
