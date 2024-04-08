@@ -14,17 +14,9 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn select_processor(self, identifier: u8) -> Self {
-        let Self {
-            low,
-            high,
-        } = self;
-        let low: FatLow = low.select_processor();
-        let high: FatHigh = high.select_processor(identifier);
-        Self {
-            low,
-            high,
-        }
+    pub fn send_init(&mut self, processor_identifier: u8) {
+        self.high = self.high.select_processor(processor_identifier);
+        self.low = self.low.send_init();
     }
 }
 
@@ -36,12 +28,12 @@ struct FatLow {
 }
 
 impl FatLow {
-    pub fn select_processor(self) -> Self {
+    fn send_init(self) -> Self {
         let Self {
             register,
             reserved0,
         } = self;
-        let register: Low = register.select_processor();
+        let register: Low = register.send_init();
         Self {
             register,
             reserved0,
@@ -93,9 +85,12 @@ struct Low {
 }
 
 impl Low {
-    pub fn select_processor(self) -> Self {
-        self.with_destination_mode(DestinationMode::Physical.into())
-            .with_destination_shorthand(0)
+    fn send_init(self) -> Self {
+        self.with_delivery_mode(DeliveryMode::Init.into())
+            .with_destination_mode(DestinationMode::Physical.into())
+            .with_level(Level::Assert.into())
+            .with_trigger_mode(TriggerMode::Level.into())
+            .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 }
 
@@ -275,12 +270,12 @@ struct FatHigh {
 }
 
 impl FatHigh {
-    pub fn select_processor(self, identifier: u8) -> Self {
+    fn select_processor(self, processor_identifier: u8) -> Self {
         let Self {
             register,
             reserved0,
         } = self;
-        let register: High = register.select_processor(identifier);
+        let register: High = register.select_processor(processor_identifier);
         Self {
             register,
             reserved0,
@@ -307,8 +302,8 @@ struct High {
 }
 
 impl High {
-    pub fn select_processor(self, identifier: u8) -> Self {
-        self.with_destination_field(identifier)
+    fn select_processor(self, processor_identifier: u8) -> Self {
+        self.with_destination_field(processor_identifier)
     }
 }
 

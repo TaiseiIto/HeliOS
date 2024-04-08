@@ -18,7 +18,7 @@ impl Controller {
         let apic_id: u8 = self.apic_id() as u8;
         com2_println!("Boot processor {:#x?}", apic_id);
         local_apic_registers.clear_all_errors();
-        local_apic_registers.select_processor(apic_id);
+        local_apic_registers.send_init(apic_id);
     }
 
     pub fn apic_id(&self) -> u64 {

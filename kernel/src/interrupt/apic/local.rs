@@ -100,8 +100,8 @@ impl Registers {
         apic_base.registers()
     }
 
-    pub fn select_processor(&mut self, identifier: u8) {
-        self.interrupt_command = self.interrupt_command.select_processor(identifier);
+    pub fn send_init(&mut self, identifier: u8) {
+        self.interrupt_command.send_init(identifier);
     }
 }
 
