@@ -140,8 +140,6 @@ fn main(argument: &'static mut Argument<'static>) {
     unsafe {
         asm!("int 0x80");
     }
-    // Print MADT
-    com2_println!("MADT = {:#x?}", efi_system_table.rsdp().xsdt().madt());
     // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
         .rsdp_mut()
@@ -173,6 +171,12 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet()
         .registers();
     // Boot application processors.
+    let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = efi_system_table
+        .rsdp()
+        .xsdt()
+        .madt()
+        .processors();
+    com2_println!("processors = {:#x?}", processors);
     let processors: BTreeMap<usize, processor::Controller> = processor_informations
         .iter()
         .map(|(number, information)| (*number, processor::Controller::new(information.clone())))

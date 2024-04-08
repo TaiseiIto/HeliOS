@@ -68,6 +68,15 @@ impl Table {
         self.header.is_correct()
     }
 
+    pub fn processors(&self) -> Vec<processor_local_apic::Structure> {
+        self.iter()
+            .filter_map(|structure| match structure {
+                InterruptControllerStructure::ProcessorLocalApic(processor) => Some(processor.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: *const Self = unsafe {
