@@ -134,6 +134,12 @@ fn main(argument: &'static mut Argument<'static>) {
     task_register.set();
     let task_register = x64::task::Register::get();
     interrupt::register_handlers(&mut idt);
+    // Initialize syscall.
+    syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    // Test interrupt.
+    unsafe {
+        asm!("int 0x80");
+    }
     // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
         .rsdp_mut()
@@ -159,6 +165,11 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet_mut()
         .registers_mut()
         .start_counting();
+    let hpet: &mut timer::hpet::Registers = efi_system_table
+        .rsdp_mut()
+        .xsdt_mut()
+        .hpet_mut()
+        .registers_mut();
     // Boot application processors.
     let processors: BTreeMap<usize, processor::Controller> = processor_informations
         .iter()
@@ -169,12 +180,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .iter()
         .filter_map(|(number, processor)| (number != my_processor_number).then_some(processor))
         .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
-        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, efi_system_table));
-    // Initialize syscall.
-    syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
-    // Test interrupt.
-    unsafe {
-        asm!("int 0x80");
+        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
+    loop {
+        x64::hlt();
     }
     // Shutdown.
     efi_system_table.shutdown();

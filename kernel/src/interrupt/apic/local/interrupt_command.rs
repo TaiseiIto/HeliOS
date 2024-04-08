@@ -53,7 +53,8 @@ impl fmt::Debug for FatLow {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Low = self.register;
         let vector: u8 = register.vector();
-        let delivery_mode: u8 = register.delivery_mode();
+        let delivery_mode: Result<DeliveryMode, ()> = register.delivery_mode().try_into();
+        let delivery_mode: DeliveryMode = delivery_mode.unwrap();
         let destination_mode: bool = register.destination_mode();
         let delivery_status: bool = register.delivery_status();
         let level: bool = register.level();
@@ -95,6 +96,45 @@ impl Low {
     pub fn select_processor(self) -> Self {
         self.with_destination_mode(false)
             .with_destination_shorthand(0)
+    }
+}
+
+#[derive(Debug)]
+enum DeliveryMode {
+    Fixed,
+    LowestPriority,
+    Smi,
+    Nmi,
+    Init,
+    StartUp,
+}
+
+impl TryFrom<u8> for DeliveryMode {
+    type Error = ();
+
+    fn try_from(delivery_mode: u8) -> Result<Self, Self::Error> {
+        match delivery_mode {
+            0b000 => Ok(Self::Fixed),
+            0b001 => Ok(Self::LowestPriority),
+            0b010 => Ok(Self::Smi),
+            0b100 => Ok(Self::Nmi),
+            0b101 => Ok(Self::Init),
+            0b110 => Ok(Self::StartUp),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<DeliveryMode> for u8 {
+    fn from(delivery_mode: DeliveryMode) -> Self {
+        match delivery_mode {
+            DeliveryMode::Fixed => 0b000,
+            DeliveryMode::LowestPriority => 0b001,
+            DeliveryMode::Smi => 0b010,
+            DeliveryMode::Nmi => 0b100,
+            DeliveryMode::Init => 0b101,
+            DeliveryMode::StartUp => 0b110,
+        }
     }
 }
 
