@@ -55,7 +55,7 @@ impl fmt::Debug for FatLow {
         let vector: u8 = register.vector();
         let delivery_mode: Result<DeliveryMode, ()> = register.delivery_mode().try_into();
         let delivery_mode: DeliveryMode = delivery_mode.unwrap();
-        let destination_mode: bool = register.destination_mode();
+        let destination_mode: DestinationMode = register.destination_mode().into();
         let delivery_status: bool = register.delivery_status();
         let level: bool = register.level();
         let trigger_mode: bool = register.trigger_mode();
@@ -94,7 +94,7 @@ struct Low {
 
 impl Low {
     pub fn select_processor(self) -> Self {
-        self.with_destination_mode(false)
+        self.with_destination_mode(DestinationMode::Physical.into())
             .with_destination_shorthand(0)
     }
 }
@@ -134,6 +134,30 @@ impl From<DeliveryMode> for u8 {
             DeliveryMode::Nmi => 0b100,
             DeliveryMode::Init => 0b101,
             DeliveryMode::StartUp => 0b110,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum DestinationMode {
+    Physical,
+    Logical,
+}
+
+impl From<bool> for DestinationMode {
+    fn from(destination_mode: bool) -> Self {
+        match destination_mode {
+            false => Self::Physical,
+            true => Self::Logical,
+        }
+    }
+}
+
+impl From<DestinationMode> for bool {
+    fn from(destination_mode: DestinationMode) -> Self {
+        match destination_mode {
+            DestinationMode::Physical => false,
+            DestinationMode::Logical => true,
         }
     }
 }
