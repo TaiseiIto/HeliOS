@@ -57,7 +57,7 @@ impl fmt::Debug for FatLow {
         let delivery_mode: DeliveryMode = delivery_mode.unwrap();
         let destination_mode: DestinationMode = register.destination_mode().into();
         let delivery_status: DeliveryStatus = register.delivery_status().into();
-        let level: bool = register.level();
+        let level: Level = register.level().into();
         let trigger_mode: bool = register.trigger_mode();
         let destination_shorthand: u8 = register.destination_shorthand();
         formatter
@@ -182,6 +182,30 @@ impl From<DeliveryStatus> for bool {
         match delivery_status {
             DeliveryStatus::Idle => false,
             DeliveryStatus::SendPending => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Level {
+    Deassert,
+    Assert,
+}
+
+impl From<bool> for Level {
+    fn from(level: bool) -> Self {
+        match level {
+            false => Self::Deassert,
+            true => Self::Assert,
+        }
+    }
+}
+
+impl From<Level> for bool {
+    fn from(level: Level) -> Self {
+        match level {
+            Level::Deassert => false,
+            Level::Assert => true,
         }
     }
 }
