@@ -14,6 +14,11 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn is_sending(&self) -> bool {
+        let low: FatLow = self.low;
+        low.is_sending()
+    }
+
     pub fn send_init(&mut self, processor_identifier: u8) {
         self.high = self.high.select_processor(processor_identifier);
         self.low = self.low.send_init();
@@ -28,6 +33,11 @@ struct FatLow {
 }
 
 impl FatLow {
+    fn is_sending(&self) -> bool {
+        let register: Low = self.register;
+        register.is_sending()
+    }
+
     fn send_init(self) -> Self {
         let Self {
             register,
@@ -85,6 +95,11 @@ struct Low {
 }
 
 impl Low {
+    fn is_sending(&self) -> bool {
+        let delivery_status: DeliveryStatus = self.delivery_status().into();
+        delivery_status == DeliveryStatus::SendPending
+    }
+
     fn send_init(self) -> Self {
         self.with_delivery_mode(DeliveryMode::Init.into())
             .with_destination_mode(DestinationMode::Physical.into())
@@ -157,7 +172,7 @@ impl From<DestinationMode> for bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 enum DeliveryStatus {
     Idle,
     SendPending,
