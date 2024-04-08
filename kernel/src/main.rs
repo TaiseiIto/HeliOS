@@ -168,6 +168,7 @@ fn main(argument: &'static mut Argument<'static>) {
     processors
         .iter()
         .filter_map(|(number, processor)| (number != my_processor_number).then_some(processor))
+        .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, efi_system_table));
     // Initialize syscall.
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);

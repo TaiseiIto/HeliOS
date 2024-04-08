@@ -29,6 +29,16 @@ pub fn hlt() {
     }
 }
 
+/// # Pause
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-230
+#[inline(never)]
+pub fn pause() {
+    unsafe {
+        asm!("pause");
+    }
+}
+
 pub fn set_segment_registers(code_segment_selector: &memory::segment::Selector, data_segment_selector: &memory::segment::Selector) {
     let code_segment_selector: u16 = (*code_segment_selector).into();
     let data_segment_selector: u16 = (*data_segment_selector).into();
