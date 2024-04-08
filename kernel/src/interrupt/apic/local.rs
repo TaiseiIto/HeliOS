@@ -102,10 +102,10 @@ impl Registers {
 
     pub fn send_init(&mut self, identifier: u8) {
         self.clear_all_errors();
-        self.interrupt_command.send_init(identifier);
-        while self.interrupt_command.is_sending() {
-            x64::pause();
-        }
+        self.interrupt_command.assert_init(identifier);
+        self.interrupt_command.wait_to_send();
+        self.interrupt_command.deassert_init();
+        self.interrupt_command.wait_to_send();
     }
 }
 

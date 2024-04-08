@@ -1,6 +1,7 @@
 use {
     bitfield_struct::bitfield,
     core::fmt,
+    crate::x64,
 };
 
 /// # Interrupt Command Register
@@ -14,14 +15,24 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn is_sending(&self) -> bool {
-        let low: FatLow = self.low;
-        low.is_sending()
+    pub fn assert_init(&mut self, processor_identifier: u8) {
+        self.high = self.high.select_processor(processor_identifier);
+        self.low = self.low.assert_init();
     }
 
-    pub fn send_init(&mut self, processor_identifier: u8) {
-        self.high = self.high.select_processor(processor_identifier);
-        self.low = self.low.send_init();
+    pub fn deassert_init(&mut self) {
+        self.low = self.low.deassert_init();
+    }
+
+    pub fn wait_to_send(&self) {
+        while self.is_sending() {
+            x64::pause();
+        }
+    }
+
+    fn is_sending(&self) -> bool {
+        let low: FatLow = self.low;
+        low.is_sending()
     }
 }
 
@@ -33,21 +44,33 @@ struct FatLow {
 }
 
 impl FatLow {
-    fn is_sending(&self) -> bool {
-        let register: Low = self.register;
-        register.is_sending()
-    }
-
-    fn send_init(self) -> Self {
+    fn assert_init(self) -> Self {
         let Self {
             register,
             reserved0,
         } = self;
-        let register: Low = register.send_init();
+        let register: Low = register.assert_init();
         Self {
             register,
             reserved0,
         }
+    }
+
+    fn deassert_init(self) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register: Low = register.deassert_init();
+        Self {
+            register,
+            reserved0,
+        }
+    }
+
+    fn is_sending(&self) -> bool {
+        let register: Low = self.register;
+        register.is_sending()
     }
 }
 
@@ -95,17 +118,25 @@ struct Low {
 }
 
 impl Low {
-    fn is_sending(&self) -> bool {
-        let delivery_status: DeliveryStatus = self.delivery_status().into();
-        delivery_status == DeliveryStatus::SendPending
-    }
-
-    fn send_init(self) -> Self {
+    fn assert_init(self) -> Self {
         self.with_delivery_mode(DeliveryMode::Init.into())
             .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Assert.into())
             .with_trigger_mode(TriggerMode::Level.into())
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
+    }
+
+    fn deassert_init(self) -> Self {
+        self.with_delivery_mode(DeliveryMode::Init.into())
+            .with_destination_mode(DestinationMode::Physical.into())
+            .with_level(Level::Deassert.into())
+            .with_trigger_mode(TriggerMode::Level.into())
+            .with_destination_shorthand(DestinationShorthand::AllIncludingSelf.into())
+    }
+
+    fn is_sending(&self) -> bool {
+        let delivery_status: DeliveryStatus = self.delivery_status().into();
+        delivery_status == DeliveryStatus::SendPending
     }
 }
 
