@@ -21,25 +21,31 @@ pub struct Register {
 
 impl Register {
     pub fn assert_init(&mut self, processor_local_apic_id: u8) {
-        let address: *mut Self = self as *mut Self;
+        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
         let address: usize = address as usize;
-        com2_println!("interrupt command address = {:#x?}", address);
+        com2_println!("interrupt command high address = {:#x?}", address);
         self.high = self.high.select_processor(processor_local_apic_id);
+        let address: *mut FatLow = &mut self.low as *mut FatLow;
+        let address: usize = address as usize;
+        com2_println!("interrupt command low address = {:#x?}", address);
         self.low = self.low.assert_init();
     }
 
     pub fn deassert_init(&mut self) {
-        let address: *mut Self = self as *mut Self;
+        let address: *mut FatLow = &mut self.low as *mut FatLow;
         let address: usize = address as usize;
-        com2_println!("interrupt command address = {:#x?}", address);
+        com2_println!("interrupt command low address = {:#x?}", address);
         self.low = self.low.deassert_init();
     }
 
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
-        let address: *mut Self = self as *mut Self;
+        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
         let address: usize = address as usize;
-        com2_println!("interrupt command address = {:#x?}", address);
+        com2_println!("interrupt command high address = {:#x?}", address);
         self.high = self.high.select_processor(processor_local_apic_id);
+        let address: *mut FatLow = &mut self.low as *mut FatLow;
+        let address: usize = address as usize;
+        com2_println!("interrupt command low address = {:#x?}", address);
         self.low = self.low.send_sipi(entry_point);
     }
 
