@@ -116,7 +116,7 @@ impl Registers {
         self.clear_all_errors();
         self.interrupt_command.assert_init(processor_local_apic_id);
         self.interrupt_command.wait_to_send();
-        self.interrupt_command.deassert_init();
+        self.interrupt_command.deassert_init(processor_local_apic_id);
         self.interrupt_command.wait_to_send();
     }
 
