@@ -75,6 +75,7 @@ impl FatLow {
             reserved0,
         } = self;
         let register: Low = register.assert_init();
+        com2_println!("interrupt command low = {:#x?}", register.0);
         Self {
             register,
             reserved0,
@@ -87,6 +88,7 @@ impl FatLow {
             reserved0,
         } = self;
         let register: Low = register.deassert_init();
+        com2_println!("interrupt command low = {:#x?}", register.0);
         Self {
             register,
             reserved0,
@@ -104,6 +106,7 @@ impl FatLow {
             reserved0,
         } = self;
         let register: Low = register.send_sipi(entry_point);
+        com2_println!("interrupt command low = {:#x?}", register.0);
         Self {
             register,
             reserved0,
@@ -367,6 +370,7 @@ impl FatHigh {
             reserved0,
         } = self;
         let register: High = register.select_processor(processor_local_apic_id);
+        com2_println!("interrupt command high = {:#x?}", register.0);
         Self {
             register,
             reserved0,
