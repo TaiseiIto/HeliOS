@@ -31,6 +31,83 @@ hello_world:
 	.code16
 main:	# IP == 0x1000
 0:	# Initialize the general registers.
+	movb	$0x48,	%al
+	movw	COM2_TRANSMITTER_HOLDING_BUFFER,	%dx
+	outb	%al,	%dx
+	movb	$0x65,	%al
+	outb	%al,	%dx
+	movb	$0x6c,	%al
+	outb	%al,	%dx
+	movb	$0x6c,	%al
+	outb	%al,	%dx
+	movb	$0x6f,	%al
+	outb	%al,	%dx
+	movb	$0x20,	%al
+	outb	%al,	%dx
+	movb	$0x66,	%al
+	outb	%al,	%dx
+	movb	$0x72,	%al
+	outb	%al,	%dx
+	movb	$0x6f,	%al
+	outb	%al,	%dx
+	movb	$0x6d,	%al
+	outb	%al,	%dx
+	movb	$0x20,	%al
+	outb	%al,	%dx
+	movb	$0x61,	%al
+	outb	%al,	%dx
+	movb	$0x6e,	%al
+	outb	%al,	%dx
+	movb	$0x20,	%al
+	outb	%al,	%dx
+	movb	$0x61,	%al
+	outb	%al,	%dx
+	movb	$0x70,	%al
+	outb	%al,	%dx
+	movb	$0x70,	%al
+	outb	%al,	%dx
+	movb	$0x6c,	%al
+	outb	%al,	%dx
+	movb	$0x69,	%al
+	outb	%al,	%dx
+	movb	$0x63,	%al
+	outb	%al,	%dx
+	movb	$0x61,	%al
+	outb	%al,	%dx
+	movb	$0x74,	%al
+	outb	%al,	%dx
+	movb	$0x69,	%al
+	outb	%al,	%dx
+	movb	$0x6f,	%al
+	outb	%al,	%dx
+	movb	$0x6e,	%al
+	outb	%al,	%dx
+	movb	$0x20,	%al
+	outb	%al,	%dx
+	movb	$0x70,	%al
+	outb	%al,	%dx
+	movb	$0x72,	%al
+	outb	%al,	%dx
+	movb	$0x6f,	%al
+	outb	%al,	%dx
+	movb	$0x63,	%al
+	outb	%al,	%dx
+	movb	$0x65,	%al
+	outb	%al,	%dx
+	movb	$0x73,	%al
+	outb	%al,	%dx
+	movb	$0x73,	%al
+	outb	%al,	%dx
+	movb	$0x6f,	%al
+	outb	%al,	%dx
+	movb	$0x72,	%al
+	outb	%al,	%dx
+	movb	$0x21,	%al
+	outb	%al,	%dx
+	movb	$0x0a,	%al
+	outb	%al,	%dx
+
+
 	xorw	%ax,	%ax
 	movw	%ax,	%bx
 	movw	%ax,	%cx
