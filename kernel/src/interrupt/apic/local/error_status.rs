@@ -19,8 +19,10 @@ impl FatRegister {
         let address: *mut Self = self as *mut Self;
         let address: usize = address as usize;
         com2_println!("error status address = {:#x?}", address);
-        let register: Register = self.register.clear_all_errors();
-        com2_println!("error status = {:#x?}", register.0);
+        let register: Register = self.register;
+        com2_println!("old error status = {:#x?}", register.0);
+        let register: Register = register.clear_all_errors();
+        com2_println!("new error status = {:#x?}", register.0);
         self.register = register;
     }
 }
