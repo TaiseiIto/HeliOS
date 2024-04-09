@@ -23,7 +23,11 @@ pub mod trigger_mode;
 
 use {
     core::fmt,
-    crate::x64,
+    crate::{
+        com2_print,
+        com2_println,
+        x64,
+    },
 };
 
 /// # Local APIC Registers
@@ -98,6 +102,9 @@ impl Registers {
     }
 
     pub fn clear_all_errors(&mut self) {
+        let address: *mut error_status::FatRegister = &mut self.error_status as *mut error_status::FatRegister;
+        let address: usize = address as usize;
+        com2_println!("error status address = {:#x?}", address);
         self.error_status = self.error_status.clear_all_errors();
     }
 

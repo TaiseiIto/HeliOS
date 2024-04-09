@@ -1,6 +1,10 @@
 use {
     bitfield_struct::bitfield,
     core::fmt,
+    crate::{
+        com2_print,
+        com2_println,
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -17,6 +21,7 @@ impl FatRegister {
             reserved0,
         } = self;
         let register: Register = register.clear_all_errors();
+        com2_println!("error_status = {:#x?}", register.0);
         Self {
             register,
             reserved0,
