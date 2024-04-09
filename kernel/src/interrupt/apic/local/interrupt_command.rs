@@ -177,7 +177,7 @@ impl Low {
             .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Deassert.into())
             .with_trigger_mode(TriggerMode::Level.into())
-            .with_destination_shorthand(DestinationShorthand::AllIncludingSelf.into())
+            .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 
     fn is_sending(&self) -> bool {
