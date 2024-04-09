@@ -101,19 +101,12 @@ impl Registers {
         local_apic_id.apic_id()
     }
 
-    pub fn clear_all_errors(&mut self) {
-        let address: *mut error_status::FatRegister = &mut self.error_status as *mut error_status::FatRegister;
-        let address: usize = address as usize;
-        com2_println!("error status address = {:#x?}", address);
-        self.error_status = self.error_status.clear_all_errors();
-    }
-
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
     }
 
     pub fn send_init(&mut self, processor_local_apic_id: u8) {
-        self.clear_all_errors();
+        self.error_status.clear_all_errors();
         self.interrupt_command.assert_init(processor_local_apic_id);
         self.interrupt_command.wait_to_send();
         self.interrupt_command.deassert_init(processor_local_apic_id);
@@ -121,7 +114,7 @@ impl Registers {
     }
 
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
-        self.clear_all_errors();
+        self.error_status.clear_all_errors();
         self.interrupt_command.send_sipi(processor_local_apic_id, entry_point);
         self.interrupt_command.wait_to_send();
     }

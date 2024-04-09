@@ -15,17 +15,13 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn clear_all_errors(self) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register: Register = register.clear_all_errors();
-        com2_println!("error_status = {:#x?}", register.0);
-        Self {
-            register,
-            reserved0,
-        }
+    pub fn clear_all_errors(&mut self) {
+        let address: *mut Self = self as *mut Self;
+        let address: usize = address as usize;
+        com2_println!("error status address = {:#x?}", address);
+        let register: Register = self.register.clear_all_errors();
+        com2_println!("error status = {:#x?}", register.0);
+        self.register = register;
     }
 }
 
