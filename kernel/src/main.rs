@@ -45,9 +45,7 @@ pub struct Argument<'a> {
     heap_start: usize,
     hello_application: elf::File,
     memory_map: efi::memory::Map,
-    my_processor_number: usize,
     paging: memory::Paging,
-    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
 
 const PRIVILEGE_LEVEL: u8 = 0;
@@ -64,9 +62,7 @@ fn main(argument: &'static mut Argument<'static>) {
         heap_start,
         hello_application,
         memory_map,
-        my_processor_number,
         paging,
-        processor_informations,
     } = argument;
     rs232c::set_com2(com2);
     // Initialize allocator.

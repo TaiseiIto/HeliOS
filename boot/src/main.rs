@@ -44,9 +44,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let font_protocol = efi::font::Protocol::get();
     let fonts: BTreeMap<usize, efi::Font> = font_protocol.fonts();
     let graphics_output_protocol = efi::graphics_output::Protocol::get();
-    let mp_services_protocol = efi::mp_services::Protocol::get();
-    let my_processor_number: usize = mp_services_protocol.my_processor_number().unwrap();
-    let processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation> = mp_services_protocol.get_all_processor_informations();
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     assert!(execute_disable_bit_available);
@@ -116,9 +113,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         kernel_heap_start,
         hello_application,
         memory_map,
-        my_processor_number,
-        paging,
-        processor_informations);
+        paging);
     kernel.run(kernel_stack_floor, &kernel_argument);
     efi::SystemTable::get().shutdown();
     efi::Status::ABORTED
