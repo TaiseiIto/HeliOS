@@ -1,6 +1,9 @@
 use {
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+    },
     crate::{
         com2_print,
         com2_println,
@@ -26,13 +29,13 @@ impl Register {
         com2_println!("interrupt command high address = {:#x?}", address);
         let high: High = self.high.register.select_processor(processor_local_apic_id);
         com2_println!("interrupt command high = {:#x?}", high.0);
-        self.high.register = high;
+        *self.high_mut() = high.into();
         let address: *mut FatLow = &mut self.low as *mut FatLow;
         let address: usize = address as usize;
         com2_println!("interrupt command low address = {:#x?}", address);
         let low: Low = self.low.register.assert_init();
         com2_println!("interrupt command low = {:#x?}", low.0);
-        self.low.register = low;
+        *self.low_mut() = low.into();
     }
 
     pub fn deassert_init(&mut self, processor_local_apic_id: u8) {
@@ -41,13 +44,13 @@ impl Register {
         com2_println!("interrupt command high address = {:#x?}", address);
         let high: High = self.high.register.select_processor(processor_local_apic_id);
         com2_println!("interrupt command high = {:#x?}", high.0);
-        self.high.register = high;
+        *self.high_mut() = high.into();
         let address: *mut FatLow = &mut self.low as *mut FatLow;
         let address: usize = address as usize;
         com2_println!("interrupt command low address = {:#x?}", address);
         let low: Low = self.low.register.deassert_init();
         com2_println!("interrupt command low = {:#x?}", low.0);
-        self.low.register = low;
+        *self.low_mut() = low.into();
     }
 
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
@@ -56,13 +59,13 @@ impl Register {
         com2_println!("interrupt command high address = {:#x?}", address);
         let high: High = self.high.register.select_processor(processor_local_apic_id);
         com2_println!("interrupt command high = {:#x?}", high.0);
-        self.high.register = high;
+        *self.high_mut() = high.into();
         let address: *mut FatLow = &mut self.low as *mut FatLow;
         let address: usize = address as usize;
         com2_println!("interrupt command low address = {:#x?}", address);
         let low: Low = self.low.register.send_sipi(entry_point);
         com2_println!("interrupt command low = {:#x?}", low.0);
-        self.low.register = low;
+        *self.low_mut() = low.into();
     }
 
     pub fn wait_to_send(&self) {
@@ -71,9 +74,30 @@ impl Register {
         }
     }
 
+    fn address(&self) -> usize {
+        let address: *const Self = self as *const Self;
+        address as usize
+    }
+
+    fn high_mut(&mut self) -> &mut u32 {
+        let high: usize = self.address() + mem::size_of::<FatLow>();
+        let high: *mut u32 = high as *mut u32;
+        unsafe {
+            &mut *high
+        }
+    }
+
     fn is_sending(&self) -> bool {
         let low: FatLow = self.low;
         low.is_sending()
+    }
+
+    fn low_mut(&mut self) -> &mut u32 {
+        let low: usize = self.address();
+        let low: *mut u32 = low as *mut u32;
+        unsafe {
+            &mut *low
+        }
     }
 }
 
