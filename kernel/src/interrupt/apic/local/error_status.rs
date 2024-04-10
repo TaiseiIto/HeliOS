@@ -23,7 +23,20 @@ impl FatRegister {
         com2_println!("old error status = {:#x?}", register.0);
         let register: Register = register.clear_all_errors();
         com2_println!("new error status = {:#x?}", register.0);
-        self.register = register;
+        *self.register_mut() = register.into();
+    }
+
+    fn address(&self) -> usize {
+        let address: *const Self = self as *const Self;
+        address as usize
+    }
+
+    fn register_mut(&mut self) -> &mut u32 {
+        let register: usize = self.address();
+        let register: *mut u32 = register as *mut u32;
+        unsafe {
+            &mut *register
+        }
     }
 }
 
