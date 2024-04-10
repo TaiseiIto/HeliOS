@@ -227,6 +227,7 @@ impl Low {
         Self::new()
             .with_vector((entry_point / memory::page::SIZE) as u8)
             .with_delivery_mode(DeliveryMode::StartUp.into())
+            .with_level(Level::Assert.into())
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 }
