@@ -114,21 +114,6 @@ continue
 continue
 continue
 continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-continue
-break cpu_interrupt
+break apic_startup
 continue
 
