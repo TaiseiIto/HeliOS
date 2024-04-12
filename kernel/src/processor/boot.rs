@@ -6,7 +6,7 @@ use core::{
 
 pub struct Loader {
     program_address_range: Range<usize>,
-    stack_floor: usize,
+    stack_address_range: Range<usize>,
 }
 
 impl Loader {
@@ -21,6 +21,14 @@ impl Loader {
             slice::from_raw_parts(start, length)
         }
     }
+
+    pub fn stack(&self) -> &[u8] {
+        let start: *const u8 = self.stack_address_range.start as *const u8;
+        let length: usize = self.stack_address_range.end - self.stack_address_range.start;
+        unsafe {
+            slice::from_raw_parts(start, length)
+        }
+    }
 }
 
 impl fmt::Debug for Loader {
@@ -28,7 +36,7 @@ impl fmt::Debug for Loader {
         formatter
             .debug_struct("Loader")
             .field("program", &self.program())
-            .field("stack_floor", &self.stack_floor)
+            .field("stack", &self.stack())
             .finish()
     }
 }

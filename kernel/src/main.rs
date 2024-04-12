@@ -177,6 +177,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone()))
         .collect();
     com2_println!("processors = {:#x?}", processors);
+    com2_println!("processor_boot_loader = {:#x?}", processor_boot_loader);
     processors
         .iter()
         .filter_map(|processor| (processor.local_apic_id() as u32 != my_local_apic_id).then_some(processor))
