@@ -93,46 +93,46 @@ segment_descriptor_null:
 	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_32bit_code:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x9a	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_32bit_data:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x92	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_64bit_kernel_code:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x9a	# Type, S, DPL, P
+	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_64bit_kernel_data:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x93	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_64bit_application_data:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0xf2	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 segment_descriptor_64bit_application_code:
-	.word	0x0000	# Limit 15:00
+	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
-	.byte	0x00	# Type, S, DPL, P
-	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
+	.byte	0xfa	# Type, S, DPL, P
+	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 message:
 	.string	"Hello from an application processor!\n"
