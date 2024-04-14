@@ -202,6 +202,6 @@ message16:
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
 log_end_pointer:
-	.word	log_start
+	.long	log_start
 log_start:
 
