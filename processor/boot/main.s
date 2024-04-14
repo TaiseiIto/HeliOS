@@ -45,12 +45,12 @@ main16:	# IP == 0x1000
 	popw	%di
 	leave
 	# Move to 32bit protected mode.
-	lgdt	(gdtr - entry)
+	lgdt	gdtr
 	movl	%cr0,	%edx
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	ljmp	$0x0008,	$(main32 - entry)
+	ljmp	$0x0008,	$main32
 
 putchar16:
 0:
@@ -195,7 +195,7 @@ segment_descriptor_64bit_application_code:	# 0x30
 gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
-	.long	gdt_start - entry
+	.long	gdt_start
 message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
