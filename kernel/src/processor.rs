@@ -24,7 +24,7 @@ impl Controller {
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         hpet.wait_seconds(1);
-        com2_println!("Boot log = {:#x?}", boot_loader.log());
+        com2_println!("boot_loader = {:#x?}", boot_loader);
     }
 
     pub fn local_apic_id(&self) -> u8 {
