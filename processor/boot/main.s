@@ -29,19 +29,19 @@ main16:	# IP == 0x1000
 	movw	%ax,	%fs	
 	movw	%ax,	%gs	
 	movw	STACK_SEGMENT,	%ss	
-	# A main function.
+	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
 	# Set log_end_pointer.
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
-	# Print a message.
-	leaw	message,	%dx
+	# Print message16.
+	leaw	message16,	%dx
 	pushw	%dx
 	call	puts16
 	add	$0x0002,	%sp
-	# Leave a main function.
+	# Leave 16bit main function.
 	popw	%di
 	leave
 	# Move to 32bit protected mode.
@@ -50,12 +50,6 @@ main16:	# IP == 0x1000
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	movw	$0x0010,	%dx	# Set 32bit data segment.
-	movw	%dx,	%ds
-	movw	%dx,	%es
-	movw	%dx,	%fs
-	movw	%dx,	%gs
-	movw	%dx,	%ss
 	ljmp	$0x0008,	$main32
 
 putchar16:
@@ -76,7 +70,6 @@ puts16:
 	enter	$0x0000,	$0x00
 	pushw	%si
 	movw	0x04(%bp),	%si
-	xorb	%dh,	%dh
 1:
 	movb	(%si),	%dl
 	test	%dl,	%dl
@@ -94,8 +87,58 @@ puts16:
 	.code32
 main32:
 0:
+	movw	$0x0010,	%dx	# Set 32bit data segment.
+	movw	%dx,	%ds
+	movw	%dx,	%es
+	movw	%dx,	%fs
+	movw	%dx,	%gs
+	movw	%dx,	%ss
+	movl	STACK_FLOOR,	%ebp
+	movl	STACK_FLOOR,	%esp
+	# Enter 32bit main function.
+	enter	$0x0000,	$0x00
+	# Print message32.
+	leal	message32,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x0004,	%esp
+	# Leave 32bit main function.
+	leave
+1:	# Halt loop
 	hlt
-	jmp	0b
+	jmp	1b
+
+putchar32:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%edi
+	movl	log_end_pointer,	%edi
+	movb	0x08(%ebp),	%dl
+	movb	%dl,	(%edi)
+	incl	%edi
+	movl	%edi,	log_end_pointer
+	popl	%edi
+	leave
+	ret
+
+puts32:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%esi
+	movl	0x08(%ebp),	%esi
+1:
+	movb	(%esi),	%dl
+	test	%dl,	%dl
+	jz	2f
+	pushl	%edx
+	call	putchar32
+	addl	$0x0004,	%esp
+	incl	%esi
+	jmp	1b
+2:
+	popl	%esi
+	leave
+	ret
 
 	.data
 	.align	16
@@ -154,8 +197,10 @@ gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start
-message:
-	.string	"Hello from an application processor!\n"
+message16:
+	.string	"Hello from an application processor in real mode!\n"
+message32:
+	.string	"Hello from an application processor in 32bit protected mode!\n"
 log_end_pointer:
 	.word	log_start
 log_start:
