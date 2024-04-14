@@ -33,10 +33,10 @@ main:	# IP == 0x1000
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
-	movw	message,	%dx
+	leaw	message,	%dx
 	pushw	%dx
 	call	puts
-	addw	$0x0002,	%sp
+	add	$0x0002,	%sp
 	popw	%di
 	leave
 3:	# Halt loop
@@ -47,11 +47,11 @@ putchar:
 0:
 	enter	$0x0000,	$0x00
 	pushw	%di
-	movw	(log_end_pointer),	%di
+	movw	log_end_pointer,	%di
 	movb	0x04(%bp),	%dl
 	movb	%dl,	(%di)
 	incw	%di
-	movw	%di,	(log_end_pointer)
+	movw	%di,	log_end_pointer
 	popw	%di
 	leave
 	ret
