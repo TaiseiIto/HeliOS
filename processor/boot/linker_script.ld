@@ -5,10 +5,7 @@ BASE = 0x1000;
 SECTIONS {
 	. = BASE;
 	.text : {
-		main.o(.text)
-	}
-	.data : {
-		main.o(.data)
+		main.o(*)
 	}
 	/DISCARD/ : {
 		*(.eh_frame)

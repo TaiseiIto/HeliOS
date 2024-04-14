@@ -9,8 +9,8 @@
 	.set	STACK_FLOOR,	0x00010000
 	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
 
-	.text
 	.code16
+entry:
 main16:	# IP == 0x1000
 0:	# Disable interrupts.
 	cli
@@ -45,12 +45,12 @@ main16:	# IP == 0x1000
 	popw	%di
 	leave
 	# Move to 32bit protected mode.
-	lgdt	gdtr
+	lgdt	(gdtr - entry)
 	movl	%cr0,	%edx
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	ljmp	$0x0008,	$main32
+	ljmp	$0x0008,	$(main32 - entry)
 
 putchar16:
 0:
@@ -140,7 +140,6 @@ puts32:
 	leave
 	ret
 
-	.data
 	.align	16
 gdt_start:
 	# [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
@@ -196,7 +195,7 @@ segment_descriptor_64bit_application_code:	# 0x30
 gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
-	.long	gdt_start
+	.long	gdt_start - entry
 message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
