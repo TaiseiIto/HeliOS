@@ -29,12 +29,15 @@ main:	# IP == 0x1000
 	movw	STACK_SEGMENT,	%ss	
 2:	# A main function
 	enter	$0x0000,	$0x00
-	movw	log_start,	%dx
-	movw	%dx,	(log_end_pointer)
+	pushw	%di
+	leaw	log_start,	%dx
+	leaw	log_end_pointer,	%di
+	movw	%dx,	(%di)
 	movw	message,	%dx
 	pushw	%dx
 	call	puts
 	addw	$0x0002,	%sp
+	popw	%di
 	leave
 3:	# Halt loop
 	hlt
