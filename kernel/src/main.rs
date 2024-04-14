@@ -108,9 +108,13 @@ fn main(argument: &'static mut Argument<'static>) {
     let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
     let is_ldt: bool = false;
     let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
+    com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
     let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
+    com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
     let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
+    com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
+    com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
@@ -126,6 +130,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
     let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
+    com2_println!("gdt = {:#x?}", gdt);
     let task_register: x64::task::Register = task_state_segment_selector.into();
     task_register.set();
     let task_register = x64::task::Register::get();
