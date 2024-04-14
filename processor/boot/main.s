@@ -30,18 +30,21 @@ main:	# IP == 0x1000
 2:	# A main function
 	enter	$0x0000,	$0x00
 	pushw	%di
+3:	# Set log_end_pointer
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
+4:	# Print a message
 	leaw	message,	%dx
 	pushw	%dx
 	call	puts
 	add	$0x0002,	%sp
+5:	# Leave a main function
 	popw	%di
 	leave
-3:	# Halt loop
+6:	# Halt loop
 	hlt
-	jmp	3b
+	jmp	6b
 
 putchar:
 0:
