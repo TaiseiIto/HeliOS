@@ -1,7 +1,13 @@
-use core::{
-    fmt,
-    ops::Range,
-    slice,
+use {
+    alloc::{
+        vec::Vec,
+        string::String,
+    },
+    core::{
+        fmt,
+        ops::Range,
+        slice,
+    },
 };
 
 pub struct Loader {
@@ -12,6 +18,21 @@ pub struct Loader {
 impl Loader {
     pub fn entry_point(&self) -> usize {
         self.program_address_range.start
+    }
+
+    pub fn initialize_stack(&mut self) {
+        self.stack_mut()
+            .iter_mut()
+            .for_each(|byte| *byte = 0)
+    }
+
+    pub fn log(&self) -> String {
+        let log: Vec<u8> = self.stack()
+            .iter()
+            .map(|byte| *byte)
+            .take_while(|byte| *byte != 0)
+            .collect();
+        String::from_utf8(log).unwrap()
     }
 
     pub fn program(&self) -> &[u8] {
@@ -27,6 +48,14 @@ impl Loader {
         let length: usize = self.stack_address_range.end - self.stack_address_range.start;
         unsafe {
             slice::from_raw_parts(start, length)
+        }
+    }
+
+    fn stack_mut(&self) -> &mut [u8] {
+        let start: *mut u8 = self.stack_address_range.start as *mut u8;
+        let length: usize = self.stack_address_range.end - self.stack_address_range.start;
+        unsafe {
+            slice::from_raw_parts_mut(start, length)
         }
     }
 }

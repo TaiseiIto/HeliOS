@@ -14,7 +14,8 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers) {
+    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers) {
+        boot_loader.initialize_stack();
         let local_apic_id: u8 = self.local_apic_id() as u8;
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();
@@ -22,6 +23,8 @@ impl Controller {
         local_apic_registers.send_init(local_apic_id, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
+        hpet.wait_seconds(1);
+        com2_println!("Boot log = {:#x?}", boot_loader.log());
     }
 
     pub fn local_apic_id(&self) -> u8 {
