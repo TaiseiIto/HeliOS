@@ -93,8 +93,8 @@ main32:
 	movw	%dx,	%fs
 	movw	%dx,	%gs
 	movw	%dx,	%ss
-	movl	STACK_FLOOR,	%ebp
-	movl	STACK_FLOOR,	%esp
+	leal	STACK_FLOOR,	%ebp
+	leal	STACK_FLOOR,	%esp
 	# Enter 32bit main function.
 	enter	$0x0000,	$0x00
 	# Print message32.
