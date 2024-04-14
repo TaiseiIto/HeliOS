@@ -9,8 +9,8 @@
 	.set	STACK_FLOOR,	0x00010000
 	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
 
+	.text
 	.code16
-entry:
 main16:	# IP == 0x1000
 0:	# Disable interrupts.
 	cli
@@ -140,6 +140,7 @@ puts32:
 	leave
 	ret
 
+	.data
 	.align	16
 gdt_start:
 	# [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
@@ -203,5 +204,4 @@ message32:
 log_end_pointer:
 	.word	log_start
 log_start:
-
 
