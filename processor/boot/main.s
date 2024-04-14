@@ -11,8 +11,8 @@
 
 	.text
 	.code16
-main:	# IP == 0x1000
-0:	# Disable interrupts
+main16:	# IP == 0x1000
+0:	# Disable interrupts.
 	cli
 	# Initialize the general registers.
 	xorw	%ax,	%ax
@@ -29,26 +29,36 @@ main:	# IP == 0x1000
 	movw	%ax,	%fs	
 	movw	%ax,	%gs	
 	movw	STACK_SEGMENT,	%ss	
-	# A main function
+	# A main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
-	# Set log_end_pointer
+	# Set log_end_pointer.
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
-	# Print a message
+	# Print a message.
 	leaw	message,	%dx
 	pushw	%dx
-	call	puts
+	call	puts16
 	add	$0x0002,	%sp
-	# Leave a main function
+	# Leave a main function.
 	popw	%di
 	leave
-1:	# Halt loop
-	hlt
-	jmp	1b
+	# Move to 32bit protected mode.
+	lgdt	gdtr
+	movl	%cr0,	%edx
+	andl	$0x7fffffff,	%edx	# Disable paging,
+	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
+	movl	%edx,	%cr0
+	movw	$0x0010,	%dx	# Set 32bit data segment.
+	movw	%dx,	%ds
+	movw	%dx,	%es
+	movw	%dx,	%fs
+	movw	%dx,	%gs
+	movw	%dx,	%ss
+	ljmp	$0x0008,	$main32
 
-putchar:
+putchar16:
 0:
 	enter	$0x0000,	$0x00
 	pushw	%di
@@ -61,7 +71,7 @@ putchar:
 	leave
 	ret
 
-puts:
+puts16:
 0:
 	enter	$0x0000,	$0x00
 	pushw	%si
@@ -72,7 +82,7 @@ puts:
 	test	%dl,	%dl
 	jz	2f
 	pushw	%dx
-	call	putchar
+	call	putchar16
 	addw	$0x0002,	%sp
 	incw	%si
 	jmp	1b
@@ -81,59 +91,69 @@ puts:
 	leave
 	ret
 
+	.code32
+main32:
+0:
+	hlt
+	jmp	0b
+
 	.data
 	.align	16
-gdt:
+gdt_start:
 	# [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
-segment_descriptor_null:
+segment_descriptor_null:			# 0x00
 	.word	0x0000	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x00	# Type, S, DPL, P
 	.byte	0x00	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_32bit_code:
+segment_descriptor_32bit_code:			# 0x08
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x9a	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_32bit_data:
+segment_descriptor_32bit_data:			#0x10
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_code:
+segment_descriptor_64bit_kernel_code:		# 0x18
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x9a	# Type, S, DPL, P
 	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_data:
+segment_descriptor_64bit_kernel_data:		# 0x20
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_data:
+segment_descriptor_64bit_application_data:	# 0x28
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0xf2	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_code:
+segment_descriptor_64bit_application_code:	# 0x30
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0xfa	# Type, S, DPL, P
 	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
+gdt_end:
+gdtr:
+	.word	gdt_end - gdt_start - 1
+	.long	gdt_start
 message:
 	.string	"Hello from an application processor!\n"
 log_end_pointer:
