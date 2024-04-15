@@ -115,7 +115,7 @@ main32:
 	# Leave 32bit main function.
 	leave
 	# Set CR3.
-	movl	$cr3,	%edx
+	movl	cr3,	%edx
 	movl	%edx,	%cr3
 	# Set PAE.
 	movl	%cr4,	%edx
