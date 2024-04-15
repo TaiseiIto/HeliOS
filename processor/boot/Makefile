@@ -5,18 +5,18 @@ OBJECTS=$(SOURCES:.s=.o)
 LINKER_SCRIPT=linker_script.ld
 MAP=memory.map
 DISASSEMBLE=disassemble.txt
+DISASSEMBLE16=disassemble16.txt
 
 .PHONY: all
-all: $(TARGET)
-
-.PHONY: disassemble
-disassemble: $(DISASSEMBLE)
-	cat $^
+all: $(TARGET) $(DISASSEMBLE) $(DISASSEMBLE16)
 
 $(TARGET): $(OBJECTS) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	ld $(OBJECTS) -T $(LINKER_SCRIPT) -Map $(MAP) -o $@
 
 $(DISASSEMBLE): $(TARGET)
+	objdump -D -b binary -m i386 $^ > $@
+
+$(DISASSEMBLE16): $(TARGET)
 	objdump -D -b binary -mi8086 -Maddr16,data16 $^ > $@
 
 $(OBJECTS): $(@:.o=.s)
