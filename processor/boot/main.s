@@ -103,13 +103,13 @@ main32:
 	call	puts32
 	addl	$0x00000004,	%esp
 	# Test put_nibble32
-	leal	put_nibble32_test_message,	%edx
+	leal	put_byte32_test_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	xorl	%edx,	%edx
+	movl	$0x0000009a,	%edx
 	pushl	%edx
-	call	put_nibble32
+	call	put_byte32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Leave 32bit main function.
@@ -172,12 +172,29 @@ put_nibble32:
 	addb	$'0,	%al
 	movb	%al,	%dl
 	jmp	3f
-2:	# From 'A' to 'F'
-	addb	$'A,	%dl
+2:	# From 'a' to 'f'
+	addb	$'a,	%dl
 3:
 	pushl	%edx
 	call	putchar32
 	addl	$0x00000004,	%esp
+	leave
+	ret
+
+put_byte32:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%ebx
+	movb	0x08(%ebp),	%bl
+	movb	%bl,	%dl
+	shrb	$4,	%dl
+	pushl	%edx
+	call	put_nibble32
+	addl	$0x00000004,	%esp
+	pushl	%ebx
+	call	put_nibble32
+	addl	$0x00000004,	%esp
+	popl	%ebx
 	leave
 	ret
 
@@ -242,8 +259,8 @@ message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
-put_nibble32_test_message:
-	.string "0x00 = "
+put_byte32_test_message:
+	.string "0x9a = "
 log_end_pointer:
 	.long	log_start
 	.align	8
