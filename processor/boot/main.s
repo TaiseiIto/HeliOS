@@ -103,13 +103,13 @@ main32:
 	call	puts32
 	addl	$0x00000004,	%esp
 	# Test put_nibble32
-	leal	put_byte32_test_message,	%edx
+	leal	put_word32_test_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	movl	$0x0000009a,	%edx
+	movl	$0x000089ab,	%edx
 	pushl	%edx
-	call	put_byte32
+	call	put_word32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Leave 32bit main function.
@@ -198,6 +198,23 @@ put_byte32:
 	leave
 	ret
 
+put_word32:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%ebx
+	movw	0x08(%ebp),	%bx
+	movw	%bx,	%dx
+	shrw	$8,	%dx
+	pushl	%edx
+	call	put_byte32
+	addl	$0x00000004,	%esp
+	pushl	%ebx
+	call	put_byte32
+	addl	$0x00000004,	%esp
+	popl	%ebx
+	leave
+	ret
+
 	.data
 	.align	16
 gdt_start:
@@ -259,8 +276,8 @@ message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
-put_byte32_test_message:
-	.string "0x9a = "
+put_word32_test_message:
+	.string "0x89ab = "
 log_end_pointer:
 	.long	log_start
 	.align	8
