@@ -40,7 +40,7 @@ main16:	# IP == 0x1000
 	leaw	message16,	%dx
 	pushw	%dx
 	call	puts16
-	add	$0x0002,	%sp
+	addw	$0x0002,	%sp
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -72,7 +72,7 @@ puts16:
 	movw	0x04(%bp),	%si
 1:
 	movb	(%si),	%dl
-	test	%dl,	%dl
+	testb	%dl,	%dl
 	jz	2f
 	pushw	%dx
 	call	putchar16
@@ -101,7 +101,17 @@ main32:
 	leal	message32,	%edx
 	pushl	%edx
 	call	puts32
-	addl	$0x0004,	%esp
+	addl	$0x00000004,	%esp
+	# Test put_nibble32
+	leal	put_nibble32_test_message,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x00000004,	%esp
+	xorl	%edx,	%edx
+	pushl	%edx
+	call	put_nibble32
+	addl	$0x00000004,	%esp
+	call	put_new_line32
 	# Leave 32bit main function.
 	leave
 1:	# Halt loop
@@ -128,15 +138,46 @@ puts32:
 	movl	0x08(%ebp),	%esi
 1:
 	movb	(%esi),	%dl
-	test	%dl,	%dl
+	testb	%dl,	%dl
 	jz	2f
 	pushl	%edx
 	call	putchar32
-	addl	$0x0004,	%esp
+	addl	$0x00000004,	%esp
 	incl	%esi
 	jmp	1b
 2:
 	popl	%esi
+	leave
+	ret
+
+put_new_line32:
+0:
+	enter	$0x0000,	$0x00
+	movb	$'\n,	%dl
+	pushl	%edx
+	call	putchar32
+	addl	$0x00000004,	%esp
+	leave
+	ret
+
+put_nibble32:
+0:
+	enter	$0x0000,	$0x00
+	movb	0x08(%ebp),	%al
+	andb	$0x0f,	%al
+	movb	%al,	%dl
+	subb	$10,	%dl
+	jae	2f
+1:	# From 0 to 9
+	addb	$'0,	%al
+	movb	%al,	%dl
+	jmp	3f
+2:	# From 'A' to 'F'
+	addb	$'A,	%dl
+3:
+	pushl	%edx
+	call	putchar32
+	addl	$0x00000004,	%esp
 	leave
 	ret
 
@@ -201,7 +242,12 @@ message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
+put_nibble32_test_message:
+	.string "0x00 = "
 log_end_pointer:
 	.long	log_start
+	.align	8
+cr3:
+	.quad	0x0123456789abcdef
 log_start:
 
