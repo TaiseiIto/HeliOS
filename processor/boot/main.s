@@ -114,9 +114,24 @@ main32:
 	call	put_new_line32
 	# Leave 32bit main function.
 	leave
-1:	# Halt loop
-	hlt
-	jmp	1b
+	# Set CR3.
+	movl	$cr3,	%edx
+	movl	%edx,	%cr3
+	# Set PAE.
+	movl	%cr4,	%edx
+	orl	$0x00000020,	%edx
+	movl	%edx,	%cr4
+	# Set LME and NXE.
+	movl	$0xc0000080,	%ecx
+	rdmsr
+	orl	$0x00000900,	%eax
+	wrmsr
+	# Set PG.
+	movl	%cr0,	%edx
+	orl	$0x80000000,	%edx
+	mov	%edx,	%cr0
+	# Move to 64bit mode.
+	ljmp	$0x0018,	$main64
 
 putchar32:
 0:
@@ -261,6 +276,12 @@ put_quad_pointer32:
 	leave
 	ret
 
+	.code64
+main64:
+0:
+	hlt
+	jmp	0b
+
 	.data
 	.align	16
 gdt_start:
@@ -328,6 +349,6 @@ log_end_pointer:
 	.long	log_start
 	.align	8
 cr3:
-	.quad	0x0123456789abcdef
+	.quad	0x0000000000000000
 log_start:
 
