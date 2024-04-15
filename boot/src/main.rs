@@ -41,6 +41,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .allocate_specific_pages(PROCESSOR_BOOT_LOADER_BASE, processor_boot_loader_pages)
         .unwrap();
     efi_println!("Hello, World!");
+    com2_println!("Hello from /EFI/BOOT/BOOTX64.EFI");
     let font_protocol = efi::font::Protocol::get();
     let fonts: BTreeMap<usize, efi::Font> = font_protocol.fonts();
     let graphics_output_protocol = efi::graphics_output::Protocol::get();

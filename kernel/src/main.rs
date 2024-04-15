@@ -65,6 +65,7 @@ fn main(argument: &'static mut Argument<'static>) {
         paging,
     } = argument;
     rs232c::set_com2(com2);
+    com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
     let memory_map: Vec<&efi::memory::Descriptor> = memory_map
@@ -108,13 +109,9 @@ fn main(argument: &'static mut Argument<'static>) {
     let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
     let is_ldt: bool = false;
     let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
-    com2_println!("kernel_code_segment_selector = {:#x?}", kernel_code_segment_selector);
     let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
-    com2_println!("kernel_data_segment_selector = {:#x?}", kernel_data_segment_selector);
     let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
-    com2_println!("application_code_segment_selector = {:#x?}", application_code_segment_selector);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
-    com2_println!("application_data_segment_selector = {:#x?}", application_data_segment_selector);
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
@@ -130,7 +127,6 @@ fn main(argument: &'static mut Argument<'static>) {
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
     let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
     let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
-    com2_println!("gdt = {:#x?}", gdt);
     let task_register: x64::task::Register = task_state_segment_selector.into();
     task_register.set();
     let task_register = x64::task::Register::get();
@@ -149,16 +145,11 @@ fn main(argument: &'static mut Argument<'static>) {
         .io_apic_mut()
         .registers_mut();
     let io_apic_identification: interrupt::apic::io::identification::Register = io_apic.identification();
-    com2_println!("io_apic_identification = {:#x?}", io_apic_identification);
     let io_apic_version: interrupt::apic::io::version::Register = io_apic.version();
-    com2_println!("io_apic_version = {:#x?}", io_apic_version);
     let io_apic_redirection_table_entries: Vec<interrupt::apic::io::redirection::table::Entry> = io_apic.redirection_table_entries();
-    com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
-    com2_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
-    com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Start HPET.
     efi_system_table
         .rsdp_mut()
