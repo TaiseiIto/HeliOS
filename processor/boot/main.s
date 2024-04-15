@@ -103,13 +103,13 @@ main32:
 	call	puts32
 	addl	$0x00000004,	%esp
 	# Test put_nibble32
-	leal	put_long32_test_message,	%edx
+	leal	check_cr3_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	movl	$0x6789abcd,	%edx
+	leal	cr3,	%edx
 	pushl	%edx
-	call	put_long32
+	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Leave 32bit main function.
@@ -232,6 +232,35 @@ put_long32:
 	leave
 	ret
 
+put_quad32:
+0:
+	enter	$0x0000,	$0x00
+	movl	0x08(%ebp),	%edx
+	pushl	%edx
+	call	put_long32
+	addl	$0x00000004,	%esp
+	movl	0x0c(%ebp),	%edx
+	pushl	%edx
+	call	put_long32
+	addl	$0x00000004,	%esp
+	leave
+	ret
+
+put_quad_pointer32:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%esi
+	movl	0x08(%ebp),	%esi
+	movl	(%esi),	%edx
+	pushl	%edx
+	movl	0x04(%esi),	%edx
+	pushl	%edx
+	call	put_quad32
+	addl	$0x00000008,	%esp
+	popl	%esi
+	leave
+	ret
+
 	.data
 	.align	16
 gdt_start:
@@ -293,8 +322,8 @@ message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
-put_long32_test_message:
-	.string "0x6789abcd = "
+check_cr3_message:
+	.string "cr3 = "
 log_end_pointer:
 	.long	log_start
 	.align	8
