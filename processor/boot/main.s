@@ -323,7 +323,7 @@ message16:
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
 check_cr3_message:
-	.string "cr3 = "
+	.string "cr3 = 0x"
 log_end_pointer:
 	.long	log_start
 	.align	8
