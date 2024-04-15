@@ -1,10 +1,6 @@
 use {
     bitfield_struct::bitfield,
     core::fmt,
-    crate::{
-        com2_print,
-        com2_println,
-    },
 };
 
 #[derive(Clone, Copy)]
@@ -18,11 +14,8 @@ impl FatRegister {
     pub fn clear_all_errors(&mut self) {
         let address: *mut Self = self as *mut Self;
         let address: usize = address as usize;
-        com2_println!("error status address = {:#x?}", address);
         let register: Register = self.register;
-        com2_println!("old error status = {:#x?}", register.0);
         let register: Register = register.clear_all_errors();
-        com2_println!("new error status = {:#x?}", register.0);
         *self.register_mut() = register.into();
     }
 
