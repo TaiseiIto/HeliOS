@@ -302,9 +302,10 @@ main64:
 	leaq	message64,	%rdi
 	call	puts64
 	# put_nibble64 test
-	leaq	put_quad64_test_message,	%rdi
+	leaq	ia32_apic_base_message,	%rdi
 	call	puts64
-	movq	$0x0123456789abcdef,	%rdi
+	call	ia32_apic_base
+	movq	%rax,	%rdi
 	call	put_quad64
 	call	put_new_line64
 	# Leave 64bit main function.
@@ -312,6 +313,18 @@ main64:
 1:	# Halt loop.
 	hlt
 	jmp	1b
+
+ia32_apic_base:
+0:
+	enter	$0x0000,	$0x00
+	movl	$0x0000001b,	%ecx
+	rdmsr
+	shlq	$0x20,	%rdx
+	movq	$0x00000000ffffffff,	%rcx
+	andq	%rcx,	%rax
+	addq	%rdx,	%rax
+	leave
+	ret
 
 putchar64:
 0:
@@ -472,14 +485,14 @@ gdtr:
 	.long	gdt_start
 check_cr3_message:
 	.string "cr3 = 0x"
+ia32_apic_base_message:
+	.string "ia32_apic_base = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
-put_quad64_test_message:
-	.string "0x0123456789abcdef = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	8
