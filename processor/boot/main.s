@@ -302,10 +302,10 @@ main64:
 	leaq	message64,	%rdi
 	call	puts64
 	# put_nibble64 test
-	leaq	put_byte64_test_message,	%rdi
+	leaq	put_word64_test_message,	%rdi
 	call	puts64
-	movb	$0x9a,	%dil
-	call	put_byte64
+	movw	$0x89ab,	%di
+	call	put_word64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
@@ -378,6 +378,17 @@ put_byte64:
 	leave
 	ret
 
+put_word64:
+0:
+	enter	$0x0000,	$0x00
+	pushq	%rdi
+	shrw	$0x8,	%di
+	call	put_byte64
+	popq	%rdi
+	call	put_byte64
+	leave
+	ret
+
 	.data
 	.align	16
 gdt_start:
@@ -445,8 +456,8 @@ message32:
 	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
-put_byte64_test_message:
-	.string "0x9a = 0x"
+put_word64_test_message:
+	.string "0x89ab = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	8
