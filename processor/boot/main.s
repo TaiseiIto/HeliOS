@@ -393,9 +393,9 @@ gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start
 message16:
-	.string	"Hello from an application processor in real mode!\n"
+	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
-	.string	"Hello from an application processor in 32bit protected mode!\n"
+	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
 check_cr3_message:
