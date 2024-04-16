@@ -187,7 +187,7 @@ put_nibble32:
 	movb	%al,	%dl
 	subb	$10,	%dl
 	jae	2f
-1:	# From 0 to 9
+1:	# From '0' to '9'
 	addb	$'0,	%al
 	movb	%al,	%dl
 	jmp	3f
@@ -301,6 +301,11 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
+	# put_nibble64 test
+	leaq	put_nibble64_test_message,	%rdi
+	call	puts64
+	movb	$0x0a,	%dil
+	call	put_nibble64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
@@ -340,6 +345,24 @@ put_new_line64:
 0:
 	enter	$0x0000,	$0x00
 	movb	$'\n,	%dil
+	call	putchar64
+	leave
+	ret
+
+put_nibble64:
+0:
+	enter	$0x0000,	$0x00
+	andb	$0x0f,	%dil
+	movb	%dil,	%dl
+	subb	$10,	%dl
+	jae	2f
+1:	# From '0' to '9'
+	addb	$'0,	%dil
+	jmp	3f
+2:	# From 'a' to 'f'
+	movb	%dl,	%dil
+	addb	$'a,	%dil
+3:
 	call	putchar64
 	leave
 	ret
@@ -398,17 +421,21 @@ segment_descriptor_64bit_application_code:	# 0x30
 	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 gdt_end:
+	.align	4
+	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start
+check_cr3_message:
+	.string "cr3 = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
-check_cr3_message:
-	.string "cr3 = 0x"
+put_nibble64_test_message:
+	.string "0x0a = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	8
