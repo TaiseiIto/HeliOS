@@ -301,6 +301,7 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
+	call	put_new_line64
 	# Leave 64bit main function.
 	leave
 1:	# Halt loop.
@@ -332,6 +333,14 @@ puts64:
 	incq	%rsi
 	jmp	1b
 2:
+	leave
+	ret
+
+put_new_line64:
+0:
+	enter	$0x0000,	$0x00
+	movb	$'\n,	%dil
+	call	putchar64
 	leave
 	ret
 
