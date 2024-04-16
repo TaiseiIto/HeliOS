@@ -302,9 +302,9 @@ main64:
 	leaq	message64,	%rdi
 	call	puts64
 	# put_nibble64 test
-	leaq	local_apic_base_address_message,	%rdi
+	leaq	local_apic_id_message,	%rdi
 	call	puts64
-	call	local_apic_base_address
+	call	local_apic_id
 	movq	%rax,	%rdi
 	call	put_quad64
 	call	put_new_line64
@@ -331,6 +331,16 @@ local_apic_base_address:
 	enter	$0x0000,	$0x00
 	call	ia32_apic_base
 	movq	$0xfffffffffffff000,	%rdx
+	andq	%rdx,	%rax
+	leave
+	ret
+
+local_apic_id:
+0:
+	enter	$0x0000,	$0x00
+	call	local_apic_base_address
+	movl	0x20(%rax),	%eax
+	movq	$0x00000000ffffffff,	%rdx
 	andq	%rdx,	%rax
 	leave
 	ret
@@ -494,8 +504,8 @@ gdtr:
 	.long	gdt_start
 check_cr3_message:
 	.string "CR3 = 0x"
-local_apic_base_address_message:
-	.string "Local apic base address = 0x"
+local_apic_id_message:
+	.string "Local APIC ID = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
