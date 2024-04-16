@@ -1,9 +1,3 @@
-# Calling convention = System V i386
-# Return value: ax, dx
-# Parameters: stack
-# Scratch registers: ax, cx, dx
-# Preserved registers: bx, si, di, bp, sp
-
 	.set	SEGMENT_LENGTH,	0x00010000
 	.set	SEGMENT_SHIFT,	4
 	.set	STACK_FLOOR,	0x00010000
@@ -11,6 +5,11 @@
 
 	.text
 	.code16
+# Calling convention = System V i386
+# Return value: ax, dx
+# Parameters: stack
+# Scratch registers: ax, cx, dx
+# Preserved registers: bx, si, di, bp, sp
 main16:	# IP == 0x1000
 0:	# Disable interrupts.
 	cli
@@ -85,9 +84,14 @@ puts16:
 	ret
 
 	.code32
+# Calling convention = System V i386
+# Return value: eax, edx
+# Parameters: stack
+# Scratch registers: eax, ecx, edx
+# Preserved registers: ebx, esi, edi, ebp, esp
 main32:
-0:
-	movw	$0x0010,	%dx	# Set 32bit data segment.
+0:	# Set 32bit data segment.
+	movw	$0x0010,	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
@@ -102,7 +106,7 @@ main32:
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	# Test put_nibble32
+	# Print bootstrap processor CR3.
 	leal	check_cr3_message,	%edx
 	pushl	%edx
 	call	puts32
@@ -277,10 +281,58 @@ put_quad_pointer32:
 	ret
 
 	.code64
+# Calling convention = System V x86-64
+# Return value: rax, rdx
+# Parameters: rdi, rsi, rdx, rcx, r8, r9, stack
+# Scratch registers: rax, rcx, rdx, rdi, rsi, r8, r9, r10, r11
+# Preserved registers: rbx, rsp, rbp, r12, r13, r14, r15
 main64:
-0:
+0:	# Set 64bit data segment.
+	movw	$0x0020,	%dx
+	movw	%dx,	%ds
+	movw	%dx,	%es
+	movw	%dx,	%fs
+	movw	%dx,	%gs
+	movw	%dx,	%ss
+	leaq	STACK_FLOOR,	%rbp
+	leaq	STACK_FLOOR,	%rsp
+	# Enter 64bit main function.
+	enter	$0x0000,	$0x00
+	# Print message64.
+	leaq	message64,	%rdi
+	# Leave 64bit main function.
+	leave
+1:	# Halt loop.
 	hlt
-	jmp	0b
+	jmp	1b
+
+putchar64:
+0:
+	enter	$0x0000,	$0x00
+	movb	%dil,	%dl
+	movq	log_end_pointer,	%rdi
+	movb	%dl,	(%rdi)
+	incq	%rdi
+	movq	%rdi,	log_end_pointer
+	leave
+	ret
+
+puts64:
+0:
+	enter	$0x0000,	$0x00
+	movq	%rdi,	%rsi
+1:
+	movb	(%rsi),	%dil
+	testb	%dil,	%dil
+	jz	2f
+	pushq	%rsi
+	call	putchar64
+	popq	%rsi
+	incq	%rsi
+	jmp	1b
+2:
+	leave
+	ret
 
 	.data
 	.align	16
@@ -343,10 +395,12 @@ message16:
 	.string	"Hello from an application processor in real mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit protected mode!\n"
+message64:
+	.string	"Hello from an application processor in 64bit mode!\n"
 check_cr3_message:
 	.string "cr3 = 0x"
 log_end_pointer:
-	.long	log_start
+	.quad	log_start
 	.align	8
 cr3:
 	.quad	0x0000000000000000
