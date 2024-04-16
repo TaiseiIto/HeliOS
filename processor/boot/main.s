@@ -300,6 +300,7 @@ main64:
 	enter	$0x0000,	$0x00
 	# Print message64.
 	leaq	message64,	%rdi
+	call	puts64
 	# Leave 64bit main function.
 	leave
 1:	# Halt loop.
