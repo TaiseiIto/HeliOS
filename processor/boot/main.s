@@ -340,7 +340,8 @@ local_apic_id:
 	enter	$0x0000,	$0x00
 	call	local_apic_base_address
 	movl	0x20(%rax),	%eax
-	movq	$0x00000000ffffffff,	%rdx
+	shrq	$0x18,	%rax
+	movq	$0x00000000000000ff,	%rdx
 	andq	%rdx,	%rax
 	leave
 	ret

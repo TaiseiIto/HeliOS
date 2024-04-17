@@ -24,8 +24,6 @@ pub mod trigger_mode;
 use {
     core::fmt,
     crate::{
-        com2_print,
-        com2_println,
         timer,
         x64,
     },
@@ -97,7 +95,7 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn apic_id(&self) -> u32 {
+    pub fn apic_id(&self) -> u8 {
         let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
         local_apic_id.apic_id()
     }

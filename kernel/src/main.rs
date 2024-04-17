@@ -163,7 +163,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet()
         .registers();
     // Boot application processors.
-    let my_local_apic_id: u32 = local_apic_registers.apic_id();
+    let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
         .xsdt()
@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processors = {:#x?}", processors);
     processors
         .iter()
-        .filter_map(|processor| (processor.local_apic_id() as u32 != my_local_apic_id).then_some(processor))
+        .filter_map(|processor| (processor.local_apic_id() != my_local_apic_id).then_some(processor))
         .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
     // Shutdown.
