@@ -19,7 +19,6 @@ impl Controller {
         let local_apic_id: u8 = self.local_apic_id() as u8;
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();
-        com2_println!("entry_point = {:#x?}", entry_point);
         local_apic_registers.send_init(local_apic_id, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);

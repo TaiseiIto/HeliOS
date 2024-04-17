@@ -176,7 +176,6 @@ fn main(argument: &'static mut Argument<'static>) {
     processors
         .iter()
         .filter_map(|processor| (processor.local_apic_id() != my_local_apic_id).then_some(processor))
-        .take(1) // Temporarily, boot only one processor to prevent interprocessor stack collision.
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
     // Shutdown.
     efi_system_table.shutdown();
