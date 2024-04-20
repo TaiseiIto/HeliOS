@@ -16,3 +16,9 @@ pub struct Register {
     counter_clk_period: u32,
 }
 
+impl Register {
+    pub fn get_femtoseconds_per_increment(&self) -> u64 {
+        self.counter_clk_period() as u64
+    }
+}
+

@@ -26,8 +26,12 @@ impl Table {
         self.header.is_correct()
     }
 
-    fn registers(&self) -> &timer::hpet::Registers {
+    pub fn registers(&self) -> &timer::hpet::Registers {
         self.base_address.address()
+    }
+
+    pub fn registers_mut(&mut self) -> &mut timer::hpet::Registers {
+        self.base_address.address_mut()
     }
 }
 

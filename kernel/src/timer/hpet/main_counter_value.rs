@@ -8,3 +8,9 @@ pub struct Register {
     counter_value: u64,
 }
 
+impl Register {
+    pub fn get(&self) -> u64 {
+        self.counter_value()
+    }
+}
+

@@ -55,6 +55,10 @@ impl Header {
             .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
     }
 
+    pub fn signature(&self) -> &str {
+        str::from_utf8(self.signature.as_slice()).unwrap()
+    }
+
     pub fn table_size(&self) -> usize {
         self.length as usize
     }
@@ -69,10 +73,6 @@ impl Header {
 
     fn oem_table_id(&self) -> &str {
         str::from_utf8(self.oem_table_id.as_slice()).unwrap()
-    }
-
-    fn signature(&self) -> &str {
-        str::from_utf8(self.signature.as_slice()).unwrap()
     }
 }
 

@@ -207,7 +207,9 @@ impl Com {
     }
 
     fn send(&self, data: u8) {
-        while !self.can_send() {}
+        while !self.can_send() {
+            x64::pause();
+        }
         self.write_transmitter_holding_buffer(data);
     }
 

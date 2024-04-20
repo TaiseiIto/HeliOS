@@ -94,6 +94,10 @@ impl SystemTable<'_> {
         self.configuration_tables.rsdp()
     }
 
+    pub fn rsdp_mut(&mut self) -> &mut acpi::root_system_description::Pointer {
+        self.configuration_tables.rsdp_mut()
+    }
+
     pub fn shutdown(&self) {
         self.runtime_services.shutdown();
     }

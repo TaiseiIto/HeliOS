@@ -1,7 +1,7 @@
 use {
     alloc::collections::BTreeMap,
     crate::{
-        application_processor,
+        processor,
         efi,
         elf,
         memory,
@@ -13,7 +13,7 @@ use {
 #[derive(Debug)]
 pub struct Argument<'a> {
     #[allow(dead_code)]
-    application_processor_boot_loader: application_processor::boot::Loader,
+    processor_boot_loader: processor::boot::Loader,
     #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
     #[allow(dead_code)]
@@ -31,17 +31,13 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     memory_map: efi::memory::Map,
     #[allow(dead_code)]
-    my_processor_number: Option<usize>,
-    #[allow(dead_code)]
     paging: memory::Paging,
-    #[allow(dead_code)]
-    processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
 }
 
 impl<'a> Argument<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        application_processor_boot_loader: application_processor::boot::Loader,
+        processor_boot_loader: processor::boot::Loader,
         com2: &'a mut rs232c::Com,
         cpuid: x64::Cpuid,
         efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -50,12 +46,10 @@ impl<'a> Argument<'a> {
         heap_start: usize,
         hello_application: elf::File,
         memory_map: efi::memory::Map,
-        my_processor_number: Option<usize>,
         paging: memory::Paging,
-        processor_informations: BTreeMap<usize, efi::mp_services::ProcessorInformation>,
     ) -> Self {
         Self {
-            application_processor_boot_loader,
+            processor_boot_loader,
             com2,
             cpuid,
             efi_system_table,
@@ -64,9 +58,7 @@ impl<'a> Argument<'a> {
             heap_start,
             hello_application,
             memory_map,
-            my_processor_number,
             paging,
-            processor_informations,
         }
     }
 }

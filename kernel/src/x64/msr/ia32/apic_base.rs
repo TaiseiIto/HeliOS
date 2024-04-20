@@ -46,5 +46,13 @@ impl ApicBase {
             &*registers
         }
     }
+
+    pub fn registers_mut(&mut self) -> &mut interrupt::apic::local::Registers {
+        let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
+        let registers: *mut interrupt::apic::local::Registers = registers as *mut interrupt::apic::local::Registers;
+        unsafe {
+            &mut *registers
+        }
+    }
 }
 

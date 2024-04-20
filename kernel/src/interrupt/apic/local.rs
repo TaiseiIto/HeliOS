@@ -23,7 +23,10 @@ pub mod trigger_mode;
 
 use {
     core::fmt,
-    crate::x64,
+    crate::{
+        timer,
+        x64,
+    },
 };
 
 /// # Local APIC Registers
@@ -92,8 +95,30 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn apic_id(&self) -> u8 {
+        let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
+        local_apic_id.apic_id()
+    }
+
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+
+    pub fn send_init(&mut self, processor_local_apic_id: u8, hpet: &timer::hpet::Registers) {
+        self.error_status.clear_all_errors();
+        self.interrupt_command.assert_init(processor_local_apic_id);
+        hpet.wait_microseconds(100);
+        self.interrupt_command.wait_to_send();
+        self.interrupt_command.deassert_init(processor_local_apic_id);
+        hpet.wait_milliseconds(10);
+        self.interrupt_command.wait_to_send();
+    }
+
+    pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize, hpet: &timer::hpet::Registers) {
+        self.error_status.clear_all_errors();
+        self.interrupt_command.send_sipi(processor_local_apic_id, entry_point);
+        hpet.wait_microseconds(200);
+        self.interrupt_command.wait_to_send();
     }
 }
 
