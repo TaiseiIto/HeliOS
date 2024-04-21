@@ -84,7 +84,7 @@ impl Controller {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
-        if !self.vaddr2pml4te_controller.contains_key(&pml4vaddr) {
+        if let btree_map::Entry::Vacant(entry) = self.vaddr2pml4te_controller.entry(pml4vaddr) {
             let pml4i: usize = pml4vaddr.pml4i() as usize;
             let pml4te_controller: Pml4teController = self
                 .pml4t
@@ -128,7 +128,7 @@ impl Controller {
                         .set_pml4te_not_present(pml4te_not_present);
                 },
             }
-            self.vaddr2pml4te_controller.insert(pml4vaddr, pml4te_controller);
+            entry.insert(pml4te_controller);
         }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
@@ -280,7 +280,7 @@ impl Pml4teController {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
-            if !vaddr2pdpte_controller.contains_key(&pdp_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdpte_controller.entry(pdp_vaddr) {
                 let pdpi: usize = pdp_vaddr.pdpi() as usize;
                 let pdpte_controller: PdpteController = pdpt
                     .pdpte
@@ -337,7 +337,7 @@ impl Pml4teController {
                             .set_pdpte_not_present(pdpte_not_present);
                     },
                 }
-                vaddr2pdpte_controller.insert(pdp_vaddr, pdpte_controller);
+                entry.insert(pdpte_controller);
             }
             let pdpte: &mut Pdpte = pdpt
                 .as_mut()
@@ -696,7 +696,7 @@ impl PdpteController {
             let pd_vaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
-            if !vaddr2pdte_controller.contains_key(&pd_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdte_controller.entry(pd_vaddr) {
                 let pdi: usize = pd_vaddr.pdi() as usize;
                 let pdte_controller: PdteController = pdt
                     .pdte
@@ -754,7 +754,7 @@ impl PdpteController {
                             .set_pdte_not_present(pdte_not_present);
                     },
                 }
-                vaddr2pdte_controller.insert(pd_vaddr, pdte_controller);
+                entry.insert(pdte_controller);
             }
             let pdte: &mut Pdte = pdt
                 .as_mut()
