@@ -5,7 +5,10 @@
 use {
     alloc::{
         boxed::Box,
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            btree_map,
+        },
     },
     bitfield_struct::bitfield,
     core::{
@@ -95,14 +98,13 @@ impl Controller {
                     pdpt,
                     vaddr2pdpte_controller,
                 } => {
-                    let pml4e: Pml4e = self.pml4t
+                    let pml4e: Pml4e = *self.pml4t
                         .pml4te
                         .as_slice()
                         .get(pml4i)
                         .unwrap()
                         .pml4e()
-                        .unwrap()
-                        .clone();
+                        .unwrap();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
@@ -111,14 +113,13 @@ impl Controller {
                         .set_pml4e(pml4e, pdpt);
                 },
                 Pml4teController::Pml4teNotPresent => {
-                    let pml4te_not_present: Pml4teNotPresent = self.pml4t
+                    let pml4te_not_present: Pml4teNotPresent = *self.pml4t
                         .pml4te
                         .as_slice()
                         .get(pml4i)
                         .unwrap()
                         .pml4te_not_present()
-                        .unwrap()
-                        .clone();
+                        .unwrap();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
@@ -289,14 +290,13 @@ impl Pml4teController {
                     .into();
                 match &pdpte_controller {
                     PdpteController::Pe1Gib => {
-                        let pe1gib: Pe1Gib = pdpt
+                        let pe1gib: Pe1Gib = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pe1gib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt
                             .pdpte
                             .as_mut_slice()
@@ -308,14 +308,13 @@ impl Pml4teController {
                         pdt,
                         vaddr2pdte_controller
                     } => {
-                        let pdpe: Pdpe = pdpt
+                        let pdpe: Pdpe = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pdpe()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt
                             .pdpte
                             .as_mut_slice()
@@ -324,14 +323,13 @@ impl Pml4teController {
                             .set_pdpe(pdpe, pdt);
                     },
                     PdpteController::PdpteNotPresent => {
-                        let pdpte_not_present: PdpteNotPresent = pdpt
+                        let pdpte_not_present: PdpteNotPresent = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pdpte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt.pdpte
                             .as_mut_slice()
                             .get_mut(pdpi)
@@ -708,14 +706,13 @@ impl PdpteController {
                     .into();
                 match &pdte_controller {
                     PdteController::Pe2Mib => {
-                        let pe2mib: Pe2Mib = pdt
+                        let pe2mib: Pe2Mib = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pe2mib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -727,14 +724,13 @@ impl PdpteController {
                         pt,
                         vaddr2pte_controller,
                     } => {
-                        let pde: Pde = pdt
+                        let pde: Pde = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pde()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -743,14 +739,13 @@ impl PdpteController {
                             .set_pde(pde, pt);
                     },
                     PdteController::PdteNotPresent => {
-                        let pdte_not_present: PdteNotPresent = pdt
+                        let pdte_not_present: PdteNotPresent = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pdte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -1202,7 +1197,7 @@ impl PdteController {
             pdte.set_pde(new_pde, pt.as_ref());
             let p_vaddr: Vaddr = vaddr
                 .with_offset(0);
-            if !vaddr2pte_controller.contains_key(&p_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pte_controller.entry(p_vaddr) {
                 let pi: usize = p_vaddr.pi() as usize;
                 let pte_controller: PteController = pt
                     .pte
@@ -1212,14 +1207,13 @@ impl PdteController {
                     .into();
                 match &pte_controller {
                     PteController::Pe4Kib => {
-                        let pe4kib: Pe4Kib = pt
+                        let pe4kib: Pe4Kib = *pt
                             .pte
                             .as_slice()
                             .get(pi)
                             .unwrap()
                             .pe4kib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pt
                             .pte
                             .as_mut_slice()
@@ -1228,14 +1222,13 @@ impl PdteController {
                             .set_pe4kib(pe4kib);
                     },
                     PteController::PteNotPresent => {
-                        let pte_not_present: PteNotPresent = pt
+                        let pte_not_present: PteNotPresent = *pt
                             .pte
                             .as_slice()
                             .get(pi)
                             .unwrap()
                             .pte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pt
                             .pte
                             .as_mut_slice()
@@ -1244,7 +1237,7 @@ impl PdteController {
                             .set_pte_not_present(pte_not_present);
                     },
                 }
-                vaddr2pte_controller.insert(p_vaddr, pte_controller);
+                entry.insert(pte_controller);
             }
             let pte: &mut Pte = pt
                 .as_mut()

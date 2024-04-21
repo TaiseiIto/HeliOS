@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processors = {:#x?}", processors);
     processors
         .iter()
-        .filter_map(|processor| (processor.local_apic_id() != my_local_apic_id).then_some(processor))
+        .filter(|processor| processor.local_apic_id() != my_local_apic_id)
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
     // Shutdown.
     efi_system_table.shutdown();
