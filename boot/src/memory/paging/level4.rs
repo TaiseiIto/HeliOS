@@ -103,6 +103,39 @@ impl Controller {
                 .get(pml4i)
                 .unwrap()
                 .into();
+            match &pml4te_controller {
+                Pml4teController::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller,
+                } => {
+                    let pml4e = Pml4e::default()
+                        .with_p(true)
+                        .with_rw(writable)
+                        .with_us(false)
+                        .with_pwt(false)
+                        .with_pcd(false)
+                        .with_a(false)
+                        .with_r(false)
+                        .with_xd(!executable);
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4e(pml4e, pdpt);
+                },
+                Pml4teController::Pml4teNotPresent => {
+                    let pml4te_not_present = Pml4teNotPresent::default()
+                        .with_p(false);
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4te_not_present(pml4te_not_present);
+                },
+            }
+            self.vaddr2pml4te_controller.insert(pml4vaddr, pml4te_controller);
         }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
