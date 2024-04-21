@@ -725,6 +725,66 @@ impl PdpteController {
             let pd_vaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
+            if !vaddr2pdte_controller.contains_key(&pd_vaddr) {
+                let pdi: usize = pd_vaddr.pdi() as usize;
+                let pdte_controller: PdteController = pdt
+                    .pdte
+                    .as_slice()
+                    .get(pdi)
+                    .unwrap()
+                    .into();
+                match &pdte_controller {
+                    PdteController::Pe2Mib => {
+                        let pe2mib: Pe2Mib = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pe2mib()
+                            .unwrap()
+                            .clone();
+                        pdt.pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pe2mib(pe2mib);
+                    },
+                    PdteController::Pde {
+                        pt,
+                        vaddr2pte_controller,
+                    } => {
+                        let pde: Pde = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pde()
+                            .unwrap()
+                            .clone();
+                        pdt.pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pde(pde, pt);
+                    },
+                    PdteController::PdteNotPresent => {
+                        let pdte_not_present: PdteNotPresent = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pdte_not_present()
+                            .unwrap()
+                            .clone();
+                        pdt.pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pdte_not_present(pdte_not_present);
+                    },
+                }
+                vaddr2pdte_controller.insert(pd_vaddr, pdte_controller);
+            }
             let pdte: &mut Pdte = pdt
                 .as_mut()
                 .pdte_mut(&pd_vaddr);
@@ -1200,6 +1260,25 @@ impl fmt::Debug for PdteController {
                     .map(|((vaddr, pte_controller), pte)| (vaddr, (pte, pte_controller))))
                 .finish(),
             Self::PdteNotPresent => formatter.write_str("PdteNotPresent"),
+        }
+    }
+}
+
+impl From<&Pdte> for PdteController {
+    fn from(pdte: &Pdte) -> Self {
+        match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
+            (Some(pe2mib), None, None) => Self::Pe2Mib,
+            (None, Some(pde), None) => {
+                let pt: &Pt = pde.into();
+                let pt = Box::new(pt.clone());
+                let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
+                Self::Pde {
+                    pt,
+                    vaddr2pte_controller,
+                }
+            },
+            (None, None, Some(pdte_not_present)) => Self::PdteNotPresent,
+            _ => panic!("Can't convert from &Pdte to PdteController"),
         }
     }
 }
