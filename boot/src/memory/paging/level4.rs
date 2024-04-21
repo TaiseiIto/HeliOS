@@ -53,22 +53,9 @@ impl Interface {
 
     pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
-        let mut pml4t: Box<Pml4t> = Box::default();
+        let mut pml4t = Box::<Pml4t>::new(source.clone());
         let cr3: x64::control::Register3 = cr3.with_paging_structure(pml4t.as_ref());
-        let vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface> = source.pml4te
-            .as_slice()
-            .iter()
-            .zip(pml4t
-                .as_mut()
-                .pml4te
-                .as_mut_slice()
-                .iter_mut())
-            .enumerate()
-            .map(|(pml4i, (source, destination))| {
-                let vaddr = Vaddr::create(pml4i, 0, 0, 0, 0);
-                (vaddr, Pml4teInterface::copy(source, destination, vaddr))
-            })
-            .collect();
+        let vaddr2pml4te_interface = BTreeMap::<Vaddr, Pml4teInterface>::new();
         Self {
             cr3,
             pml4t,
@@ -136,6 +123,7 @@ impl fmt::Debug for Interface {
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],
