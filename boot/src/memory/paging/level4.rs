@@ -251,7 +251,22 @@ impl Pml4teController {
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
-            let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
+            let vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController> = pdpt
+                .as_ref()
+                .pdpte
+                .as_slice()
+                .iter()
+                .enumerate()
+                .map(|(pdpi, _pdpte)| {
+                    let vaddr: Vaddr = vaddr
+                        .with_pdpi(pdpi as u16)
+                        .with_pdi(0)
+                        .with_pi(0)
+                        .with_offset(0);
+                    let pdpte_controller: PdpteController = PdpteController::default();
+                    (vaddr, pdpte_controller)
+                })
+                .collect();
             let pml4e: Pml4e = Pml4e::default()
                 .with_p(true)
                 .with_rw(writable)
