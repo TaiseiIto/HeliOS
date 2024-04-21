@@ -94,6 +94,16 @@ impl Controller {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
+        if !self.vaddr2pml4te_controller.contains_key(&pml4vaddr) {
+            let pml4i: usize = vaddr.pml4i() as usize;
+            let pml4te_controller: Pml4teController = self
+                .pml4t
+                .pml4te
+                .as_slice()
+                .get(pml4i)
+                .unwrap()
+                .into();
+        }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
             .pml4te_mut(&pml4vaddr);
@@ -302,6 +312,24 @@ impl fmt::Debug for Pml4teController {
     }
 }
 
+impl From<&Pml4te> for Pml4teController {
+    fn from(pml4te: &Pml4te) -> Self {
+        match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
+            (Some(pml4e), None) => {
+                let pdpt: &Pdpt = pml4e.into();
+                let pdpt = Box::<Pdpt>::new(pdpt.clone());
+                let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
+                Self::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller,
+                }
+            },
+            (None, Some(pml4te_not_present)) => Self::Pml4teNotPresent,
+            _ => panic!("Can't convert from &Pml4te to Pml4teController"),
+        }
+    }
+}
+
 /// # Page Map Level 4 Table Entry
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
@@ -418,6 +446,7 @@ struct Pml4teNotPresent {
 /// # Page Directory Pointer Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdpt {
     pdpte: [Pdpte; PDPT_LENGTH],
