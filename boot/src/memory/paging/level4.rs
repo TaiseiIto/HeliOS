@@ -320,7 +320,8 @@ impl Pml4teController {
                             .pe1gib()
                             .unwrap()
                             .clone();
-                        pdpt.pdpte
+                        pdpt
+                            .pdpte
                             .as_mut_slice()
                             .get_mut(pdpi)
                             .unwrap()
@@ -338,7 +339,8 @@ impl Pml4teController {
                             .pdpe()
                             .unwrap()
                             .clone();
-                        pdpt.pdpte
+                        pdpt
+                            .pdpte
                             .as_mut_slice()
                             .get_mut(pdpi)
                             .unwrap()
@@ -743,7 +745,8 @@ impl PdpteController {
                             .pe2mib()
                             .unwrap()
                             .clone();
-                        pdt.pdte
+                        pdt
+                            .pdte
                             .as_mut_slice()
                             .get_mut(pdi)
                             .unwrap()
@@ -761,7 +764,8 @@ impl PdpteController {
                             .pde()
                             .unwrap()
                             .clone();
-                        pdt.pdte
+                        pdt
+                            .pdte
                             .as_mut_slice()
                             .get_mut(pdi)
                             .unwrap()
@@ -776,7 +780,8 @@ impl PdpteController {
                             .pdte_not_present()
                             .unwrap()
                             .clone();
-                        pdt.pdte
+                        pdt
+                            .pdte
                             .as_mut_slice()
                             .get_mut(pdi)
                             .unwrap()
@@ -1222,6 +1227,50 @@ impl PdteController {
             pdte.set_pde(new_pde, pt.as_ref());
             let p_vaddr: Vaddr = vaddr
                 .with_offset(0);
+            if !vaddr2pte_controller.contains_key(&p_vaddr) {
+                let pi: usize = p_vaddr.pi() as usize;
+                let pte_controller: PteController = pt
+                    .pte
+                    .as_slice()
+                    .get(pi)
+                    .unwrap()
+                    .into();
+                match &pte_controller {
+                    PteController::Pe4Kib => {
+                        let pe4kib: Pe4Kib = pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pe4kib()
+                            .unwrap()
+                            .clone();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pe4kib(pe4kib);
+                    },
+                    PteController::PteNotPresent => {
+                        let pte_not_present: PteNotPresent = pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pte_not_present()
+                            .unwrap()
+                            .clone();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pte_not_present(pte_not_present);
+                    },
+                }
+                vaddr2pte_controller.insert(p_vaddr, pte_controller);
+            }
             let pte: &mut Pte = pt
                 .as_mut()
                 .pte_mut(&p_vaddr);
@@ -1558,6 +1607,16 @@ impl PteController {
 impl Default for PteController {
     fn default() -> Self {
         Self::PteNotPresent
+    }
+}
+
+impl From<&Pte> for PteController {
+    fn from(pte: &Pte) -> Self {
+        match (pte.pe4kib(), pte.pte_not_present()) {
+            (Some(pe4kib), None) => Self::Pe4Kib,
+            (None, Some(pte_not_present)) => Self::PteNotPresent,
+            _ => panic!("Can't Convert from &Pte to PteController"),
+        }
     }
 }
 
