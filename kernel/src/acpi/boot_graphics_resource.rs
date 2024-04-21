@@ -7,11 +7,17 @@ use super::system_description;
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
+    #[allow(dead_code)]
     version: u16,
+    #[allow(dead_code)]
     status: u8,
+    #[allow(dead_code)]
     image_type: u8,
+    #[allow(dead_code)]
     image_address: u64,
+    #[allow(dead_code)]
     image_offset_x: u32,
+    #[allow(dead_code)]
     image_offset_y: u32,
 }
 

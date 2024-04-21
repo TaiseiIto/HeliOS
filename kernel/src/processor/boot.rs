@@ -91,6 +91,7 @@ impl fmt::Debug for Loader {
 
 #[repr(packed)]
 struct Arguments {
+    #[allow(dead_code)]
     cr3: u64,
 }
 

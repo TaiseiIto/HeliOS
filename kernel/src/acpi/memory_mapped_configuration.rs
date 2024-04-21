@@ -13,6 +13,7 @@ use {
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
+    #[allow(dead_code)]
     reserved0: u64,
 }
 
@@ -50,10 +51,15 @@ impl fmt::Debug for Table {
 #[derive(Debug)]
 #[repr(packed)]
 struct ConfigurationSpaceBaseAddressAllocation {
+    #[allow(dead_code)]
     base_address: u64,
+    #[allow(dead_code)]
     pci_segment_group_number: u16,
+    #[allow(dead_code)]
     start_pci_bus_number: u8,
+    #[allow(dead_code)]
     end_pci_bus_number: u8,
+    #[allow(dead_code)]
     reserved0: u32,
 }
 

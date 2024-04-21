@@ -25,6 +25,7 @@ pub struct Table {
     header: system_description::Header,
     host_address_width: u8,
     flags: Flags,
+    #[allow(dead_code)]
     reserved0: [u8; 10],
 }
 

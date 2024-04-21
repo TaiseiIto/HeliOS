@@ -4,10 +4,14 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     proximity_domain: u32,
+    #[allow(dead_code)]
     reserved0: u16,
+    #[allow(dead_code)]
     its_id: u32,
 }
 

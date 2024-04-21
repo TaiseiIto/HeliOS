@@ -1,6 +1,7 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u16,
     length: u16,
 }

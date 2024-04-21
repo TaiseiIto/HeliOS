@@ -15,6 +15,7 @@ use {
 pub struct Structure {
     structure_type: u16,
     length: u16,
+    #[allow(dead_code)]
     reserved0: u16,
     segment_number: u16,
 }

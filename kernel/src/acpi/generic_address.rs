@@ -4,9 +4,13 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     address_space_id: u8,
+    #[allow(dead_code)]
     register_bit_width: u8,
+    #[allow(dead_code)]
     register_bit_offset: u8,
+    #[allow(dead_code)]
     access_size: u8,
     address: u64,
 }

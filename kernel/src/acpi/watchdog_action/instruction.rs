@@ -6,11 +6,17 @@ use super::super::generic_address;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Entry {
+    #[allow(dead_code)]
     action: u8,
+    #[allow(dead_code)]
     flags: u8,
+    #[allow(dead_code)]
     reserved0: u16,
+    #[allow(dead_code)]
     register_region: generic_address::Structure,
+    #[allow(dead_code)]
     value: u32,
+    #[allow(dead_code)]
     mask: u32,
 }
 

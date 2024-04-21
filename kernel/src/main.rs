@@ -76,11 +76,17 @@ fn main(argument: &'static mut Argument<'static>) {
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     gdtr.set();
     let cs: memory::segment::Selector = memory::segment::Selector::cs();
+    com2_println!("cs = {:#x?}", cs);
     let ds: memory::segment::Selector = memory::segment::Selector::ds();
+    com2_println!("ds = {:#x?}", ds);
     let es: memory::segment::Selector = memory::segment::Selector::es();
+    com2_println!("es = {:#x?}", es);
     let fs: memory::segment::Selector = memory::segment::Selector::fs();
+    com2_println!("fs = {:#x?}", fs);
     let gs: memory::segment::Selector = memory::segment::Selector::gs();
+    com2_println!("gs = {:#x?}", gs);
     let ss: memory::segment::Selector = memory::segment::Selector::ss();
+    com2_println!("ss = {:#x?}", ss);
     let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
         .descriptor(&cs)
         .unwrap();
@@ -137,6 +143,8 @@ fn main(argument: &'static mut Argument<'static>) {
     unsafe {
         asm!("int 0x80");
     }
+    // Check RSDP.
+    assert!(efi_system_table.rsdp().is_correct());
     // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
         .rsdp_mut()
@@ -145,8 +153,11 @@ fn main(argument: &'static mut Argument<'static>) {
         .io_apic_mut()
         .registers_mut();
     let io_apic_identification: interrupt::apic::io::identification::Register = io_apic.identification();
+    com2_println!("io_apic_identification = {:#x?}", io_apic_identification);
     let io_apic_version: interrupt::apic::io::version::Register = io_apic.version();
+    com2_println!("io_apic_version = {:#x?}", io_apic_version);
     let io_apic_redirection_table_entries: Vec<interrupt::apic::io::redirection::table::Entry> = io_apic.redirection_table_entries();
+    com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();

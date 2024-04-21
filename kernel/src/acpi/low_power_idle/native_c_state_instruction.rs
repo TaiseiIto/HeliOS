@@ -9,15 +9,24 @@ use {
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u32,
     length: u32,
+    #[allow(dead_code)]
     unique_id: u16,
+    #[allow(dead_code)]
     reserved0: u16,
+    #[allow(dead_code)]
     flags: Flags,
+    #[allow(dead_code)]
     entry_trigger: generic_address::Structure,
+    #[allow(dead_code)]
     residency: u32,
+    #[allow(dead_code)]
     latency: u32,
+    #[allow(dead_code)]
     residency_counter: generic_address::Structure,
+    #[allow(dead_code)]
     residency_counter_frequency: u64,
 }
 

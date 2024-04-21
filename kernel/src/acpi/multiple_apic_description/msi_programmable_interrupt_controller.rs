@@ -4,11 +4,16 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     version: u8,
+    #[allow(dead_code)]
     message_address: u64,
+    #[allow(dead_code)]
     start: u32,
+    #[allow(dead_code)]
     count: u32,
 }
 

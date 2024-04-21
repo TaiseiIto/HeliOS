@@ -121,6 +121,7 @@ pub struct ProcessorInformation {
 }
 
 impl ProcessorInformation {
+    #[allow(dead_code)]
     pub fn identifier(&self) -> u64 {
         self.processor_id
     }

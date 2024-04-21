@@ -4,12 +4,18 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     version: u8,
+    #[allow(dead_code)]
     base_address: u64,
+    #[allow(dead_code)]
     size: u16,
+    #[allow(dead_code)]
     cascade_vector: u16,
+    #[allow(dead_code)]
     cascade_vector_mapping: u64,
 }
 

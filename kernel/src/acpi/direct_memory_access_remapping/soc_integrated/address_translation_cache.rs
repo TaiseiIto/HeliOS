@@ -17,6 +17,7 @@ pub struct Structure {
     structure_type: u16,
     length: u16,
     flags: Flags,
+    #[allow(dead_code)]
     reserved0: u8,
     segment_number: u16,
 }

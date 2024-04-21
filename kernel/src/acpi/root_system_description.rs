@@ -24,6 +24,7 @@ pub struct Pointer {
     length: u32,
     xsdt: u64,
     extended_checksum: u8,
+    #[allow(dead_code)]
     reserved0: [u8; 3],
 }
 
@@ -88,9 +89,9 @@ impl Pointer {
 
 impl fmt::Debug for Pointer {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let signature: [u8; 8] = self.signature;
+        let signature: &str = self.signature();
         let checksum: u8 = self.checksum;
-        let oemid: [u8; 6] = self.oemid;
+        let oemid: &str = self.oemid();
         let revision: u8 = self.revision;
         let rsdt: system_description::Table = self.rsdt();
         let length: u32 = self.length;
