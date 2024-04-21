@@ -15,12 +15,16 @@ use {
 #[repr(packed)]
 pub struct Registers {
     general_capabilities_and_id: general_capabilities_and_id::Register,
+    #[allow(dead_code)]
     reserved0: u64,
     general_configuration: general_configuration::Register,
+    #[allow(dead_code)]
     reserved1: u64,
     general_interrupt_status: general_interrupt_status::Register,
+    #[allow(dead_code)]
     reserved2: [u64; 0x19],
     main_counter_value: main_counter_value::Register,
+    #[allow(dead_code)]
     reserved3: u64,
     timer: [timer::Registers; 0x18],
 }

@@ -91,6 +91,7 @@ impl Register {
 #[repr(packed)]
 struct FatLow {
     register: Low,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
 }
 
@@ -387,6 +388,7 @@ impl From<DestinationShorthand> for u8 {
 #[repr(packed)]
 struct FatHigh {
     register: High,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
 }
 
