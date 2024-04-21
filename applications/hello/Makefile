@@ -8,6 +8,11 @@ DOCUMENT=target/doc/$(PRODUCT)/index.html
 $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
 	cargo build --target $(FORMAT)
 
+# Clippy rust codes.
+.PHONY: clippy
+clippy:
+	cargo clippy
+
 # Generate documents.
 # Usage: $make doc
 .PHONY: doc

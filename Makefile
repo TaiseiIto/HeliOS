@@ -121,6 +121,13 @@ $(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.
 environment:
 	make build -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
 
+# Clippy rust codes.
+.PHONY: clippy
+clippy:
+	make clippy -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_BOOT_LOADER_BASE=$(PROCESSOR_BOOT_LOADER_BASE) PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(PROCESSOR_BOOT_LOADER_STACK_FLOOR) KERNEL=$(KERNEL)
+	make clippy -C $(KERNEL_DIRECTORY)
+	for application in $(APPLICATIONS); do make clippy -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
 .PHONY: debug

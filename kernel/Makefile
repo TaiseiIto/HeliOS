@@ -8,6 +8,11 @@ $(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard -
 	rustup component add rust-src --toolchain nightly-2024-01-01-x86_64-unknown-linux-gnu
 	cargo build
 
+# Clippy rust codes.
+.PHONY: clippy
+clippy:
+	cargo clippy
+
 # Generate documents.
 # Usage: $make doc
 .PHONY: doc
