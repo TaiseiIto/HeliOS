@@ -96,45 +96,9 @@ struct FatLow {
 }
 
 impl FatLow {
-    fn assert_init(self) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::assert_init();
-        Self {
-            register,
-            reserved0,
-        }
-    }
-
-    fn deassert_init(self) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::deassert_init();
-        Self {
-            register,
-            reserved0,
-        }
-    }
-
     fn is_sending(&self) -> bool {
         let register: Low = self.register;
         register.is_sending()
-    }
-
-    fn send_sipi(self, entry_point: usize) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::send_sipi(entry_point);
-        Self {
-            register,
-            reserved0,
-        }
     }
 }
 
@@ -390,20 +354,6 @@ struct FatHigh {
     register: High,
     #[allow(dead_code)]
     reserved0: [u32; 3],
-}
-
-impl FatHigh {
-    fn select_processor(self, processor_local_apic_id: u8) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = High::select_processor(processor_local_apic_id);
-        Self {
-            register,
-            reserved0,
-        }
-    }
 }
 
 impl fmt::Debug for FatHigh {
