@@ -212,22 +212,9 @@ impl Pml4teController {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let source: &Pdpt = pml4e.into();
-                let mut pdpt: Box<Pdpt> = Box::default();
+                let pdpt: Box<Pdpt> = Box::new(source.clone());
                 destination.set_pml4e(*pml4e, pdpt.as_ref());
-                let vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController> = source.pdpte
-                    .as_slice()
-                    .iter()
-                    .zip(pdpt
-                        .as_mut()
-                        .pdpte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pdpi, (source, destination))| {
-                        let vaddr: Vaddr = vaddr.with_pdpi(pdpi as u16);
-                        (vaddr, PdpteController::copy(source, destination, vaddr))
-                    })
-                    .collect();
+                let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
                 Self::Pml4e {
                     pdpt,
                     vaddr2pdpte_controller,
