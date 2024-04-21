@@ -108,15 +108,14 @@ impl Controller {
                     pdpt,
                     vaddr2pdpte_controller,
                 } => {
-                    let pml4e = Pml4e::default()
-                        .with_p(true)
-                        .with_rw(writable)
-                        .with_us(false)
-                        .with_pwt(false)
-                        .with_pcd(false)
-                        .with_a(false)
-                        .with_r(false)
-                        .with_xd(!executable);
+                    let pml4e: Pml4e = self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4e()
+                        .unwrap()
+                        .clone();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
@@ -125,8 +124,14 @@ impl Controller {
                         .set_pml4e(pml4e, pdpt);
                 },
                 Pml4teController::Pml4teNotPresent => {
-                    let pml4te_not_present = Pml4teNotPresent::default()
-                        .with_p(false);
+                    let pml4te_not_present: Pml4teNotPresent = self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4te_not_present()
+                        .unwrap()
+                        .clone();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
