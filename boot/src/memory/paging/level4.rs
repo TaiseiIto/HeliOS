@@ -212,7 +212,7 @@ impl Pml4teController {
         match (source.pml4e(), source.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let source: &Pdpt = pml4e.into();
-                let pdpt: Box<Pdpt> = Box::new(source.clone());
+                let pdpt = Box::<Pdpt>::new(source.clone());
                 destination.set_pml4e(*pml4e, pdpt.as_ref());
                 let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
                 Self::Pml4e {
@@ -519,22 +519,9 @@ impl PdpteController {
             },
             (None, Some(pdpe), None) => {
                 let source: &Pdt = pdpe.into();
-                let mut pdt: Box<Pdt> = Box::default();
+                let pdt = Box::<Pdt>::new(source.clone());
                 destination.set_pdpe(*pdpe, pdt.as_ref());
-                let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = source.pdte
-                    .as_slice()
-                    .iter()
-                    .zip(pdt
-                        .as_mut()
-                        .pdte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pdi, (source, destination))| {
-                        let vaddr: Vaddr = vaddr.with_pdi(pdi as u16);
-                        (vaddr, PdteController::copy(source, destination, vaddr))
-                    })
-                    .collect();
+                let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
                 Self::Pdpe {
                     pdt,
                     vaddr2pdte_controller,
@@ -905,6 +892,7 @@ struct PdpteNotPresent {
 /// # Page Directory Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdt {
     pdte: [Pdte; PDT_LENGTH],
@@ -957,19 +945,9 @@ impl PdteController {
             },
             (None, Some(pde), None) => {
                 let source: &Pt = pde.into();
-                let mut pt: Box<Pt> = Box::default();
+                let pt = Box::<Pt>::new(source.clone());
                 destination.set_pde(*pde, pt.as_ref());
-                let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = source.pte
-                    .as_slice()
-                    .iter()
-                    .zip(pt
-                        .as_mut()
-                        .pte
-                        .as_mut_slice()
-                        .iter_mut())
-                    .enumerate()
-                    .map(|(pi, (source, destination))| (vaddr.with_pi(pi as u16), PteController::copy(source, destination)))
-                    .collect();
+                let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
                 Self::Pde {
                     pt,
                     vaddr2pte_controller,
@@ -1332,7 +1310,7 @@ struct PdteNotPresent {
 /// # Page Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
