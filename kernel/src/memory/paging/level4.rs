@@ -81,6 +81,54 @@ impl Controller {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
+        if !self.vaddr2pml4te_controller.contains_key(&pml4vaddr) {
+            let pml4i: usize = pml4vaddr.pml4i() as usize;
+            let pml4te_controller: Pml4teController = self
+                .pml4t
+                .pml4te
+                .as_slice()
+                .get(pml4i)
+                .unwrap()
+                .into();
+            match &pml4te_controller {
+                Pml4teController::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller,
+                } => {
+                    let pml4e: Pml4e = self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4e()
+                        .unwrap()
+                        .clone();
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4e(pml4e, pdpt);
+                },
+                Pml4teController::Pml4teNotPresent => {
+                    let pml4te_not_present: Pml4teNotPresent = self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4te_not_present()
+                        .unwrap()
+                        .clone();
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4te_not_present(pml4te_not_present);
+                },
+            }
+            self.vaddr2pml4te_controller.insert(pml4vaddr, pml4te_controller);
+        }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
             .pml4te_mut(&pml4vaddr);
@@ -231,6 +279,68 @@ impl Pml4teController {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
+            if !vaddr2pdpte_controller.contains_key(&pdp_vaddr) {
+                let pdpi: usize = pdp_vaddr.pdpi() as usize;
+                let pdpte_controller: PdpteController = pdpt
+                    .pdpte
+                    .as_slice()
+                    .get(pdpi)
+                    .unwrap()
+                    .into();
+                match &pdpte_controller {
+                    PdpteController::Pe1Gib => {
+                        let pe1gib: Pe1Gib = pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pe1gib()
+                            .unwrap()
+                            .clone();
+                        pdpt
+                            .pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pe1gib(pe1gib);
+                    },
+                    PdpteController::Pdpe {
+                        pdt,
+                        vaddr2pdte_controller
+                    } => {
+                        let pdpe: Pdpe = pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pdpe()
+                            .unwrap()
+                            .clone();
+                        pdpt
+                            .pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pdpe(pdpe, pdt);
+                    },
+                    PdpteController::PdpteNotPresent => {
+                        let pdpte_not_present: PdpteNotPresent = pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pdpte_not_present()
+                            .unwrap()
+                            .clone();
+                        pdpt.pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pdpte_not_present(pdpte_not_present);
+                    },
+                }
+                vaddr2pdpte_controller.insert(pdp_vaddr, pdpte_controller);
+            }
             let pdpte: &mut Pdpte = pdpt
                 .as_mut()
                 .pdpte_mut(&pdp_vaddr);
@@ -283,6 +393,24 @@ impl fmt::Debug for Pml4teController {
                     .map(|((vaddr, pdpte_controller), pdpte)| (vaddr, (pdpte, pdpte_controller))))
                 .finish(),
             Self::Pml4teNotPresent => formatter.write_str("Pml4teNotPresent"),
+        }
+    }
+}
+
+impl From<&Pml4te> for Pml4teController {
+    fn from(pml4te: &Pml4te) -> Self {
+        match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
+            (Some(pml4e), None) => {
+                let pdpt: &Pdpt = pml4e.into();
+                let pdpt = Box::<Pdpt>::new(pdpt.clone());
+                let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
+                Self::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller,
+                }
+            },
+            (None, Some(pml4te_not_present)) => Self::Pml4teNotPresent,
+            _ => panic!("Can't convert from &Pml4te to Pml4teController"),
         }
     }
 }
@@ -401,6 +529,7 @@ struct Pml4teNotPresent {
 /// # Page Directory Pointer Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdpt {
     pdpte: [Pdpte; PDPT_LENGTH],
@@ -569,6 +698,69 @@ impl PdpteController {
             let pd_vaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
+            if !vaddr2pdte_controller.contains_key(&pd_vaddr) {
+                let pdi: usize = pd_vaddr.pdi() as usize;
+                let pdte_controller: PdteController = pdt
+                    .pdte
+                    .as_slice()
+                    .get(pdi)
+                    .unwrap()
+                    .into();
+                match &pdte_controller {
+                    PdteController::Pe2Mib => {
+                        let pe2mib: Pe2Mib = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pe2mib()
+                            .unwrap()
+                            .clone();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pe2mib(pe2mib);
+                    },
+                    PdteController::Pde {
+                        pt,
+                        vaddr2pte_controller,
+                    } => {
+                        let pde: Pde = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pde()
+                            .unwrap()
+                            .clone();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pde(pde, pt);
+                    },
+                    PdteController::PdteNotPresent => {
+                        let pdte_not_present: PdteNotPresent = pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pdte_not_present()
+                            .unwrap()
+                            .clone();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pdte_not_present(pdte_not_present);
+                    },
+                }
+                vaddr2pdte_controller.insert(pd_vaddr, pdte_controller);
+            }
             let pdte: &mut Pdte = pdt
                 .as_mut()
                 .pdte_mut(&pd_vaddr);
@@ -638,6 +830,25 @@ impl fmt::Debug for PdpteController {
                     .map(|((vaddr, pdte_controller), pdte)| (vaddr, (pdte, pdte_controller))))
                 .finish(),
             Self::PdpteNotPresent => formatter.write_str("PdpteNotPresent"),
+        }
+    }
+}
+
+impl From<&Pdpte> for PdpteController {
+    fn from(pdpte: &Pdpte) -> Self {
+        match (pdpte.pe1gib(), pdpte.pdpe(), pdpte.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => Self::Pe1Gib,
+            (None, Some(pdpe), None) => {
+                let pdt: &Pdt = pdpe.into();
+                let pdt = Box::<Pdt>::new(pdt.clone());
+                let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
+                Self::Pdpe {
+                    pdt,
+                    vaddr2pdte_controller,
+                }
+            },
+            (None, None, Some(pdpte_not_present)) => Self::PdpteNotPresent,
+            _ => panic!("Can't convert from &Pdpe to PdpteController"),
         }
     }
 }
@@ -831,6 +1042,7 @@ struct PdpteNotPresent {
 /// # Page Directory Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdt {
     pdte: [Pdte; PDT_LENGTH],
@@ -990,6 +1202,50 @@ impl PdteController {
             pdte.set_pde(new_pde, pt.as_ref());
             let p_vaddr: Vaddr = vaddr
                 .with_offset(0);
+            if !vaddr2pte_controller.contains_key(&p_vaddr) {
+                let pi: usize = p_vaddr.pi() as usize;
+                let pte_controller: PteController = pt
+                    .pte
+                    .as_slice()
+                    .get(pi)
+                    .unwrap()
+                    .into();
+                match &pte_controller {
+                    PteController::Pe4Kib => {
+                        let pe4kib: Pe4Kib = pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pe4kib()
+                            .unwrap()
+                            .clone();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pe4kib(pe4kib);
+                    },
+                    PteController::PteNotPresent => {
+                        let pte_not_present: PteNotPresent = pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pte_not_present()
+                            .unwrap()
+                            .clone();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pte_not_present(pte_not_present);
+                    },
+                }
+                vaddr2pte_controller.insert(p_vaddr, pte_controller);
+            }
             let pte: &mut Pte = pt
                 .as_mut()
                 .pte_mut(&p_vaddr);
@@ -1057,6 +1313,25 @@ impl fmt::Debug for PdteController {
                     .map(|((vaddr, pte_controller), pte)| (vaddr, (pte, pte_controller))))
                 .finish(),
             Self::PdteNotPresent => formatter.write_str("PdteNotPresent"),
+        }
+    }
+}
+
+impl From<&Pdte> for PdteController {
+    fn from(pdte: &Pdte) -> Self {
+        match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
+            (Some(pe2mib), None, None) => Self::Pe2Mib,
+            (None, Some(pde), None) => {
+                let pt: &Pt = pde.into();
+                let pt = Box::new(pt.clone());
+                let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
+                Self::Pde {
+                    pt,
+                    vaddr2pte_controller,
+                }
+            },
+            (None, None, Some(pdte_not_present)) => Self::PdteNotPresent,
+            _ => panic!("Can't convert from &Pdte to PdteController"),
         }
     }
 }
@@ -1249,7 +1524,7 @@ struct PdteNotPresent {
 /// # Page Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
@@ -1332,6 +1607,16 @@ impl PteController {
 impl Default for PteController {
     fn default() -> Self {
         Self::PteNotPresent
+    }
+}
+
+impl From<&Pte> for PteController {
+    fn from(pte: &Pte) -> Self {
+        match (pte.pe4kib(), pte.pte_not_present()) {
+            (Some(pe4kib), None) => Self::Pe4Kib,
+            (None, Some(pte_not_present)) => Self::PteNotPresent,
+            _ => panic!("Can't Convert from &Pte to PteController"),
+        }
     }
 }
 
