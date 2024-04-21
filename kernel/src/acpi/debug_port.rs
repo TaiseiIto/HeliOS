@@ -57,7 +57,7 @@ impl Table2 {
         }
     }
 
-    fn iter<'a>(&'a self) -> DeviceInformations<'a> {
+    fn iter(&self) -> DeviceInformations<'_> {
         self.into()
     }
 }

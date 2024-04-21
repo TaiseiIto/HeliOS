@@ -38,7 +38,7 @@ impl Structure {
         self.length as usize
     }
 
-    fn iter<'a>(&'a self) -> hardware_unit_definition::Scopes<'a> {
+    fn iter(&self) -> hardware_unit_definition::Scopes<'_> {
         self.into()
     }
 }

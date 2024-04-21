@@ -36,7 +36,7 @@ impl Table {
         }
     }
 
-    fn iter<'a>(&'a self) -> StateStructures<'a> {
+    fn iter(&self) -> StateStructures<'_> {
         self.into()
     }
 }

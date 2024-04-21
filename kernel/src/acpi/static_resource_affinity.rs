@@ -42,7 +42,7 @@ impl Table {
         }
     }
 
-    fn iter<'a>(&'a self) -> Structures<'a> {
+    fn iter(&self) -> Structures<'_> {
         self.into()
     }
 }

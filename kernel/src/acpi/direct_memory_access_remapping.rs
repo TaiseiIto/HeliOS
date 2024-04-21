@@ -45,7 +45,7 @@ impl Table {
         }
     }
 
-    fn iter<'a>(&'a self) -> Structures<'a> {
+    fn iter(&self) -> Structures<'_> {
         self.into()
     }
 }
@@ -117,7 +117,7 @@ enum Structure<'a> {
 impl<'a> Structure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         bytes
-            .get(0)
+            .first()
             .zip(bytes.get(1))
             .map(|(structure_type_low, structure_type_high)| {
                 let structure_type: u16 = (*structure_type_low as u16) + ((*structure_type_high as u16) << u8::BITS);

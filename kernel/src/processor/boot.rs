@@ -30,7 +30,7 @@ impl Loader {
     pub fn log(&self) -> String {
         let log: Vec<u8> = self.stack()
             .iter()
-            .map(|byte| *byte)
+            .copied()
             .take_while(|byte| *byte != 0)
             .collect();
         String::from_utf8(log).unwrap()
@@ -70,7 +70,7 @@ impl Loader {
         *self.arguments_mut() = Arguments::new();
     }
 
-    fn stack_mut(&self) -> &mut [u8] {
+    fn stack_mut(&mut self) -> &mut [u8] {
         let start: *mut u8 = self.stack_address_range.start as *mut u8;
         let length: usize = self.stack_address_range.end - self.stack_address_range.start;
         unsafe {

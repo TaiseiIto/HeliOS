@@ -101,7 +101,7 @@ impl Table {
         }
     }
 
-    fn iter<'a>(&'a self) -> InterruptControllerStructures<'a> {
+    fn iter(&self) -> InterruptControllerStructures<'_> {
         self.into()
     }
 

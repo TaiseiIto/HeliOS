@@ -119,7 +119,7 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn entries<'a>(&'a self) -> Vec<system_description::Table<'a>> {
+    pub fn entries(&self) -> Vec<system_description::Table<'_>> {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
         let first_entry: usize = table + mem::size_of::<Self>();
