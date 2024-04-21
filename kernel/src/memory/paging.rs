@@ -17,7 +17,7 @@ pub enum Paging {
     Bit32,
     Pae,
     Level4 {
-        interface: level4::Interface,
+        controller: level4::Controller,
     },
     Level5,
 }
@@ -30,9 +30,9 @@ impl Paging {
             Self::Bit32 => {},
             Self::Pae => {},
             Self::Level4 {
-                interface
+                controller
             } => {
-                interface.debug(vaddr)
+                controller.debug(vaddr)
             },
             Self::Level5 => {},
         }
@@ -45,9 +45,9 @@ impl Paging {
             Self::Bit32 => panic!("Unimplemented!"),
             Self::Pae => panic!("Unimplemented!"),
             Self::Level4 {
-                interface
+                controller
             } => {
-                interface.higher_half_range()
+                controller.higher_half_range()
             },
             Self::Level5 => panic!("Unimplemented!"),
         }
@@ -59,9 +59,9 @@ impl Paging {
             Self::Bit32 => {},
             Self::Pae => {},
             Self::Level4 {
-                interface
+                controller
             } => {
-                interface.set()
+                controller.set()
             },
             Self::Level5 => {},
         }
@@ -73,9 +73,9 @@ impl Paging {
             Self::Bit32 => {},
             Self::Pae => {},
             Self::Level4 {
-                interface
+                controller
             } => {
-                interface.set_page(vaddr, paddr, present, writable, executable)
+                controller.set_page(vaddr, paddr, present, writable, executable)
             },
             Self::Level5 => {},
         }
@@ -89,9 +89,9 @@ impl Paging {
             Self::Bit32 => None,
             Self::Pae => None,
             Self::Level4 {
-                interface
+                controller
             } => {
-                interface.vaddr2paddr(vaddr)
+                controller.vaddr2paddr(vaddr)
             },
             Self::Level5 => None,
         }
