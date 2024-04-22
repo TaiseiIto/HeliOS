@@ -4,10 +4,7 @@ use {
         ops::Range,
         slice,
     },
-    crate::{
-        efi,
-        memory,
-    },
+    crate::efi,
 };
 
 pub struct Loader {

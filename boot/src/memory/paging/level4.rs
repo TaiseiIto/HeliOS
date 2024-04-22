@@ -5,7 +5,10 @@
 use {
     alloc::{
         boxed::Box,
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            btree_map,
+        },
     },
     bitfield_struct::bitfield,
     core::{
@@ -53,7 +56,7 @@ impl Controller {
 
     pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
-        let mut pml4t = Box::<Pml4t>::new(source.clone());
+        let pml4t = Box::<Pml4t>::new(source.clone());
         let cr3: x64::control::Register3 = cr3.with_paging_structure(pml4t.as_ref());
         let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
         Self {
@@ -94,7 +97,7 @@ impl Controller {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
-        if !self.vaddr2pml4te_controller.contains_key(&pml4vaddr) {
+        if let btree_map::Entry::Vacant(entry) = self.vaddr2pml4te_controller.entry(pml4vaddr) {
             let pml4i: usize = pml4vaddr.pml4i() as usize;
             let pml4te_controller: Pml4teController = self
                 .pml4t
@@ -106,16 +109,15 @@ impl Controller {
             match &pml4te_controller {
                 Pml4teController::Pml4e {
                     pdpt,
-                    vaddr2pdpte_controller,
+                    vaddr2pdpte_controller: _,
                 } => {
-                    let pml4e: Pml4e = self.pml4t
+                    let pml4e: Pml4e = *self.pml4t
                         .pml4te
                         .as_slice()
                         .get(pml4i)
                         .unwrap()
                         .pml4e()
-                        .unwrap()
-                        .clone();
+                        .unwrap();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
@@ -124,14 +126,13 @@ impl Controller {
                         .set_pml4e(pml4e, pdpt);
                 },
                 Pml4teController::Pml4teNotPresent => {
-                    let pml4te_not_present: Pml4teNotPresent = self.pml4t
+                    let pml4te_not_present: Pml4teNotPresent = *self.pml4t
                         .pml4te
                         .as_slice()
                         .get(pml4i)
                         .unwrap()
                         .pml4te_not_present()
-                        .unwrap()
-                        .clone();
+                        .unwrap();
                     self.pml4t
                         .pml4te
                         .as_mut_slice()
@@ -140,7 +141,7 @@ impl Controller {
                         .set_pml4te_not_present(pml4te_not_present);
                 },
             }
-            self.vaddr2pml4te_controller.insert(pml4vaddr, pml4te_controller);
+            entry.insert(pml4te_controller);
         }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
@@ -213,26 +214,6 @@ enum Pml4teController {
 }
 
 impl Pml4teController {
-    fn copy(source: &Pml4te, destination: &mut Pml4te, vaddr: Vaddr) -> Self {
-        match (source.pml4e(), source.pml4te_not_present()) {
-            (Some(pml4e), None) => {
-                let source: &Pdpt = pml4e.into();
-                let pdpt = Box::<Pdpt>::new(source.clone());
-                destination.set_pml4e(*pml4e, pdpt.as_ref());
-                let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
-                Self::Pml4e {
-                    pdpt,
-                    vaddr2pdpte_controller,
-                }
-            },
-            (None, Some(pml4te_not_present)) => {
-                destination.set_pml4te_not_present(*pml4te_not_present);
-                Self::Pml4teNotPresent
-            },
-            _ => panic!("Can't get a page map level 4 table entry."),
-        }
-    }
-
     #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pml4e {
@@ -302,7 +283,7 @@ impl Pml4teController {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
-            if !vaddr2pdpte_controller.contains_key(&pdp_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdpte_controller.entry(pdp_vaddr) {
                 let pdpi: usize = pdp_vaddr.pdpi() as usize;
                 let pdpte_controller: PdpteController = pdpt
                     .pdpte
@@ -312,14 +293,13 @@ impl Pml4teController {
                     .into();
                 match &pdpte_controller {
                     PdpteController::Pe1Gib => {
-                        let pe1gib: Pe1Gib = pdpt
+                        let pe1gib: Pe1Gib = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pe1gib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt
                             .pdpte
                             .as_mut_slice()
@@ -329,16 +309,15 @@ impl Pml4teController {
                     },
                     PdpteController::Pdpe {
                         pdt,
-                        vaddr2pdte_controller
+                        vaddr2pdte_controller: _,
                     } => {
-                        let pdpe: Pdpe = pdpt
+                        let pdpe: Pdpe = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pdpe()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt
                             .pdpte
                             .as_mut_slice()
@@ -347,14 +326,13 @@ impl Pml4teController {
                             .set_pdpe(pdpe, pdt);
                     },
                     PdpteController::PdpteNotPresent => {
-                        let pdpte_not_present: PdpteNotPresent = pdpt
+                        let pdpte_not_present: PdpteNotPresent = *pdpt
                             .pdpte
                             .as_slice()
                             .get(pdpi)
                             .unwrap()
                             .pdpte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdpt.pdpte
                             .as_mut_slice()
                             .get_mut(pdpi)
@@ -362,7 +340,7 @@ impl Pml4teController {
                             .set_pdpte_not_present(pdpte_not_present);
                     },
                 }
-                vaddr2pdpte_controller.insert(pdp_vaddr, pdpte_controller);
+                entry.insert(pdpte_controller);
             }
             let pdpte: &mut Pdpte = pdpt
                 .as_mut()
@@ -411,7 +389,7 @@ impl From<&Pml4te> for Pml4teController {
                     vaddr2pdpte_controller,
                 }
             },
-            (None, Some(pml4te_not_present)) => Self::Pml4teNotPresent,
+            (None, Some(_pml4te_not_present)) => Self::Pml4teNotPresent,
             _ => panic!("Can't convert from &Pml4te to Pml4teController"),
         }
     }
@@ -578,30 +556,6 @@ enum PdpteController {
 }
 
 impl PdpteController {
-    fn copy(source: &Pdpte, destination: &mut Pdpte, vaddr: Vaddr) -> Self {
-        match (source.pe1gib(), source.pdpe(), source.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => {
-                destination.set_pe1gib(*pe1gib);
-                Self::Pe1Gib
-            },
-            (None, Some(pdpe), None) => {
-                let source: &Pdt = pdpe.into();
-                let pdt = Box::<Pdt>::new(source.clone());
-                destination.set_pdpe(*pdpe, pdt.as_ref());
-                let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
-                Self::Pdpe {
-                    pdt,
-                    vaddr2pdte_controller,
-                }
-            },
-            (None, None, Some(pdpte_not_present)) => {
-                destination.set_pdpte_not_present(*pdpte_not_present);
-                Self::PdpteNotPresent
-            },
-            _ => panic!("Can't get a page directory pointer table entry."),
-        }
-    }
-
     #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pdpe {
@@ -727,7 +681,7 @@ impl PdpteController {
             let pd_vaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
-            if !vaddr2pdte_controller.contains_key(&pd_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdte_controller.entry(pd_vaddr) {
                 let pdi: usize = pd_vaddr.pdi() as usize;
                 let pdte_controller: PdteController = pdt
                     .pdte
@@ -737,14 +691,13 @@ impl PdpteController {
                     .into();
                 match &pdte_controller {
                     PdteController::Pe2Mib => {
-                        let pe2mib: Pe2Mib = pdt
+                        let pe2mib: Pe2Mib = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pe2mib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -754,16 +707,15 @@ impl PdpteController {
                     },
                     PdteController::Pde {
                         pt,
-                        vaddr2pte_controller,
+                        vaddr2pte_controller: _,
                     } => {
-                        let pde: Pde = pdt
+                        let pde: Pde = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pde()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -772,14 +724,13 @@ impl PdpteController {
                             .set_pde(pde, pt);
                     },
                     PdteController::PdteNotPresent => {
-                        let pdte_not_present: PdteNotPresent = pdt
+                        let pdte_not_present: PdteNotPresent = *pdt
                             .pdte
                             .as_slice()
                             .get(pdi)
                             .unwrap()
                             .pdte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pdt
                             .pdte
                             .as_mut_slice()
@@ -788,7 +739,7 @@ impl PdpteController {
                             .set_pdte_not_present(pdte_not_present);
                     },
                 }
-                vaddr2pdte_controller.insert(pd_vaddr, pdte_controller);
+                entry.insert(pdte_controller);
             }
             let pdte: &mut Pdte = pdt
                 .as_mut()
@@ -835,7 +786,7 @@ impl fmt::Debug for PdpteController {
 impl From<&Pdpte> for PdpteController {
     fn from(pdpte: &Pdpte) -> Self {
         match (pdpte.pe1gib(), pdpte.pdpe(), pdpte.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => Self::Pe1Gib,
+            (Some(_pe1gib), None, None) => Self::Pe1Gib,
             (None, Some(pdpe), None) => {
                 let pdt: &Pdt = pdpe.into();
                 let pdt = Box::<Pdt>::new(pdt.clone());
@@ -845,7 +796,7 @@ impl From<&Pdpte> for PdpteController {
                     vaddr2pdte_controller,
                 }
             },
-            (None, None, Some(pdpte_not_present)) => Self::PdpteNotPresent,
+            (None, None, Some(_pdpte_not_present)) => Self::PdpteNotPresent,
             _ => panic!("Can't convert from &Pdpe to PdpteController"),
         }
     }
@@ -1086,30 +1037,6 @@ enum PdteController {
 }
 
 impl PdteController {
-    fn copy(source: &Pdte, destination: &mut Pdte, vaddr: Vaddr) -> Self {
-        match (source.pe2mib(), source.pde(), source.pdte_not_present()) {
-            (Some(pe2mib), None, None) => {
-                destination.set_pe2mib(*pe2mib);
-                Self::Pe2Mib
-            },
-            (None, Some(pde), None) => {
-                let source: &Pt = pde.into();
-                let pt = Box::<Pt>::new(source.clone());
-                destination.set_pde(*pde, pt.as_ref());
-                let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
-                Self::Pde {
-                    pt,
-                    vaddr2pte_controller,
-                }
-            },
-            (None, None, Some(pdte_not_present)) => {
-                destination.set_pdte_not_present(*pdte_not_present);
-                Self::PdteNotPresent
-            },
-            _ => panic!("Can't get a page directory table entry."),
-        }
-    }
-
     #[allow(dead_code)]
     fn debug(&self, vaddr: &Vaddr) {
         if let Self::Pde {
@@ -1227,7 +1154,7 @@ impl PdteController {
             pdte.set_pde(new_pde, pt.as_ref());
             let p_vaddr: Vaddr = vaddr
                 .with_offset(0);
-            if !vaddr2pte_controller.contains_key(&p_vaddr) {
+            if let btree_map::Entry::Vacant(entry) = vaddr2pte_controller.entry(p_vaddr) {
                 let pi: usize = p_vaddr.pi() as usize;
                 let pte_controller: PteController = pt
                     .pte
@@ -1237,14 +1164,13 @@ impl PdteController {
                     .into();
                 match &pte_controller {
                     PteController::Pe4Kib => {
-                        let pe4kib: Pe4Kib = pt
+                        let pe4kib: Pe4Kib = *pt
                             .pte
                             .as_slice()
                             .get(pi)
                             .unwrap()
                             .pe4kib()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pt
                             .pte
                             .as_mut_slice()
@@ -1253,14 +1179,13 @@ impl PdteController {
                             .set_pe4kib(pe4kib);
                     },
                     PteController::PteNotPresent => {
-                        let pte_not_present: PteNotPresent = pt
+                        let pte_not_present: PteNotPresent = *pt
                             .pte
                             .as_slice()
                             .get(pi)
                             .unwrap()
                             .pte_not_present()
-                            .unwrap()
-                            .clone();
+                            .unwrap();
                         pt
                             .pte
                             .as_mut_slice()
@@ -1269,7 +1194,7 @@ impl PdteController {
                             .set_pte_not_present(pte_not_present);
                     },
                 }
-                vaddr2pte_controller.insert(p_vaddr, pte_controller);
+                entry.insert(pte_controller);
             }
             let pte: &mut Pte = pt
                 .as_mut()
@@ -1316,7 +1241,7 @@ impl fmt::Debug for PdteController {
 impl From<&Pdte> for PdteController {
     fn from(pdte: &Pdte) -> Self {
         match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
-            (Some(pe2mib), None, None) => Self::Pe2Mib,
+            (Some(_pe2mib), None, None) => Self::Pe2Mib,
             (None, Some(pde), None) => {
                 let pt: &Pt = pde.into();
                 let pt = Box::new(pt.clone());
@@ -1326,7 +1251,7 @@ impl From<&Pdte> for PdteController {
                     vaddr2pte_controller,
                 }
             },
-            (None, None, Some(pdte_not_present)) => Self::PdteNotPresent,
+            (None, None, Some(_pdte_not_present)) => Self::PdteNotPresent,
             _ => panic!("Can't convert from &Pdte to PdteController"),
         }
     }
@@ -1564,20 +1489,6 @@ enum PteController {
 }
 
 impl PteController {
-    fn copy(source: &Pte, destination: &mut Pte) -> Self {
-        match (source.pe4kib(), source.pte_not_present()) {
-            (Some(pe4kib), None) => {
-                destination.set_pe4kib(*pe4kib);
-                Self::Pe4Kib
-            },
-            (None, Some(pte_not_present)) => {
-                destination.set_pte_not_present(*pte_not_present);
-                Self::PteNotPresent
-            },
-            _ => panic!("Can't get a page table entry."),
-        }
-    }
-
     fn set_page(&mut self, pte: &mut Pte, paddr: usize, present: bool, writable: bool, executable: bool) {
         if present {
             let pe4kib: Pe4Kib = Pe4Kib::default()
@@ -1613,8 +1524,8 @@ impl Default for PteController {
 impl From<&Pte> for PteController {
     fn from(pte: &Pte) -> Self {
         match (pte.pe4kib(), pte.pte_not_present()) {
-            (Some(pe4kib), None) => Self::Pe4Kib,
-            (None, Some(pte_not_present)) => Self::PteNotPresent,
+            (Some(_pe4kib), None) => Self::Pe4Kib,
+            (None, Some(_pte_not_present)) => Self::PteNotPresent,
             _ => panic!("Can't Convert from &Pte to PteController"),
         }
     }

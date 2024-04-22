@@ -17,39 +17,28 @@ use {
 #[repr(packed)]
 pub struct Register {
     low: FatLow,
+    #[allow(dead_code)]
     high: FatHigh,
 }
 
 impl Register {
     pub fn assert_init(&mut self, processor_local_apic_id: u8) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::assert_init();
         *self.low_mut() = low.into();
     }
 
     pub fn deassert_init(&mut self, processor_local_apic_id: u8) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::deassert_init();
         *self.low_mut() = low.into();
     }
 
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::send_sipi(entry_point);
         *self.low_mut() = low.into();
     }

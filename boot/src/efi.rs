@@ -42,7 +42,6 @@ pub use {
         font,
         font::Font,
         graphics_output,
-        mp_services,
         simple_text,
     },
 };

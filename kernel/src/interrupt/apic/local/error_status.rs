@@ -13,8 +13,6 @@ pub struct FatRegister {
 
 impl FatRegister {
     pub fn clear_all_errors(&mut self) {
-        let address: *mut Self = self as *mut Self;
-        let address: usize = address as usize;
         let register: Register = self.register;
         let register: Register = register.clear_all_errors();
         *self.register_mut() = register.into();
