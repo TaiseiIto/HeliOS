@@ -152,6 +152,19 @@ impl Controller {
     }
 }
 
+impl Clone for Controller {
+    fn clone(&self) -> Self {
+        let pml4t = Box::<Pml4t>::new(self.pml4t.as_ref().clone());
+        let cr3 = self.cr3.with_paging_structure(pml4t.as_ref());
+        let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
+        Self {
+            cr3,
+            pml4t,
+            vaddr2pml4te_controller,
+        }
+    }
+}
+
 impl fmt::Debug for Controller {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -171,6 +184,7 @@ impl fmt::Debug for Controller {
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],

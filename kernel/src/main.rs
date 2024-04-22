@@ -185,7 +185,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .madt()
         .processor_local_apic_structures()
         .iter()
-        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone()))
+        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), paging.clone()))
         .collect();
     com2_println!("processors = {:#x?}", processors);
     processors

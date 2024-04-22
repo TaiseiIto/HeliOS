@@ -11,7 +11,7 @@ use {
 /// # Paging
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4 Paging
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Paging {
     Disable,
     Bit32,

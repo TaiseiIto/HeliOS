@@ -5,12 +5,14 @@ use crate::{
     com2_print,
     com2_println,
     interrupt,
+    memory,
     timer,
 };
 
 #[derive(Debug)]
 pub struct Controller {
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
+    paging: memory::Paging,
 }
 
 impl Controller {
@@ -30,9 +32,10 @@ impl Controller {
         self.local_apic_structure.apic_id()
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure) -> Self {
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, paging: memory::Paging) -> Self {
         Self {
             local_apic_structure,
+            paging,
         }
     }
 }
