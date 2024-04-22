@@ -43,6 +43,7 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
+    #[allow(dead_code)]
     hello_application: elf::File,
     memory_map: efi::memory::Map,
     paging: memory::Paging,
@@ -60,7 +61,7 @@ fn main(argument: &'static mut Argument<'static>) {
         fonts: _,
         graphics_output_protocol: _,
         heap_start,
-        hello_application,
+        hello_application: _,
         memory_map,
         paging,
     } = argument;
@@ -68,9 +69,11 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
     let heap_size: usize = allocator::initialize(paging, memory_map, *heap_start);
+    com2_println!("heap_size = {:#x?}", heap_size);
     let memory_map: Vec<&efi::memory::Descriptor> = memory_map
         .iter()
         .collect();
+    com2_println!("memory_map = {:#x?}", memory_map);
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
@@ -136,6 +139,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let task_register: x64::task::Register = task_state_segment_selector.into();
     task_register.set();
     let task_register = x64::task::Register::get();
+    com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     // Initialize syscall.
     syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);

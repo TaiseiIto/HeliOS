@@ -96,7 +96,7 @@ impl Controller {
             match &pml4te_controller {
                 Pml4teController::Pml4e {
                     pdpt,
-                    vaddr2pdpte_controller,
+                    vaddr2pdpte_controller: _,
                 } => {
                     let pml4e: Pml4e = *self.pml4t
                         .pml4te
@@ -306,7 +306,7 @@ impl Pml4teController {
                     },
                     PdpteController::Pdpe {
                         pdt,
-                        vaddr2pdte_controller
+                        vaddr2pdte_controller: _,
                     } => {
                         let pdpe: Pdpe = *pdpt
                             .pdpte
@@ -407,7 +407,7 @@ impl From<&Pml4te> for Pml4teController {
                     vaddr2pdpte_controller,
                 }
             },
-            (None, Some(pml4te_not_present)) => Self::Pml4teNotPresent,
+            (None, Some(_pml4te_not_present)) => Self::Pml4teNotPresent,
             _ => panic!("Can't convert from &Pml4te to Pml4teController"),
         }
     }
@@ -722,7 +722,7 @@ impl PdpteController {
                     },
                     PdteController::Pde {
                         pt,
-                        vaddr2pte_controller,
+                        vaddr2pte_controller: _,
                     } => {
                         let pde: Pde = *pdt
                             .pdte
@@ -832,7 +832,7 @@ impl fmt::Debug for PdpteController {
 impl From<&Pdpte> for PdpteController {
     fn from(pdpte: &Pdpte) -> Self {
         match (pdpte.pe1gib(), pdpte.pdpe(), pdpte.pdpte_not_present()) {
-            (Some(pe1gib), None, None) => Self::Pe1Gib,
+            (Some(_pe1gib), None, None) => Self::Pe1Gib,
             (None, Some(pdpe), None) => {
                 let pdt: &Pdt = pdpe.into();
                 let pdt = Box::<Pdt>::new(pdt.clone());
@@ -842,7 +842,7 @@ impl From<&Pdpte> for PdpteController {
                     vaddr2pdte_controller,
                 }
             },
-            (None, None, Some(pdpte_not_present)) => Self::PdpteNotPresent,
+            (None, None, Some(_pdpte_not_present)) => Self::PdpteNotPresent,
             _ => panic!("Can't convert from &Pdpe to PdpteController"),
         }
     }
@@ -1313,7 +1313,7 @@ impl fmt::Debug for PdteController {
 impl From<&Pdte> for PdteController {
     fn from(pdte: &Pdte) -> Self {
         match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
-            (Some(pe2mib), None, None) => Self::Pe2Mib,
+            (Some(_pe2mib), None, None) => Self::Pe2Mib,
             (None, Some(pde), None) => {
                 let pt: &Pt = pde.into();
                 let pt = Box::new(pt.clone());
@@ -1323,7 +1323,7 @@ impl From<&Pdte> for PdteController {
                     vaddr2pte_controller,
                 }
             },
-            (None, None, Some(pdte_not_present)) => Self::PdteNotPresent,
+            (None, None, Some(_pdte_not_present)) => Self::PdteNotPresent,
             _ => panic!("Can't convert from &Pdte to PdteController"),
         }
     }
@@ -1606,8 +1606,8 @@ impl Default for PteController {
 impl From<&Pte> for PteController {
     fn from(pte: &Pte) -> Self {
         match (pte.pe4kib(), pte.pte_not_present()) {
-            (Some(pe4kib), None) => Self::Pe4Kib,
-            (None, Some(pte_not_present)) => Self::PteNotPresent,
+            (Some(_pe4kib), None) => Self::Pe4Kib,
+            (None, Some(_pte_not_present)) => Self::PteNotPresent,
             _ => panic!("Can't Convert from &Pte to PteController"),
         }
     }
