@@ -35,6 +35,7 @@ use {
 #[derive(Debug)]
 pub struct Argument<'a> {
     processor_boot_loader: processor::boot::Loader,
+    processor_kernel: Vec<u8>,
     com2: &'a mut rs232c::Com,
     cpuid: x64::Cpuid,
     efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -55,6 +56,7 @@ const PRIVILEGE_LEVEL: u8 = 0;
 fn main(argument: &'static mut Argument<'static>) {
     let Argument {
         processor_boot_loader,
+        processor_kernel,
         com2,
         cpuid,
         efi_system_table,
@@ -179,6 +181,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers();
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
+    com2_println!("processor_kernel = {:#x?}", processor_kernel);
     let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
         .xsdt()

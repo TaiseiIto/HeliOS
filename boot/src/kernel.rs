@@ -1,5 +1,8 @@
 use {
-    alloc::collections::BTreeMap,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     crate::{
         processor,
         efi,
@@ -14,6 +17,8 @@ use {
 pub struct Argument<'a> {
     #[allow(dead_code)]
     processor_boot_loader: processor::boot::Loader,
+    #[allow(dead_code)]
+    processor_kernel: Vec<u8>,
     #[allow(dead_code)]
     com2: &'a mut rs232c::Com,
     #[allow(dead_code)]
@@ -38,6 +43,7 @@ impl<'a> Argument<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         processor_boot_loader: processor::boot::Loader,
+        processor_kernel: Vec<u8>,
         com2: &'a mut rs232c::Com,
         cpuid: x64::Cpuid,
         efi_system_table: &'a mut efi::SystemTable<'a>,
@@ -50,6 +56,7 @@ impl<'a> Argument<'a> {
     ) -> Self {
         Self {
             processor_boot_loader,
+            processor_kernel,
             com2,
             cpuid,
             efi_system_table,
