@@ -1,0 +1,25 @@
+{
+	"arch": "x86_64",
+	"data-layout": "e-m:e-i64:64-f80:128-n8:16:32:64-S128",
+	"disable-redzone": true,
+	"executables": true,
+	"exe-suffix": ".elf",
+	"features": "-mmx,-sse,+soft-float",
+	"linker": "ld.lld",
+	"linker-flavor": "ld.lld",
+	"llvm-target": "x86_64-elf",
+	"os": "none",
+	"panic-strategy": "abort",
+	"post-link-args": {
+		"ld.lld": [
+			"--entry=main",
+			"--image-base=0xffff800000000000",
+			"--nostdlib",
+			"--static"
+		]
+	},
+	"target-c-int-width": "32",
+	"target-endian": "little",
+	"target-pointer-width": "64"
+}
+
