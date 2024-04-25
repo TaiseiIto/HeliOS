@@ -42,6 +42,7 @@ impl File {
         com2_println!("deploy_read_only_segments start");
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
+            .filter(|program_header| !program_header.is_writable())
             .flat_map(|program_header| program_header
                 .pages()
                 .into_iter())
