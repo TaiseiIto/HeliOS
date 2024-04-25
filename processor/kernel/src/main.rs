@@ -14,7 +14,7 @@ fn main() {
 }
 
 #[panic_handler]
-fn panic(panic: &PanicInfo) -> ! {
+fn panic(_panic: &PanicInfo) -> ! {
     loop {
         x64::hlt();
     }
