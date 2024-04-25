@@ -53,7 +53,6 @@ impl Header {
         bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
     }
 
-    #[allow(dead_code)]
     pub fn pages(&self) -> Vec<usize> {
         self.vaddr_range_in_pages()
             .filter(|vaddr| vaddr % memory::page::SIZE == 0)

@@ -11,12 +11,20 @@ pub use section::symbol;
 
 use {
     alloc::{
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+        },
         vec::Vec,
     },
     core::{
         fmt,
         str,
+    },
+    crate::{
+        com2_print,
+        com2_println,
+        memory,
     },
     header::Header,
 };
@@ -30,6 +38,18 @@ pub struct File {
 }
 
 impl File {
+    pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) {
+        com2_println!("deploy_read_only_segments start");
+        let pages: BTreeSet<usize> = self.program_headers()
+            .into_iter()
+            .flat_map(|program_header| program_header
+                .pages()
+                .into_iter())
+            .collect();
+        com2_println!("pages = {:#x?}", pages);
+        com2_println!("deploy_read_only_segments end");
+    }
+
     #[allow(dead_code)]
     pub fn run<T>(&self, stack_floor: usize, argument: &T) {
         self.header().run(stack_floor, argument)

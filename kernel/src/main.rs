@@ -181,7 +181,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers();
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
+    let mut processor_paging: memory::Paging = paging.clone();
     let processor_kernel: elf::File = processor_kernel.clone().into();
+    processor_kernel.deploy_read_only_segments(&mut processor_paging);
     com2_println!("processor_kernel = {:#x?}", processor_kernel);
     let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
@@ -189,7 +191,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .madt()
         .processor_local_apic_structures()
         .iter()
-        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), paging.clone()))
+        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone()))
         .collect();
     com2_println!("processors = {:#x?}", processors);
     processors
