@@ -181,6 +181,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers();
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
+    let processor_kernel: elf::File = processor_kernel.clone().into();
     com2_println!("processor_kernel = {:#x?}", processor_kernel);
     let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
