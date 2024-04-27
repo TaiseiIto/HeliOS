@@ -52,6 +52,10 @@ impl Header {
         let end: usize = start + self.p_filesz as usize;
         let bytes_in_file: &[u8] = &elf[start..end];
         com2_println!("bytes_in_file = {:#x?}", bytes_in_file);
+        let vaddr_range_in_bytes: Range<usize> = self.vaddr_range_in_bytes();
+        com2_println!("vaddr_range_in_bytes = {:#x?}", vaddr_range_in_bytes);
+        let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
+        com2_println!("vaddr_range_in_pages = {:#x?}", vaddr_range_in_pages);
     }
 
     pub fn is_writable(&self) -> bool {
@@ -79,14 +83,12 @@ impl Header {
             });
     }
 
-    #[allow(dead_code)]
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
         let start: usize = self.p_vaddr as usize;
         let end: usize = start + self.p_memsz as usize;
         start..end
     }
 
-    #[allow(dead_code)]
     fn vaddr_range_in_pages(&self) -> Range<usize> {
         let Range::<usize> {
             start,
