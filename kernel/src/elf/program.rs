@@ -71,6 +71,8 @@ impl Header {
                         .contains(&vaddr_range.start))
                     .unwrap();
                 com2_println!("page = {:#x?}", page);
+                let paddr_range: Range<usize> = page.vaddr2paddr(vaddr_range.start)..page.vaddr2paddr(vaddr_range.end);
+                com2_println!("paddr_range = {:#x?}", paddr_range);
             });
     }
 
