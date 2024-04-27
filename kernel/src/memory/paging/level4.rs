@@ -141,14 +141,9 @@ impl Controller {
 
     pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
         let vaddr: Vaddr = vaddr.into();
-        let pml4vaddr: Vaddr = vaddr
-                .with_pdpi(0)
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-        self.vaddr2pml4te_controller
-            .get(&pml4vaddr)
-            .and_then(|pml4te_controller| pml4te_controller.vaddr2paddr(&vaddr))
+        self.pml4t
+            .as_ref()
+            .vaddr2paddr(&vaddr)
     }
 }
 
@@ -197,6 +192,11 @@ impl Pml4t {
 
     fn pml4te_mut(&mut self, vaddr: &Vaddr) -> &mut Pml4te {
         &mut self.pml4te[vaddr.pml4i() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pml4te(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -466,6 +466,14 @@ impl Pml4te {
         assert!(self.pml4e().is_none());
         assert!(self.pml4te_not_present().is_some());
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pml4e(), self.pml4te_not_present()) {
+            (Some(pml4e), None) => pml4e.vaddr2paddr(vaddr),
+            (None, Some(_pml4te_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
+    }
 }
 
 impl Default for Pml4te {
@@ -526,6 +534,15 @@ impl Pml4e {
     fn pdpt(&self) -> *const Pdpt {
         (self.address_of_pdpt() << Self::ADDRESS_OF_PDPT_OFFSET) as *const Pdpt
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pdpt: &Pdpt = self.into();
+                pdpt.vaddr2paddr(vaddr)
+            })
+            .flatten()
+    }
 }
 
 /// # Page Map Level 4 Entry Not Present
@@ -554,6 +571,11 @@ impl Pdpt {
 
     fn pdpte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdpte {
         &mut self.pdpte[vaddr.pdpi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pdpte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -918,6 +940,15 @@ impl Pdpte {
         assert!(self.pdpe().is_none());
         assert!(self.pdpte_not_present().is_some());
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => pe1gib.vaddr2paddr(vaddr),
+            (None, Some(pdpe), None) => pdpe.vaddr2paddr(vaddr),
+            (None, None, Some(_pdpte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
+    }
 }
 
 impl Default for Pdpte {
@@ -1004,6 +1035,11 @@ impl Pe1Gib {
     fn page_1gib(&self) -> *const Page1Gib {
         (self.address_of_1gib_page_frame() << Self::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET) as *const Page1Gib
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_1gib_page_frame() as usize) << Self::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET) + ((vaddr.pdi() as usize) << Vaddr::PDI_OFFSET) + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET) + (vaddr.offset() as usize))
+    }
 }
 
 type Page1Gib = [u8; 1 << Pe1Gib::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET];
@@ -1036,6 +1072,15 @@ impl Pdpe {
     fn pdt(&self) -> *const Pdt {
         (self.address_of_pdt() << Self::ADDRESS_OF_PDT_OFFSET) as *const Pdt
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pdt: &Pdt = self.into();
+                pdt.vaddr2paddr(vaddr)
+            })
+            .flatten()
+    }
 }
 
 /// # Page Directory Pointer Table Entry Not Present
@@ -1064,6 +1109,11 @@ impl Pdt {
 
     fn pdte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdte {
         &mut self.pdte[vaddr.pdi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pdte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -1398,6 +1448,15 @@ impl Pdte {
         assert!(self.pde().is_none());
         assert!(self.pdte_not_present().is_some());
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
+            (Some(pe2mib), None, None) => pe2mib.vaddr2paddr(vaddr),
+            (None, Some(pde), None) => pde.vaddr2paddr(vaddr),
+            (None, None, Some(_pdte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
+    }
 }
 
 impl Default for Pdte {
@@ -1484,6 +1543,11 @@ impl Pe2Mib {
     fn page_2mib(&self) -> *const Page2Mib {
         (self.address_of_2mib_page_frame() << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) as *const Page2Mib
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_2mib_page_frame() as usize) << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET) + (vaddr.offset() as usize))
+    }
 }
 
 type Page2Mib = [u8; 1 << Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET];
@@ -1516,6 +1580,15 @@ impl Pde {
     fn pt(&self) -> *const Pt {
         (self.address_of_pt() << Self::ADDRESS_OF_PT_OFFSET) as *const Pt
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pt: &Pt = self.into();
+                pt.vaddr2paddr(vaddr)
+            })
+            .flatten()
+    }
 }
 
 /// # Page Directory Table Entry Not Present
@@ -1544,6 +1617,11 @@ impl Pt {
 
     fn pte_mut(&mut self, vaddr: &Vaddr) -> &mut Pte {
         &mut self.pte[vaddr.pi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -1664,6 +1742,14 @@ impl Pte {
         assert!(self.pe4kib().is_none());
         assert!(self.pte_not_present().is_some());
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe4kib(), self.pte_not_present()) {
+            (Some(pe4kib), None) => pe4kib.vaddr2paddr(vaddr),
+            (None, Some(_pte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
+    }
 }
 
 impl Default for Pte {
@@ -1732,6 +1818,11 @@ struct Pe4Kib {
 impl Pe4Kib {
     fn page_4kib(&self) -> *const Page4Mib {
         (self.address_of_4kib_page_frame() << Self::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as *const Page4Mib
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_4kib_page_frame() as usize) << Self::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) + (vaddr.offset() as usize))
     }
 }
 
