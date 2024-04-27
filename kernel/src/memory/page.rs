@@ -43,11 +43,11 @@ impl ContinuousPages {
     }
 }
 
-#[derive(Debug)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 pub struct Page {
     #[allow(dead_code)]
     page: Box<InHeap>,
-    #[allow(dead_code)]
+    paddr: usize,
     vaddr: usize,
 }
 
@@ -61,11 +61,23 @@ impl Page {
         paging.set_page(vaddr, paddr, present, writable, executable);
         Self {
             page,
+            paddr,
             vaddr,
         }
     }
 }
 
+impl fmt::Debug for Page {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Page")
+            .field("paddr", &self.paddr)
+            .field("vaddr", &self.vaddr)
+            .finish()
+    }
+}
+
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 #[repr(align(4096))]
 struct InHeap {
     bytes: [u8; SIZE],

@@ -40,12 +40,17 @@ pub struct File {
 impl File {
     pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) {
         com2_println!("deploy_read_only_segments start");
-        let pages: BTreeSet<usize> = self.program_headers()
+        let pages: BTreeSet<memory::Page> = self.program_headers()
             .into_iter()
             .filter(|program_header| !program_header.is_writable())
             .flat_map(|program_header| program_header
                 .pages()
                 .into_iter())
+            .map(|vaddr| {
+                let writable: bool = true;
+                let executable: bool = false;
+                memory::Page::new(paging, vaddr, writable, executable)
+            })
             .collect();
         com2_println!("pages = {:#x?}", pages);
         com2_println!("deploy_read_only_segments end");

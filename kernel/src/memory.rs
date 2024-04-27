@@ -4,7 +4,10 @@ pub mod segment;
 pub mod stack;
 
 pub use {
-    page::ContinuousPages,
+    page::{
+        ContinuousPages,
+        Page,
+    },
     paging::Paging,
     stack::Stack,
 };
