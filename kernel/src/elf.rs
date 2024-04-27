@@ -54,6 +54,16 @@ impl File {
             .into_iter()
             .filter(|program_header| !program_header.is_writable())
             .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| !program_header.is_writable())
+            .for_each(|program_header| {
+                let vaddr2paddr: BTreeMap<usize, usize> = pages
+                    .iter()
+                    .map(|page| (page.vaddr_range().start, page.paddr_range().start))
+                    .collect();
+                program_header.set_page(paging, vaddr2paddr);
+            });
         pages
     }
 
