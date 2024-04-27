@@ -364,27 +364,6 @@ impl Pml4teController {
             panic!("Can't set a page!");
         };
     }
-
-    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pml4e {
-                pdpt,
-                vaddr2pdpte_controller,
-            } => {
-                let pdp_vaddr: Vaddr = vaddr
-                    .with_pdi(0)
-                    .with_pi(0)
-                    .with_offset(0);
-                let pdpte: &Pdpte = pdpt
-                    .as_ref()
-                    .pdpte(&pdp_vaddr);
-                vaddr2pdpte_controller
-                    .get(&pdp_vaddr)
-                    .and_then(|pdpte_controller| pdpte_controller.vaddr2paddr(pdpte, vaddr))
-            },
-            Self::Pml4teNotPresent => None,
-        }
-    }
 }
 
 impl fmt::Debug for Pml4teController {
@@ -801,37 +780,6 @@ impl PdpteController {
                 .set_page(pdte, vaddr, paddr, present, writable, executable);
         } else {
             panic!("Can't set a page!");
-        }
-    }
-
-    fn vaddr2paddr(&self, pdpte: &Pdpte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe1Gib => {
-                let frame_base: usize = pdpte
-                    .pe1gib()
-                    .unwrap()
-                    .page_1gib() as usize;
-                let paddr: usize = frame_base
-                    + ((vaddr.pdi() as usize) << Vaddr::PDI_OFFSET)
-                    + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET)
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::Pdpe {
-                pdt,
-                vaddr2pdte_controller,
-            } => {
-                let pd_vaddr: Vaddr = vaddr
-                    .with_pi(0)
-                    .with_offset(0);
-                let pdte: &Pdte = pdt
-                    .as_ref()
-                    .pdte(&pd_vaddr);
-                vaddr2pdte_controller
-                    .get(&pd_vaddr)
-                    .and_then(|pdte_controller| pdte_controller.vaddr2paddr(pdte, vaddr))
-            },
-            Self::PdpteNotPresent => None,
         }
     }
 }
@@ -1314,35 +1262,6 @@ impl PdteController {
             panic!("Can't set a page!");
         }
     }
-
-    fn vaddr2paddr(&self, pdte: &Pdte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe2Mib => {
-                let frame_base: usize = pdte
-                    .pe2mib()
-                    .unwrap()
-                    .page_2mib() as usize;
-                let paddr: usize = frame_base
-                    + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET)
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::Pde {
-                pt,
-                vaddr2pte_controller,
-            } => {
-                let p_vaddr: Vaddr = vaddr
-                    .with_offset(0);
-                let pte: &Pte = pt
-                    .as_ref()
-                    .pte(&p_vaddr);
-                vaddr2pte_controller
-                    .get(&p_vaddr)
-                    .and_then(|pte_controller| pte_controller.vaddr2paddr(pte, vaddr))
-            },
-            Self::PdteNotPresent => None,
-        }
-    }
 }
 
 impl Default for PdteController {
@@ -1670,21 +1589,6 @@ impl PteController {
             *self = Self::Pe4Kib;
         } else {
             *self = Self::PteNotPresent;
-        }
-    }
-
-    fn vaddr2paddr(&self, pte: &Pte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe4Kib => {
-                let frame_base: usize = pte
-                    .pe4kib()
-                    .unwrap()
-                    .page_4kib() as usize;
-                let paddr: usize = frame_base
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::PteNotPresent => None,
         }
     }
 }
