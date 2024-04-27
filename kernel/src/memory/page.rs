@@ -66,7 +66,12 @@ impl Page {
         }
     }
 
+    pub fn paddr_range(&self) -> Range<usize> {
+        self.paddr..self.paddr + SIZE
+    }
+
     pub fn vaddr2paddr(&self, vaddr: usize) -> usize {
+        assert!(self.vaddr_range().contains(&vaddr));
         let offset: usize = vaddr & !self.vaddr;
         offset | self.paddr
     }
@@ -74,7 +79,6 @@ impl Page {
     pub fn vaddr_range(&self) -> Range<usize> {
         self.vaddr..self.vaddr + SIZE
     }
-
 }
 
 impl fmt::Debug for Page {
