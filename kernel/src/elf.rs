@@ -34,7 +34,7 @@ pub struct File {
 }
 
 impl File {
-    pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) -> BTreeSet<memory::Page> {
+    pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) -> Vec<memory::Page> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
             .filter(|program_header| !program_header.is_writable())
@@ -42,7 +42,7 @@ impl File {
                 .pages()
                 .into_iter())
             .collect();
-        let mut pages: BTreeSet<memory::Page> = pages
+        let mut pages: Vec<memory::Page> = pages
             .into_iter()
             .map(|vaddr| {
                 let writable: bool = true;

@@ -65,6 +65,10 @@ impl Page {
             vaddr,
         }
     }
+
+    pub fn vaddr_range(&self) -> Range<usize> {
+        self.vaddr..self.vaddr + SIZE
+    }
 }
 
 impl fmt::Debug for Page {

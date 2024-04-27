@@ -187,7 +187,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut processor_paging: memory::Paging = paging.clone();
     let processor_kernel: elf::File = processor_kernel.clone().into();
     com2_println!("processor_kernel = {:#x?}", processor_kernel);
-    let processor_kernel_read_only_pages: BTreeSet<memory::Page> = processor_kernel.deploy_read_only_segments(&mut processor_paging);
+    let processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_read_only_segments(&mut processor_paging);
     com2_println!("processor_kernel_read_only_pages = {:#x?}", processor_kernel_read_only_pages);
     let processors: Vec<processor::Controller> = efi_system_table
         .rsdp()

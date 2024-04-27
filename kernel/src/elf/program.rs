@@ -47,7 +47,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn deploy(&self, elf: &[u8], pages: &mut BTreeSet<memory::Page>) {
+    pub fn deploy(&self, elf: &[u8], pages: &mut Vec<memory::Page>) {
         com2_println!("Deploy program {:#x?}", self);
         let start: usize = self.p_offset as usize;
         let end: usize = start + self.p_filesz as usize;
@@ -64,6 +64,13 @@ impl Header {
                 com2_println!("page_range = {:#x?}", page_range);
                 let vaddr_range: Range<usize> = cmp::max(page_range.start, vaddr_range_in_bytes.start)..cmp::min(page_range.end, vaddr_range_in_bytes.end);
                 com2_println!("vaddr_range = {:#x?}", vaddr_range);
+                let page: &mut memory::Page = pages
+                    .iter_mut()
+                    .find(|page| page
+                        .vaddr_range()
+                        .contains(&vaddr_range.start))
+                    .unwrap();
+                com2_println!("page = {:#x?}", page);
             });
     }
 
