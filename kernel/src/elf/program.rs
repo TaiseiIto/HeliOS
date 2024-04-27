@@ -79,6 +79,13 @@ impl Header {
                 com2_println!("paddr_range = {:#x?}", paddr_range);
                 let source_range: Range<usize> = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start..source_range.end + vaddr_range.end - vaddr_range_in_bytes.end;
                 com2_println!("source_range = {:#x?}", source_range);
+                let source: &[u8] = &elf[source_range];
+                let destination: *mut u8 = paddr_range.start as *mut u8;
+                let destination: &mut [u8] = unsafe {
+                    slice::from_raw_parts_mut(destination, paddr_range.len())
+                };
+                destination[0..source.len()].copy_from_slice(source);
+                com2_println!("destination = {:#x?}", destination);
             });
     }
 
