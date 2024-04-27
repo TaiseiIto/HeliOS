@@ -5,7 +5,10 @@
 
 use {
     alloc::{
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+        },
         vec::Vec,
     },
     bitfield_struct::bitfield,
@@ -13,7 +16,11 @@ use {
         ops::Range,
         slice,
     },
-    crate::memory,
+    crate::{
+        com2_print,
+        com2_println,
+        memory,
+    },
     super::{
         Addr,
         Off,
@@ -39,18 +46,12 @@ pub struct Header {
 }
 
 impl Header {
-    #[allow(dead_code)]
-    pub fn deploy(&self, elf: &[u8]) {
-        let start: usize = self.p_vaddr as usize;
-        let start: *mut u8 = start as *mut u8;
-        let length: usize = self.p_memsz as usize;
-        let bytes_in_memory: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(start, length)
-        };
+    pub fn deploy(&self, elf: &[u8], pages: &mut BTreeSet<memory::Page>) {
+        com2_println!("Deploy program {:#x?}", self);
         let start: usize = self.p_offset as usize;
         let end: usize = start + self.p_filesz as usize;
         let bytes_in_file: &[u8] = &elf[start..end];
-        bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
+        com2_println!("bytes_in_file = {:#x?}", bytes_in_file);
     }
 
     pub fn is_writable(&self) -> bool {

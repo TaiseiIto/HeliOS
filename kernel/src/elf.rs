@@ -21,11 +21,7 @@ use {
         fmt,
         str,
     },
-    crate::{
-        com2_print,
-        com2_println,
-        memory,
-    },
+    crate::memory,
     header::Header,
 };
 
@@ -38,8 +34,7 @@ pub struct File {
 }
 
 impl File {
-    pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) {
-        com2_println!("deploy_read_only_segments start");
+    pub fn deploy_read_only_segments(&self, paging: &mut memory::Paging) -> BTreeSet<memory::Page> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
             .filter(|program_header| !program_header.is_writable())
@@ -47,7 +42,7 @@ impl File {
                 .pages()
                 .into_iter())
             .collect();
-        let pages: BTreeSet<memory::Page> = pages
+        let mut pages: BTreeSet<memory::Page> = pages
             .into_iter()
             .map(|vaddr| {
                 let writable: bool = true;
@@ -55,8 +50,11 @@ impl File {
                 memory::Page::new(paging, vaddr, writable, executable)
             })
             .collect();
-        com2_println!("pages = {:#x?}", pages);
-        com2_println!("deploy_read_only_segments end");
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| !program_header.is_writable())
+            .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
+        pages
     }
 
     #[allow(dead_code)]
