@@ -13,6 +13,7 @@ use {
     },
     bitfield_struct::bitfield,
     core::{
+        cmp,
         ops::Range,
         slice,
     },
@@ -56,6 +57,16 @@ impl Header {
         com2_println!("vaddr_range_in_bytes = {:#x?}", vaddr_range_in_bytes);
         let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
         com2_println!("vaddr_range_in_pages = {:#x?}", vaddr_range_in_pages);
+        let vaddr_range_in_pages_for_each_page: Vec<Range<usize>> = vaddr_range_in_pages
+            .step_by(memory::page::SIZE)
+            .map(|start| start..start + memory::page::SIZE)
+            .collect();
+        com2_println!("vaddr_range_in_pages_for_each_page = {:#x?}", vaddr_range_in_pages_for_each_page);
+        let vaddr_range_in_bytes_for_each_page: Vec<Range<usize>> = vaddr_range_in_pages_for_each_page
+            .iter()
+            .map(|vaddr_range_in_pages| cmp::max(vaddr_range_in_pages.start, vaddr_range_in_bytes.start)..cmp::min(vaddr_range_in_pages.end, vaddr_range_in_bytes.end))
+            .collect();
+        com2_println!("vaddr_range_in_bytes_for_each_page = {:#x?}", vaddr_range_in_bytes_for_each_page);
     }
 
     pub fn is_writable(&self) -> bool {
