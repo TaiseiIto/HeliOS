@@ -321,7 +321,7 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
-	# put_nibble64 test
+	# Print local APIC ID.
 	leaq	local_apic_id_message,	%rdi
 	call	puts64
 	call	local_apic_id
