@@ -26,6 +26,13 @@ impl Controller {
         let stack_pages: usize = 0x10;
         let stack_floor_inclusive: usize = !0;
         self.stack = Some(memory::Stack::new(&mut self.paging, stack_floor_inclusive, stack_pages));
+        let entry: usize = kernel.entry();
+        com2_println!("entry = {:#x?}", entry);
+        let stack_floor: usize = self.stack
+            .as_ref()
+            .unwrap()
+            .wrapping_floor();
+        com2_println!("stack_floor = {:#x?}", stack_floor);
         boot_loader.initialize(&self.paging);
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);

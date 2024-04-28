@@ -41,6 +41,10 @@ pub struct Header {
 }
 
 impl Header {
+    pub fn entry(&self) -> usize {
+        self.e_entry as usize
+    }
+
     pub fn program_headers(&self) -> Vec<&program::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
@@ -63,7 +67,7 @@ impl Header {
     #[allow(dead_code)]
     #[inline(never)]
     pub fn run<T>(&self, stack_floor: usize, argument: &T) {
-        let entry: usize = self.e_entry as usize;
+        let entry: usize = self.entry();
         let argument: *const T = argument as *const T;
         let argument: usize = argument as usize;
         unsafe {

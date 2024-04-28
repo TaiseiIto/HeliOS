@@ -13,13 +13,6 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub fn wrapping_floor(&self) -> usize {
-        self.pages
-            .range_inclusive()
-            .end()
-            .wrapping_add(1)
-    }
-
     pub fn new(paging: &mut Paging, floor_inclusive: usize, pages: usize) -> Self {
         let size: usize = pages * page::SIZE;
         let ceil: usize = floor_inclusive - size + 1;
@@ -30,6 +23,13 @@ impl Stack {
         Self {
             pages,
         }
+    }
+
+    pub fn wrapping_floor(&self) -> usize {
+        self.pages
+            .range_inclusive()
+            .end()
+            .wrapping_add(1)
     }
 }
 
