@@ -112,7 +112,7 @@ impl Register3 {
     }
 
     pub fn with_paging_structure(self, page_directory_base: usize) -> Self {
-        self.with_page_directory_base(page_directory_base as u64)
+        self.with_page_directory_base((page_directory_base as u64) >> Self::PAGE_DIRECTORY_BASE_OFFSET)
     }
 }
 
