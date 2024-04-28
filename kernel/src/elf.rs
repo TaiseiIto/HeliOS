@@ -37,7 +37,7 @@ impl File {
     pub fn deploy_unwritable_segments(&self, paging: &mut memory::Paging) -> Vec<memory::Page> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
-            .filter(|program_header| !program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
             .flat_map(|program_header| program_header
                 .pages()
                 .into_iter())
@@ -52,11 +52,11 @@ impl File {
             .collect();
         self.program_headers()
             .into_iter()
-            .filter(|program_header| !program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
             .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
         self.program_headers()
             .into_iter()
-            .filter(|program_header| !program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
             .for_each(|program_header| {
                 let vaddr2paddr: BTreeMap<usize, usize> = pages
                     .iter()
@@ -70,7 +70,7 @@ impl File {
     pub fn deploy_writable_segments(&self, paging: &mut memory::Paging) -> Vec<memory::Page> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
-            .filter(|program_header| program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
             .flat_map(|program_header| program_header
                 .pages()
                 .into_iter())
@@ -85,11 +85,11 @@ impl File {
             .collect();
         self.program_headers()
             .into_iter()
-            .filter(|program_header| program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
             .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
         self.program_headers()
             .into_iter()
-            .filter(|program_header| program_header.is_writable())
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
             .for_each(|program_header| {
                 let vaddr2paddr: BTreeMap<usize, usize> = pages
                     .iter()

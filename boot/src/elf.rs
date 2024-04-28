@@ -38,6 +38,7 @@ impl File {
     pub fn deploy(&self, paging: &mut memory::Paging) -> BTreeMap<usize, Box<memory::Frame>> {
         let pages: BTreeSet<usize> = self.program_headers()
             .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment())
             .flat_map(|program_header| program_header
                 .pages()
                 .into_iter())
@@ -57,9 +58,11 @@ impl File {
             });
         self.program_headers()
             .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment())
             .for_each(|program_header| program_header.deploy(&self.bytes));
         self.program_headers()
             .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment())
             .for_each(|program_header| {
                 let vaddr2paddr: BTreeMap<usize, usize> = vaddr2frame
                     .iter()

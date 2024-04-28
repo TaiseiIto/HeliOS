@@ -79,6 +79,13 @@ impl Header {
             });
     }
 
+    pub fn is_loadable_segment(&self) -> bool {
+        match self.p_type {
+            Pt::Load => true,
+            _ => false,
+        }
+    }
+
     pub fn is_writable(&self) -> bool {
         self.p_flags.w()
     }
