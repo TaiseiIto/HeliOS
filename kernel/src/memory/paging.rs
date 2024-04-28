@@ -5,6 +5,7 @@ use {
     crate::{
         com2_print,
         com2_println,
+        x64,
     },
 };
 
@@ -23,6 +24,18 @@ pub enum Paging {
 }
 
 impl Paging {
+    pub fn cr3(&self) -> x64::control::Register3 {
+        match self {
+            Self::Disable => panic!("Can't get CR3!"),
+            Self::Bit32 => panic!("Can't get CR3!"),
+            Self::Pae => panic!("Can't get CR3!"),
+            Self::Level4 {
+                controller
+            } => controller.cr3(),
+            Self::Level5 => panic!("Can't get CR3!"),
+        }
+    }
+
     pub fn debug(&self, vaddr: usize) {
         com2_println!("Begin paging information vaddr {:#x?}", vaddr);
         match self {

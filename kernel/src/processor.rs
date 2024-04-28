@@ -26,7 +26,7 @@ impl Controller {
         let stack_pages: usize = 0x10;
         let stack_floor_inclusive: usize = !0;
         self.stack = Some(memory::Stack::new(&mut self.paging, stack_floor_inclusive, stack_pages));
-        boot_loader.initialize();
+        boot_loader.initialize(&self.paging);
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();
@@ -41,7 +41,7 @@ impl Controller {
         self.local_apic_structure.apic_id()
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging) -> Self {
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, paging: memory::Paging) -> Self {
         let stack: Option<memory::Stack> = None;
         Self {
             local_apic_structure,

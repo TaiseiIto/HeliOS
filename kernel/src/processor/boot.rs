@@ -9,7 +9,10 @@ use {
         ops::Range,
         slice,
     },
-    crate::x64,
+    crate::{
+        memory,
+        x64,
+    },
 };
 
 pub struct Loader {
@@ -22,9 +25,9 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self) {
+    pub fn initialize(&mut self, paging: &memory::Paging) {
         self.initialize_stack();
-        self.set_arguments();
+        self.set_arguments(paging);
     }
 
     pub fn log(&self) -> String {
@@ -66,8 +69,8 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self) {
-        *self.arguments_mut() = Arguments::new();
+    fn set_arguments(&mut self, paging: &memory::Paging) {
+        *self.arguments_mut() = Arguments::new(paging);
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -96,8 +99,8 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new() -> Self {
-        let cr3: u64 = x64::control::Register3::get().into();
+    pub fn new(paging: &memory::Paging) -> Self {
+        let cr3: u64 = paging.cr3().into();
         Self {
             cr3,
         }

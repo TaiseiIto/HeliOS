@@ -36,6 +36,10 @@ pub struct Controller {
 }
 
 impl Controller {
+    pub fn cr3(&self) -> x64::control::Register3 {
+        self.cr3
+    }
+
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
