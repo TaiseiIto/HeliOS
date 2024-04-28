@@ -10,6 +10,8 @@ use {
         slice,
     },
     crate::{
+        com2_print,
+        com2_println,
         memory,
         x64,
     },
@@ -101,6 +103,7 @@ struct Arguments {
 impl Arguments {
     pub fn new(paging: &memory::Paging) -> Self {
         let cr3: u64 = paging.cr3().into();
+        com2_println!("cr3 = {:#x?}", cr3);
         Self {
             cr3,
         }

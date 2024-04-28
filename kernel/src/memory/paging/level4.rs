@@ -154,7 +154,10 @@ impl Controller {
 impl Clone for Controller {
     fn clone(&self) -> Self {
         let pml4t = Box::<Pml4t>::new(self.pml4t.as_ref().clone());
-        let cr3 = self.cr3.with_paging_structure(pml4t.as_ref());
+        let cr3 = self.cr3.with_paging_structure({
+            let pml4t: Vaddr = pml4t.as_ref().into();
+            pml4t.paddr().unwrap()
+        });
         let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
         Self {
             cr3,
