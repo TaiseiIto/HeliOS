@@ -330,9 +330,10 @@ main64:
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
-1:	# Halt loop.
-	hlt
-	jmp	1b
+	# Jump to the kernel.
+	movq	kernel_stack_floor,	%rsp
+	movq	kernel_entry,	%rax
+	call	%rax
 
 ia32_apic_base:
 0:
