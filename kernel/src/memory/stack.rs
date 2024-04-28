@@ -1,5 +1,5 @@
 use {
-    core::ops::Range,
+    core::ops::RangeInclusive,
     super::{
         ContinuousPages,
         Paging,
@@ -13,14 +13,17 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub fn floor(&self) -> usize {
-        self.pages.range().end
+    pub fn wrapping_floor(&self) -> usize {
+        self.pages
+            .range_inclusive()
+            .end()
+            .wrapping_add(1)
     }
 
-    pub fn new(paging: &mut Paging, floor: usize, pages: usize) -> Self {
+    pub fn new(paging: &mut Paging, floor_inclusive: usize, pages: usize) -> Self {
         let size: usize = pages * page::SIZE;
-        let ceil: usize = floor - size;
-        let range: Range<usize> = ceil..floor;
+        let ceil: usize = floor_inclusive - size + 1;
+        let range: RangeInclusive<usize> = ceil..=floor_inclusive;
         let writable: bool = true;
         let executable: bool = false;
         let pages = ContinuousPages::new(paging, range, writable, executable);

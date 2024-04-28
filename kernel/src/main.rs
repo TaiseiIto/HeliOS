@@ -134,8 +134,8 @@ fn main(argument: &'static mut Argument<'static>) {
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
         .map(|index| {
             let pages: usize = 0x10;
-            let floor: usize = *heap_start - (2 * index + 1) * pages * memory::page::SIZE;
-            memory::Stack::new(paging, floor, pages)
+            let floor_inclusive: usize = *heap_start - (2 * index + 1) * pages * memory::page::SIZE - 1;
+            memory::Stack::new(paging, floor_inclusive, pages)
         })
         .collect();
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);

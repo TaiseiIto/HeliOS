@@ -1,24 +1,31 @@
 pub mod boot;
 
-use crate::{
-    acpi,
-    com2_print,
-    com2_println,
-    elf,
-    interrupt,
-    memory,
-    timer,
+use {
+    core::ops::RangeInclusive,
+    crate::{
+        acpi,
+        com2_print,
+        com2_println,
+        elf,
+        interrupt,
+        memory,
+        timer,
+    },
 };
 
 #[derive(Debug)]
 pub struct Controller {
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     paging: memory::Paging,
+    stack: Option<memory::Stack>,
 }
 
 impl Controller {
     pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File) {
         kernel.deploy_writable_segments(&mut self.paging);
+        let stack_pages: usize = 0x10;
+        let stack_floor_inclusive: usize = !0;
+        self.stack = Some(memory::Stack::new(&mut self.paging, stack_floor_inclusive, stack_pages));
         boot_loader.initialize();
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
@@ -35,9 +42,11 @@ impl Controller {
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging) -> Self {
+        let stack: Option<memory::Stack> = None;
         Self {
             local_apic_structure,
             paging,
+            stack,
         }
     }
 }

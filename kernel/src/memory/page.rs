@@ -5,7 +5,10 @@ use {
     },
     core::{
         fmt,
-        ops::Range,
+        ops::{
+            Range,
+            RangeInclusive,
+        },
     },
     super::{
         KIB,
@@ -19,14 +22,14 @@ pub const SIZE: usize = 4 * KIB;
 pub struct ContinuousPages {
     #[allow(dead_code)]
     pages: Vec<Page>,
-    vaddr_range: Range<usize>,
+    vaddr_range: RangeInclusive<usize>,
 }
 
 impl ContinuousPages {
-    pub fn new(paging: &mut Paging, vaddr_range: Range<usize>, writable: bool, executable: bool) -> Self {
+    pub fn new(paging: &mut Paging, vaddr_range: RangeInclusive<usize>, writable: bool, executable: bool) -> Self {
         assert!(!vaddr_range.is_empty());
-        assert_eq!(vaddr_range.start % SIZE, 0);
-        assert_eq!(vaddr_range.end % SIZE, 0);
+        assert_eq!(vaddr_range.start() % SIZE, 0);
+        assert_eq!((vaddr_range.end().wrapping_add(1)) % SIZE, 0);
         let pages: Vec<Page> = vaddr_range
             .clone()
             .step_by(SIZE)
@@ -38,7 +41,7 @@ impl ContinuousPages {
         }
     }
 
-    pub fn range(&self) -> &Range<usize> {
+    pub fn range_inclusive(&self) -> &RangeInclusive<usize> {
         &self.vaddr_range
     }
 }
