@@ -4,6 +4,7 @@ use crate::{
     acpi,
     com2_print,
     com2_println,
+    elf,
     interrupt,
     memory,
     timer,
@@ -32,7 +33,8 @@ impl Controller {
         self.local_apic_structure.apic_id()
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, paging: memory::Paging) -> Self {
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
+        kernel.deploy_writable_segments(&mut paging);
         Self {
             local_apic_structure,
             paging,
