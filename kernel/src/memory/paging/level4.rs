@@ -166,12 +166,12 @@ impl fmt::Debug for Controller {
             .debug_map()
             .entries(self.vaddr2pml4te_controller
                 .iter()
-                .zip(self.pml4t
-                    .as_ref()
-                    .pml4te
-                    .as_slice()
-                    .iter())
-                .map(|((vaddr, pml4te_controller), pml4te)| (vaddr, (pml4te, pml4te_controller))))
+                .map(|(vaddr, pml4te_controller)| {
+                    let pml4te: &Pml4te = self.pml4t
+                        .as_ref()
+                        .pml4te(vaddr);
+                    (vaddr, (pml4te, pml4te_controller))
+                }))
             .finish()
     }
 }
@@ -377,12 +377,12 @@ impl fmt::Debug for Pml4teController {
                 .debug_map()
                 .entries(vaddr2pdpte_controller
                     .iter()
-                    .zip(pdpt
-                        .as_ref()
-                        .pdpte
-                        .as_slice()
-                        .iter())
-                    .map(|((vaddr, pdpte_controller), pdpte)| (vaddr, (pdpte, pdpte_controller))))
+                    .map(|(vaddr, pdpte_controller)| {
+                        let pdpte: &Pdpte = pdpt
+                            .as_ref()
+                            .pdpte(vaddr);
+                        (vaddr, (pdpte, pdpte_controller))
+                    }))
                 .finish(),
             Self::Pml4teNotPresent => formatter.write_str("Pml4teNotPresent"),
         }
