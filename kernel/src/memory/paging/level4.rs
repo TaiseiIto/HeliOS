@@ -287,6 +287,7 @@ impl Pml4teController {
                 .pml4e()
                 .unwrap();
             let new_pml4e: Pml4e = old_pml4e
+                .with_p(true)
                 .with_rw(old_pml4e.rw() || writable)
                 .with_xd(old_pml4e.xd() && !executable);
             pml4te.set_pml4e(new_pml4e, pdpt.as_ref());
@@ -705,6 +706,7 @@ impl PdpteController {
                 .pdpe()
                 .unwrap();
             let new_pdpe: Pdpe = old_pdpe
+                .with_p(true)
                 .with_rw(old_pdpe.rw() || writable)
                 .with_xd(old_pdpe.xd() && !executable);
             pdpte.set_pdpe(new_pdpe, pdt.as_ref());
@@ -1204,6 +1206,7 @@ impl PdteController {
                 .pde()
                 .unwrap();
             let new_pde: Pde = old_pde
+                .with_p(true)
                 .with_rw(old_pde.rw() || writable)
                 .with_xd(old_pde.xd() && !executable);
             pdte.set_pde(new_pde, pt.as_ref());
