@@ -189,19 +189,19 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processor_kernel = {:#x?}", processor_kernel);
     let processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
     com2_println!("processor_kernel_read_only_pages = {:#x?}", processor_kernel_read_only_pages);
-    let processors: Vec<processor::Controller> = efi_system_table
+    let mut processors: Vec<processor::Controller> = efi_system_table
         .rsdp()
         .xsdt()
         .madt()
         .processor_local_apic_structures()
         .iter()
-        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
+        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone()))
         .collect();
-    com2_println!("processors = {:#x?}", processors);
     processors
-        .iter()
+        .iter_mut()
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)
-        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet));
+        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet, &processor_kernel));
+    com2_println!("processors = {:#x?}", processors);
     // Shutdown.
     efi_system_table.shutdown();
     panic!("End of kernel.elf");

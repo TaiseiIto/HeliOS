@@ -17,7 +17,8 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers) {
+    pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File) {
+        kernel.deploy_writable_segments(&mut self.paging);
         boot_loader.initialize();
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
@@ -33,8 +34,7 @@ impl Controller {
         self.local_apic_structure.apic_id()
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
-        kernel.deploy_writable_segments(&mut paging);
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging) -> Self {
         Self {
             local_apic_structure,
             paging,
