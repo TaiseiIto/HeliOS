@@ -27,9 +27,9 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) {
         self.initialize_stack();
-        self.set_arguments(paging);
+        self.set_arguments(paging, kernel_entry, kernel_stack_floor);
     }
 
     pub fn log(&self) -> String {
@@ -71,8 +71,8 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging) {
-        *self.arguments_mut() = Arguments::new(paging);
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) {
+        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor);
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -98,14 +98,18 @@ impl fmt::Debug for Loader {
 struct Arguments {
     #[allow(dead_code)]
     cr3: u64,
+    kernel_entry: usize,
+    kernel_stack_floor: usize,
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging) -> Self {
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) -> Self {
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
         Self {
             cr3,
+            kernel_entry,
+            kernel_stack_floor,
         }
     }
 }

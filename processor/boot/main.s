@@ -116,6 +116,26 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
+	# Print bootstrap processor kernel entry.
+	leal	check_kernel_entry_message,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x00000004,	%esp
+	leal	kernel_entry,	%edx
+	pushl	%edx
+	call	put_quad_pointer32
+	addl	$0x00000004,	%esp
+	call	put_new_line32
+	# Print bootstrap processor kernel stack floor.
+	leal	check_kernel_stack_floor_message,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x00000004,	%esp
+	leal	kernel_stack_floor,	%edx
+	pushl	%edx
+	call	put_quad_pointer32
+	addl	$0x00000004,	%esp
+	call	put_new_line32
 	# Leave 32bit main function.
 	leave
 	# Set CR3.
@@ -505,6 +525,10 @@ gdtr:
 	.long	gdt_start
 check_cr3_message:
 	.string "CR3 = 0x"
+check_kernel_entry_message:
+	.string "kernel_entry = 0x"
+check_kernel_stack_floor_message:
+	.string "kernel_stack_floor = 0x"
 local_apic_id_message:
 	.string "Local APIC ID = 0x"
 message16:
@@ -517,6 +541,10 @@ log_end_pointer:
 	.quad	log_start
 	.align	8
 cr3:
+	.quad	0x0000000000000000
+kernel_entry:
+	.quad	0x0000000000000000
+kernel_stack_floor:
 	.quad	0x0000000000000000
 log_start:
 

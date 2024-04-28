@@ -17,23 +17,21 @@ use {
 pub struct Controller {
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     paging: memory::Paging,
-    stack: Option<memory::Stack>,
+    kernel_stack: Option<memory::Stack>,
 }
 
 impl Controller {
     pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File) {
         kernel.deploy_writable_segments(&mut self.paging);
-        let stack_pages: usize = 0x10;
-        let stack_floor_inclusive: usize = !0;
-        self.stack = Some(memory::Stack::new(&mut self.paging, stack_floor_inclusive, stack_pages));
-        let entry: usize = kernel.entry();
-        com2_println!("entry = {:#x?}", entry);
-        let stack_floor: usize = self.stack
+        let kernel_stack_pages: usize = 0x10;
+        let kernel_stack_floor_inclusive: usize = !0;
+        self.kernel_stack = Some(memory::Stack::new(&mut self.paging, kernel_stack_floor_inclusive, kernel_stack_pages));
+        let kernel_entry: usize = kernel.entry();
+        let kernel_stack_floor: usize = self.kernel_stack
             .as_ref()
             .unwrap()
             .wrapping_floor();
-        com2_println!("stack_floor = {:#x?}", stack_floor);
-        boot_loader.initialize(&self.paging);
+        boot_loader.initialize(&self.paging, kernel_entry, kernel_stack_floor);
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();
@@ -49,11 +47,11 @@ impl Controller {
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, paging: memory::Paging) -> Self {
-        let stack: Option<memory::Stack> = None;
+        let kernel_stack: Option<memory::Stack> = None;
         Self {
             local_apic_structure,
             paging,
-            stack,
+            kernel_stack,
         }
     }
 }
