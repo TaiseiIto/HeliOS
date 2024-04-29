@@ -323,10 +323,10 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
-	# Check if CPUID is supported.
-	leaq	cpuid_is_supported_message,	%rdi
+	# Pring CPUID max EAX.
+	leaq	cpuid_max_eax_message,	%rdi
 	call	puts64
-	call	cpuid_is_supported
+	call	cpuid_max_eax
 	movq	%rax,	%rdi
 	call	put_quad64
 	call	put_new_line64
@@ -371,6 +371,38 @@ cpuid_is_supported:
 2:	# CPUID is not supported.
 	xorq	%rax,	%rax
 3:
+	leave
+	ret
+
+cpuid_max_eax:
+0:
+	enter	$0x0000,	$0x00
+	call	cpuid_is_supported
+	testq	%rax,	%rax
+	jz	2f
+1:	# CPUID is supported.
+	xorq	%rax,	%rax
+	xorq	%rcx,	%rcx
+	pushq	%rbx
+	cpuid
+	popq	%rbx
+	jmp	3f
+2:	# CPUID is not supported.
+	call	error
+3:
+	leave
+	ret
+
+error:
+0:
+	enter	$0x0000,	$0x00
+	leaq	error_message,	%rdi
+	call	puts64
+	call	put_new_line64
+	cli
+1:
+	hlt
+	jmp	1b
 	leave
 	ret
 
@@ -587,8 +619,10 @@ check_kernel_entry_message:
 	.string "kernel_entry = 0x"
 check_kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
-cpuid_is_supported_message:
-	.string "CPUID is supported = 0x"
+cpuid_max_eax_message:
+	.string "CPUID max EAX = 0x"
+error_message:
+	.string	"ERROR!"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
