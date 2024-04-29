@@ -101,8 +101,7 @@ pub struct Registers {
 
 impl Registers {
     pub fn apic_id(&self) -> u8 {
-        let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
-        local_apic_id.apic_id()
+        self.local_apic_id.apic_id()
     }
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
