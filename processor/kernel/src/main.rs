@@ -6,10 +6,21 @@
 
 mod x64;
 
-use core::panic::PanicInfo;
+use core::{
+    arch::asm,
+    panic::PanicInfo,
+};
 
 #[no_mangle]
 fn main() {
+    let cpuid: Option<x64::Cpuid> = x64::Cpuid::get();
+    let max_eax: u32 = cpuid.map_or(0, |cpuid| cpuid.max_eax());
+    unsafe {
+        asm!(
+            "int 0x80",
+            in("eax") max_eax,
+        );
+    }
     panic!("End of kernel.elf");
 }
 
@@ -19,3 +30,4 @@ fn panic(_panic: &PanicInfo) -> ! {
         x64::hlt();
     }
 }
+
