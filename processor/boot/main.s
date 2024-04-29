@@ -376,7 +376,13 @@ cpuid_is_supported:
 get_rflags:
 0:
 	enter	$0x0000,	$0x00
+	leaq	rflags_message,	%rdi
+	call	puts64
 	pushfq
+	popq	%rdi
+	pushq	%rdi
+	call	put_quad64
+	call	put_new_line64
 	popq	%rax
 	leave
 	ret
@@ -588,14 +594,16 @@ check_kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
 cpuid_is_supported_message:
 	.string "CPUID is supported = 0x"
-my_local_apic_id_message:
-	.string "My local APIC ID = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
+my_local_apic_id_message:
+	.string "My local APIC ID = 0x"
+rflags_message:
+	.string "RFLAGS = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	8
