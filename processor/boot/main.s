@@ -323,10 +323,13 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
+	# Get IA32_APIC_BASE
+	call	get_ia32_apic_base
+	movq	%rax,	ia32_apic_base
 	# Print my local APIC ID.
 	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
-	call	local_apic_id
+	call	get_local_apic_id
 	movb	%al,	%dil
 	call	put_byte64
 	call	put_new_line64
@@ -340,6 +343,7 @@ main64:
 	leave
 	# Jump to the kernel.
 	movq	kernel_stack_floor,	%rsp
+	leaq	kernel_argument,	%rdi
 	call	*kernel_entry
 
 apic_is_supported:
@@ -423,15 +427,7 @@ error:
 	leave
 	ret
 
-get_rflags:
-0:
-	enter	$0x0000,	$0x00
-	pushfq
-	popq	%rax
-	leave
-	ret
-
-ia32_apic_base:
+get_ia32_apic_base:
 0:
 	enter	$0x0000,	$0x00
 	call	apic_is_supported
@@ -451,23 +447,31 @@ ia32_apic_base:
 	leave
 	ret
 
-local_apic_base_address:
+get_local_apic_base_address:
 0:
 	enter	$0x0000,	$0x00
-	call	ia32_apic_base
+	call	get_ia32_apic_base
 	movq	$0xfffffffffffff000,	%rdx
 	andq	%rdx,	%rax
 	leave
 	ret
 
-local_apic_id:
+get_local_apic_id:
 0:
 	enter	$0x0000,	$0x00
-	call	local_apic_base_address
+	call	get_local_apic_base_address
 	movl	0x20(%rax),	%eax
 	shrq	$0x18,	%rax
 	movq	$0x00000000000000ff,	%rdx
 	andq	%rdx,	%rax
+	leave
+	ret
+
+get_rflags:
+0:
+	enter	$0x0000,	$0x00
+	pushfq
+	popq	%rax
 	leave
 	ret
 
@@ -659,7 +663,10 @@ my_local_apic_id_message:
 log_end_pointer:
 	.quad	log_start
 	.align	8
-cr3:
+kernel_argument:
+ia32_apic_base:
+	.quad	0x0000000000000000
+cr3:	# Argument of ../../kernel/src/processor/boot.rs
 	.quad	0x0000000000000000
 kernel_entry:
 	.quad	0x0000000000000000
