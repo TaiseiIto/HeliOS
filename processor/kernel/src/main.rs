@@ -22,8 +22,13 @@ pub struct Argument {
 #[no_mangle]
 fn main(argument: &'static mut Argument) {
     let mut ia32_apic_base: x64::msr::ia32::ApicBase = argument.ia32_apic_base;
-    ia32_apic_base.enable();
-    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    let local_apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
+    unsafe {
+        asm!(
+            "int 0x80",
+            in("rax") local_apic_registers,
+        );
+    }
     panic!("End of kernel.elf");
 }
 
