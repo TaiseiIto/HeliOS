@@ -4,6 +4,8 @@
 #![no_main]
 #![no_std]
 
+mod interrupt;
+mod memory;
 mod x64;
 
 use core::{
@@ -18,14 +20,10 @@ pub struct Argument {
 }
 
 #[no_mangle]
-fn main(argument: &'static Argument) {
-    let ia32_apic_base: u64 = argument.ia32_apic_base.into();
-    unsafe {
-        asm!(
-            "int 0x80",
-            in("eax") ia32_apic_base,
-        );
-    }
+fn main(argument: &'static mut Argument) {
+    let mut ia32_apic_base: x64::msr::ia32::ApicBase = argument.ia32_apic_base;
+    ia32_apic_base.enable();
+    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
     panic!("End of kernel.elf");
 }
 

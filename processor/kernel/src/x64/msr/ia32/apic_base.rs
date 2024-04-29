@@ -1,4 +1,12 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    crate::interrupt,
+    super::super::{
+        rdmsr,
+        wrmsr,
+    },
+};
+
 
 /// # IA32_APIC_BASE
 /// ## References
@@ -14,5 +22,30 @@ pub struct ApicBase {
     apic_global_enable: bool,
     #[bits(52)]
     apic_base: u64,
+}
+
+impl ApicBase {
+    const ECX: u32 = 0x0000001b;
+
+    pub fn enable(&mut self) {
+        self.set_apic_global_enable(true);
+        wrmsr(Self::ECX, (*self).into());
+    }
+
+    pub fn registers(&self) -> &interrupt::apic::local::Registers {
+        let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
+        let registers: *const interrupt::apic::local::Registers = registers as *const interrupt::apic::local::Registers;
+        unsafe {
+            &*registers
+        }
+    }
+
+    pub fn registers_mut(&mut self) -> &mut interrupt::apic::local::Registers {
+        let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
+        let registers: *mut interrupt::apic::local::Registers = registers as *mut interrupt::apic::local::Registers;
+        unsafe {
+            &mut *registers
+        }
+    }
 }
 
