@@ -2,6 +2,7 @@
 	.set	SEGMENT_SHIFT,	4
 	.set	STACK_FLOOR,	0x00010000
 	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
+	.set	RFLAGS_ID,	1 << 21
 
 	.text
 	.code16
@@ -321,6 +322,13 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
+	# Check if CPUID is supported.
+	leaq	cpuid_is_supported_message,	%rdi
+	call	puts64
+	call	cpuid_is_supported
+	movq	%rax,	%rdi
+	call	put_quad64
+	call	put_new_line64
 	# Print my local APIC ID.
 	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
@@ -338,8 +346,40 @@ main64:
 	leave
 	# Jump to the kernel.
 	movq	kernel_stack_floor,	%rsp
-	movq	kernel_entry,	%rax
-	call	%rax
+	call	*kernel_entry
+
+cpuid_is_supported:
+0:
+	enter	$0x0000,	$0x00
+	call	get_rflags
+	orq	RFLAGS_ID,	%rax
+	movq	%rax,	%rdi
+	call	set_rflags
+	call	get_rflags
+	testq	RFLAGS_ID,	%rax
+	jz	2f
+	andq	~RFLAGS_ID,	%rax
+	movq	%rax,	%rdi
+	call	set_rflags
+	call	get_rflags
+	testq	RFLAGS_ID,	%rax
+	jnz	2f
+1:	# CPUID is supported.
+	movq	$0x0000000000000001,	%rax
+	jmp	3f
+2:	# CPUID is not supported.
+	xorq	%rax,	%rax
+3:
+	leave
+	ret
+
+get_rflags:
+0:
+	enter	$0x0000,	$0x00
+	pushfq
+	popq	%rax
+	leave
+	ret
 
 ia32_apic_base:
 0:
@@ -471,6 +511,14 @@ put_quad64:
 	leave
 	ret
 
+set_rflags:
+0:
+	enter	$0x0000,	$0x00
+	pushq	%rdi
+	popfq
+	leave
+	ret
+
 	.data
 	.align	16
 gdt_start:
@@ -538,6 +586,8 @@ check_kernel_entry_message:
 	.string "kernel_entry = 0x"
 check_kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
+cpuid_is_supported_message:
+	.string "CPUID is supported = 0x"
 my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
 message16:
