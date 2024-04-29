@@ -28,7 +28,8 @@ main16:	# IP == 0x1000
 	movw	%ax,	%es	
 	movw	%ax,	%fs	
 	movw	%ax,	%gs	
-	movw	STACK_SEGMENT,	%ss	
+	movw	$STACK_SEGMENT,	%ax
+	movw	%ax,	%ss
 	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
@@ -352,17 +353,17 @@ cpuid_is_supported:
 0:
 	enter	$0x0000,	$0x00
 	call	get_rflags
-	orq	RFLAGS_ID,	%rax
+	orq	$RFLAGS_ID,	%rax
 	movq	%rax,	%rdi
 	call	set_rflags
 	call	get_rflags
-	testq	RFLAGS_ID,	%rax
+	testq	$RFLAGS_ID,	%rax
 	jz	2f
-	andq	~RFLAGS_ID,	%rax
+	andq	$(~RFLAGS_ID),	%rax
 	movq	%rax,	%rdi
 	call	set_rflags
 	call	get_rflags
-	testq	RFLAGS_ID,	%rax
+	testq	$RFLAGS_ID,	%rax
 	jnz	2f
 1:	# CPUID is supported.
 	movq	$0x0000000000000001,	%rax
