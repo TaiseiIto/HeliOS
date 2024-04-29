@@ -21,7 +21,7 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File) {
+    pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File, my_local_apic_id: u8) {
         kernel.deploy_writable_segments(&mut self.paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
@@ -31,7 +31,7 @@ impl Controller {
             .as_ref()
             .unwrap()
             .wrapping_floor();
-        boot_loader.initialize(&self.paging, kernel_entry, kernel_stack_floor);
+        boot_loader.initialize(&self.paging, kernel_entry, kernel_stack_floor, my_local_apic_id);
         let local_apic_id: u8 = self.local_apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();

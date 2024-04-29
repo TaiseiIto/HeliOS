@@ -121,6 +121,7 @@ struct Low {
     #[bits(3)]
     delivery_mode: u8,
     destination_mode: bool,
+    #[bits(access = RO)]
     delivery_status: bool,
     #[bits(access = RO)]
     reserved0: bool,
@@ -164,7 +165,9 @@ impl Low {
         Self::new()
             .with_vector((entry_point / memory::page::SIZE) as u8)
             .with_delivery_mode(DeliveryMode::StartUp.into())
+            .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Assert.into())
+            .with_trigger_mode(TriggerMode::Edge.into())
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 }

@@ -200,7 +200,7 @@ fn main(argument: &'static mut Argument<'static>) {
     processors
         .iter_mut()
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)
-        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet, &processor_kernel));
+        .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
     com2_println!("processors = {:#x?}", processors);
     // Shutdown.
     efi_system_table.shutdown();

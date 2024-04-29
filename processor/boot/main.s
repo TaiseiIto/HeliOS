@@ -321,12 +321,18 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
-	# Print local APIC ID.
-	leaq	local_apic_id_message,	%rdi
+	# Print my local APIC ID.
+	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
 	call	local_apic_id
 	movq	%rax,	%rdi
 	call	put_quad64
+	call	put_new_line64
+	# Print BSP local APIC ID.
+	leaq	bsp_local_apic_id_message,	%rdi
+	call	puts64
+	movb	bsp_local_apic_id,	%dil
+	call	put_byte64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
@@ -524,14 +530,16 @@ gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start
+bsp_local_apic_id_message:
+	.string "BSP local APIC ID = 0x"
 check_cr3_message:
 	.string "CR3 = 0x"
 check_kernel_entry_message:
 	.string "kernel_entry = 0x"
 check_kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
-local_apic_id_message:
-	.string "Local APIC ID = 0x"
+my_local_apic_id_message:
+	.string "My local APIC ID = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
@@ -547,5 +555,7 @@ kernel_entry:
 	.quad	0x0000000000000000
 kernel_stack_floor:
 	.quad	0x0000000000000000
+bsp_local_apic_id:
+	.byte	0xff
 log_start:
 

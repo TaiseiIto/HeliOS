@@ -27,9 +27,9 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8) {
         self.initialize_stack();
-        self.set_arguments(paging, kernel_entry, kernel_stack_floor);
+        self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id);
     }
 
     pub fn log(&self) -> String {
@@ -71,8 +71,8 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) {
-        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor);
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8) {
+        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id);
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -100,16 +100,18 @@ struct Arguments {
     cr3: u64,
     kernel_entry: usize,
     kernel_stack_floor: usize,
+    bsp_local_apic_id: u8,
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize) -> Self {
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8) -> Self {
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
         Self {
             cr3,
             kernel_entry,
             kernel_stack_floor,
+            bsp_local_apic_id,
         }
     }
 }
