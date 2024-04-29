@@ -323,13 +323,6 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
-	# Pring CPUID max EAX.
-	leaq	cpuid_max_eax_message,	%rdi
-	call	puts64
-	call	cpuid_max_eax
-	movq	%rax,	%rdi
-	call	put_quad64
-	call	put_new_line64
 	# Print my local APIC ID.
 	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
@@ -348,6 +341,28 @@ main64:
 	# Jump to the kernel.
 	movq	kernel_stack_floor,	%rsp
 	call	*kernel_entry
+
+apic_is_supported:
+0:
+	enter	$0x0000,	$0x00
+	call	cpuid_max_eax
+	cmpq	$0x0000000000000001,	%rax
+	jb	2f
+1:	# CPUID EAX=0x00000001 is supported.
+	movl	$0x00000001,	%eax
+	xorl	%ecx,	%ecx
+	pushq	%rbx
+	cpuid
+	popq	%rbx
+	shrq	$0x09,	%rdx
+	andq	$0x0000000000000001,	%rdx
+	movq	%rdx,	%rax
+	jmp	3f
+2:	# CPUID EAX=0x00000001 is not supported.
+	xorq	%rax,	%rax
+3:
+	leave
+	ret
 
 cpuid_is_supported:
 0:
@@ -381,11 +396,13 @@ cpuid_max_eax:
 	testq	%rax,	%rax
 	jz	2f
 1:	# CPUID is supported.
-	xorq	%rax,	%rax
-	xorq	%rcx,	%rcx
+	xorl	%eax,	%eax
+	xorl	%ecx,	%ecx
 	pushq	%rbx
 	cpuid
 	popq	%rbx
+	movq	$0x00000000ffffffff,	%rdx
+	andq	%rdx,	%rax
 	jmp	3f
 2:	# CPUID is not supported.
 	call	error
@@ -417,12 +434,20 @@ get_rflags:
 ia32_apic_base:
 0:
 	enter	$0x0000,	$0x00
+	call	apic_is_supported
+	testq	%rax,	%rax
+	jz	2f
+1:	# APIC is supported.
 	movl	$0x0000001b,	%ecx
 	rdmsr
 	shlq	$0x20,	%rdx
 	movq	$0x00000000ffffffff,	%rcx
 	andq	%rcx,	%rax
 	addq	%rdx,	%rax
+	jmp	3f
+2:	# APIC is not supported.
+	call	error
+3:
 	leave
 	ret
 
