@@ -195,11 +195,14 @@ fn main(argument: &'static mut Argument<'static>) {
         .iter()
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone()))
         .collect();
+    x64::sti();
     processors
         .iter_mut()
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)
         .for_each(|processor| processor.boot(processor_boot_loader, local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
     com2_println!("processors = {:#x?}", processors);
+    let rflags = x64::Rflags::get();
+    com2_println!("rflags = {:#x?}", rflags);
     // Shutdown.
     efi_system_table.shutdown();
     panic!("End of kernel.elf");
