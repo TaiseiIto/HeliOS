@@ -29,12 +29,9 @@ fn main(argument: &'static Argument) {
     let my_local_apic_id: u8 = ia32_apic_base
         .registers()
         .apic_id();
-    unsafe {
-        asm!(
-            "syscall",
-            in("al") my_local_apic_id,
-        );
-    }
+    ia32_apic_base
+        .registers_mut()
+        .send_interrupt(bsp_local_apic_id, 0x20);
     panic!("End of kernel.elf");
 }
 

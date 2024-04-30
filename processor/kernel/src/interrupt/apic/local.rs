@@ -106,6 +106,10 @@ impl Registers {
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
     }
+
+    pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {
+        self.interrupt_command.send_interrupt(destination_local_apic_id, destination_vector);
+    }
 }
 
 impl fmt::Debug for Registers {
