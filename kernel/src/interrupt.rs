@@ -351,7 +351,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         2, // int 0x1d VMM Communication Exception (\#VC)
         2, // int 0x1e Security Exception (\#SX)
         2, // int 0x1f Reserved Exception 7
-        1, // int 0x20
+        1, // int 0x20 Interprocessor interrupt
         1, // int 0x21
         1, // int 0x22
         1, // int 0x23
@@ -911,10 +911,14 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     com2_println!("stack_frame = {:#x?}", stack_frame);
 }
 
+/// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x20;
+    let rflags = x64::Rflags::get();
+    com2_println!("Interprocessor interrupt");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    com2_println!("rflags = {:#x?}", rflags);
 }
 
 extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
