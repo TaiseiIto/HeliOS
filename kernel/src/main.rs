@@ -70,6 +70,7 @@ fn main(argument: &'static mut Argument<'static>) {
         memory_map,
         paging,
     } = argument;
+    efi_system_table.set();
     rs232c::set_com2(com2);
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
@@ -153,9 +154,11 @@ fn main(argument: &'static mut Argument<'static>) {
         asm!("int 0x80");
     }
     // Check RSDP.
-    assert!(efi_system_table.rsdp().is_correct());
+    assert!(efi::SystemTable::get()
+        .rsdp()
+        .is_correct());
     // Set APIC.
-    let io_apic: &mut interrupt::apic::io::Registers = efi_system_table
+    let io_apic: &mut interrupt::apic::io::Registers = efi::SystemTable::get()
         .rsdp_mut()
         .xsdt_mut()
         .madt_mut()
@@ -171,13 +174,13 @@ fn main(argument: &'static mut Argument<'static>) {
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
     // Start HPET.
-    efi_system_table
+    efi::SystemTable::get()
         .rsdp_mut()
         .xsdt_mut()
         .hpet_mut()
         .registers_mut()
         .start_counting();
-    let hpet: &timer::hpet::Registers = efi_system_table
+    let hpet: &timer::hpet::Registers = efi::SystemTable::get()
         .rsdp()
         .xsdt()
         .hpet()
@@ -187,7 +190,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut processor_paging: memory::Paging = paging.clone();
     let processor_kernel: elf::File = processor_kernel.clone().into();
     let processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
-    let mut processors: Vec<processor::Controller> = efi_system_table
+    let mut processors: Vec<processor::Controller> = efi::SystemTable::get()
         .rsdp()
         .xsdt()
         .madt()
@@ -204,7 +207,8 @@ fn main(argument: &'static mut Argument<'static>) {
     let rflags = x64::Rflags::get();
     com2_println!("rflags = {:#x?}", rflags);
     // Shutdown.
-    efi_system_table.shutdown();
+    efi::SystemTable::get()
+        .shutdown();
     panic!("End of kernel.elf");
 }
 
