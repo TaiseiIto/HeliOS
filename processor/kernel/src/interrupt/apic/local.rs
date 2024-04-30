@@ -108,6 +108,8 @@ impl Registers {
     }
 
     pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {
+        self.error_status.clear_all_errors();
+        self.interrupt_command.wait_to_send();
         self.interrupt_command.send_interrupt(destination_local_apic_id, destination_vector);
     }
 }
