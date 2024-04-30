@@ -4,6 +4,7 @@ pub mod descriptor;
 pub use descriptor::Descriptor;
 
 use crate::{
+    Argument,
     com2_print,
     com2_println,
     memory,
@@ -919,6 +920,10 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
     com2_println!("rflags = {:#x?}", rflags);
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_of_interrupt();
 }
 
 extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {

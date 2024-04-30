@@ -1,7 +1,6 @@
 use {
     alloc::vec::Vec,
     core::{
-        cell::OnceCell,
         fmt,
         iter,
     },
@@ -31,8 +30,6 @@ macro_rules! efi_println {
     ($fmt:expr) => (efi_print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (efi_print!(concat!($fmt, "\n"), $($arg)*));
 }
-
-static mut SYSTEM_TABLE: OnceCell<&'static mut SystemTable<'static>> = OnceCell::new();
 
 /// # EFI_SYSTEM_TABLE
 /// ## References
@@ -103,22 +100,6 @@ impl SystemTable<'_> {
 
     pub fn shutdown(&self) {
         self.runtime_services.shutdown();
-    }
-}
-
-impl SystemTable<'static> {
-    pub fn get() -> &'static mut Self {
-        unsafe {
-            SYSTEM_TABLE
-                .get_mut()
-                .unwrap()
-        }
-    }
-
-    pub fn set(&'static mut self) {
-        unsafe {
-            SYSTEM_TABLE.set(self)
-        }.unwrap()
     }
 }
 

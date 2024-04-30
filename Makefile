@@ -68,10 +68,6 @@ DEBUG_PORT=2159
 # Telnet port to stop QEMU.
 TELNET_PORT=23
 
-test:
-	echo $(PROCESSOR_KERNEL_DESTINATION)
-	echo $(PROCESSOR_KERNEL)
-
 # Build an OS image runs on QEMU.
 # Usage: $ make
 $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
