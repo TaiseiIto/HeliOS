@@ -17,20 +17,22 @@ use core::{
 #[repr(packed)]
 pub struct Argument {
     ia32_apic_base: x64::msr::ia32::ApicBase,
+    bsp_local_apic_id: u8,
 }
 
 #[no_mangle]
 fn main(argument: &'static Argument) {
     let mut argument: Argument = argument.clone();
     let mut ia32_apic_base: x64::msr::ia32::ApicBase = argument.ia32_apic_base;
+    let bsp_local_apic_id: u8 = argument.bsp_local_apic_id;
     ia32_apic_base.enable();
-    let local_apic_id: u8 = ia32_apic_base
+    let my_local_apic_id: u8 = ia32_apic_base
         .registers()
         .apic_id();
     unsafe {
         asm!(
             "syscall",
-            in("al") local_apic_id,
+            in("al") my_local_apic_id,
         );
     }
     panic!("End of kernel.elf");

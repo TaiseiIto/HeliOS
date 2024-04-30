@@ -113,7 +113,7 @@ main32:
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	leal	cr3,	%edx
+	leal	boot_argument_cr3,	%edx
 	pushl	%edx
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
@@ -123,7 +123,7 @@ main32:
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	leal	kernel_entry,	%edx
+	leal	boot_argument_kernel_entry,	%edx
 	pushl	%edx
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
@@ -133,7 +133,7 @@ main32:
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	leal	kernel_stack_floor,	%edx
+	leal	boot_argument_kernel_stack_floor,	%edx
 	pushl	%edx
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
@@ -141,7 +141,7 @@ main32:
 	# Leave 32bit main function.
 	leave
 	# Set CR3.
-	movl	cr3,	%edx
+	movl	boot_argument_cr3,	%edx
 	movl	%edx,	%cr3
 	# Set PAE.
 	movl	%cr4,	%edx
@@ -325,7 +325,7 @@ main64:
 	call	puts64
 	# Get IA32_APIC_BASE
 	call	get_ia32_apic_base
-	movq	%rax,	ia32_apic_base
+	movq	%rax,	kernel_argument_ia32_apic_base
 	# Print my local APIC ID.
 	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
@@ -336,15 +336,16 @@ main64:
 	# Print BSP local APIC ID.
 	leaq	bsp_local_apic_id_message,	%rdi
 	call	puts64
-	movb	bsp_local_apic_id,	%dil
+	movb	boot_argument_bsp_local_apic_id,	%dil
+	movb	%dil,	kernel_argument_bsp_local_apic_id
 	call	put_byte64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
 	# Jump to the kernel.
-	movq	kernel_stack_floor,	%rsp
+	movq	boot_argument_kernel_stack_floor,	%rsp
 	leaq	kernel_argument,	%rdi
-	call	*kernel_entry
+	call	*boot_argument_kernel_entry
 
 apic_is_supported:
 0:
@@ -663,16 +664,20 @@ my_local_apic_id_message:
 log_end_pointer:
 	.quad	log_start
 	.align	8
-kernel_argument:
-ia32_apic_base:
+kernel_argument:	# Argument of ../kernel/src/main.rs
+kernel_argument_ia32_apic_base:
 	.quad	0x0000000000000000
-cr3:	# Argument of ../../kernel/src/processor/boot.rs
+kernel_argument_bsp_local_apic_id:
+	.byte	0xff
+	.align	8
+boot_argument:
+boot_argument_cr3:	# Argument of ../../kernel/src/processor/boot.rs
 	.quad	0x0000000000000000
-kernel_entry:
+boot_argument_kernel_entry:
 	.quad	0x0000000000000000
-kernel_stack_floor:
+boot_argument_kernel_stack_floor:
 	.quad	0x0000000000000000
-bsp_local_apic_id:
+boot_argument_bsp_local_apic_id:
 	.byte	0xff
 log_start:
 
