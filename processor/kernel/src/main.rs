@@ -13,17 +13,20 @@ use core::{
     panic::PanicInfo,
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(packed)]
 pub struct Argument {
     ia32_apic_base: x64::msr::ia32::ApicBase,
 }
 
 #[no_mangle]
-fn main(argument: &'static mut Argument) {
+fn main(argument: &'static Argument) {
+    let mut argument: Argument = argument.clone();
     let mut ia32_apic_base: x64::msr::ia32::ApicBase = argument.ia32_apic_base;
-    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
-    let local_apic_id: u8 = local_apic_registers.apic_id();
+    ia32_apic_base.enable();
+    let local_apic_id: u8 = ia32_apic_base
+        .registers()
+        .apic_id();
     unsafe {
         asm!(
             "syscall",
