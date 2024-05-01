@@ -1,6 +1,7 @@
 pub mod boot;
 
 use {
+    alloc::vec::Vec,
     crate::{
         acpi,
         com2_print,
@@ -17,11 +18,12 @@ pub struct Controller {
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     paging: memory::Paging,
     kernel_stack: Option<memory::Stack>,
+    kernel_writable_pages: Vec<memory::Page>,
 }
 
 impl Controller {
     pub fn boot(&mut self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, kernel: &elf::File, my_local_apic_id: u8) {
-        kernel.deploy_writable_segments(&mut self.paging);
+        self.kernel_writable_pages = kernel.deploy_writable_segments(&mut self.paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
         self.kernel_stack = Some(memory::Stack::new(&mut self.paging, kernel_stack_floor_inclusive, kernel_stack_pages));
@@ -47,10 +49,12 @@ impl Controller {
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, paging: memory::Paging) -> Self {
         let kernel_stack: Option<memory::Stack> = None;
+        let kernel_writable_pages = Vec::<memory::Page>::new();
         Self {
             local_apic_structure,
             paging,
             kernel_stack,
+            kernel_writable_pages,
         }
     }
 }

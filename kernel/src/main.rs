@@ -9,6 +9,7 @@ extern crate alloc;
 mod acpi;
 mod allocator;
 mod application;
+mod argument;
 mod processor;
 mod efi;
 mod elf;
@@ -20,79 +21,33 @@ mod task;
 mod timer;
 mod x64;
 
+pub use argument::Argument;
+
 use {
     alloc::{
         boxed::Box,
-        collections::BTreeMap,
         vec::Vec,
     },
     core::{
         arch::asm,
-        cell::OnceCell,
         ops::Range,
         panic::PanicInfo,
     },
 };
-
-static mut ARGUMENT: OnceCell<&'static mut Argument<'static>> = OnceCell::new();
-
-#[derive(Debug)]
-pub struct Argument<'a> {
-    processor_boot_loader: processor::boot::Loader,
-    processor_kernel: Vec<u8>,
-    com2: &'a mut rs232c::Com,
-    cpuid: x64::Cpuid,
-    efi_system_table: &'a mut efi::SystemTable<'a>,
-    #[allow(dead_code)]
-    fonts: BTreeMap<usize, efi::Font<'a>>,
-    #[allow(dead_code)]
-    graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
-    heap_start: usize,
-    #[allow(dead_code)]
-    hello_application: elf::File,
-    memory_map: efi::memory::Map,
-    paging: memory::Paging,
-}
-
-impl Argument<'_> {
-    pub fn cpuid(&self) -> &x64::Cpuid {
-        &self.cpuid
-    }
-
-    pub fn heap_start(&self) -> usize {
-        self.heap_start
-    }
-}
-
-impl Argument<'static> {
-    pub fn get() -> &'static mut Self {
-        unsafe {
-            ARGUMENT
-                .get_mut()
-                .unwrap()
-        }
-    }
-
-    pub fn set(&'static mut self) {
-        unsafe {
-            ARGUMENT.set(self)
-        }.unwrap()
-    }
-}
 
 const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     argument.set();
-    rs232c::set_com2(Argument::get().com2);
+    rs232c::set_com2(Argument::get().com2_mut());
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
-    let heap_size: usize = allocator::initialize(&mut Argument::get().paging, &Argument::get().memory_map, Argument::get().heap_start());
+    let heap_size: usize = allocator::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     com2_println!("heap_size = {:#x?}", heap_size);
     // Check memory map.
     let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
-        .memory_map
+        .memory_map()
         .iter()
         .collect();
     com2_println!("memory_map = {:#x?}", memory_map);
@@ -152,7 +107,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .map(|index| {
             let pages: usize = 0x10;
             let floor_inclusive: usize = Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
-            memory::Stack::new(&mut Argument::get().paging, floor_inclusive, pages)
+            memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
         })
         .collect();
     let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
@@ -164,7 +119,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("task_register = {:#x?}", task_register);
     interrupt::register_handlers(&mut idt);
     // Initialize syscall.
-    syscall::initialize(&Argument::get().cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    syscall::initialize(Argument::get().cpuid(), &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     // Initialize a current task.
     task::Controller::set_current();
     task::Controller::get_current_mut()
@@ -176,12 +131,12 @@ fn main(argument: &'static mut Argument<'static>) {
     }
     // Check RSDP.
     assert!(Argument::get()
-        .efi_system_table
+        .efi_system_table()
         .rsdp()
         .is_correct());
     // Set APIC.
     let io_apic: &mut interrupt::apic::io::Registers = Argument::get()
-        .efi_system_table
+        .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()
         .madt_mut()
@@ -193,19 +148,19 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("io_apic_version = {:#x?}", io_apic_version);
     let io_apic_redirection_table_entries: Vec<interrupt::apic::io::redirection::table::Entry> = io_apic.redirection_table_entries();
     com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
-    let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(&Argument::get().cpuid).unwrap();
+    let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
     // Start HPET.
     Argument::get()
-        .efi_system_table
+        .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()
         .hpet_mut()
         .registers_mut()
         .start_counting();
     let hpet: &timer::hpet::Registers = Argument::get()
-        .efi_system_table
+        .efi_system_table()
         .rsdp()
         .xsdt()
         .hpet()
@@ -213,15 +168,15 @@ fn main(argument: &'static mut Argument<'static>) {
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()
-        .paging
+        .paging()
         .clone();
     let processor_kernel: elf::File = Argument::get()
-        .processor_kernel
+        .processor_kernel()
         .clone()
         .into();
     let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
     let mut processors: Vec<processor::Controller> = Argument::get()
-        .efi_system_table
+        .efi_system_table()
         .rsdp()
         .xsdt()
         .madt()
@@ -232,11 +187,11 @@ fn main(argument: &'static mut Argument<'static>) {
     processors
         .iter_mut()
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)
-        .for_each(|processor| processor.boot(&mut Argument::get().processor_boot_loader, local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
+        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
     com2_println!("processors = {:#x?}", processors);
     // Shutdown.
     Argument::get()
-        .efi_system_table
+        .efi_system_table()
         .shutdown();
     panic!("End of kernel.elf");
 }
