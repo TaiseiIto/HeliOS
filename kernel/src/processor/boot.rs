@@ -14,6 +14,7 @@ use {
         com2_println,
         memory,
     },
+    super::message,
 };
 
 pub struct Loader {
@@ -26,9 +27,9 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
         self.initialize_stack();
-        self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id);
+        self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
     }
 
     pub fn log(&self) -> String {
@@ -70,8 +71,8 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8) {
-        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id);
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
+        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -102,17 +103,22 @@ struct Arguments {
     #[allow(dead_code)]
     kernel_stack_floor: usize,
     #[allow(dead_code)]
+    message: usize,
+    #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8) -> Self {
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8, message: &Option<message::Content>) -> Self {
+        let message: *const Option<message::Content> = message as *const Option<message::Content>;
+        let message: usize = message as usize;
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
         Self {
             cr3,
             kernel_entry,
             kernel_stack_floor,
+            message,
             bsp_local_apic_id,
         }
     }

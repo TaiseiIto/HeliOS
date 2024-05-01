@@ -109,7 +109,7 @@ main32:
 	call	puts32
 	addl	$0x00000004,	%esp
 	# Print bootstrap processor CR3.
-	leal	check_cr3_message,	%edx
+	leal	cr3_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
@@ -119,7 +119,7 @@ main32:
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Print bootstrap processor kernel entry.
-	leal	check_kernel_entry_message,	%edx
+	leal	kernel_entry_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
@@ -129,7 +129,7 @@ main32:
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Print bootstrap processor kernel stack floor.
-	leal	check_kernel_stack_floor_message,	%edx
+	leal	kernel_stack_floor_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
@@ -326,6 +326,12 @@ main64:
 	# Get IA32_APIC_BASE
 	call	get_ia32_apic_base
 	movq	%rax,	kernel_argument_ia32_apic_base
+	# Pring message
+	leaq	message_message,	%rdi
+	call	puts64
+	movq	boot_argument_message,	%rdi
+	call	put_quad64
+	call	put_new_line64
 	# Print my local APIC ID.
 	leaq	my_local_apic_id_message,	%rdi
 	call	puts64
@@ -643,16 +649,18 @@ gdtr:
 	.long	gdt_start
 bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
-check_cr3_message:
-	.string "CR3 = 0x"
-check_kernel_entry_message:
-	.string "kernel_entry = 0x"
-check_kernel_stack_floor_message:
-	.string "kernel_stack_floor = 0x"
 cpuid_max_eax_message:
 	.string "CPUID max EAX = 0x"
+cr3_message:
+	.string "CR3 = 0x"
 error_message:
 	.string	"ERROR!"
+kernel_entry_message:
+	.string "kernel_entry = 0x"
+kernel_stack_floor_message:
+	.string "kernel_stack_floor = 0x"
+message_message:
+	.string "message = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
@@ -676,6 +684,8 @@ boot_argument_cr3:	# Argument of ../../kernel/src/processor/boot.rs
 boot_argument_kernel_entry:
 	.quad	0x0000000000000000
 boot_argument_kernel_stack_floor:
+	.quad	0x0000000000000000
+boot_argument_message:
 	.quad	0x0000000000000000
 boot_argument_bsp_local_apic_id:
 	.byte	0xff
