@@ -90,24 +90,32 @@ impl fmt::Debug for Allocator {
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        task::Controller::get_current_mut().cli();
+        if let Some(current_task) = task::Controller::get_current_mut(){
+            current_task.cli();
+        }
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
         let allocated: *mut u8 = root_node_list
             .alloc(layout)
             .unwrap();
-        task::Controller::get_current_mut().sti();
+        if let Some(current_task) = task::Controller::get_current_mut() {
+            current_task.sti()
+        };
         allocated
     }
 
     unsafe fn dealloc(&self, address: *mut u8, _: Layout) {
-        task::Controller::get_current_mut().cli();
+        if let Some(current_task) = task::Controller::get_current_mut() {
+            current_task.cli();
+        }
         let root_node_list: *mut *mut NodeList = self.root_node_list.get();
         let root_node_list: *mut NodeList = *root_node_list;
         let root_node_list: &mut NodeList = &mut *root_node_list;
         root_node_list.dealloc(address);
-        task::Controller::get_current_mut().sti();
+        if let  Some(current_task) = task::Controller::get_current_mut() {
+            current_task.sti();
+        }
     }
 }
 

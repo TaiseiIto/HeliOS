@@ -28,13 +28,12 @@ impl Controller {
         self.interrupt_disable_level -= 1;
     }
     
-    pub fn get_current_mut() -> &'static mut Self {
+    pub fn get_current_mut() -> Option<&'static mut Self> {
         unsafe {
             ALL
                 .get_mut()
                 .iter_mut()
                 .find(|controller| controller.current)
-                .unwrap()
         }
     }
 
