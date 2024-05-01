@@ -182,12 +182,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .madt()
         .processor_local_apic_structures()
         .iter()
-        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone()))
+        .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
+        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, &processor_kernel, my_local_apic_id))
         .collect();
-    processors
-        .iter_mut()
-        .filter(|processor| processor.local_apic_id() != my_local_apic_id)
-        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
     com2_println!("processors = {:#x?}", processors);
     // Shutdown.
     Argument::get()
