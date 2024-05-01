@@ -118,26 +118,6 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
-	# Print bootstrap processor kernel entry.
-	leal	kernel_entry_message,	%edx
-	pushl	%edx
-	call	puts32
-	addl	$0x00000004,	%esp
-	leal	boot_argument_kernel_entry,	%edx
-	pushl	%edx
-	call	put_quad_pointer32
-	addl	$0x00000004,	%esp
-	call	put_new_line32
-	# Print bootstrap processor kernel stack floor.
-	leal	kernel_stack_floor_message,	%edx
-	pushl	%edx
-	call	puts32
-	addl	$0x00000004,	%esp
-	leal	boot_argument_kernel_stack_floor,	%edx
-	pushl	%edx
-	call	put_quad_pointer32
-	addl	$0x00000004,	%esp
-	call	put_new_line32
 	# Leave 32bit main function.
 	leave
 	# Set CR3.
@@ -326,6 +306,18 @@ main64:
 	# Get IA32_APIC_BASE
 	call	get_ia32_apic_base
 	movq	%rax,	kernel_argument_ia32_apic_base
+	# Print bootstrap processor kernel entry.
+	leaq	kernel_entry_message,	%rdi
+	call	puts64
+	movq	boot_argument_kernel_entry,	%rdi
+	call	put_quad64
+	call	put_new_line64
+	# Print bootstrap processor kernel stack floor.
+	leaq	kernel_stack_floor_message,	%rdi
+	call	puts64
+	movq	boot_argument_kernel_stack_floor,	%rdi
+	call	put_quad64
+	call	put_new_line64
 	# Pring message
 	leaq	message_message,	%rdi
 	call	puts64
