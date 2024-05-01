@@ -167,6 +167,9 @@ fn main(argument: &'static mut Argument<'static>) {
     interrupt::register_handlers(&mut idt);
     // Initialize syscall.
     syscall::initialize(&Argument::get().cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    // Initialize a current task.
+    task::Controller::set_current();
+    task::Controller::get_current_mut().sti();
     // Test interrupt.
     unsafe {
         asm!("int 0x80");
@@ -226,7 +229,6 @@ fn main(argument: &'static mut Argument<'static>) {
         .iter()
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone()))
         .collect();
-    x64::sti();
     processors
         .iter_mut()
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)

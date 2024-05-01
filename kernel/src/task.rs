@@ -7,9 +7,10 @@ use {
     },
 };
 
-static mut CURRENT: UnsafeCell<Vec<Controller>> = UnsafeCell::new(Vec::new());
+static mut ALL: UnsafeCell<Vec<Controller>> = UnsafeCell::new(Vec::new());
 
 pub struct Controller {
+    current: bool,
     interrupt_disable_level: usize,
 }
 
@@ -26,15 +27,30 @@ impl Controller {
     pub fn end_interrupt(&mut self) {
         self.interrupt_disable_level -= 1;
     }
+    
+    pub fn get_current_mut() -> &'static mut Self {
+        unsafe {
+            ALL
+                .get_mut()
+                .iter_mut()
+                .find(|controller| controller.current)
+                .unwrap()
+        }
+    }
 
-    pub fn new() -> Self {
+    pub fn set_current() {
+        let current: bool = true;
         let interrupt_disable_level: usize = if x64::Rflags::get().interrupt_is_enabled() {
             0
         } else {
             1
         };
-        Self {
+        let current = Self {
+            current,
             interrupt_disable_level,
+        };
+        unsafe {
+            ALL.get_mut().push(current)
         }
     }
 
