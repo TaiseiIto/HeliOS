@@ -93,6 +93,9 @@ fn main(argument: &'static mut Argument<'static>) {
     // Initialize allocator.
     let heap_size: usize = allocator::initialize(&mut Argument::get().paging, &Argument::get().memory_map, Argument::get().heap_start());
     com2_println!("heap_size = {:#x?}", heap_size);
+    // Initialize a current task.
+    task::Controller::set_current();
+    // Check memory map.
     let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
         .memory_map
         .iter()
@@ -167,8 +170,7 @@ fn main(argument: &'static mut Argument<'static>) {
     interrupt::register_handlers(&mut idt);
     // Initialize syscall.
     syscall::initialize(&Argument::get().cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
-    // Initialize a current task.
-    task::Controller::set_current();
+    // Allow interrupts.
     task::Controller::get_current_mut().sti();
     // Test interrupt.
     unsafe {

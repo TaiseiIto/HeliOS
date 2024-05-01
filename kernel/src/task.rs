@@ -50,7 +50,7 @@ impl Controller {
             interrupt_disable_level,
         };
         unsafe {
-            ALL.get_mut().push(current)
+            ALL.get_mut().push(current);
         }
     }
 
