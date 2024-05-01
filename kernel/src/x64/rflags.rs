@@ -56,6 +56,10 @@ impl Rflags {
         rflags.into()
     }
 
+    pub fn interrupt_is_enabled(&self) -> bool {
+        self.interrupt_enable()
+    }
+
     /// # Set RFLAGS
     /// ## References
     /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-401 POPF/POPFD/POPFQ Pop Stack Into EFLAGS Register

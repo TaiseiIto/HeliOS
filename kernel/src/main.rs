@@ -16,6 +16,7 @@ mod interrupt;
 mod memory;
 mod rs232c;
 mod syscall;
+mod task;
 mod timer;
 mod x64;
 
@@ -60,6 +61,10 @@ impl Argument<'_> {
     pub fn cpuid(&self) -> &x64::Cpuid {
         &self.cpuid
     }
+
+    pub fn heap_start(&self) -> usize {
+        self.heap_start
+    }
 }
 
 impl Argument<'static> {
@@ -86,7 +91,7 @@ fn main(argument: &'static mut Argument<'static>) {
     rs232c::set_com2(Argument::get().com2);
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
-    let heap_size: usize = allocator::initialize(&mut Argument::get().paging, &Argument::get().memory_map, Argument::get().heap_start);
+    let heap_size: usize = allocator::initialize(&mut Argument::get().paging, &Argument::get().memory_map, Argument::get().heap_start());
     com2_println!("heap_size = {:#x?}", heap_size);
     let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
         .memory_map
@@ -148,7 +153,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
         .map(|index| {
             let pages: usize = 0x10;
-            let floor_inclusive: usize = Argument::get().heap_start - (2 * index + 1) * pages * memory::page::SIZE - 1;
+            let floor_inclusive: usize = Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
             memory::Stack::new(&mut Argument::get().paging, floor_inclusive, pages)
         })
         .collect();
