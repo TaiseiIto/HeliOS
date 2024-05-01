@@ -23,10 +23,7 @@ mod x64;
 use {
     alloc::{
         boxed::Box,
-        collections::{
-            BTreeMap,
-            BTreeSet,
-        },
+        collections::BTreeMap,
         vec::Vec,
     },
     core::{
@@ -222,7 +219,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .processor_kernel
         .clone()
         .into();
-    let processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
+    let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
     let mut processors: Vec<processor::Controller> = Argument::get()
         .efi_system_table
         .rsdp()
@@ -237,8 +234,6 @@ fn main(argument: &'static mut Argument<'static>) {
         .filter(|processor| processor.local_apic_id() != my_local_apic_id)
         .for_each(|processor| processor.boot(&mut Argument::get().processor_boot_loader, local_apic_registers, hpet, &processor_kernel, my_local_apic_id));
     com2_println!("processors = {:#x?}", processors);
-    let rflags = x64::Rflags::get();
-    com2_println!("rflags = {:#x?}", rflags);
     // Shutdown.
     Argument::get()
         .efi_system_table

@@ -53,10 +53,7 @@ impl Header {
     }
 
     pub fn is_loadable_segment(&self) -> bool {
-        match self.p_type {
-            Pt::Load => true,
-            _ => false,
-        }
+        matches!(self.p_type, Pt::Load)
     }
 
     pub fn pages(&self) -> Vec<usize> {

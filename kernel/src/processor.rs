@@ -1,7 +1,6 @@
 pub mod boot;
 
 use {
-    core::ops::RangeInclusive,
     crate::{
         acpi,
         com2_print,

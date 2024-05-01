@@ -13,7 +13,6 @@ use {
         com2_print,
         com2_println,
         memory,
-        x64,
     },
 };
 
@@ -98,8 +97,11 @@ impl fmt::Debug for Loader {
 struct Arguments {
     #[allow(dead_code)]
     cr3: u64,
+    #[allow(dead_code)]
     kernel_entry: usize,
+    #[allow(dead_code)]
     kernel_stack_floor: usize,
+    #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
 

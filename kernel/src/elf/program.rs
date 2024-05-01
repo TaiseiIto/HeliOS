@@ -5,10 +5,7 @@
 
 use {
     alloc::{
-        collections::{
-            BTreeMap,
-            BTreeSet,
-        },
+        collections::BTreeMap,
         vec::Vec,
     },
     bitfield_struct::bitfield,
@@ -17,11 +14,7 @@ use {
         ops::Range,
         slice,
     },
-    crate::{
-        com2_print,
-        com2_println,
-        memory,
-    },
+    crate::memory,
     super::{
         Addr,
         Off,
@@ -47,7 +40,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn deploy(&self, elf: &[u8], pages: &mut Vec<memory::Page>) {
+    pub fn deploy(&self, elf: &[u8], pages: &mut [memory::Page]) {
         let start: usize = self.p_offset as usize;
         let end: usize = start + self.p_filesz as usize;
         let source_range: Range<usize> = start..end;
@@ -80,10 +73,7 @@ impl Header {
     }
 
     pub fn is_loadable_segment(&self) -> bool {
-        match self.p_type {
-            Pt::Load => true,
-            _ => false,
-        }
+        matches!(self.p_type, Pt::Load)
     }
 
     pub fn is_writable(&self) -> bool {

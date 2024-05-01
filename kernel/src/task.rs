@@ -1,10 +1,7 @@
 use {
     alloc::vec::Vec,
     core::cell::UnsafeCell,
-    crate::{
-        Argument,
-        x64,
-    },
+    crate::x64,
 };
 
 static mut ALL: UnsafeCell<Vec<Controller>> = UnsafeCell::new(Vec::new());
