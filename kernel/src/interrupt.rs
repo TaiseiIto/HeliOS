@@ -1120,6 +1120,7 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
             .unwrap()
             .registers_mut()
             .end_of_interrupt();
+        processor::Controller::delete_messages();
     }
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();

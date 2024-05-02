@@ -1,6 +1,6 @@
 use super::Controller;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Content {
     Char(char),
 }

@@ -59,10 +59,27 @@ impl Argument {
         }
     }
 
+    pub fn send_char(&mut self, character: char) {
+        while self.message().is_some() {
+            x64::pause();
+        }
+        *self.message_mut() = Some(processor::message::Content::char(character));
+        let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
+        ia32_apic_base
+            .registers_mut()
+            .send_interrupt(self.bsp_local_apic_id, 0x20);
+    }
+
     pub fn set(self) {
         unsafe {
             ARGUMENT.set(self)
         }.unwrap()
+    }
+
+    fn message(&self) -> &Option<processor::message::Content> {
+        unsafe {
+            &*self.message
+        }
     }
 
     fn message_mut(&mut self) -> &mut Option<processor::message::Content> {
@@ -71,13 +88,6 @@ impl Argument {
         }
     }
 
-    pub fn send_char(&mut self, character: char) {
-        *self.message_mut() = Some(processor::message::Content::char(character));
-        let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
-        ia32_apic_base
-            .registers_mut()
-            .send_interrupt(self.bsp_local_apic_id, 0x20);
-    }
 }
 
 impl fmt::Write for Argument {

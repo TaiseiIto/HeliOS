@@ -46,6 +46,14 @@ impl Controller {
         com2_println!("{}", boot_loader.log());
     }
 
+    pub fn delete_messages() {
+        Self::get_mut_all()
+            .into_iter()
+            .for_each(|controller| {
+                controller.message = None;
+            });
+    }
+
     pub fn get_all() -> Vec<&'static Self> {
         unsafe {
             CONTROLLERS.get()
@@ -94,7 +102,7 @@ impl Controller {
     pub fn process_messages() {
         Self::get_mut_all()
             .into_iter()
-            .for_each(|controller| if let Some(message) = controller.message.take() {
+            .for_each(|controller| if let Some(message) = controller.message.clone() {
                 message.process(controller);
             })
     }
