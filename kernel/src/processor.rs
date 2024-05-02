@@ -48,26 +48,23 @@ impl Controller {
 
     pub fn delete_messages() {
         Self::get_mut_all()
-            .into_iter()
             .for_each(|controller| {
                 controller.message = None;
             });
     }
 
-    pub fn get_all() -> Vec<&'static Self> {
+    pub fn get_all() -> impl Iterator<Item = &'static Self> {
         unsafe {
             CONTROLLERS.get()
         }   .unwrap()
             .iter()
-            .collect()
     }
 
-    pub fn get_mut_all() -> Vec<&'static mut Self> {
+    pub fn get_mut_all() -> impl Iterator<Item = &'static mut Self> {
         unsafe {
             CONTROLLERS.get_mut()
         }   .unwrap()
             .iter_mut()
-            .collect()
     }
 
     pub fn local_apic_id(&self) -> u8 {
@@ -101,7 +98,6 @@ impl Controller {
 
     pub fn process_messages() {
         Self::get_mut_all()
-            .into_iter()
             .for_each(|controller| if let Some(message) = controller.message.clone() {
                 message.process(controller);
             })

@@ -194,7 +194,13 @@ fn main(argument: &'static mut Argument<'static>) {
         .into_iter()
         .map(|processor| (processor.local_apic_id(), processor.log()))
         .collect();
-    com2_println!("local_apic_id2log = {:#x?}", local_apic_id2log);
+    local_apic_id2log
+        .into_iter()
+        .for_each(|(local_apic_id, log)| {
+            com2_println!("Application processor log");
+            com2_println!("Local APIC ID = {:#x?}", local_apic_id);
+            com2_println!("{}", log);
+        });
     // Shutdown.
     Argument::get()
         .efi_system_table()
