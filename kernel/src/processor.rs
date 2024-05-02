@@ -4,6 +4,7 @@ pub mod message;
 use {
     alloc::{
         collections::BTreeMap,
+        string::String,
         vec::Vec,
     },
     core::cell::OnceCell,
@@ -27,6 +28,7 @@ pub struct Controller {
     kernel_stack_floor: usize,
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
+    log: String,
     message: Option<message::Content>,
     paging: memory::Paging,
 }
@@ -64,14 +66,8 @@ impl Controller {
         self.local_apic_structure.apic_id()
     }
 
-    pub fn local_apic_id2message() -> BTreeMap<u8, message::Content> {
-        Self::get_mut_all()
-            .into_iter()
-            .filter_map(|controller| controller
-                .message
-                .take()
-                .map(|message| (controller.local_apic_id(), message)))
-            .collect()
+    pub fn log(&self) -> &str {
+        &self.log
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
@@ -81,6 +77,7 @@ impl Controller {
         let kernel_stack: memory::Stack = memory::Stack::new(&mut paging, kernel_stack_floor_inclusive, kernel_stack_pages);
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
+        let log = String::new();
         let message: Option<message::Content> = None;
         Self {
             kernel_entry,
@@ -88,9 +85,22 @@ impl Controller {
             kernel_stack_floor,
             kernel_writable_pages,
             local_apic_structure,
+            log,
             message,
             paging,
         }
+    }
+
+    pub fn process_messages() {
+        Self::get_mut_all()
+            .into_iter()
+            .for_each(|controller| if let Some(message) = controller.message.take() {
+                message.process(controller);
+            })
+    }
+
+    pub fn receive_character(&mut self, character: char) {
+        self.log.push(character);
     }
 
     pub fn set_all(controllers: Vec<Self>) {

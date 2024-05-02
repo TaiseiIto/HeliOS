@@ -26,6 +26,7 @@ pub use argument::Argument;
 use {
     alloc::{
         boxed::Box,
+        collections::BTreeMap,
         vec::Vec,
     },
     core::{
@@ -189,6 +190,11 @@ fn main(argument: &'static mut Argument<'static>) {
     processor::Controller::get_all()
         .into_iter()
         .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
+    let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
+        .into_iter()
+        .map(|processor| (processor.local_apic_id(), processor.log()))
+        .collect();
+    com2_println!("local_apic_id2log = {:#x?}", local_apic_id2log);
     // Shutdown.
     Argument::get()
         .efi_system_table()

@@ -1116,11 +1116,10 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
         current_task.start_interrupt();
     }
     {
-        let local_apic_id2message: BTreeMap<u8, processor::message::Content> = processor::Controller::local_apic_id2message();
+        processor::Controller::process_messages();
         com2_println!("Interprocessor interrupt");
         com2_println!("interrupt_number = {:#x?}", interrupt_number);
         com2_println!("stack_frame = {:#x?}", stack_frame);
-        com2_println!("local_apic_id2message = {:#x?}", local_apic_id2message);
         x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
             .unwrap()
             .registers_mut()
