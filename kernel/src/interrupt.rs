@@ -1111,15 +1111,11 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
 
 /// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x20;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
     {
         processor::Controller::process_messages();
-        com2_println!("Interprocessor interrupt");
-        com2_println!("interrupt_number = {:#x?}", interrupt_number);
-        com2_println!("stack_frame = {:#x?}", stack_frame);
         x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
             .unwrap()
             .registers_mut()
