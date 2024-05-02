@@ -20,13 +20,16 @@ use core::{
 #[no_mangle]
 fn main(argument: &'static Argument) {
     Argument::set(argument.clone());
-    Argument::get_mut().send_char('A');
+    bsp_println!("Hello, World!");
     panic!("End of kernel.elf");
 }
 
 #[panic_handler]
-fn panic(_panic: &PanicInfo) -> ! {
+fn panic(panic: &PanicInfo) -> ! {
+    bsp_println!("APPLICATION PROCESSOR KERNEL PANIC!!!");
+    bsp_println!("{}", panic);
     loop {
         x64::hlt();
     }
 }
+

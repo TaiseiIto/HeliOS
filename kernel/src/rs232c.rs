@@ -272,7 +272,9 @@ impl Com {
 
 impl fmt::Write for Com {
     fn write_str(&mut self, string: &str) -> fmt::Result {
-        string.bytes().for_each(|byte| self.send(byte));
+        string
+            .bytes()
+            .for_each(|byte| self.send(byte));
         Ok(())
     }
 }

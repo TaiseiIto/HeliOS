@@ -1,7 +1,13 @@
 //! Kernel arguments.
 
 use {
-    core::cell::OnceCell,
+    core::{
+        cell::OnceCell,
+        fmt::{
+            self,
+            Write,
+        },
+    },
     crate::{
         interrupt,
         processor,
@@ -10,6 +16,23 @@ use {
 };
 
 static mut ARGUMENT: OnceCell<Argument> = OnceCell::new();
+
+#[macro_export]
+macro_rules! bsp_println {
+    ($fmt:expr) => (bsp_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (bsp_print!(concat!($fmt, "\n"), $($arg)*));
+}
+
+#[macro_export]
+macro_rules! bsp_print {
+    ($($arg:tt)*) => ($crate::argument::bsp_print(format_args!($($arg)*)));
+}
+
+pub fn bsp_print(args: fmt::Arguments) {
+    Argument::get_mut()
+        .write_fmt(args)
+        .unwrap()
+}
 
 #[derive(Clone, Debug)]
 #[repr(packed)]
@@ -54,6 +77,15 @@ impl Argument {
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, 0x20);
+    }
+}
+
+impl fmt::Write for Argument {
+    fn write_str(&mut self, string: &str) -> fmt::Result {
+        string
+            .chars()
+            .for_each(|character| self.send_char(character));
+        Ok(())
     }
 }
 
