@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .clone()
         .into();
     let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
-    let mut processors: Vec<processor::Controller> = Argument::get()
+    let processors: Vec<processor::Controller> = Argument::get()
         .efi_system_table()
         .rsdp()
         .xsdt()
@@ -185,10 +185,8 @@ fn main(argument: &'static mut Argument<'static>) {
         .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
         .collect();
-    processors
-        .iter()
-        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
-    com2_println!("processors = {:#x?}", processors);
+    processor::Controller::set_all(processors);
+    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
     // Shutdown.
     Argument::get()
         .efi_system_table()

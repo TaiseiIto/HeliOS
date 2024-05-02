@@ -57,8 +57,7 @@ impl Argument<'static> {
         unsafe {
             ARGUMENT
                 .get_mut()
-                .unwrap()
-        }
+        }.unwrap()
     }
 
     pub fn heap_start(&self) -> usize {

@@ -3,6 +3,7 @@ pub mod message;
 
 use {
     alloc::vec::Vec,
+    core::cell::OnceCell,
     crate::{
         acpi,
         com2_print,
@@ -13,6 +14,8 @@ use {
         timer,
     },
 };
+
+static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Controller {
@@ -26,6 +29,25 @@ pub struct Controller {
 }
 
 impl Controller {
+    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8) {
+        boot_loader.initialize(&self.paging, self.kernel_entry, self.kernel_stack_floor, bsp_local_apic_id, &self.message);
+        let local_apic_id: u8 = self.local_apic_structure.apic_id();
+        com2_println!("Boot processor {:#x?}", local_apic_id);
+        let entry_point: usize = boot_loader.entry_point();
+        local_apic_registers.send_init(local_apic_id, hpet);
+        local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
+        local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
+        hpet.wait_seconds(1);
+        com2_println!("{}", boot_loader.log());
+    }
+
+    pub fn get_all() -> impl Iterator<Item = &'static Controller> {
+        unsafe {
+            CONTROLLERS
+                .get()
+        }.unwrap().iter()
+    }
+
     pub fn local_apic_id(&self) -> u8 {
         self.local_apic_structure.apic_id()
     }
@@ -49,16 +71,10 @@ impl Controller {
         }
     }
 
-    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8) {
-        boot_loader.initialize(&self.paging, self.kernel_entry, self.kernel_stack_floor, bsp_local_apic_id, &self.message);
-        let local_apic_id: u8 = self.local_apic_structure.apic_id();
-        com2_println!("Boot processor {:#x?}", local_apic_id);
-        let entry_point: usize = boot_loader.entry_point();
-        local_apic_registers.send_init(local_apic_id, hpet);
-        local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
-        local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
-        hpet.wait_seconds(1);
-        com2_println!("{}", boot_loader.log());
+    pub fn set_all(controllers: Vec<Controller>) {
+        unsafe {
+            CONTROLLERS.set(controllers)
+        }.unwrap();
     }
 }
 
