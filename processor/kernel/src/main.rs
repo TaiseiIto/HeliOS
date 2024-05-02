@@ -20,7 +20,7 @@ use core::{
 #[no_mangle]
 fn main(argument: &'static Argument) {
     Argument::set(argument.clone());
-    Argument::get_mut().send_char('H');
+    Argument::get_mut().send_char('A');
     panic!("End of kernel.elf");
 }
 
