@@ -318,10 +318,11 @@ main64:
 	movq	boot_argument_kernel_stack_floor,	%rdi
 	call	put_quad64
 	call	put_new_line64
-	# Pring message
+	# Print message
 	leaq	message_message,	%rdi
 	call	puts64
 	movq	boot_argument_message,	%rdi
+	movq	%rdi,	kernel_argument_message
 	call	put_quad64
 	call	put_new_line64
 	# Print my local APIC ID.
@@ -666,6 +667,8 @@ log_end_pointer:
 	.align	8
 kernel_argument:	# Argument of ../kernel/src/main.rs
 kernel_argument_ia32_apic_base:
+	.quad	0x0000000000000000
+kernel_argument_message:
 	.quad	0x0000000000000000
 kernel_argument_bsp_local_apic_id:
 	.byte	0xff

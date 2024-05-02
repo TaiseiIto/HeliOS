@@ -7,6 +7,7 @@
 mod interrupt;
 mod memory;
 mod x64;
+mod processor;
 
 use core::{
     arch::asm,
@@ -17,6 +18,7 @@ use core::{
 #[repr(packed)]
 pub struct Argument {
     ia32_apic_base: x64::msr::ia32::ApicBase,
+    message: *mut Option<processor::message::Content>,
     bsp_local_apic_id: u8,
 }
 
