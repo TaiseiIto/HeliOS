@@ -2,7 +2,10 @@ pub mod boot;
 pub mod message;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::BTreeMap,
+        vec::Vec,
+    },
     core::cell::OnceCell,
     crate::{
         acpi,
@@ -41,15 +44,34 @@ impl Controller {
         com2_println!("{}", boot_loader.log());
     }
 
-    pub fn get_all() -> impl Iterator<Item = &'static Controller> {
+    pub fn get_all() -> Vec<&'static Self> {
         unsafe {
-            CONTROLLERS
-                .get()
-        }.unwrap().iter()
+            CONTROLLERS.get()
+        }   .unwrap()
+            .iter()
+            .collect()
+    }
+
+    pub fn get_mut_all() -> Vec<&'static mut Self> {
+        unsafe {
+            CONTROLLERS.get_mut()
+        }   .unwrap()
+            .iter_mut()
+            .collect()
     }
 
     pub fn local_apic_id(&self) -> u8 {
         self.local_apic_structure.apic_id()
+    }
+
+    pub fn local_apic_id2message() -> BTreeMap<u8, message::Content> {
+        Self::get_mut_all()
+            .into_iter()
+            .filter_map(|controller| controller
+                .message
+                .take()
+                .map(|message| (controller.local_apic_id(), message)))
+            .collect()
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
@@ -71,7 +93,7 @@ impl Controller {
         }
     }
 
-    pub fn set_all(controllers: Vec<Controller>) {
+    pub fn set_all(controllers: Vec<Self>) {
         unsafe {
             CONTROLLERS.set(controllers)
         }.unwrap();

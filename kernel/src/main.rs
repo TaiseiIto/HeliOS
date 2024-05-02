@@ -186,7 +186,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
         .collect();
     processor::Controller::set_all(processors);
-    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
+    processor::Controller::get_all()
+        .into_iter()
+        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
     // Shutdown.
     Argument::get()
         .efi_system_table()

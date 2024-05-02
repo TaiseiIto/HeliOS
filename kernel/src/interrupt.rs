@@ -3,13 +3,17 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use crate::{
-    Argument,
-    com2_print,
-    com2_println,
-    memory,
-    task,
-    x64,
+use {
+    alloc::collections::BTreeMap,
+    crate::{
+        Argument,
+        com2_print,
+        com2_println,
+        memory,
+        processor,
+        task,
+        x64,
+    },
 };
 
 pub enum Handler {
@@ -1111,11 +1115,11 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    let rflags = x64::Rflags::get();
+    let local_apic_id2message: BTreeMap<u8, processor::message::Content> = processor::Controller::local_apic_id2message();
     com2_println!("Interprocessor interrupt");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
-    com2_println!("rflags = {:#x?}", rflags);
+    com2_println!("local_apic_id2message = {:#x?}", local_apic_id2message);
     x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
         .unwrap()
         .registers_mut()
