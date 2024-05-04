@@ -120,11 +120,6 @@ main32:
 	call	put_new_line32
 	# Leave 32bit main function.
 	leave
-	# Debug code begins.
-1:
-	hlt
-	jmp	1b
-	# Debug code ends.
 	# Set CR3.
 	movl	boot_argument_cr3,	%edx
 	movl	%edx,	%cr3
@@ -305,6 +300,11 @@ main64:
 	leaq	STACK_FLOOR,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
+	# Debug code begins.
+1:
+	hlt
+	jmp	1b
+	# Debug code ends.
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
