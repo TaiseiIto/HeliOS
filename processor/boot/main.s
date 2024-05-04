@@ -45,6 +45,11 @@ main16:	# IP == 0x1000
 	# Leave 16bit main function.
 	popw	%di
 	leave
+	# Debug code begins.
+1:
+	hlt
+	jmp	1b
+	# Debug code ends.
 	# Move to 32bit protected mode.
 	lgdt	gdtr
 	movl	%cr0,	%edx
