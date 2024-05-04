@@ -831,6 +831,9 @@ union Pdpte {
 impl Pdpte {
     fn debug(&self, vaddr: &Vaddr) {
         com2_println!("pdpte = {:#x?}", self);
+        if let Some(pdpe) = self.pdpe() {
+            pdpe.debug(vaddr);
+        }
     }
 
     fn pe1gib(&self) -> Option<&Pe1Gib> {
@@ -1006,6 +1009,11 @@ struct Pdpe {
 }
 
 impl Pdpe {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pdt: &Pdt = self.into();
+        pdt.debug(vaddr);
+    }
+
     fn pdt(&self) -> *const Pdt {
         (self.address_of_pdt() << Self::ADDRESS_OF_PDT_OFFSET) as *const Pdt
     }
@@ -1040,6 +1048,11 @@ struct Pdt {
 }
 
 impl Pdt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pdte(vaddr)
+            .debug(vaddr)
+    }
+
     fn pdte(&self, vaddr: &Vaddr) -> &Pdte {
         &self.pdte[vaddr.pdi() as usize]
     }
@@ -1300,6 +1313,13 @@ union Pdte {
 }
 
 impl Pdte {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("{:#x?}", self);
+        if let Some(pde) = self.pde() {
+            pde.debug(vaddr);
+        }
+    }
+
     fn pe2mib(&self) -> Option<&Pe2Mib> {
         let pe2mib: &Pe2Mib = unsafe {
             &self.pe2mib
@@ -1472,6 +1492,11 @@ struct Pde {
 }
 
 impl Pde {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pt: &Pt = self.into();
+        pt.debug(vaddr);
+    }
+
     fn pt(&self) -> *const Pt {
         (self.address_of_pt() << Self::ADDRESS_OF_PT_OFFSET) as *const Pt
     }
@@ -1506,6 +1531,11 @@ struct Pt {
 }
 
 impl Pt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pte(vaddr)
+            .debug()
+    }
+
     fn pte(&self, vaddr: &Vaddr) -> &Pte {
         &self.pte[vaddr.pi() as usize]
     }
@@ -1596,6 +1626,10 @@ union Pte {
 }
 
 impl Pte {
+    fn debug(&self) {
+        com2_println!("{:#x?}", self);
+    }
+
     fn pe4kib(&self) -> Option<&Pe4Kib> {
         let pe4kib: &Pe4Kib = unsafe {
             &self.pe4kib
