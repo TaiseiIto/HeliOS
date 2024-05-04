@@ -43,18 +43,9 @@ impl Controller {
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
-        let pml4vaddr: Vaddr = vaddr
-                .with_pdpi(0)
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-        let pml4te: &Pml4te = self.pml4t
+        self.pml4t
             .as_ref()
-            .pml4te(&pml4vaddr);
-        com2_println!("pml4te = {:#x?}", pml4te);
-        if let Some(pml4te_controller) = self.vaddr2pml4te_controller.get(&pml4vaddr) {
-            pml4te_controller.debug(&vaddr);
-        }
+            .debug(&vaddr)
     }
 
     pub fn higher_half_range(&self) -> Range<u128> {
@@ -193,6 +184,11 @@ struct Pml4t {
 }
 
 impl Pml4t {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pml4te(vaddr)
+            .debug(vaddr)
+    }
+
     fn pml4te(&self, vaddr: &Vaddr) -> &Pml4te {
         &self.pml4te[vaddr.pml4i() as usize]
     }
@@ -233,25 +229,6 @@ enum Pml4teController {
 }
 
 impl Pml4teController {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pml4e {
-            pdpt,
-            vaddr2pdpte_controller,
-        } = self {
-            let pdp_vaddr: Vaddr = vaddr
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-            let pdpte: &Pdpte = pdpt
-                .as_ref()
-                .pdpte(&pdp_vaddr);
-            com2_println!("pdpte = {:#x?}", pdpte);
-            if let Some(pdpte_controller) = vaddr2pdpte_controller.get(&pdp_vaddr) {
-                pdpte_controller.debug(vaddr);
-            }
-        }
-    }
-
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
@@ -425,6 +402,10 @@ union Pml4te {
 }
 
 impl Pml4te {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("pml4te = {:#x?}", self);
+    }
+
     fn pml4e(&self) -> Option<&Pml4e> {
         let pml4e: &Pml4e = unsafe {
             &self.pml4e
@@ -595,24 +576,6 @@ enum PdpteController {
 }
 
 impl PdpteController {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pdpe {
-            pdt,
-            vaddr2pdte_controller,
-        } = self {
-            let pd_vaddr: Vaddr = vaddr
-                .with_pi(0)
-                .with_offset(0);
-            let pdte: &Pdte = pdt
-                .as_ref()
-                .pdte(&pd_vaddr);
-            com2_println!("pdte = {:#x?}", pdte);
-            if let Some(pdte_controller) = vaddr2pdte_controller.get(&pd_vaddr) {
-                pdte_controller.debug(vaddr);
-            }
-        }
-    }
-
     fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe1Gib => {
@@ -1102,20 +1065,6 @@ enum PdteController {
 }
 
 impl PdteController {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pde {
-            pt,
-            vaddr2pte_controller: _,
-        } = self {
-            let p_vaddr: Vaddr = vaddr
-                .with_offset(0);
-            let pte: &Pte = pt
-                .as_ref()
-                .pte(&p_vaddr);
-            com2_println!("pte = {:#x?}", pte);
-        }
-    }
-
     fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe2Mib => {
