@@ -404,6 +404,9 @@ union Pml4te {
 impl Pml4te {
     fn debug(&self, vaddr: &Vaddr) {
         com2_println!("pml4te = {:#x?}", self);
+        if let Some(pml4e) = self.pml4e() {
+            pml4e.debug(vaddr);
+        }
     }
 
     fn pml4e(&self) -> Option<&Pml4e> {
@@ -499,6 +502,11 @@ struct Pml4e {
 }
 
 impl Pml4e {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pdpt: &Pdpt = self.into();
+        pdpt.debug(vaddr);
+    }
+
     fn pdpt(&self) -> *const Pdpt {
         (self.address_of_pdpt() << Self::ADDRESS_OF_PDPT_OFFSET) as *const Pdpt
     }
@@ -533,6 +541,11 @@ struct Pdpt {
 }
 
 impl Pdpt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pdpte(vaddr)
+            .debug(vaddr)
+    }
+
     fn pdpte(&self, vaddr: &Vaddr) -> &Pdpte {
         &self.pdpte[vaddr.pdpi() as usize]
     }
@@ -816,6 +829,10 @@ union Pdpte {
 }
 
 impl Pdpte {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("pdpte = {:#x?}", self);
+    }
+
     fn pe1gib(&self) -> Option<&Pe1Gib> {
         let pe1gib: &Pe1Gib = unsafe {
             &self.pe1gib
