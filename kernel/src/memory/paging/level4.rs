@@ -15,6 +15,7 @@ use {
         fmt,
         mem,
         ops::Range,
+        slice,
     },
     crate::{
         com2_print,
@@ -134,6 +135,12 @@ impl Controller {
             .set_page(pml4te, &vaddr, paddr, present, writable, executable);
     }
 
+    pub fn pml4t(&self) -> &[u8] {
+        self.pml4t
+            .as_ref()
+            .as_slice()
+    }
+
     pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
         let vaddr: Vaddr = vaddr.into();
         self.pml4t
@@ -184,6 +191,15 @@ struct Pml4t {
 }
 
 impl Pml4t {
+    fn as_slice(&self) -> &[u8] {
+        let pml4te: &[Pml4te; PML4T_LENGTH] = &self.pml4te;
+        let pml4te: *const [Pml4te; PML4T_LENGTH] = pml4te as *const [Pml4te; PML4T_LENGTH];
+        let pml4te: *const u8 = pml4te as *const u8;
+        unsafe {
+            slice::from_raw_parts(pml4te, memory::page::SIZE)
+        }
+    }
+
     fn debug(&self, vaddr: &Vaddr) {
         self.pml4te(vaddr)
             .debug(vaddr)

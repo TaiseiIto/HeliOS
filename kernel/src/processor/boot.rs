@@ -77,7 +77,8 @@ impl Loader {
     }
 
     fn set_temporary_pml4_table(&mut self, paging: &memory::Paging) {
-        self.temporary_pml4_table_mut();
+        self.temporary_pml4_table_mut()
+            .copy_from_slice(paging.table())
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
