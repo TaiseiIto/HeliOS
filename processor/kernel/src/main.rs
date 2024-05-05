@@ -20,6 +20,7 @@ use core::{
 #[no_mangle]
 fn main(argument: &'static Argument) {
     Argument::set(argument.clone());
+    Argument::get_mut().boot_completed();
     bsp_println!("Hello, World!");
     panic!("End of kernel.elf");
 }

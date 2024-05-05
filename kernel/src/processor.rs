@@ -16,6 +16,7 @@ use {
         interrupt,
         memory,
         timer,
+        x64,
     },
 };
 
@@ -23,6 +24,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Controller {
+    boot_completed: bool,
     kernel_entry: usize,
     kernel_stack: memory::Stack,
     kernel_stack_floor: usize,
@@ -42,8 +44,14 @@ impl Controller {
         local_apic_registers.send_init(local_apic_id, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
-        hpet.wait_seconds(1);
+        while !self.boot_completed {
+            x64::pause();
+        }
         com2_println!("{}", boot_loader.log());
+    }
+
+    pub fn boot_completed(&mut self) {
+        self.boot_completed = true;
     }
 
     pub fn delete_messages() {
@@ -76,6 +84,7 @@ impl Controller {
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
+        let boot_completed: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
@@ -85,6 +94,7 @@ impl Controller {
         let log = String::new();
         let message: Option<message::Content> = None;
         Self {
+            boot_completed,
             kernel_entry,
             kernel_stack,
             kernel_stack_floor,
