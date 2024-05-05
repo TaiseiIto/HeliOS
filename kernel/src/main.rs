@@ -190,9 +190,7 @@ fn main(argument: &'static mut Argument<'static>) {
     processor::Controller::set_all(processors);
     processor::Controller::get_all()
         .into_iter()
-        .next()
-        .unwrap()
-        .boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id);
+        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
         .into_iter()
         .map(|processor| (processor.local_apic_id(), processor.log()))

@@ -20,10 +20,7 @@ use core::{
 #[no_mangle]
 fn main(argument: &'static Argument) {
     Argument::set(argument.clone());
-    bsp_print!("A");
-    loop {
-        x64::hlt();
-    }
+    bsp_println!("Hello, World!");
     panic!("End of kernel.elf");
 }
 
