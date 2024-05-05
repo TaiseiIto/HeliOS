@@ -11,13 +11,17 @@ pub use section::symbol;
 
 use {
     alloc::{
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+        },
         vec::Vec,
     },
     core::{
         fmt,
         str,
     },
+    crate::memory,
     header::Header,
 };
 
@@ -30,6 +34,76 @@ pub struct File {
 }
 
 impl File {
+    pub fn deploy_unwritable_segments(&self, paging: &mut memory::Paging) -> Vec<memory::Page> {
+        let pages: BTreeSet<usize> = self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
+            .flat_map(|program_header| program_header
+                .pages()
+                .into_iter())
+            .collect();
+        let mut pages: Vec<memory::Page> = pages
+            .into_iter()
+            .map(|vaddr| {
+                let writable: bool = true;
+                let executable: bool = false;
+                memory::Page::new(paging, vaddr, writable, executable)
+            })
+            .collect();
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
+            .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && !program_header.is_writable())
+            .for_each(|program_header| {
+                let vaddr2paddr: BTreeMap<usize, usize> = pages
+                    .iter()
+                    .map(|page| (page.vaddr_range().start, page.paddr_range().start))
+                    .collect();
+                program_header.set_page(paging, vaddr2paddr);
+            });
+        pages
+    }
+
+    pub fn deploy_writable_segments(&self, paging: &mut memory::Paging) -> Vec<memory::Page> {
+        let pages: BTreeSet<usize> = self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
+            .flat_map(|program_header| program_header
+                .pages()
+                .into_iter())
+            .collect();
+        let mut pages: Vec<memory::Page> = pages
+            .into_iter()
+            .map(|vaddr| {
+                let writable: bool = true;
+                let executable: bool = false;
+                memory::Page::new(paging, vaddr, writable, executable)
+            })
+            .collect();
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
+            .for_each(|program_header| program_header.deploy(&self.bytes, &mut pages));
+        self.program_headers()
+            .into_iter()
+            .filter(|program_header| program_header.is_loadable_segment() && program_header.is_writable())
+            .for_each(|program_header| {
+                let vaddr2paddr: BTreeMap<usize, usize> = pages
+                    .iter()
+                    .map(|page| (page.vaddr_range().start, page.paddr_range().start))
+                    .collect();
+                program_header.set_page(paging, vaddr2paddr);
+            });
+        pages
+    }
+
+    pub fn entry(&self) -> usize {
+        self.header().entry()
+    }
+
     #[allow(dead_code)]
     pub fn run<T>(&self, stack_floor: usize, argument: &T) {
         self.header().run(stack_floor, argument)

@@ -10,6 +10,7 @@ use {
     },
     bitfield_struct::bitfield,
     core::{
+        cmp,
         ops::Range,
         slice,
     },
@@ -39,28 +40,52 @@ pub struct Header {
 }
 
 impl Header {
-    #[allow(dead_code)]
-    pub fn deploy(&self, elf: &[u8]) {
-        let start: usize = self.p_vaddr as usize;
-        let start: *mut u8 = start as *mut u8;
-        let length: usize = self.p_memsz as usize;
-        let bytes_in_memory: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(start, length)
-        };
+    pub fn deploy(&self, elf: &[u8], pages: &mut [memory::Page]) {
         let start: usize = self.p_offset as usize;
         let end: usize = start + self.p_filesz as usize;
-        let bytes_in_file: &[u8] = &elf[start..end];
-        bytes_in_memory[0..bytes_in_file.len()].copy_from_slice(bytes_in_file);
+        let source_range: Range<usize> = start..end;
+        let vaddr_range_in_bytes: Range<usize> = self.vaddr_range_in_bytes();
+        let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
+        vaddr_range_in_pages
+            .step_by(memory::page::SIZE)
+            .for_each(|start| {
+                let page_range: Range<usize> = start..start + memory::page::SIZE;
+                let vaddr_range: Range<usize> = cmp::max(page_range.start, vaddr_range_in_bytes.start)..cmp::min(page_range.end, vaddr_range_in_bytes.end);
+                let page: &mut memory::Page = pages
+                    .iter_mut()
+                    .find(|page| page
+                        .vaddr_range()
+                        .contains(&vaddr_range.start))
+                    .unwrap();
+                let paddr_range: Range<usize> = page.vaddr2paddr(vaddr_range.start)..if page.vaddr_range().contains(&vaddr_range.end) {
+                    page.vaddr2paddr(vaddr_range.end)
+                } else {
+                    page.paddr_range().end
+                };
+                let source_range: Range<usize> = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start..source_range.end + vaddr_range.end - vaddr_range_in_bytes.end;
+                let source: &[u8] = &elf[source_range];
+                let destination: *mut u8 = paddr_range.start as *mut u8;
+                let destination: &mut [u8] = unsafe {
+                    slice::from_raw_parts_mut(destination, paddr_range.len())
+                };
+                destination[0..source.len()].copy_from_slice(source);
+            });
     }
 
-    #[allow(dead_code)]
+    pub fn is_loadable_segment(&self) -> bool {
+        matches!(self.p_type, Pt::Load)
+    }
+
+    pub fn is_writable(&self) -> bool {
+        self.p_flags.w()
+    }
+
     pub fn pages(&self) -> Vec<usize> {
         self.vaddr_range_in_pages()
             .filter(|vaddr| vaddr % memory::page::SIZE == 0)
             .collect()
     }
 
-    #[allow(dead_code)]
     pub fn set_page(&self, paging: &mut memory::Paging, vaddr2paddr: BTreeMap<usize, usize>) {
         let present: bool = true;
         let writable: bool = self.p_flags.w();
@@ -75,14 +100,12 @@ impl Header {
             });
     }
 
-    #[allow(dead_code)]
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
         let start: usize = self.p_vaddr as usize;
         let end: usize = start + self.p_memsz as usize;
         start..end
     }
 
-    #[allow(dead_code)]
     fn vaddr_range_in_pages(&self) -> Range<usize> {
         let Range::<usize> {
             start,

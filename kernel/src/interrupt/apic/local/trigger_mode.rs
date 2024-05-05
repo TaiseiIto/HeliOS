@@ -30,9 +30,7 @@ impl fmt::Debug for FatRegisters {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_list()
-            .entries(self
-                .registers()
-                .into_iter())
+            .entries(self.registers())
             .finish()
     }
 }
@@ -41,6 +39,7 @@ impl fmt::Debug for FatRegisters {
 #[repr(packed)]
 struct FatRegister {
     register: Register,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
 }
 

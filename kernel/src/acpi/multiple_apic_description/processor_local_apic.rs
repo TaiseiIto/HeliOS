@@ -6,10 +6,13 @@ use bitfield_struct::bitfield;
 #[derive(Clone, Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     acpi_processor_uid: u8,
     apic_id: u8,
+    #[allow(dead_code)]
     flags: Flags,
 }
 

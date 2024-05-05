@@ -5,13 +5,17 @@
 use {
     alloc::{
         boxed::Box,
-        collections::BTreeMap,
+        collections::{
+            BTreeMap,
+            btree_map,
+        },
     },
     bitfield_struct::bitfield,
     core::{
         fmt,
         mem,
         ops::Range,
+        slice,
     },
     crate::{
         com2_print,
@@ -26,28 +30,23 @@ const PDPT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdpte>();
 const PDT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdte>();
 const PT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pte>();
 
-pub struct Interface {
+pub struct Controller {
     cr3: x64::control::Register3,
     pml4t: Box<Pml4t>,
-    vaddr2pml4te_interface: BTreeMap<Vaddr, Pml4teInterface>,
+    vaddr2pml4te_controller: BTreeMap<Vaddr, Pml4teController>,
 }
 
-impl Interface {
+impl Controller {
+    pub fn cr3(&self) -> x64::control::Register3 {
+        self.cr3
+    }
+
     pub fn debug(&self, vaddr: usize) {
         com2_println!("cr3 = {:#x?}", self.cr3);
         let vaddr: Vaddr = vaddr.into();
-        let pml4vaddr: Vaddr = vaddr
-                .with_pdpi(0)
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-        let pml4te: &Pml4te = self.pml4t
+        self.pml4t
             .as_ref()
-            .pml4te(&pml4vaddr);
-        com2_println!("pml4te = {:#x?}", pml4te);
-        if let Some(pml4te_interface) = self.vaddr2pml4te_interface.get(&pml4vaddr) {
-            pml4te_interface.debug(&vaddr);
-        }
+            .debug(&vaddr)
     }
 
     pub fn higher_half_range(&self) -> Range<u128> {
@@ -81,40 +80,103 @@ impl Interface {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
+        if let btree_map::Entry::Vacant(entry) = self.vaddr2pml4te_controller.entry(pml4vaddr) {
+            let pml4i: usize = pml4vaddr.pml4i() as usize;
+            let pml4te_controller: Pml4teController = self
+                .pml4t
+                .pml4te
+                .as_slice()
+                .get(pml4i)
+                .unwrap()
+                .into();
+            match &pml4te_controller {
+                Pml4teController::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller: _,
+                } => {
+                    let pml4e: Pml4e = *self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4e()
+                        .unwrap();
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4e(pml4e, pdpt);
+                },
+                Pml4teController::Pml4teNotPresent => {
+                    let pml4te_not_present: Pml4teNotPresent = *self.pml4t
+                        .pml4te
+                        .as_slice()
+                        .get(pml4i)
+                        .unwrap()
+                        .pml4te_not_present()
+                        .unwrap();
+                    self.pml4t
+                        .pml4te
+                        .as_mut_slice()
+                        .get_mut(pml4i)
+                        .unwrap()
+                        .set_pml4te_not_present(pml4te_not_present);
+                },
+            }
+            entry.insert(pml4te_controller);
+        }
         let pml4te: &mut Pml4te = self.pml4t
             .as_mut()
             .pml4te_mut(&pml4vaddr);
-        self.vaddr2pml4te_interface
+        self.vaddr2pml4te_controller
             .get_mut(&pml4vaddr)
             .unwrap()
             .set_page(pml4te, &vaddr, paddr, present, writable, executable);
     }
 
+    pub fn pml4t(&self) -> &[u8] {
+        self.pml4t
+            .as_ref()
+            .as_slice()
+    }
+
     pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
         let vaddr: Vaddr = vaddr.into();
-        let pml4vaddr: Vaddr = vaddr
-                .with_pdpi(0)
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-        self.vaddr2pml4te_interface
-            .get(&pml4vaddr)
-            .and_then(|pml4te_interface| pml4te_interface.vaddr2paddr(&vaddr))
+        self.pml4t
+            .as_ref()
+            .vaddr2paddr(&vaddr)
     }
 }
 
-impl fmt::Debug for Interface {
+impl Clone for Controller {
+    fn clone(&self) -> Self {
+        let pml4t = Box::<Pml4t>::new(self.pml4t.as_ref().clone());
+        let cr3 = self.cr3.with_paging_structure({
+            let pml4t: Vaddr = pml4t.as_ref().into();
+            pml4t.paddr().unwrap()
+        });
+        let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
+        Self {
+            cr3,
+            pml4t,
+            vaddr2pml4te_controller,
+        }
+    }
+}
+
+impl fmt::Debug for Controller {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.vaddr2pml4te_interface
+            .entries(self.vaddr2pml4te_controller
                 .iter()
-                .zip(self.pml4t
-                    .as_ref()
-                    .pml4te
-                    .as_slice()
-                    .iter())
-                .map(|((vaddr, pml4te_interface), pml4te)| (vaddr, (pml4te, pml4te_interface))))
+                .map(|(vaddr, pml4te_controller)| {
+                    let pml4te: &Pml4te = self.pml4t
+                        .as_ref()
+                        .pml4te(vaddr);
+                    (vaddr, (pml4te, pml4te_controller))
+                }))
             .finish()
     }
 }
@@ -122,18 +184,38 @@ impl fmt::Debug for Interface {
 /// # Page Map Level 4 Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pml4t {
     pml4te: [Pml4te; PML4T_LENGTH],
 }
 
 impl Pml4t {
+    fn as_slice(&self) -> &[u8] {
+        let pml4te: &[Pml4te; PML4T_LENGTH] = &self.pml4te;
+        let pml4te: *const [Pml4te; PML4T_LENGTH] = pml4te as *const [Pml4te; PML4T_LENGTH];
+        let pml4te: *const u8 = pml4te as *const u8;
+        unsafe {
+            slice::from_raw_parts(pml4te, memory::page::SIZE)
+        }
+    }
+
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pml4te(vaddr)
+            .debug(vaddr)
+    }
+
     fn pml4te(&self, vaddr: &Vaddr) -> &Pml4te {
         &self.pml4te[vaddr.pml4i() as usize]
     }
 
     fn pml4te_mut(&mut self, vaddr: &Vaddr) -> &mut Pml4te {
         &mut self.pml4te[vaddr.pml4i() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pml4te(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -152,40 +234,21 @@ impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
     }
 }
 
-/// # Page Map Level 4 Table Entry Interface
-enum Pml4teInterface {
+/// # Page Map Level 4 Table Entry Controller
+enum Pml4teController {
     Pml4e {
         pdpt: Box<Pdpt>,
-        vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface>,
+        vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController>,
     },
     #[allow(dead_code)]
     Pml4teNotPresent,
 }
 
-impl Pml4teInterface {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pml4e {
-            pdpt,
-            vaddr2pdpte_interface,
-        } = self {
-            let pdp_vaddr: Vaddr = vaddr
-                .with_pdi(0)
-                .with_pi(0)
-                .with_offset(0);
-            let pdpte: &Pdpte = pdpt
-                .as_ref()
-                .pdpte(&pdp_vaddr);
-            com2_println!("pdpte = {:#x?}", pdpte);
-            if let Some(pdpte_interface) = vaddr2pdpte_interface.get(&pdp_vaddr) {
-                pdpte_interface.debug(vaddr);
-            }
-        }
-    }
-
+impl Pml4teController {
     fn set_page(&mut self, pml4te: &mut Pml4te, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         if let Self::Pml4teNotPresent = self {
             let pdpt: Box<Pdpt> = Box::default();
-            let vaddr2pdpte_interface: BTreeMap<Vaddr, PdpteInterface> = pdpt
+            let vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController> = pdpt
                 .as_ref()
                 .pdpte
                 .as_slice()
@@ -197,8 +260,8 @@ impl Pml4teInterface {
                         .with_pdi(0)
                         .with_pi(0)
                         .with_offset(0);
-                    let pdpte_interface: PdpteInterface = PdpteInterface::default();
-                    (vaddr, pdpte_interface)
+                    let pdpte_controller: PdpteController = PdpteController::default();
+                    (vaddr, pdpte_controller)
                 })
                 .collect();
             let pml4e: Pml4e = Pml4e::default()
@@ -213,17 +276,18 @@ impl Pml4teInterface {
             pml4te.set_pml4e(pml4e, pdpt.as_ref());
             *self = Self::Pml4e {
                 pdpt,
-                vaddr2pdpte_interface,
+                vaddr2pdpte_controller,
             };
         }
         if let Self::Pml4e {
             pdpt,
-            vaddr2pdpte_interface,
+            vaddr2pdpte_controller,
         } = self {
             let old_pml4e: Pml4e = *pml4te
                 .pml4e()
                 .unwrap();
             let new_pml4e: Pml4e = old_pml4e
+                .with_p(true)
                 .with_rw(old_pml4e.rw() || writable)
                 .with_xd(old_pml4e.xd() && !executable);
             pml4te.set_pml4e(new_pml4e, pdpt.as_ref());
@@ -231,10 +295,69 @@ impl Pml4teInterface {
                 .with_pdi(0)
                 .with_pi(0)
                 .with_offset(0);
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdpte_controller.entry(pdp_vaddr) {
+                let pdpi: usize = pdp_vaddr.pdpi() as usize;
+                let pdpte_controller: PdpteController = pdpt
+                    .pdpte
+                    .as_slice()
+                    .get(pdpi)
+                    .unwrap()
+                    .into();
+                match &pdpte_controller {
+                    PdpteController::Pe1Gib => {
+                        let pe1gib: Pe1Gib = *pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pe1gib()
+                            .unwrap();
+                        pdpt
+                            .pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pe1gib(pe1gib);
+                    },
+                    PdpteController::Pdpe {
+                        pdt,
+                        vaddr2pdte_controller: _,
+                    } => {
+                        let pdpe: Pdpe = *pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pdpe()
+                            .unwrap();
+                        pdpt
+                            .pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pdpe(pdpe, pdt);
+                    },
+                    PdpteController::PdpteNotPresent => {
+                        let pdpte_not_present: PdpteNotPresent = *pdpt
+                            .pdpte
+                            .as_slice()
+                            .get(pdpi)
+                            .unwrap()
+                            .pdpte_not_present()
+                            .unwrap();
+                        pdpt.pdpte
+                            .as_mut_slice()
+                            .get_mut(pdpi)
+                            .unwrap()
+                            .set_pdpte_not_present(pdpte_not_present);
+                    },
+                }
+                entry.insert(pdpte_controller);
+            }
             let pdpte: &mut Pdpte = pdpt
                 .as_mut()
                 .pdpte_mut(&pdp_vaddr);
-            vaddr2pdpte_interface
+            vaddr2pdpte_controller
                 .get_mut(&pdp_vaddr)
                 .unwrap()
                 .set_page(pdpte, vaddr, paddr, present, writable, executable);
@@ -242,47 +365,44 @@ impl Pml4teInterface {
             panic!("Can't set a page!");
         };
     }
-
-    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pml4e {
-                pdpt,
-                vaddr2pdpte_interface,
-            } => {
-                let pdp_vaddr: Vaddr = vaddr
-                    .with_pdi(0)
-                    .with_pi(0)
-                    .with_offset(0);
-                let pdpte: &Pdpte = pdpt
-                    .as_ref()
-                    .pdpte(&pdp_vaddr);
-                vaddr2pdpte_interface
-                    .get(&pdp_vaddr)
-                    .and_then(|pdpte_interface| pdpte_interface.vaddr2paddr(pdpte, vaddr))
-            },
-            Self::Pml4teNotPresent => None,
-        }
-    }
 }
 
-impl fmt::Debug for Pml4teInterface {
+impl fmt::Debug for Pml4teController {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Pml4e {
                 pdpt,
-                vaddr2pdpte_interface,
+                vaddr2pdpte_controller,
             } => formatter
                 .debug_map()
-                .entries(vaddr2pdpte_interface
+                .entries(vaddr2pdpte_controller
                     .iter()
-                    .zip(pdpt
-                        .as_ref()
-                        .pdpte
-                        .as_slice()
-                        .iter())
-                    .map(|((vaddr, pdpte_interface), pdpte)| (vaddr, (pdpte, pdpte_interface))))
+                    .map(|(vaddr, pdpte_controller)| {
+                        let pdpte: &Pdpte = pdpt
+                            .as_ref()
+                            .pdpte(vaddr);
+                        (vaddr, (pdpte, pdpte_controller))
+                    }))
                 .finish(),
             Self::Pml4teNotPresent => formatter.write_str("Pml4teNotPresent"),
+        }
+    }
+}
+
+impl From<&Pml4te> for Pml4teController {
+    fn from(pml4te: &Pml4te) -> Self {
+        match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
+            (Some(pml4e), None) => {
+                let pdpt: &Pdpt = pml4e.into();
+                let pdpt = Box::<Pdpt>::new(pdpt.clone());
+                let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
+                Self::Pml4e {
+                    pdpt,
+                    vaddr2pdpte_controller,
+                }
+            },
+            (None, Some(_pml4te_not_present)) => Self::Pml4teNotPresent,
+            _ => panic!("Can't convert from &Pml4te to Pml4teController"),
         }
     }
 }
@@ -298,6 +418,13 @@ union Pml4te {
 }
 
 impl Pml4te {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("pml4te = {:#x?}", self);
+        if let Some(pml4e) = self.pml4e() {
+            pml4e.debug(vaddr);
+        }
+    }
+
     fn pml4e(&self) -> Option<&Pml4e> {
         let pml4e: &Pml4e = unsafe {
             &self.pml4e
@@ -325,6 +452,14 @@ impl Pml4te {
         self.pml4te_not_present = pml4te_not_present;
         assert!(self.pml4e().is_none());
         assert!(self.pml4te_not_present().is_some());
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pml4e(), self.pml4te_not_present()) {
+            (Some(pml4e), None) => pml4e.vaddr2paddr(vaddr),
+            (None, Some(_pml4te_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
     }
 }
 
@@ -383,8 +518,22 @@ struct Pml4e {
 }
 
 impl Pml4e {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pdpt: &Pdpt = self.into();
+        pdpt.debug(vaddr);
+    }
+
     fn pdpt(&self) -> *const Pdpt {
         (self.address_of_pdpt() << Self::ADDRESS_OF_PDPT_OFFSET) as *const Pdpt
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pdpt: &Pdpt = self.into();
+                pdpt.vaddr2paddr(vaddr)
+            })
+            .flatten()
     }
 }
 
@@ -401,18 +550,29 @@ struct Pml4teNotPresent {
 /// # Page Directory Pointer Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-32 Figure 4-11. Formats of CR3 and Paging-Structure Entries with 4-Level Paging and 5-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdpt {
     pdpte: [Pdpte; PDPT_LENGTH],
 }
 
 impl Pdpt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pdpte(vaddr)
+            .debug(vaddr)
+    }
+
     fn pdpte(&self, vaddr: &Vaddr) -> &Pdpte {
         &self.pdpte[vaddr.pdpi() as usize]
     }
 
     fn pdpte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdpte {
         &mut self.pdpte[vaddr.pdpi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pdpte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -433,36 +593,18 @@ impl<'a> From<&'a Pml4e> for &'a Pdpt {
     }
 }
 
-/// # Page Directory Pointer Table Entry Interface
-enum PdpteInterface {
+/// # Page Directory Pointer Table Entry Controller
+enum PdpteController {
     #[allow(dead_code)]
     Pe1Gib,
     Pdpe {
         pdt: Box<Pdt>,
-        vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface>,
+        vaddr2pdte_controller: BTreeMap<Vaddr, PdteController>,
     },
     PdpteNotPresent,
 }
 
-impl PdpteInterface {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pdpe {
-            pdt,
-            vaddr2pdte_interface,
-        } = self {
-            let pd_vaddr: Vaddr = vaddr
-                .with_pi(0)
-                .with_offset(0);
-            let pdte: &Pdte = pdt
-                .as_ref()
-                .pdte(&pd_vaddr);
-            com2_println!("pdte = {:#x?}", pdte);
-            if let Some(pdte_interface) = vaddr2pdte_interface.get(&pd_vaddr) {
-                pdte_interface.debug(vaddr);
-            }
-        }
-    }
-
+impl PdpteController {
     fn set_page(&mut self, pdpte: &mut Pdpte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe1Gib => {
@@ -472,7 +614,7 @@ impl PdpteInterface {
                     .unwrap();
                 let page_1gib_paddr: usize = pe1gib.page_1gib() as usize;
                 let mut pdt: Box<Pdt> = Box::default();
-                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = pdt
+                let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_mut()
                     .pdte
                     .as_mut_slice()
@@ -483,7 +625,7 @@ impl PdpteInterface {
                             .with_pdi(pdi as u16)
                             .with_pi(0)
                             .with_offset(0);
-                        let pdte_interface: PdteInterface = PdteInterface::Pe2Mib;
+                        let pdte_controller: PdteController = PdteController::Pe2Mib;
                         let page_2mib_paddr: usize = page_1gib_paddr + (pdi << Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET);
                         let pe2mib: Pe2Mib = Pe2Mib::default()
                             .with_p(true)
@@ -501,7 +643,7 @@ impl PdpteInterface {
                             .with_prot_key(pe1gib.prot_key())
                             .with_xd(pe1gib.xd());
                         pdte.set_pe2mib(pe2mib);
-                        (vaddr, pdte_interface)
+                        (vaddr, pdte_controller)
                     })
                     .collect();
                 let pdpe: Pdpe = Pdpe::default()
@@ -517,12 +659,12 @@ impl PdpteInterface {
                 pdpte.set_pdpe(pdpe, pdt.as_ref());
                 *self = Self::Pdpe {
                     pdt,
-                    vaddr2pdte_interface,
+                    vaddr2pdte_controller,
                 };
             },
             Self::PdpteNotPresent => {
                 let pdt: Box<Pdt> = Box::default();
-                let vaddr2pdte_interface: BTreeMap<Vaddr, PdteInterface> = pdt
+                let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_ref()
                     .pdte
                     .as_slice()
@@ -533,8 +675,8 @@ impl PdpteInterface {
                             .with_pdi(pdi as u16)
                             .with_pi(0)
                             .with_offset(0);
-                        let pdte_interface: PdteInterface = PdteInterface::default();
-                        (vaddr, pdte_interface)
+                        let pdte_controller: PdteController = PdteController::default();
+                        (vaddr, pdte_controller)
                     })
                     .collect();
                 let pdpe: Pdpe = Pdpe::default()
@@ -550,29 +692,90 @@ impl PdpteInterface {
                 pdpte.set_pdpe(pdpe, pdt.as_ref());
                 *self = Self::Pdpe {
                     pdt,
-                    vaddr2pdte_interface,
+                    vaddr2pdte_controller,
                 };
             },
             _ => {},
         }
         if let Self::Pdpe {
             pdt,
-            vaddr2pdte_interface,
+            vaddr2pdte_controller,
         } = self {
             let old_pdpe: Pdpe = *pdpte
                 .pdpe()
                 .unwrap();
             let new_pdpe: Pdpe = old_pdpe
+                .with_p(true)
                 .with_rw(old_pdpe.rw() || writable)
                 .with_xd(old_pdpe.xd() && !executable);
             pdpte.set_pdpe(new_pdpe, pdt.as_ref());
             let pd_vaddr: Vaddr = vaddr
                 .with_pi(0)
                 .with_offset(0);
+            if let btree_map::Entry::Vacant(entry) = vaddr2pdte_controller.entry(pd_vaddr) {
+                let pdi: usize = pd_vaddr.pdi() as usize;
+                let pdte_controller: PdteController = pdt
+                    .pdte
+                    .as_slice()
+                    .get(pdi)
+                    .unwrap()
+                    .into();
+                match &pdte_controller {
+                    PdteController::Pe2Mib => {
+                        let pe2mib: Pe2Mib = *pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pe2mib()
+                            .unwrap();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pe2mib(pe2mib);
+                    },
+                    PdteController::Pde {
+                        pt,
+                        vaddr2pte_controller: _,
+                    } => {
+                        let pde: Pde = *pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pde()
+                            .unwrap();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pde(pde, pt);
+                    },
+                    PdteController::PdteNotPresent => {
+                        let pdte_not_present: PdteNotPresent = *pdt
+                            .pdte
+                            .as_slice()
+                            .get(pdi)
+                            .unwrap()
+                            .pdte_not_present()
+                            .unwrap();
+                        pdt
+                            .pdte
+                            .as_mut_slice()
+                            .get_mut(pdi)
+                            .unwrap()
+                            .set_pdte_not_present(pdte_not_present);
+                    },
+                }
+                entry.insert(pdte_controller);
+            }
             let pdte: &mut Pdte = pdt
                 .as_mut()
                 .pdte_mut(&pd_vaddr);
-            vaddr2pdte_interface
+            vaddr2pdte_controller
                 .get_mut(&pd_vaddr)
                 .unwrap()
                 .set_page(pdte, vaddr, paddr, present, writable, executable);
@@ -580,64 +783,52 @@ impl PdpteInterface {
             panic!("Can't set a page!");
         }
     }
-
-    fn vaddr2paddr(&self, pdpte: &Pdpte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe1Gib => {
-                let frame_base: usize = pdpte
-                    .pe1gib()
-                    .unwrap()
-                    .page_1gib() as usize;
-                let paddr: usize = frame_base
-                    + ((vaddr.pdi() as usize) << Vaddr::PDI_OFFSET)
-                    + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET)
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::Pdpe {
-                pdt,
-                vaddr2pdte_interface,
-            } => {
-                let pd_vaddr: Vaddr = vaddr
-                    .with_pi(0)
-                    .with_offset(0);
-                let pdte: &Pdte = pdt
-                    .as_ref()
-                    .pdte(&pd_vaddr);
-                vaddr2pdte_interface
-                    .get(&pd_vaddr)
-                    .and_then(|pdte_interface| pdte_interface.vaddr2paddr(pdte, vaddr))
-            },
-            Self::PdpteNotPresent => None,
-        }
-    }
 }
 
-impl Default for PdpteInterface {
+impl Default for PdpteController {
     fn default() -> Self {
         Self::PdpteNotPresent
     }
 }
 
-impl fmt::Debug for PdpteInterface {
+impl fmt::Debug for PdpteController {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Pe1Gib => formatter.write_str("Pe1Gib"),
             Self::Pdpe {
                 pdt,
-                vaddr2pdte_interface,
+                vaddr2pdte_controller,
             } => formatter
                 .debug_map()
-                .entries(vaddr2pdte_interface
+                .entries(vaddr2pdte_controller
                     .iter()
-                    .zip(pdt
-                        .as_ref()
-                        .pdte
-                        .as_slice()
-                        .iter())
-                    .map(|((vaddr, pdte_interface), pdte)| (vaddr, (pdte, pdte_interface))))
+                    .map(|(vaddr, pdte_controller)| {
+                        let pdte: &Pdte = pdt
+                            .as_ref()
+                            .pdte(vaddr);
+                        (vaddr, (pdte, pdte_controller))
+                    }))
                 .finish(),
             Self::PdpteNotPresent => formatter.write_str("PdpteNotPresent"),
+        }
+    }
+}
+
+impl From<&Pdpte> for PdpteController {
+    fn from(pdpte: &Pdpte) -> Self {
+        match (pdpte.pe1gib(), pdpte.pdpe(), pdpte.pdpte_not_present()) {
+            (Some(_pe1gib), None, None) => Self::Pe1Gib,
+            (None, Some(pdpe), None) => {
+                let pdt: &Pdt = pdpe.into();
+                let pdt = Box::<Pdt>::new(pdt.clone());
+                let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
+                Self::Pdpe {
+                    pdt,
+                    vaddr2pdte_controller,
+                }
+            },
+            (None, None, Some(_pdpte_not_present)) => Self::PdpteNotPresent,
+            _ => panic!("Can't convert from &Pdpe to PdpteController"),
         }
     }
 }
@@ -654,6 +845,13 @@ union Pdpte {
 }
 
 impl Pdpte {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("pdpte = {:#x?}", self);
+        if let Some(pdpe) = self.pdpe() {
+            pdpe.debug(vaddr);
+        }
+    }
+
     fn pe1gib(&self) -> Option<&Pe1Gib> {
         let pe1gib: &Pe1Gib = unsafe {
             &self.pe1gib
@@ -697,6 +895,15 @@ impl Pdpte {
         assert!(self.pe1gib().is_none());
         assert!(self.pdpe().is_none());
         assert!(self.pdpte_not_present().is_some());
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe1gib(), self.pdpe(), self.pdpte_not_present()) {
+            (Some(pe1gib), None, None) => pe1gib.vaddr2paddr(vaddr),
+            (None, Some(pdpe), None) => pdpe.vaddr2paddr(vaddr),
+            (None, None, Some(_pdpte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
     }
 }
 
@@ -784,6 +991,11 @@ impl Pe1Gib {
     fn page_1gib(&self) -> *const Page1Gib {
         (self.address_of_1gib_page_frame() << Self::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET) as *const Page1Gib
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_1gib_page_frame() as usize) << Self::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET) + ((vaddr.pdi() as usize) << Vaddr::PDI_OFFSET) + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET) + (vaddr.offset() as usize))
+    }
 }
 
 type Page1Gib = [u8; 1 << Pe1Gib::ADDRESS_OF_1GIB_PAGE_FRAME_OFFSET];
@@ -813,8 +1025,22 @@ struct Pdpe {
 }
 
 impl Pdpe {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pdt: &Pdt = self.into();
+        pdt.debug(vaddr);
+    }
+
     fn pdt(&self) -> *const Pdt {
         (self.address_of_pdt() << Self::ADDRESS_OF_PDT_OFFSET) as *const Pdt
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pdt: &Pdt = self.into();
+                pdt.vaddr2paddr(vaddr)
+            })
+            .flatten()
     }
 }
 
@@ -831,18 +1057,29 @@ struct PdpteNotPresent {
 /// # Page Directory Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
+#[derive(Clone)]
 #[repr(align(4096))]
 struct Pdt {
     pdte: [Pdte; PDT_LENGTH],
 }
 
 impl Pdt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pdte(vaddr)
+            .debug(vaddr)
+    }
+
     fn pdte(&self, vaddr: &Vaddr) -> &Pdte {
         &self.pdte[vaddr.pdi() as usize]
     }
 
     fn pdte_mut(&mut self, vaddr: &Vaddr) -> &mut Pdte {
         &mut self.pdte[vaddr.pdi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pdte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -863,31 +1100,17 @@ impl<'a> From<&'a Pdpe> for &'a Pdt {
     }
 }
 
-/// # Page Directory Table Entry Interface
-enum PdteInterface {
+/// # Page Directory Table Entry Controller
+enum PdteController {
     Pe2Mib,
     Pde {
         pt: Box<Pt>,
-        vaddr2pte_interface: BTreeMap<Vaddr, PteInterface>,
+        vaddr2pte_controller: BTreeMap<Vaddr, PteController>,
     },
     PdteNotPresent,
 }
 
-impl PdteInterface {
-    fn debug(&self, vaddr: &Vaddr) {
-        if let Self::Pde {
-            pt,
-            vaddr2pte_interface: _,
-        } = self {
-            let p_vaddr: Vaddr = vaddr
-                .with_offset(0);
-            let pte: &Pte = pt
-                .as_ref()
-                .pte(&p_vaddr);
-            com2_println!("pte = {:#x?}", pte);
-        }
-    }
-
+impl PdteController {
     fn set_page(&mut self, pdte: &mut Pdte, vaddr: &Vaddr, paddr: usize, present: bool, writable: bool, executable: bool) {
         match self {
             Self::Pe2Mib => {
@@ -897,7 +1120,7 @@ impl PdteInterface {
                     .unwrap();
                 let page_2mib_paddr: usize = pe2mib.page_2mib() as usize;
                 let mut pt: Box<Pt> = Box::default();
-                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = pt
+                let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_mut()
                     .pte
                     .as_mut_slice()
@@ -907,7 +1130,7 @@ impl PdteInterface {
                         let vaddr: Vaddr = vaddr
                             .with_pi(pi as u16)
                             .with_offset(0);
-                        let pte_interface: PteInterface = PteInterface::Pe4Kib;
+                        let pte_controller: PteController = PteController::Pe4Kib;
                         let page_4kib_paddr: usize = page_2mib_paddr + (pi << Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET);
                         let pe4kib: Pe4Kib = Pe4Kib::default()
                             .with_p(true)
@@ -924,7 +1147,7 @@ impl PdteInterface {
                             .with_prot_key(pe2mib.prot_key())
                             .with_xd(pe2mib.xd());
                         pte.set_pe4kib(pe4kib);
-                        (vaddr, pte_interface)
+                        (vaddr, pte_controller)
                     })
                     .collect();
                 let pde: Pde = Pde::default()
@@ -940,12 +1163,12 @@ impl PdteInterface {
                 pdte.set_pde(pde, pt.as_ref());
                 *self = Self::Pde {
                     pt,
-                    vaddr2pte_interface,
+                    vaddr2pte_controller,
                 }
             },
             Self::PdteNotPresent => {
                 let pt: Box<Pt> = Box::default();
-                let vaddr2pte_interface: BTreeMap<Vaddr, PteInterface> = pt
+                let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_ref()
                     .pte
                     .as_slice()
@@ -955,8 +1178,8 @@ impl PdteInterface {
                         let vaddr: Vaddr = vaddr
                             .with_pi(pi as u16)
                             .with_offset(0);
-                        let pte_interface: PteInterface = PteInterface::default();
-                        (vaddr, pte_interface)
+                        let pte_controller: PteController = PteController::default();
+                        (vaddr, pte_controller)
                     })
                     .collect();
                 let pde: Pde = Pde::default()
@@ -972,28 +1195,71 @@ impl PdteInterface {
                 pdte.set_pde(pde, pt.as_ref());
                 *self = Self::Pde {
                     pt,
-                    vaddr2pte_interface,
+                    vaddr2pte_controller,
                 };
             },
             _ => {},
         }
         if let Self::Pde {
             pt,
-            vaddr2pte_interface,
+            vaddr2pte_controller,
         } = self {
             let old_pde: Pde = *pdte
                 .pde()
                 .unwrap();
             let new_pde: Pde = old_pde
+                .with_p(true)
                 .with_rw(old_pde.rw() || writable)
                 .with_xd(old_pde.xd() && !executable);
             pdte.set_pde(new_pde, pt.as_ref());
             let p_vaddr: Vaddr = vaddr
                 .with_offset(0);
+            if let btree_map::Entry::Vacant(entry) = vaddr2pte_controller.entry(p_vaddr) {
+                let pi: usize = p_vaddr.pi() as usize;
+                let pte_controller: PteController = pt
+                    .pte
+                    .as_slice()
+                    .get(pi)
+                    .unwrap()
+                    .into();
+                match &pte_controller {
+                    PteController::Pe4Kib => {
+                        let pe4kib: Pe4Kib = *pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pe4kib()
+                            .unwrap();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pe4kib(pe4kib);
+                    },
+                    PteController::PteNotPresent => {
+                        let pte_not_present: PteNotPresent = *pt
+                            .pte
+                            .as_slice()
+                            .get(pi)
+                            .unwrap()
+                            .pte_not_present()
+                            .unwrap();
+                        pt
+                            .pte
+                            .as_mut_slice()
+                            .get_mut(pi)
+                            .unwrap()
+                            .set_pte_not_present(pte_not_present);
+                    },
+                }
+                entry.insert(pte_controller);
+            }
             let pte: &mut Pte = pt
                 .as_mut()
                 .pte_mut(&p_vaddr);
-            vaddr2pte_interface
+            vaddr2pte_controller
                 .get_mut(&p_vaddr)
                 .unwrap()
                 .set_page(pte, paddr, present, writable, executable);
@@ -1001,62 +1267,52 @@ impl PdteInterface {
             panic!("Can't set a page!");
         }
     }
-
-    fn vaddr2paddr(&self, pdte: &Pdte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe2Mib => {
-                let frame_base: usize = pdte
-                    .pe2mib()
-                    .unwrap()
-                    .page_2mib() as usize;
-                let paddr: usize = frame_base
-                    + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET)
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::Pde {
-                pt,
-                vaddr2pte_interface,
-            } => {
-                let p_vaddr: Vaddr = vaddr
-                    .with_offset(0);
-                let pte: &Pte = pt
-                    .as_ref()
-                    .pte(&p_vaddr);
-                vaddr2pte_interface
-                    .get(&p_vaddr)
-                    .and_then(|pte_interface| pte_interface.vaddr2paddr(pte, vaddr))
-            },
-            Self::PdteNotPresent => None,
-        }
-    }
 }
 
-impl Default for PdteInterface {
+impl Default for PdteController {
     fn default() -> Self {
         Self::PdteNotPresent
     }
 }
 
-impl fmt::Debug for PdteInterface {
+impl fmt::Debug for PdteController {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Pe2Mib => formatter.write_str("Pe2Mib"),
             Self::Pde {
                 pt,
-                vaddr2pte_interface,
+                vaddr2pte_controller,
             } => formatter
                 .debug_map()
-                .entries(vaddr2pte_interface
+                .entries(vaddr2pte_controller
                     .iter()
-                    .zip(pt
-                        .as_ref()
-                        .pte
-                        .as_slice()
-                        .iter())
-                    .map(|((vaddr, pte_interface), pte)| (vaddr, (pte, pte_interface))))
+                    .map(|(vaddr, pte_controller)| {
+                        let pte: &Pte = pt
+                            .as_ref()
+                            .pte(vaddr);
+                        (vaddr, (pte, pte_controller))
+                    }))
                 .finish(),
             Self::PdteNotPresent => formatter.write_str("PdteNotPresent"),
+        }
+    }
+}
+
+impl From<&Pdte> for PdteController {
+    fn from(pdte: &Pdte) -> Self {
+        match (pdte.pe2mib(), pdte.pde(), pdte.pdte_not_present()) {
+            (Some(_pe2mib), None, None) => Self::Pe2Mib,
+            (None, Some(pde), None) => {
+                let pt: &Pt = pde.into();
+                let pt = Box::new(pt.clone());
+                let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
+                Self::Pde {
+                    pt,
+                    vaddr2pte_controller,
+                }
+            },
+            (None, None, Some(_pdte_not_present)) => Self::PdteNotPresent,
+            _ => panic!("Can't convert from &Pdte to PdteController"),
         }
     }
 }
@@ -1073,6 +1329,13 @@ union Pdte {
 }
 
 impl Pdte {
+    fn debug(&self, vaddr: &Vaddr) {
+        com2_println!("{:#x?}", self);
+        if let Some(pde) = self.pde() {
+            pde.debug(vaddr);
+        }
+    }
+
     fn pe2mib(&self) -> Option<&Pe2Mib> {
         let pe2mib: &Pe2Mib = unsafe {
             &self.pe2mib
@@ -1115,6 +1378,15 @@ impl Pdte {
         assert!(self.pe2mib().is_none());
         assert!(self.pde().is_none());
         assert!(self.pdte_not_present().is_some());
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe2mib(), self.pde(), self.pdte_not_present()) {
+            (Some(pe2mib), None, None) => pe2mib.vaddr2paddr(vaddr),
+            (None, Some(pde), None) => pde.vaddr2paddr(vaddr),
+            (None, None, Some(_pdte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
     }
 }
 
@@ -1202,6 +1474,11 @@ impl Pe2Mib {
     fn page_2mib(&self) -> *const Page2Mib {
         (self.address_of_2mib_page_frame() << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) as *const Page2Mib
     }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_2mib_page_frame() as usize) << Self::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET) + ((vaddr.pi() as usize) << Vaddr::PI_OFFSET) + (vaddr.offset() as usize))
+    }
 }
 
 type Page2Mib = [u8; 1 << Pe2Mib::ADDRESS_OF_2MIB_PAGE_FRAME_OFFSET];
@@ -1231,8 +1508,22 @@ struct Pde {
 }
 
 impl Pde {
+    fn debug(&self, vaddr: &Vaddr) {
+        let pt: &Pt = self.into();
+        pt.debug(vaddr);
+    }
+
     fn pt(&self) -> *const Pt {
         (self.address_of_pt() << Self::ADDRESS_OF_PT_OFFSET) as *const Pt
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| {
+                let pt: &Pt = self.into();
+                pt.vaddr2paddr(vaddr)
+            })
+            .flatten()
     }
 }
 
@@ -1249,19 +1540,29 @@ struct PdteNotPresent {
 /// # Page Table
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4-22 Figure 4-8. Linear-Address Translation to a 4-KByte Page Using 4-Level Paging
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(align(4096))]
 struct Pt {
     pte: [Pte; PT_LENGTH]
 }
 
 impl Pt {
+    fn debug(&self, vaddr: &Vaddr) {
+        self.pte(vaddr)
+            .debug()
+    }
+
     fn pte(&self, vaddr: &Vaddr) -> &Pte {
         &self.pte[vaddr.pi() as usize]
     }
 
     fn pte_mut(&mut self, vaddr: &Vaddr) -> &mut Pte {
         &mut self.pte[vaddr.pi() as usize]
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.pte(vaddr)
+            .vaddr2paddr(vaddr)
     }
 }
 
@@ -1282,14 +1583,14 @@ impl<'a> From<&'a Pde> for &'a Pt {
     }
 }
 
-/// # Page Table Entry Interface
+/// # Page Table Entry Controller
 #[derive(Debug)]
-enum PteInterface {
+enum PteController {
     Pe4Kib,
     PteNotPresent,
 }
 
-impl PteInterface {
+impl PteController {
     fn set_page(&mut self, pte: &mut Pte, paddr: usize, present: bool, writable: bool, executable: bool) {
         if present {
             let pe4kib: Pe4Kib = Pe4Kib::default()
@@ -1312,26 +1613,21 @@ impl PteInterface {
             *self = Self::PteNotPresent;
         }
     }
+}
 
-    fn vaddr2paddr(&self, pte: &Pte, vaddr: &Vaddr) -> Option<usize> {
-        match self {
-            Self::Pe4Kib => {
-                let frame_base: usize = pte
-                    .pe4kib()
-                    .unwrap()
-                    .page_4kib() as usize;
-                let paddr: usize = frame_base
-                    + (vaddr.offset() as usize);
-                Some(paddr)
-            },
-            Self::PteNotPresent => None,
-        }
+impl Default for PteController {
+    fn default() -> Self {
+        Self::PteNotPresent
     }
 }
 
-impl Default for PteInterface {
-    fn default() -> Self {
-        Self::PteNotPresent
+impl From<&Pte> for PteController {
+    fn from(pte: &Pte) -> Self {
+        match (pte.pe4kib(), pte.pte_not_present()) {
+            (Some(_pe4kib), None) => Self::Pe4Kib,
+            (None, Some(_pte_not_present)) => Self::PteNotPresent,
+            _ => panic!("Can't Convert from &Pte to PteController"),
+        }
     }
 }
 
@@ -1346,6 +1642,10 @@ union Pte {
 }
 
 impl Pte {
+    fn debug(&self) {
+        com2_println!("{:#x?}", self);
+    }
+
     fn pe4kib(&self) -> Option<&Pe4Kib> {
         let pe4kib: &Pe4Kib = unsafe {
             &self.pe4kib
@@ -1371,6 +1671,14 @@ impl Pte {
         self.pte_not_present = pte_not_present;
         assert!(self.pe4kib().is_none());
         assert!(self.pte_not_present().is_some());
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        match (self.pe4kib(), self.pte_not_present()) {
+            (Some(pe4kib), None) => pe4kib.vaddr2paddr(vaddr),
+            (None, Some(_pte_not_present)) => None,
+            _ => panic!("Can't convert from a vaddr to a paddr."),
+        }
     }
 }
 
@@ -1440,6 +1748,11 @@ struct Pe4Kib {
 impl Pe4Kib {
     fn page_4kib(&self) -> *const Page4Mib {
         (self.address_of_4kib_page_frame() << Self::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) as *const Page4Mib
+    }
+
+    fn vaddr2paddr(&self, vaddr: &Vaddr) -> Option<usize> {
+        self.p()
+            .then(|| ((self.address_of_4kib_page_frame() as usize) << Self::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET) + (vaddr.offset() as usize))
     }
 }
 

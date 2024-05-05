@@ -5,7 +5,10 @@ use {
     },
     core::{
         fmt,
-        ops::Range,
+        ops::{
+            Range,
+            RangeInclusive,
+        },
     },
     super::{
         KIB,
@@ -19,14 +22,14 @@ pub const SIZE: usize = 4 * KIB;
 pub struct ContinuousPages {
     #[allow(dead_code)]
     pages: Vec<Page>,
-    vaddr_range: Range<usize>,
+    vaddr_range: RangeInclusive<usize>,
 }
 
 impl ContinuousPages {
-    pub fn new(paging: &mut Paging, vaddr_range: Range<usize>, writable: bool, executable: bool) -> Self {
+    pub fn new(paging: &mut Paging, vaddr_range: RangeInclusive<usize>, writable: bool, executable: bool) -> Self {
         assert!(!vaddr_range.is_empty());
-        assert_eq!(vaddr_range.start % SIZE, 0);
-        assert_eq!(vaddr_range.end % SIZE, 0);
+        assert_eq!(vaddr_range.start() % SIZE, 0);
+        assert_eq!((vaddr_range.end().wrapping_add(1)) % SIZE, 0);
         let pages: Vec<Page> = vaddr_range
             .clone()
             .step_by(SIZE)
@@ -38,16 +41,16 @@ impl ContinuousPages {
         }
     }
 
-    pub fn range(&self) -> &Range<usize> {
+    pub fn range_inclusive(&self) -> &RangeInclusive<usize> {
         &self.vaddr_range
     }
 }
 
-#[derive(Debug)]
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 pub struct Page {
     #[allow(dead_code)]
     page: Box<InHeap>,
-    #[allow(dead_code)]
+    paddr: usize,
     vaddr: usize,
 }
 
@@ -61,11 +64,37 @@ impl Page {
         paging.set_page(vaddr, paddr, present, writable, executable);
         Self {
             page,
+            paddr,
             vaddr,
         }
     }
+
+    pub fn paddr_range(&self) -> Range<usize> {
+        self.paddr..self.paddr + SIZE
+    }
+
+    pub fn vaddr2paddr(&self, vaddr: usize) -> usize {
+        assert!(self.vaddr_range().contains(&vaddr));
+        let offset: usize = vaddr & !self.vaddr;
+        offset | self.paddr
+    }
+
+    pub fn vaddr_range(&self) -> Range<usize> {
+        self.vaddr..self.vaddr + SIZE
+    }
 }
 
+impl fmt::Debug for Page {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Page")
+            .field("paddr", &self.paddr)
+            .field("vaddr", &self.vaddr)
+            .finish()
+    }
+}
+
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
 #[repr(align(4096))]
 struct InHeap {
     bytes: [u8; SIZE],

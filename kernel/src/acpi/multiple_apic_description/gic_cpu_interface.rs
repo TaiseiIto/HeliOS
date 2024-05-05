@@ -6,24 +6,42 @@ use bitfield_struct::bitfield;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     reserved0: u16,
+    #[allow(dead_code)]
     cpu_interface_number: u32,
+    #[allow(dead_code)]
     acpi_processor_uid: u32,
+    #[allow(dead_code)]
     flags: Flags,
+    #[allow(dead_code)]
     parking_protocol_version: u32,
+    #[allow(dead_code)]
     performance_interrupt_gsiv: u32,
+    #[allow(dead_code)]
     parked_address: u64,
+    #[allow(dead_code)]
     physical_base_address: u64,
+    #[allow(dead_code)]
     gicv: u64,
+    #[allow(dead_code)]
     gich: u64,
+    #[allow(dead_code)]
     vgic_maintenance_interrupt: u32,
+    #[allow(dead_code)]
     gicr_base_address: u64,
+    #[allow(dead_code)]
     mpidr: u64,
+    #[allow(dead_code)]
     processor_power_efficiency_class: u8,
+    #[allow(dead_code)]
     reserved1: u8,
+    #[allow(dead_code)]
     spe_overflow_interrupt: u16,
+    #[allow(dead_code)]
     trbe_interrupt: u16,
 }
 

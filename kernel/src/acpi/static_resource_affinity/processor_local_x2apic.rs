@@ -6,13 +6,20 @@ use super::processor_local_apic_sapic;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     reserved0: u16,
+    #[allow(dead_code)]
     proximity_domain: u32,
+    #[allow(dead_code)]
     x2apic_id: u32,
+    #[allow(dead_code)]
     flags: processor_local_apic_sapic::Flags,
+    #[allow(dead_code)]
     clock_domain: u32,
+    #[allow(dead_code)]
     reserved1: u32,
 }
 

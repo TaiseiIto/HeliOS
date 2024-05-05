@@ -2,6 +2,7 @@
 	.set	SEGMENT_SHIFT,	4
 	.set	STACK_FLOOR,	0x00010000
 	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
+	.set	RFLAGS_ID,	1 << 21
 
 	.text
 	.code16
@@ -27,7 +28,8 @@ main16:	# IP == 0x1000
 	movw	%ax,	%es	
 	movw	%ax,	%fs	
 	movw	%ax,	%gs	
-	movw	STACK_SEGMENT,	%ss	
+	movw	$STACK_SEGMENT,	%ax
+	movw	%ax,	%ss
 	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
@@ -107,19 +109,21 @@ main32:
 	call	puts32
 	addl	$0x00000004,	%esp
 	# Print bootstrap processor CR3.
-	leal	check_cr3_message,	%edx
+	leal	cr3_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
-	leal	cr3,	%edx
+	leal	boot_argument_cr3,	%edx
 	pushl	%edx
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
 	# Leave 32bit main function.
 	leave
-	# Set CR3.
-	movl	cr3,	%edx
+	# Set temporary CR3.
+	movl	boot_argument_cr3,	%edx
+	andl	$0x00000fff,	%edx
+	orl	$temporary_pml4_table,	%edx
 	movl	%edx,	%cr3
 	# Set PAE.
 	movl	%cr4,	%edx
@@ -301,48 +305,178 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
-	# put_nibble64 test
-	leaq	local_apic_id_message,	%rdi
+	# Set CR3.
+	movq	boot_argument_cr3,	%rdx
+	movq	%rdx,	%cr3
+	# Get IA32_APIC_BASE
+	call	get_ia32_apic_base
+	movq	%rax,	kernel_argument_ia32_apic_base
+	# Print bootstrap processor kernel entry.
+	leaq	kernel_entry_message,	%rdi
 	call	puts64
-	call	local_apic_id
-	movq	%rax,	%rdi
+	movq	boot_argument_kernel_entry,	%rdi
 	call	put_quad64
+	call	put_new_line64
+	# Print bootstrap processor kernel stack floor.
+	leaq	kernel_stack_floor_message,	%rdi
+	call	puts64
+	movq	boot_argument_kernel_stack_floor,	%rdi
+	call	put_quad64
+	call	put_new_line64
+	# Print message
+	leaq	message_message,	%rdi
+	call	puts64
+	movq	boot_argument_message,	%rdi
+	movq	%rdi,	kernel_argument_message
+	call	put_quad64
+	call	put_new_line64
+	# Print my local APIC ID.
+	leaq	my_local_apic_id_message,	%rdi
+	call	puts64
+	call	get_local_apic_id
+	movb	%al,	%dil
+	call	put_byte64
+	call	put_new_line64
+	# Print BSP local APIC ID.
+	leaq	bsp_local_apic_id_message,	%rdi
+	call	puts64
+	movb	boot_argument_bsp_local_apic_id,	%dil
+	movb	%dil,	kernel_argument_bsp_local_apic_id
+	call	put_byte64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
-1:	# Halt loop.
-	hlt
-	jmp	1b
+	# Jump to the kernel.
+	movq	boot_argument_kernel_stack_floor,	%rsp
+	leaq	kernel_argument,	%rdi
+	call	*boot_argument_kernel_entry
 
-ia32_apic_base:
+apic_is_supported:
 0:
 	enter	$0x0000,	$0x00
+	call	cpuid_max_eax
+	cmpq	$0x0000000000000001,	%rax
+	jb	2f
+1:	# CPUID EAX=0x00000001 is supported.
+	movl	$0x00000001,	%eax
+	xorl	%ecx,	%ecx
+	pushq	%rbx
+	cpuid
+	popq	%rbx
+	shrq	$0x09,	%rdx
+	andq	$0x0000000000000001,	%rdx
+	movq	%rdx,	%rax
+	jmp	3f
+2:	# CPUID EAX=0x00000001 is not supported.
+	xorq	%rax,	%rax
+3:
+	leave
+	ret
+
+cpuid_is_supported:
+0:
+	enter	$0x0000,	$0x00
+	call	get_rflags
+	orq	$RFLAGS_ID,	%rax
+	movq	%rax,	%rdi
+	call	set_rflags
+	call	get_rflags
+	testq	$RFLAGS_ID,	%rax
+	jz	2f
+	andq	$(~RFLAGS_ID),	%rax
+	movq	%rax,	%rdi
+	call	set_rflags
+	call	get_rflags
+	testq	$RFLAGS_ID,	%rax
+	jnz	2f
+1:	# CPUID is supported.
+	movq	$0x0000000000000001,	%rax
+	jmp	3f
+2:	# CPUID is not supported.
+	xorq	%rax,	%rax
+3:
+	leave
+	ret
+
+cpuid_max_eax:
+0:
+	enter	$0x0000,	$0x00
+	call	cpuid_is_supported
+	testq	%rax,	%rax
+	jz	2f
+1:	# CPUID is supported.
+	xorl	%eax,	%eax
+	xorl	%ecx,	%ecx
+	pushq	%rbx
+	cpuid
+	popq	%rbx
+	movq	$0x00000000ffffffff,	%rdx
+	andq	%rdx,	%rax
+	jmp	3f
+2:	# CPUID is not supported.
+	call	error
+3:
+	leave
+	ret
+
+error:
+0:
+	enter	$0x0000,	$0x00
+	leaq	error_message,	%rdi
+	call	puts64
+	call	put_new_line64
+	cli
+1:
+	hlt
+	jmp	1b
+	leave
+	ret
+
+get_ia32_apic_base:
+0:
+	enter	$0x0000,	$0x00
+	call	apic_is_supported
+	testq	%rax,	%rax
+	jz	2f
+1:	# APIC is supported.
 	movl	$0x0000001b,	%ecx
 	rdmsr
 	shlq	$0x20,	%rdx
 	movq	$0x00000000ffffffff,	%rcx
 	andq	%rcx,	%rax
 	addq	%rdx,	%rax
+	jmp	3f
+2:	# APIC is not supported.
+	call	error
+3:
 	leave
 	ret
 
-local_apic_base_address:
+get_local_apic_base_address:
 0:
 	enter	$0x0000,	$0x00
-	call	ia32_apic_base
+	call	get_ia32_apic_base
 	movq	$0xfffffffffffff000,	%rdx
 	andq	%rdx,	%rax
 	leave
 	ret
 
-local_apic_id:
+get_local_apic_id:
 0:
 	enter	$0x0000,	$0x00
-	call	local_apic_base_address
+	call	get_local_apic_base_address
 	movl	0x20(%rax),	%eax
 	shrq	$0x18,	%rax
 	movq	$0x00000000000000ff,	%rdx
 	andq	%rdx,	%rax
+	leave
+	ret
+
+get_rflags:
+0:
+	enter	$0x0000,	$0x00
+	pushfq
+	popq	%rax
 	leave
 	ret
 
@@ -444,8 +578,16 @@ put_quad64:
 	leave
 	ret
 
+set_rflags:
+0:
+	enter	$0x0000,	$0x00
+	pushq	%rdi
+	popfq
+	leave
+	ret
+
 	.data
-	.align	16
+	.align	0x10
 gdt_start:
 	# [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
 segment_descriptor_null:			# 0x00
@@ -498,25 +640,57 @@ segment_descriptor_64bit_application_code:	# 0x30
 	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 gdt_end:
-	.align	4
+	.align	0x4
 	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start
-check_cr3_message:
+bsp_local_apic_id_message:
+	.string "BSP local APIC ID = 0x"
+cpuid_max_eax_message:
+	.string "CPUID max EAX = 0x"
+cr3_message:
 	.string "CR3 = 0x"
-local_apic_id_message:
-	.string "Local APIC ID = 0x"
+error_message:
+	.string	"ERROR!"
+kernel_entry_message:
+	.string "kernel_entry = 0x"
+kernel_stack_floor_message:
+	.string "kernel_stack_floor = 0x"
+message_message:
+	.string "message = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
 	.string	"Hello from an application processor in 32bit mode!\n"
 message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
+my_local_apic_id_message:
+	.string "My local APIC ID = 0x"
 log_end_pointer:
 	.quad	log_start
-	.align	8
-cr3:
+	.align	0x8
+kernel_argument:	# Argument of ../kernel/src/main.rs
+kernel_argument_ia32_apic_base:
 	.quad	0x0000000000000000
+kernel_argument_message:
+	.quad	0x0000000000000000
+kernel_argument_bsp_local_apic_id:
+	.byte	0x00
+	.align	0x1000
+temporary_pml4_table:
+	.space	0x1000
+	.align	0x8
+boot_argument:
+boot_argument_cr3:	# Argument of ../../kernel/src/processor/boot.rs
+	.quad	0x0000000000000000
+boot_argument_kernel_entry:
+	.quad	0x0000000000000000
+boot_argument_kernel_stack_floor:
+	.quad	0x0000000000000000
+boot_argument_message:
+	.quad	0x0000000000000000
+boot_argument_bsp_local_apic_id:
+	.byte	0x00
 log_start:
 

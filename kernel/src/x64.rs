@@ -19,6 +19,17 @@ pub use {
 
 use crate::memory;
 
+/// # Clear Interrupt Flag
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-166
+#[inline(never)]
+pub fn cli() {
+    unsafe {
+        asm!("cli");
+    }
+    assert!(!Rflags::get().interrupt_is_enabled());
+}
+
 /// # Halt
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2A 3-489
@@ -37,6 +48,17 @@ pub fn pause() {
     unsafe {
         asm!("pause");
     }
+}
+
+/// # Set Interrupt Flag
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-662
+#[inline(never)]
+pub fn sti() {
+    unsafe {
+        asm!("sti");
+    }
+    assert!(Rflags::get().interrupt_is_enabled());
 }
 
 pub fn set_segment_registers(code_segment_selector: &memory::segment::Selector, data_segment_selector: &memory::segment::Selector) {

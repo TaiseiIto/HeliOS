@@ -56,7 +56,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .unwrap()
         .read()
         .into();
-    let kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
+    let _kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
     let kernel_stack_pages: usize = 0x10;
     let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
         .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
@@ -96,6 +96,10 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .unwrap()
         .read();
     let processor_boot_loader = processor::boot::Loader::new(&processor_boot_loader, processor_boot_loader_pages);
+    let processor_kernel: Vec<u8> = directory_tree
+        .get(PROCESSOR_KERNEL)
+        .unwrap()
+        .read();
     let hello_application: elf::File = directory_tree
         .get("applications/hello.elf")
         .unwrap()
@@ -106,6 +110,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .unwrap();
     let kernel_argument = kernel::Argument::new(
         processor_boot_loader,
+        processor_kernel,
         rs232c::get_com2(),
         cpuid,
         efi::SystemTable::get(),

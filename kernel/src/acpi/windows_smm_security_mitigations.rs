@@ -9,7 +9,9 @@ use {
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Table {
+    #[allow(dead_code)]
     header: system_description::Header,
+    #[allow(dead_code)]
     protection_flags: Flags,
 }
 

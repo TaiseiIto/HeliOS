@@ -3,11 +3,17 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use crate::{
-    com2_print,
-    com2_println,
-    memory,
-    x64,
+use {
+    alloc::collections::BTreeMap,
+    crate::{
+        Argument,
+        com2_print,
+        com2_println,
+        memory,
+        processor,
+        task,
+        x64,
+    },
 };
 
 pub enum Handler {
@@ -351,7 +357,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         2, // int 0x1d VMM Communication Exception (\#VC)
         2, // int 0x1e Security Exception (\#SX)
         2, // int 0x1f Reserved Exception 7
-        1, // int 0x20
+        1, // int 0x20 Interprocessor interrupt
         1, // int 0x21
         1, // int 0x22
         1, // int 0x23
@@ -596,9 +602,15 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x00(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x00;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Divide Error Exception (#DE)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Debug Exception (\#DB)
@@ -606,9 +618,15 @@ extern "x86-interrupt" fn handler_0x00(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x01(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x01;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Debug Exception (#DB)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # NMI Interrupt
@@ -616,9 +634,15 @@ extern "x86-interrupt" fn handler_0x01(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x02(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x02;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("NMI Interrupt");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Breakpoint Exception (\#BP)
@@ -626,9 +650,15 @@ extern "x86-interrupt" fn handler_0x02(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x03(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x03;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Breakpoint Exception (#BP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Overflow Exception (\#OF)
@@ -636,9 +666,15 @@ extern "x86-interrupt" fn handler_0x03(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x04(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x04;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Overflow Exception (#OF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # BOUND Range Exceeded Exception (\#BR)
@@ -646,9 +682,15 @@ extern "x86-interrupt" fn handler_0x04(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x05(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x05;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("BOUND Range Exceeded Exception (#BR)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Invalid Opcode Exception (\#UD)
@@ -656,9 +698,15 @@ extern "x86-interrupt" fn handler_0x05(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x06(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x06;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Invalid Opcode Exception (#UD)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Device Not Available Exception (\#NM)
@@ -666,9 +714,15 @@ extern "x86-interrupt" fn handler_0x06(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x07;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Device Not Available Exception (#NM)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Double Fault Exception (\#DF)
@@ -676,9 +730,15 @@ extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x08;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Double Fault Exception (#DF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Coprocessor Segment Overrun
@@ -686,9 +746,15 @@ extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x09;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Coprocessor Segment Overrun");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Invalid TSS Exception (\#TS)
@@ -696,9 +762,15 @@ extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Invalid TSS Exception (#TS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Segment Not Present (\#NP)
@@ -706,9 +778,15 @@ extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Segment Not Present (#NP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Stack Fault Exception (\#SS)
@@ -716,9 +794,15 @@ extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Stack Fault Exception (#SS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # General Protection Exception (\#GP)
@@ -726,9 +810,15 @@ extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("General Protection Exception (#GP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Page-Fault Exception (\#PF)
@@ -736,9 +826,15 @@ extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x0e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Page-Fault Exception (#PF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 0
@@ -746,9 +842,15 @@ extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAnd
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x0f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x0f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 0");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # x87 Floating-Point Error (\#MF)
@@ -756,9 +858,15 @@ extern "x86-interrupt" fn handler_0x0f(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x10;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("x87 Floating-Point Error (#MF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Alignment Check Exception (\#AC)
@@ -766,9 +874,15 @@ extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x11;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Alignment Check Exception (#AC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Machine Check Exception (\#MC)
@@ -776,9 +890,15 @@ extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAnd
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x12(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x12;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Machine Check Exception (#MC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # SIMD Floating-Point Exception (\#XM)
@@ -786,9 +906,15 @@ extern "x86-interrupt" fn handler_0x12(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x13(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x13;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("SIMD Floating-Point Exception (#XM)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Virtualization Exception (\#VE)
@@ -796,9 +922,15 @@ extern "x86-interrupt" fn handler_0x13(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x14;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Virtualization Exception (#VE)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Control Protection Exception (\#CP)
@@ -806,9 +938,15 @@ extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.15 Exception and Interrupt Reference
 extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x15;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Control Protection Exception (#CP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 1
@@ -816,9 +954,15 @@ extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAnd
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x16(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x16;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 1");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 2
@@ -826,9 +970,15 @@ extern "x86-interrupt" fn handler_0x16(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x17(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x17;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 2");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 3
@@ -836,9 +986,15 @@ extern "x86-interrupt" fn handler_0x17(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x18(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x18;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 3");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 4
@@ -846,9 +1002,15 @@ extern "x86-interrupt" fn handler_0x18(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x19(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x19;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 4");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 5
@@ -856,9 +1018,15 @@ extern "x86-interrupt" fn handler_0x19(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x1a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 5");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 6
@@ -866,9 +1034,15 @@ extern "x86-interrupt" fn handler_0x1a(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x1b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 6");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Hypervisor Injection Exception (\#HV)
@@ -876,9 +1050,15 @@ extern "x86-interrupt" fn handler_0x1b(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x1c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Hypervisor Injection Exception (#HV)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # VMM Communication Exception (\#VC)
@@ -886,9 +1066,15 @@ extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x1d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("VMM Communication Exception (#VC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Security Exception (\#SX)
@@ -896,9 +1082,15 @@ extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAnd
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAndErrorCode) {
     let interrupt_number: u8 = 0x1e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Security Exception (#SX)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 /// # Reserved Exception 7
@@ -906,1352 +1098,2706 @@ extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAnd
 /// * [Exceptions - OSDev Wiki](https://wiki.osdev.org/Exceptions)
 extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x1f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("Reserved Exception 7");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
+/// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x20;
-    com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
+    processor::Controller::process_messages();
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_of_interrupt();
+    processor::Controller::delete_messages();
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x21;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x22(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x22;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x23(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x23;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x24(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x24;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x25(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x25;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x26(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x26;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x27(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x27;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x28(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x28;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x29(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x29;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x2f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x2f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x30(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x30;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x31(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x31;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x32(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x32;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x33(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x33;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x34(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x34;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x35(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x35;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x36(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x36;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x37(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x37;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x38(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x38;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x39(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x39;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x3f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x3f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x40(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x40;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x41(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x41;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x42(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x42;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x43(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x43;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x44(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x44;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x45(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x45;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x46(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x46;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x47(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x47;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x48(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x48;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x49(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x49;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x4f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x4f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x50(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x50;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x51(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x51;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x52(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x52;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x53(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x53;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x54(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x54;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x55(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x55;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x56(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x56;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x57(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x57;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x58(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x58;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x59(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x59;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x5f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x5f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x60(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x60;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x61(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x61;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x62(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x62;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x63(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x63;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x64(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x64;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x65(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x65;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x66(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x66;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x67(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x67;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x68(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x68;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x69(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x69;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x6f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x6f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x70(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x70;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x71(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x71;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x72(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x72;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x73(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x73;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x74(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x74;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x75(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x75;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x76(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x76;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x77(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x77;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x78(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x78;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x79(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x79;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x7f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x7f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x80(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x80;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x81(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x81;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x82(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x82;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x83(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x83;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x84(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x84;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x85(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x85;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x86(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x86;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x87(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x87;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x88(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x88;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x89(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x89;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x8f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x8f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x90(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x90;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x91(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x91;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x92(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x92;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x93(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x93;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x94(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x94;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x95(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x95;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x96(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x96;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x97(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x97;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x98;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x99;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9a(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9a;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9b(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9b;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9c(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9c;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9d(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9d;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9e(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9e;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0x9f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9f;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xa9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xa9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xaa(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xaa;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xab(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xab;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xac(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xac;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xad(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xad;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xae(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xae;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xaf(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xaf;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xb9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xb9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xba(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xba;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xbb(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xbb;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xbc(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xbc;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xbd(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xbd;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xbe(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xbe;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xbf(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xbf;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xc9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xc9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xca(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xca;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xcb(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xcb;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xcc(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xcc;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xcd(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xcd;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xce(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xce;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xcf(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xcf;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xd9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xd9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xda(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xda;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xdb(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xdb;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xdc(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xdc;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xdd(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xdd;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xde(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xde;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xdf(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xdf;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xe9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xe9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xea(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xea;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xeb(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xeb;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xec(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xec;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xed(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xed;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xee(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xee;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xef(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xef;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf0(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf0;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf1(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf1;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf2(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf2;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf3(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf3;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf4(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf4;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf5(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf5;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf6(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf6;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf7(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf7;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf8(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf8;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xf9(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xf9;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xfa(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xfa;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xfb(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xfb;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xfc(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xfc;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xfd(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xfd;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xfe(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xfe;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 
 extern "x86-interrupt" fn handler_0xff(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0xff;
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
 }
 

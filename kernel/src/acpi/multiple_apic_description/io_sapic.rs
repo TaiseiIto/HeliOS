@@ -4,11 +4,16 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Structure {
+    #[allow(dead_code)]
     structure_type: u8,
     length: u8,
+    #[allow(dead_code)]
     io_apic_id: u8,
+    #[allow(dead_code)]
     reserved0: u8,
+    #[allow(dead_code)]
     global_system_interrupt_base: u32,
+    #[allow(dead_code)]
     io_sapic_address: u64,
 }
 

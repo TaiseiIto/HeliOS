@@ -21,7 +21,7 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn entries<'a>(&'a self) -> Vec<system_description::Table<'a>> {
+    pub fn entries(&self) -> Vec<system_description::Table<'_>> {
         self.bytes()
             .chunks(mem::size_of::<usize>())
             .map(|entry_address_bytes| {

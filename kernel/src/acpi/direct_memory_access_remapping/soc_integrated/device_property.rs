@@ -15,6 +15,7 @@ use {
 pub struct Structure {
     structure_type: u16,
     length: u16,
+    #[allow(dead_code)]
     reserved0: u16,
     segment_number: u16,
 }
@@ -36,7 +37,7 @@ impl Structure {
         self.length as usize
     }
 
-    fn iter<'a>(&'a self) -> hardware_unit_definition::Scopes<'a> {
+    fn iter(&self) -> hardware_unit_definition::Scopes<'_> {
         self.into()
     }
 }

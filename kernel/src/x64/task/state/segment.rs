@@ -63,7 +63,7 @@ impl Segment {
         let rsp: &[memory::Stack] = &interrupt_stacks[..Self::NUMBER_OF_STACK_POINTERS];
         let rsp: Vec<usize> = rsp
             .iter()
-            .map(|interrupt_stack| interrupt_stack.floor())
+            .map(|interrupt_stack| interrupt_stack.wrapping_floor())
             .collect();
         let rsp: [usize; Self::NUMBER_OF_STACK_POINTERS] = rsp
             .as_slice()
@@ -73,7 +73,7 @@ impl Segment {
         let ist: Vec<usize> = iter::once(0)
             .chain(ist
                 .iter()
-                .map(|interrupt_stack| interrupt_stack.floor()))
+                .map(|interrupt_stack| interrupt_stack.wrapping_floor()))
             .collect();
         let ist: [usize; Self::NUMBER_OF_INTERRUPT_STACKS + 1] = ist
             .as_slice()

@@ -35,7 +35,7 @@ impl Table {
         }
     }
 
-    fn iter<'a>(&'a self) -> PerformanceRecords<'a> {
+    fn iter(&self) -> PerformanceRecords<'_> {
         self.into()
     }
 
@@ -100,7 +100,7 @@ enum PerformanceRecord<'a> {
 impl<'a> PerformanceRecord<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         bytes
-            .get(0)
+            .first()
             .zip(bytes.get(1))
             .map(|(record_type_low, record_type_high)| {
                 let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);

@@ -17,39 +17,28 @@ use {
 #[repr(packed)]
 pub struct Register {
     low: FatLow,
+    #[allow(dead_code)]
     high: FatHigh,
 }
 
 impl Register {
     pub fn assert_init(&mut self, processor_local_apic_id: u8) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::assert_init();
         *self.low_mut() = low.into();
     }
 
     pub fn deassert_init(&mut self, processor_local_apic_id: u8) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::deassert_init();
         *self.low_mut() = low.into();
     }
 
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
-        let address: *mut FatHigh = &mut self.high as *mut FatHigh;
-        let address: usize = address as usize;
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
-        let address: *mut FatLow = &mut self.low as *mut FatLow;
-        let address: usize = address as usize;
         let low = Low::send_sipi(entry_point);
         *self.low_mut() = low.into();
     }
@@ -91,49 +80,14 @@ impl Register {
 #[repr(packed)]
 struct FatLow {
     register: Low,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
 }
 
 impl FatLow {
-    fn assert_init(self) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::assert_init();
-        Self {
-            register,
-            reserved0,
-        }
-    }
-
-    fn deassert_init(self) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::deassert_init();
-        Self {
-            register,
-            reserved0,
-        }
-    }
-
     fn is_sending(&self) -> bool {
         let register: Low = self.register;
         register.is_sending()
-    }
-
-    fn send_sipi(self, entry_point: usize) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = Low::send_sipi(entry_point);
-        Self {
-            register,
-            reserved0,
-        }
     }
 }
 
@@ -167,6 +121,7 @@ struct Low {
     #[bits(3)]
     delivery_mode: u8,
     destination_mode: bool,
+    #[bits(access = RO)]
     delivery_status: bool,
     #[bits(access = RO)]
     reserved0: bool,
@@ -210,7 +165,9 @@ impl Low {
         Self::new()
             .with_vector((entry_point / memory::page::SIZE) as u8)
             .with_delivery_mode(DeliveryMode::StartUp.into())
+            .with_destination_mode(DestinationMode::Physical.into())
             .with_level(Level::Assert.into())
+            .with_trigger_mode(TriggerMode::Edge.into())
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 }
@@ -387,21 +344,8 @@ impl From<DestinationShorthand> for u8 {
 #[repr(packed)]
 struct FatHigh {
     register: High,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
-}
-
-impl FatHigh {
-    fn select_processor(self, processor_local_apic_id: u8) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
-        let register = High::select_processor(processor_local_apic_id);
-        Self {
-            register,
-            reserved0,
-        }
-    }
 }
 
 impl fmt::Debug for FatHigh {

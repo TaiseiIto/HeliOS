@@ -35,12 +35,14 @@ use {
 #[repr(packed)]
 pub struct Registers {
     // 0xfee00000
+    #[allow(dead_code)]
     reserved0: [u128; 2],
     // 0xfee00020
     local_apic_id: local_apic_id::FatRegister,
     // 0xfee00030
     local_apic_version: local_apic_version::FatRegister,
     // 0xfee00040
+    #[allow(dead_code)]
     reserved1: [u128; 4],
     // 0xfee00080
     task_priority: task_priority::FatRegister,
@@ -67,6 +69,7 @@ pub struct Registers {
     // 0xfee00280
     error_status: error_status::FatRegister,
     // 0xfee00290
+    #[allow(dead_code)]
     reserved2: [u128; 6],
     // 0xfee002f0
     lvt_corrected_machine_check_interrupt: local_vector_table::FatRegister,
@@ -87,17 +90,22 @@ pub struct Registers {
     // 0xfee00390
     current_count: current_count::FatRegister,
     // 0xfee003a0
+    #[allow(dead_code)]
     reserved3: [u128; 4],
     // 0xfee003e0
     divide_configuration: divide_configuration::FatRegister,
     // 0xfee003f0
+    #[allow(dead_code)]
     reserved4: u128,
 }
 
 impl Registers {
     pub fn apic_id(&self) -> u8 {
-        let local_apic_id: local_apic_id::FatRegister = self.local_apic_id;
-        local_apic_id.apic_id()
+        self.local_apic_id.apic_id()
+    }
+
+    pub fn end_of_interrupt(&mut self) {
+        self.end_of_interrupt.write(0);
     }
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {

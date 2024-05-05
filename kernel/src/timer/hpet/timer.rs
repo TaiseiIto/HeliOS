@@ -8,9 +8,13 @@ pub mod fsb_interrupt_route;
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Registers {
+    #[allow(dead_code)]
     configuration_and_capability: configuration_and_capability::Register,
+    #[allow(dead_code)]
     comparator_value: comparator::Register,
+    #[allow(dead_code)]
     fsb_interrupt_route: fsb_interrupt_route::Register,
+    #[allow(dead_code)]
     reserved0: u64,
 }
 

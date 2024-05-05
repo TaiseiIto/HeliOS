@@ -7,7 +7,14 @@ use {
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
+    #[allow(dead_code)]
     reserved0: [u32; 3],
+}
+
+impl FatRegister {
+    pub fn write(&mut self, value: u32) {
+        self.register = self.register.with_end_of_interrupt(value);
+    }
 }
 
 impl fmt::Debug for FatRegister {

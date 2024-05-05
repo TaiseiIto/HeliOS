@@ -19,8 +19,11 @@ use {
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
+    #[allow(dead_code)]
     interface_type: u8,
+    #[allow(dead_code)]
     reserved0: [u8; 3],
+    #[allow(dead_code)]
     base_address: generic_address::Structure,
 }
 
@@ -57,7 +60,7 @@ impl Table2 {
         }
     }
 
-    fn iter<'a>(&'a self) -> DeviceInformations<'a> {
+    fn iter(&self) -> DeviceInformations<'_> {
         self.into()
     }
 }
@@ -119,6 +122,7 @@ struct DeviceInformation {
     oem_data_offset: u16,
     port_type: u16,
     port_subtype: u16,
+    #[allow(dead_code)]
     reserved0: u16,
     base_address_register_offset: u16,
     address_size_offset: u16,

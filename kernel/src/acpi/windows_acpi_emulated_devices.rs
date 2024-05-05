@@ -10,6 +10,7 @@ use {
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
+    #[allow(dead_code)]
     emulated_device_flags: Flags,
 }
 

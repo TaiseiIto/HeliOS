@@ -45,7 +45,7 @@ impl Structure {
         }
     }
 
-    fn iter<'a>(&'a self) -> Scopes<'a> {
+    fn iter(&self) -> Scopes<'_> {
         self.into()
     }
 }
