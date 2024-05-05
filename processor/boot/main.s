@@ -120,8 +120,10 @@ main32:
 	call	put_new_line32
 	# Leave 32bit main function.
 	leave
-	# Set CR3.
+	# Set temporary CR3.
 	movl	boot_argument_cr3,	%edx
+	andl	$0x00000fff,	%edx
+	orl	$temporary_pml4_table,	%edx
 	movl	%edx,	%cr3
 	# Set PAE.
 	movl	%cr4,	%edx
@@ -303,6 +305,9 @@ main64:
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
+	# Set CR3.
+	movq	boot_argument_cr3,	%rdx
+	movq	%rdx,	%cr3
 	# Get IA32_APIC_BASE
 	call	get_ia32_apic_base
 	movq	%rax,	kernel_argument_ia32_apic_base
