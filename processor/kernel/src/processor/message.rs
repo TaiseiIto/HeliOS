@@ -2,6 +2,7 @@
 pub enum Content {
     BootCompleted,
     Char(char),
+    KernelCompleted,
 }
 
 impl Content {
@@ -11,6 +12,10 @@ impl Content {
 
     pub fn char(character: char) -> Self {
         Self::Char(character)
+    }
+
+    pub fn kernel_completed() -> Self {
+        Self::KernelCompleted
     }
 }
 

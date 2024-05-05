@@ -25,6 +25,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 #[derive(Debug)]
 pub struct Controller {
     boot_completed: bool,
+    kernel_completed: bool,
     kernel_entry: usize,
     kernel_stack: memory::Stack,
     kernel_stack_floor: usize,
@@ -50,7 +51,7 @@ impl Controller {
         com2_println!("{}", boot_loader.log());
     }
 
-    pub fn boot_completed(&mut self) {
+    pub fn boot_complete(&mut self) {
         self.boot_completed = true;
     }
 
@@ -75,6 +76,14 @@ impl Controller {
             .iter_mut()
     }
 
+    pub fn kernel_complete(&mut self) {
+        self.kernel_completed = true;
+    }
+
+    pub fn kernel_is_completed(&self) -> bool {
+        self.kernel_completed
+    }
+
     pub fn local_apic_id(&self) -> u8 {
         self.local_apic_structure.apic_id()
     }
@@ -85,6 +94,7 @@ impl Controller {
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File) -> Self {
         let boot_completed: bool = false;
+        let kernel_completed: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
@@ -95,6 +105,7 @@ impl Controller {
         let message: Option<message::Content> = None;
         Self {
             boot_completed,
+            kernel_completed,
             kernel_entry,
             kernel_stack,
             kernel_stack_floor,
