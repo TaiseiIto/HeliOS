@@ -587,7 +587,7 @@ set_rflags:
 	ret
 
 	.data
-	.align	16
+	.align	0x10
 gdt_start:
 	# [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.4.5 Segment Descriptors, Figure 3-8. Segment Descriptor
 segment_descriptor_null:			# 0x00
@@ -640,7 +640,7 @@ segment_descriptor_64bit_application_code:	# 0x30
 	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
 gdt_end:
-	.align	4
+	.align	0x4
 	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
@@ -669,15 +669,18 @@ my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
 log_end_pointer:
 	.quad	log_start
-	.align	8
+	.align	0x8
 kernel_argument:	# Argument of ../kernel/src/main.rs
 kernel_argument_ia32_apic_base:
 	.quad	0x0000000000000000
 kernel_argument_message:
 	.quad	0x0000000000000000
 kernel_argument_bsp_local_apic_id:
-	.byte	0xff
-	.align	8
+	.byte	0x00
+	.align	0x1000
+temporary_pml4_table:
+	.space	0x1000
+	.align	0x8
 boot_argument:
 boot_argument_cr3:	# Argument of ../../kernel/src/processor/boot.rs
 	.quad	0x0000000000000000
@@ -688,6 +691,6 @@ boot_argument_kernel_stack_floor:
 boot_argument_message:
 	.quad	0x0000000000000000
 boot_argument_bsp_local_apic_id:
-	.byte	0xff
+	.byte	0x00
 log_start:
 
