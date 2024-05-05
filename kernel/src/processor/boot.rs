@@ -30,6 +30,7 @@ impl Loader {
     pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
         self.initialize_stack();
         self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
+        self.set_temporary_pml4_table(paging);
     }
 
     pub fn log(&self) -> String {
@@ -75,11 +76,25 @@ impl Loader {
         *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
     }
 
+    fn set_temporary_pml4_table(&mut self, paging: &memory::Paging) {
+        self.temporary_pml4_table_mut();
+    }
+
     fn stack_mut(&mut self) -> &mut [u8] {
         let start: *mut u8 = self.stack_address_range.start as *mut u8;
         let length: usize = self.stack_address_range.end - self.stack_address_range.start;
         unsafe {
             slice::from_raw_parts_mut(start, length)
+        }
+    }
+
+    fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
+        let temporary_pml4_table: usize = self.program_address_range.end - mem::size_of::<Arguments>() - memory::page::SIZE;
+        com2_println!("temporary_pml4_table = {:#x?}", temporary_pml4_table);
+        let temporary_pml4_table: *mut u8 = temporary_pml4_table as *mut u8;
+        let length: usize = memory::page::SIZE;
+        unsafe {
+            slice::from_raw_parts_mut(temporary_pml4_table, length)
         }
     }
 }

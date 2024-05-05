@@ -300,11 +300,6 @@ main64:
 	leaq	STACK_FLOOR,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
-	# Debug code begins.
-1:
-	hlt
-	jmp	1b
-	# Debug code ends.
 	# Print message64.
 	leaq	message64,	%rdi
 	call	puts64
