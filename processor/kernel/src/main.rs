@@ -25,6 +25,8 @@ fn main(argument: &'static Argument) {
     Argument::set(argument.clone());
     Argument::get_mut().boot_complete();
     bsp_println!("Hello, World!");
+    let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
+    bsp_println!("cpuid = {:#x?}", cpuid);
     panic!("End of kernel.elf");
 }
 

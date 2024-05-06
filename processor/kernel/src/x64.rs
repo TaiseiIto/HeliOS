@@ -2,7 +2,14 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 
+pub mod cpuid;
 pub mod msr;
+pub mod rflags;
+
+pub use {
+    cpuid::Cpuid,
+    rflags::Rflags,
+};
 
 use core::arch::asm;
 
