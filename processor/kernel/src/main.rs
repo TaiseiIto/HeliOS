@@ -9,8 +9,9 @@ extern crate alloc;
 mod argument;
 mod interrupt;
 mod memory;
-mod x64;
 mod processor;
+mod sync;
+mod x64;
 
 pub use argument::Argument;
 
