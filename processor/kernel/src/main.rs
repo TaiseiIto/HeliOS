@@ -6,7 +6,6 @@
 
 extern crate alloc;
 
-mod allocator;
 mod argument;
 mod interrupt;
 mod memory;
