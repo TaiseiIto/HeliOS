@@ -44,17 +44,6 @@ pub struct Argument {
 }
 
 impl Argument {
-    pub fn allocation_request(&mut self, layout: Layout) {
-        while self.message().is_some() {
-            x64::pause();
-        }
-        *self.message_mut() = Some(processor::message::Content::allocation_request(layout));
-        let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
-        ia32_apic_base
-            .registers_mut()
-            .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
-    }
-
     pub fn boot_complete(&mut self) {
         while self.message().is_some() {
             x64::pause();
@@ -121,7 +110,6 @@ impl Argument {
             &mut *self.message
         }
     }
-
 }
 
 impl fmt::Write for Argument {

@@ -16,7 +16,6 @@ struct Allocator;
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        Argument::get_mut().allocation_request(layout);
         unimplemented!()
     }
 
