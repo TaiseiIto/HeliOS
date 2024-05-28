@@ -13,6 +13,7 @@ use {
         com2_print,
         com2_println,
         memory,
+        sync,
     },
     super::message,
 };
@@ -27,7 +28,7 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
         self.initialize_stack();
         self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
         self.set_temporary_pml4_table(paging);
@@ -72,7 +73,7 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
         *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
     }
 
@@ -125,8 +126,8 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8, message: &Option<message::Content>) -> Self {
-        let message: *const Option<message::Content> = message as *const Option<message::Content>;
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
+        let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;
         let message: usize = message as usize;
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);

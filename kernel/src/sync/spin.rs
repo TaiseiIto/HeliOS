@@ -20,6 +20,7 @@ use {
     crate::x64,
 };
 
+#[derive(Debug)]
 pub struct Guard<'a, T> {
     lock: &'a Lock<T>,
 }
@@ -54,6 +55,7 @@ unsafe impl<T> Send for Guard<'_, T> where T: Send {
 unsafe impl<T> Sync for Guard<'_, T> where T: Sync {
 }
 
+#[derive(Debug)]
 pub struct Lock<T> {
     locked: AtomicBool,
     value: UnsafeCell<T>,

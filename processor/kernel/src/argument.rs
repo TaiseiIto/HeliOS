@@ -12,6 +12,7 @@ use {
     crate::{
         interrupt,
         processor,
+        sync,
         x64,
     },
 };
@@ -39,16 +40,13 @@ pub fn bsp_print(args: fmt::Arguments) {
 #[repr(packed)]
 pub struct Argument {
     ia32_apic_base: x64::msr::ia32::ApicBase,
-    message: *mut Option<processor::message::Content>,
+    message: *mut sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
 }
 
 impl Argument {
     pub fn boot_complete(&mut self) {
-        while self.message().is_some() {
-            x64::pause();
-        }
-        *self.message_mut() = Some(processor::message::Content::boot_completed());
+        *self.message().lock() = Some(processor::message::Content::boot_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -72,10 +70,7 @@ impl Argument {
     }
 
     pub fn kernel_complete(&mut self) {
-        while self.message().is_some() {
-            x64::pause();
-        }
-        *self.message_mut() = Some(processor::message::Content::kernel_completed());
+        *self.message().lock() = Some(processor::message::Content::kernel_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -83,10 +78,7 @@ impl Argument {
     }
 
     pub fn send_char(&mut self, character: char) {
-        while self.message().is_some() {
-            x64::pause();
-        }
-        *self.message_mut() = Some(processor::message::Content::char(character));
+        *self.message().lock() = Some(processor::message::Content::char(character));
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -99,15 +91,9 @@ impl Argument {
         }.unwrap()
     }
 
-    fn message(&self) -> &Option<processor::message::Content> {
+    fn message(&self) -> &sync::spin::Lock<Option<processor::message::Content>> {
         unsafe {
             &*self.message
-        }
-    }
-
-    fn message_mut(&mut self) -> &mut Option<processor::message::Content> {
-        unsafe {
-            &mut *self.message
         }
     }
 }

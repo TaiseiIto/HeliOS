@@ -15,6 +15,7 @@ use {
         elf,
         interrupt,
         memory,
+        sync,
         timer,
         x64,
     },
@@ -32,7 +33,7 @@ pub struct Controller {
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,
-    message: Option<message::Content>,
+    message: sync::spin::Lock<Option<message::Content>>,
     paging: memory::Paging,
 }
 
@@ -58,7 +59,7 @@ impl Controller {
     pub fn delete_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
-                controller.message = None;
+                *controller.message.lock() = None;
             });
     }
 
@@ -102,7 +103,7 @@ impl Controller {
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
-        let message: Option<message::Content> = None;
+        let message: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
         Self {
             boot_completed,
             kernel_completed,
@@ -119,8 +120,11 @@ impl Controller {
 
     pub fn process_messages() {
         Self::get_mut_all()
-            .for_each(|controller| if let Some(message) = controller.message.clone() {
-                message.process(controller);
+            .for_each(|controller| {
+                let message: Option<message::Content> = controller.message.lock().clone();
+                if let Some(message) = message {
+                    message.process(controller);
+                }
             })
     }
 
