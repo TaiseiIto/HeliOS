@@ -15,6 +15,7 @@ mod elf;
 mod interrupt;
 mod memory;
 mod rs232c;
+mod sync;
 mod syscall;
 mod task;
 mod timer;
