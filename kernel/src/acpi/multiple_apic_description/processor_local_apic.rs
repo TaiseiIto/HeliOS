@@ -21,6 +21,11 @@ impl Structure {
         self.apic_id
     }
 
+    pub fn is_enabled(&self) -> bool {
+        let flags: Flags = self.flags;
+        flags.enabled()
+    }
+
     pub fn length(&self) -> usize {
         self.length as usize
     }

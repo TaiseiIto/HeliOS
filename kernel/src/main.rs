@@ -184,7 +184,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .madt()
         .processor_local_apic_structures()
         .iter()
-        .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
+        .filter(|processor_local_apic| processor_local_apic.is_enabled() && processor_local_apic.apic_id() != my_local_apic_id)
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
         .collect();
     processor::Controller::set_all(processors);
