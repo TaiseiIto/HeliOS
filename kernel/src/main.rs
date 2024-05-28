@@ -7,7 +7,6 @@
 extern crate alloc;
 
 mod acpi;
-mod allocator;
 mod application;
 mod argument;
 mod processor;
@@ -45,7 +44,7 @@ fn main(argument: &'static mut Argument<'static>) {
     rs232c::set_com2(Argument::get().com2_mut());
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
-    let heap_size: usize = allocator::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
+    let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     com2_println!("heap_size = {:#x?}", heap_size);
     // Check memory map.
     let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
