@@ -46,6 +46,9 @@ pub struct Argument {
 
 impl Argument {
     pub fn boot_complete(&mut self) {
+        while self.message().lock().is_some() {
+            x64::pause();
+        }
         *self.message().lock() = Some(processor::message::Content::boot_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
@@ -70,6 +73,9 @@ impl Argument {
     }
 
     pub fn kernel_complete(&mut self) {
+        while self.message().lock().is_some() {
+            x64::pause();
+        }
         *self.message().lock() = Some(processor::message::Content::kernel_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
@@ -78,6 +84,9 @@ impl Argument {
     }
 
     pub fn send_char(&mut self, character: char) {
+        while self.message().lock().is_some() {
+            x64::pause();
+        }
         *self.message().lock() = Some(processor::message::Content::char(character));
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
