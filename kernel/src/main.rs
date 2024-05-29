@@ -188,6 +188,13 @@ fn main(argument: &'static mut Argument<'static>) {
         .collect();
     let number_of_processors: usize = processors.len();
     com2_println!("number_of_processors = {:#x?}", number_of_processors);
+    let processor_heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
+    let processor_heap_size: usize = if processor_heap_size / 2 < heap_size - (number_of_processors - 1) * processor_heap_size {
+        processor_heap_size
+    } else {
+        processor_heap_size / 2
+    };
+    com2_println!("processor_heap_size = {:#x?}", processor_heap_size);
     let processors: Vec<processor::Controller> = processors
         .into_iter()
         .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
