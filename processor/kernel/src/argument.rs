@@ -39,6 +39,8 @@ pub fn bsp_print(args: fmt::Arguments) {
 #[derive(Clone, Debug)]
 #[repr(packed)]
 pub struct Argument<'a> {
+    heap_start: usize,
+    heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
     message: &'a sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
