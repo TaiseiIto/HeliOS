@@ -11,6 +11,7 @@ mod interrupt;
 mod memory;
 mod processor;
 mod sync;
+mod task;
 mod x64;
 
 pub use argument::Argument;

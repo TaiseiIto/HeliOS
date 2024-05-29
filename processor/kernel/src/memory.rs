@@ -10,7 +10,10 @@ use {
         mem,
         ops::Range,
     },
-    crate::Argument,
+    crate::{
+        Argument,
+        task,
+    },
 };
 
 pub const KIB: usize = 1 << 10;
