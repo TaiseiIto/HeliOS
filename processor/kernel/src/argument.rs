@@ -8,6 +8,7 @@ use {
             self,
             Write,
         },
+        ops::Range,
     },
     crate::{
         interrupt,
@@ -72,6 +73,12 @@ impl Argument<'_> {
                 .get_mut()
                 .unwrap()
         }
+    }
+
+    pub fn heap_range(&self) -> Range<usize> {
+        let heap_start: usize = self.heap_start;
+        let heap_end: usize = heap_start + self.heap_size;
+        heap_start..heap_end
     }
 
     pub fn kernel_complete(&mut self) {
