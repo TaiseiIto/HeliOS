@@ -40,8 +40,8 @@ const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
-    argument.set();
     x64::cli();
+    argument.set();
     rs232c::set_com2(Argument::get().com2_mut());
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.

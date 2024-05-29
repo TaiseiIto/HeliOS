@@ -23,6 +23,7 @@ use core::{
 
 #[no_mangle]
 fn main(argument: &'static Argument<'static>) {
+    x64::cli();
     Argument::set(argument.clone());
     Argument::get_mut().boot_complete();
     memory::initialize(Argument::get().heap_range());
@@ -30,6 +31,9 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("argument = {:#x?}", Argument::get());
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     bsp_println!("cpuid = {:#x?}", cpuid);
+    // Initialize GDT.
+    let gdt = memory::segment::descriptor::Table::get();
+    bsp_println!("gdt = {:#x?}", gdt);
     unimplemented!();
 }
 
