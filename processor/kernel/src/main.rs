@@ -21,7 +21,7 @@ use core::{
 };
 
 #[no_mangle]
-fn main(argument: &'static Argument) {
+fn main(argument: &'static Argument<'static>) {
     Argument::set(argument.clone());
     Argument::get_mut().boot_complete();
     bsp_println!("Hello, World!");
