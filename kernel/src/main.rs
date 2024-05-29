@@ -177,14 +177,20 @@ fn main(argument: &'static mut Argument<'static>) {
         .clone()
         .into();
     let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
-    let processors: Vec<processor::Controller> = Argument::get()
+    let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
         .efi_system_table()
         .rsdp()
         .xsdt()
         .madt()
         .processor_local_apic_structures()
-        .iter()
-        .filter(|processor_local_apic| processor_local_apic.is_enabled() && processor_local_apic.apic_id() != my_local_apic_id)
+        .into_iter()
+        .filter(|processor_local_apic| processor_local_apic.is_enabled())
+        .collect();
+    let number_of_processors: usize = processors.len();
+    com2_println!("number_of_processors = {:#x?}", number_of_processors);
+    let processors: Vec<processor::Controller> = processors
+        .into_iter()
+        .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
         .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
         .collect();
     processor::Controller::set_all(processors);
