@@ -6,6 +6,7 @@
 
 extern crate alloc;
 
+mod application;
 mod argument;
 mod interrupt;
 mod memory;
@@ -18,8 +19,11 @@ pub use argument::Argument;
 
 use core::{
     arch::asm,
+    ops::Range,
     panic::PanicInfo,
 };
+
+const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static Argument<'static>) {
@@ -32,8 +36,54 @@ fn main(argument: &'static Argument<'static>) {
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     bsp_println!("cpuid = {:#x?}", cpuid);
     // Initialize GDT.
-    let gdt = memory::segment::descriptor::Table::get();
+    let mut gdt = memory::segment::descriptor::Table::get();
     bsp_println!("gdt = {:#x?}", gdt);
+    let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
+    gdtr.set();
+    let cs: memory::segment::Selector = memory::segment::Selector::cs();
+    bsp_println!("cs = {:#x?}", cs);
+    let ds: memory::segment::Selector = memory::segment::Selector::ds();
+    bsp_println!("ds = {:#x?}", ds);
+    let es: memory::segment::Selector = memory::segment::Selector::es();
+    bsp_println!("es = {:#x?}", es);
+    let fs: memory::segment::Selector = memory::segment::Selector::fs();
+    bsp_println!("fs = {:#x?}", fs);
+    let gs: memory::segment::Selector = memory::segment::Selector::gs();
+    bsp_println!("gs = {:#x?}", gs);
+    let ss: memory::segment::Selector = memory::segment::Selector::ss();
+    bsp_println!("ss = {:#x?}", ss);
+    let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
+        .descriptor(&cs)
+        .unwrap();
+    let kernel_data_segment_descriptor: memory::segment::descriptor::Interface = gdt
+        .descriptor(&ds)
+        .unwrap();
+    let application_code_segment_descriptor: memory::segment::descriptor::Interface = kernel_code_segment_descriptor
+        .with_dpl(application::PRIVILEGE_LEVEL);
+    let application_data_segment_descriptor: memory::segment::descriptor::Interface = kernel_data_segment_descriptor
+        .with_dpl(application::PRIVILEGE_LEVEL);
+    let segment_descriptors = [
+        kernel_code_segment_descriptor,
+        kernel_data_segment_descriptor,
+        application_data_segment_descriptor,
+        application_code_segment_descriptor,
+    ];
+    let segment_descriptors: &[memory::segment::descriptor::Interface] = segment_descriptors.as_slice();
+    let mut segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
+    segment_descriptor_indices
+        .clone()
+        .zip(segment_descriptors.iter())
+        .for_each(|(index, descriptor)| gdt.set_descriptor(index, descriptor));
+    let kernel_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    let kernel_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    let application_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
+    let is_ldt: bool = false;
+    let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
+    let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
+    let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
+    let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
+    x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector);
     unimplemented!();
 }
 

@@ -2,7 +2,6 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 
-use core::arch::asm;
 
 pub mod control;
 pub mod cpuid;
@@ -17,7 +16,10 @@ pub use {
     rflags::Rflags,
 };
 
-use crate::memory;
+use {
+    core::arch::asm,
+    crate::memory,
+};
 
 /// # Clear Interrupt Flag
 /// ## References
