@@ -189,7 +189,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let number_of_processors: usize = processors.len();
     com2_println!("number_of_processors = {:#x?}", number_of_processors);
     let processor_heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
-    let processor_heap_size: usize = processor_heap_size / if processor_heap_size / 2 < heap_size - (number_of_processors - 1) * processor_heap_size {
+    let processor_heap_size: usize = processor_heap_size / if processor_heap_size / 2 + (number_of_processors - 1) * processor_heap_size < heap_size {
         1
     } else {
         2

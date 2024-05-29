@@ -30,7 +30,7 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("argument = {:#x?}", Argument::get());
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     bsp_println!("cpuid = {:#x?}", cpuid);
-    panic!("End of kernel.elf");
+    unimplemented!();
 }
 
 #[panic_handler]
