@@ -28,9 +28,9 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
         self.initialize_stack();
-        self.set_arguments(paging, kernel_entry, kernel_stack_floor, heap, my_local_apic_id, message);
+        self.set_arguments(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
         self.set_temporary_pml4_table(paging);
     }
 
@@ -73,8 +73,8 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
-        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, heap, my_local_apic_id, message);
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
+        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
     }
 
     fn set_temporary_pml4_table(&mut self, paging: &memory::Paging) {
@@ -120,6 +120,8 @@ struct Arguments {
     #[allow(dead_code)]
     kernel_stack_floor: usize,
     #[allow(dead_code)]
+    bsp_heap_start: usize,
+    #[allow(dead_code)]
     heap_start: usize,
     #[allow(dead_code)]
     heap_size: usize,
@@ -130,7 +132,7 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, heap: &[u8], bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
         let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;
@@ -141,6 +143,7 @@ impl Arguments {
             cr3,
             kernel_entry,
             kernel_stack_floor,
+            bsp_heap_start,
             heap_start,
             heap_size,
             message,

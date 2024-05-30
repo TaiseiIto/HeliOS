@@ -209,7 +209,7 @@ fn main(argument: &'static mut Argument<'static>) {
     processor::Controller::set_all(processors);
     processor::Controller::get_all()
         .into_iter()
-        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
+        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
     while !processor::Controller::get_all()
         .into_iter()
         .all(|processor| processor.kernel_is_completed()) {

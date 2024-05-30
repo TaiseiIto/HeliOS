@@ -39,8 +39,8 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8) {
-        boot_loader.initialize(&self.paging, self.kernel_entry, self.kernel_stack_floor, &self.heap, bsp_local_apic_id, &self.message);
+    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8, bsp_heap_start: usize) {
+        boot_loader.initialize(&self.paging, self.kernel_entry, self.kernel_stack_floor, bsp_heap_start, &self.heap, bsp_local_apic_id, &self.message);
         let local_apic_id: u8 = self.local_apic_structure.apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();

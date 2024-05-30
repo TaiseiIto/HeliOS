@@ -40,6 +40,7 @@ pub fn bsp_print(args: fmt::Arguments) {
 #[derive(Clone, Debug)]
 #[repr(packed)]
 pub struct Argument<'a> {
+    bsp_heap_start: usize,
     heap_start: usize,
     heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
@@ -57,6 +58,10 @@ impl Argument<'_> {
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
+    }
+
+    pub fn bsp_heap_start(&self) -> usize {
+        self.bsp_heap_start
     }
 
     pub fn get() -> &'static Self {

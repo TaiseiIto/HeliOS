@@ -42,6 +42,7 @@ fn main(argument: &'static Argument<'static>) {
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     bsp_println!("cpuid = {:#x?}", cpuid);
     let mut paging = memory::Paging::get(&cpuid);
+    paging.set();
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
@@ -106,7 +107,7 @@ fn main(argument: &'static Argument<'static>) {
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
         .map(|index| {
             let pages: usize = 0x10;
-            let floor_inclusive: usize = Argument::get().heap_range().start - (2 * index + 1) * pages * memory::page::SIZE - 1;
+            let floor_inclusive: usize = Argument::get().bsp_heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
             memory::Stack::new(&mut paging, floor_inclusive, pages)
         })
         .collect();
