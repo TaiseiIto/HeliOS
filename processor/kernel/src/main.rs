@@ -121,6 +121,15 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("task_register = {:#x?}", task_register);
     // Initialize syscall.
     syscall::initialize(&cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    // Initialize a current task.
+    task::Controller::set_current();
+    task::Controller::get_current_mut()
+        .unwrap()
+        .sti();
+    // Test interrupt.
+    unsafe {
+        asm!("int 0x80");
+    }
     unimplemented!();
 }
 
