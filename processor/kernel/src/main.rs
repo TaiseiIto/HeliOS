@@ -12,6 +12,7 @@ mod interrupt;
 mod memory;
 mod processor;
 mod sync;
+mod syscall;
 mod task;
 mod x64;
 
@@ -118,6 +119,8 @@ fn main(argument: &'static Argument<'static>) {
     task_register.set();
     let task_register = x64::task::Register::get();
     bsp_println!("task_register = {:#x?}", task_register);
+    // Initialize syscall.
+    syscall::initialize(&cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     unimplemented!();
 }
 

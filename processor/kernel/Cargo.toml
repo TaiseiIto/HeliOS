@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bitfield-struct = "0.5"
+naked-function = "0.1.5"
 
 [profile.dev]
 panic = "abort"
