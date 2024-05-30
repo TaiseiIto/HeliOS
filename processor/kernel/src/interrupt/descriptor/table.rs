@@ -29,10 +29,6 @@ impl Table {
             .as_ptr() as u64
     }
 
-    pub fn get() -> Self {
-        Register::get().into()
-    }
-
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Descriptor> {
         self.descriptors.iter_mut()
     }
@@ -42,6 +38,15 @@ impl Table {
         let size: usize = length * mem::size_of::<Descriptor>();
         let limit: usize = size - 1;
         limit as u16
+    }
+
+    pub fn new() -> Self {
+        let descriptors: Vec<Descriptor> = (u8::MIN..=u8::MAX)
+            .map(|_| Descriptor::default())
+            .collect();
+        Self {
+            descriptors,
+        }
     }
 }
 
