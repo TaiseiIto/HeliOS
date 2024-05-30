@@ -37,21 +37,14 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("cpuid = {:#x?}", cpuid);
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
-    bsp_println!("gdt = {:#x?}", gdt);
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
     gdtr.set();
     let cs: memory::segment::Selector = memory::segment::Selector::cs();
-    bsp_println!("cs = {:#x?}", cs);
     let ds: memory::segment::Selector = memory::segment::Selector::ds();
-    bsp_println!("ds = {:#x?}", ds);
     let es: memory::segment::Selector = memory::segment::Selector::es();
-    bsp_println!("es = {:#x?}", es);
     let fs: memory::segment::Selector = memory::segment::Selector::fs();
-    bsp_println!("fs = {:#x?}", fs);
     let gs: memory::segment::Selector = memory::segment::Selector::gs();
-    bsp_println!("gs = {:#x?}", gs);
     let ss: memory::segment::Selector = memory::segment::Selector::ss();
-    bsp_println!("ss = {:#x?}", ss);
     let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
         .descriptor(&cs)
         .unwrap();
@@ -84,6 +77,19 @@ fn main(argument: &'static Argument<'static>) {
     let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector);
+    bsp_println!("gdt = {:#x?}", gdt);
+    let cs: memory::segment::Selector = memory::segment::Selector::cs();
+    bsp_println!("cs = {:#x?}", cs);
+    let ds: memory::segment::Selector = memory::segment::Selector::ds();
+    bsp_println!("ds = {:#x?}", ds);
+    let es: memory::segment::Selector = memory::segment::Selector::es();
+    bsp_println!("es = {:#x?}", es);
+    let fs: memory::segment::Selector = memory::segment::Selector::fs();
+    bsp_println!("fs = {:#x?}", fs);
+    let gs: memory::segment::Selector = memory::segment::Selector::gs();
+    bsp_println!("gs = {:#x?}", gs);
+    let ss: memory::segment::Selector = memory::segment::Selector::ss();
+    bsp_println!("ss = {:#x?}", ss);
     unimplemented!();
 }
 
