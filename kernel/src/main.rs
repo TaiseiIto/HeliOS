@@ -103,6 +103,7 @@ fn main(argument: &'static mut Argument<'static>) {
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
+    interrupt::register_handlers(&mut idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     idtr.set();
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
@@ -119,7 +120,6 @@ fn main(argument: &'static mut Argument<'static>) {
     task_register.set();
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
-    interrupt::register_handlers(&mut idt);
     // Initialize syscall.
     syscall::initialize(Argument::get().cpuid(), &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     // Initialize a current task.

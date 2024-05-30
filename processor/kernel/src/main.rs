@@ -17,10 +17,16 @@ mod x64;
 
 pub use argument::Argument;
 
-use core::{
-    arch::asm,
-    ops::Range,
-    panic::PanicInfo,
+use {
+    alloc::{
+        boxed::Box,
+        vec::Vec,
+    },
+    core::{
+        arch::asm,
+        ops::Range,
+        panic::PanicInfo,
+    },
 };
 
 const PRIVILEGE_LEVEL: u8 = 0;
@@ -35,6 +41,7 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("argument = {:#x?}", Argument::get());
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
     bsp_println!("cpuid = {:#x?}", cpuid);
+    let mut paging = memory::Paging::get(&cpuid);
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
@@ -96,6 +103,20 @@ fn main(argument: &'static Argument<'static>) {
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     idtr.set();
     bsp_println!("idt = {:#x?}", idt);
+    let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
+        .map(|index| {
+            let pages: usize = 0x10;
+            let floor_inclusive: usize = Argument::get().heap_range().start - (2 * index + 1) * pages * memory::page::SIZE - 1;
+            memory::Stack::new(&mut paging, floor_inclusive, pages)
+        })
+        .collect();
+    let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
+    let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
+    let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
+    let task_register: x64::task::Register = task_state_segment_selector.into();
+    task_register.set();
+    let task_register = x64::task::Register::get();
+    bsp_println!("task_register = {:#x?}", task_register);
     unimplemented!();
 }
 

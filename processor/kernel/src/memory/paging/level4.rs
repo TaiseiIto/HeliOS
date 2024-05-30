@@ -49,6 +49,21 @@ impl Controller {
             .debug(&vaddr)
     }
 
+    pub fn get(cr3: x64::control::Register3) -> Self {
+        let source: &Pml4t = cr3.get_paging_structure();
+        let pml4t = Box::<Pml4t>::new(source.clone());
+        let cr3: x64::control::Register3 = cr3.with_paging_structure({
+            let pml4t: Vaddr = pml4t.as_ref().into();
+            pml4t.paddr().unwrap()
+        });
+        let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
+        Self {
+            cr3,
+            pml4t,
+            vaddr2pml4te_controller,
+        }
+    }
+
     pub fn higher_half_range(&self) -> Range<u128> {
         let start_pml4i: usize = 1 << (Vaddr::PML4I_BITS - 1);
         let start_pdpi: usize = 0;

@@ -3,10 +3,10 @@ use {
     crate::interrupt,
     super::super::{
         rdmsr,
+        super::Cpuid,
         wrmsr,
     },
 };
-
 
 /// # IA32_APIC_BASE
 /// ## References
@@ -30,6 +30,13 @@ impl ApicBase {
     pub fn enable(&mut self) {
         self.set_apic_global_enable(true);
         wrmsr(Self::ECX, (*self).into());
+    }
+
+    pub fn get(cpuid: &Cpuid) -> Option<Self> {
+        cpuid
+            .supports_apic()
+            .then(|| rdmsr(Self::ECX)
+                .into())
     }
 
     pub fn registers(&self) -> &interrupt::apic::local::Registers {
