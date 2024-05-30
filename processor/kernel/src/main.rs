@@ -90,6 +90,9 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("gs = {:#x?}", gs);
     let ss: memory::segment::Selector = memory::segment::Selector::ss();
     bsp_println!("ss = {:#x?}", ss);
+    // Initialize IDT.
+    let idt = interrupt::descriptor::Table::get();
+    bsp_println!("idt = {:#x?}", idt);
     unimplemented!();
 }
 
