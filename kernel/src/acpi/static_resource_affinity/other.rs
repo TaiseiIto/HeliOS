@@ -1,6 +1,6 @@
 use core::{
     fmt,
-    mem,
+    mem::size_of,
     slice,
 };
 
@@ -18,9 +18,9 @@ impl Structure {
     fn bytes(&self) -> &[u8] {
         let structure: *const Self = self as *const Self;
         let structure: usize = structure as usize;
-        let first_byte: usize = structure + mem::size_of::<Self>();
+        let first_byte: usize = structure + size_of::<Self>();
         let first_byte: *const u8 = first_byte as *const u8;
-        let size: usize = (self.length as usize) - mem::size_of::<Self>();
+        let size: usize = (self.length as usize) - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(first_byte, size)
         }

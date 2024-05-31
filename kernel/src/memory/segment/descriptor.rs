@@ -3,7 +3,7 @@ pub mod table;
 pub use table::Table;
 
 use {
-    core::mem,
+    core::mem::size_of,
     crate::x64,
     super::{
         long,
@@ -94,7 +94,7 @@ impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
     fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
         let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
         let base: usize = base as usize;
-        let size: usize = mem::size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
+        let size: usize = size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
         let dpl: u8 = 0;
         let avl: bool = false;
         let segment_type = x64::descriptor::Type::available_tss();

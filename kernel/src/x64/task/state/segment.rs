@@ -5,7 +5,7 @@ use {
     },
     core::{
         iter,
-        mem,
+        mem::size_of,
     },
     crate::memory,
 };
@@ -21,7 +21,7 @@ pub struct AndIoPermissionBitMap {
 
 impl AndIoPermissionBitMap {
     pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Box<Self> {
-        let segment = Segment::new(interrupt_stacks, mem::size_of::<Segment>());
+        let segment = Segment::new(interrupt_stacks, size_of::<Segment>());
         let io_permission_bit_map = IoPermissionBitMap::default();
         Box::new(Self {
             segment,

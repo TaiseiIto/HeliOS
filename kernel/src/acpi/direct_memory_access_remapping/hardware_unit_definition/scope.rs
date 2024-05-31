@@ -2,7 +2,7 @@ use {
     bitfield_struct::bitfield,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
 };
@@ -45,7 +45,7 @@ impl Structure {
             structure.add(1)
         };
         let path: *const u16 = path as *const u16;
-        let length: usize = (self.length() - mem::size_of::<Self>()) / mem::size_of::<u16>();
+        let length: usize = (self.length() - size_of::<Self>()) / size_of::<u16>();
         unsafe {
             slice::from_raw_parts(path, length)
         }

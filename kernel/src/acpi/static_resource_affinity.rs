@@ -11,7 +11,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -35,9 +35,9 @@ impl Table {
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
-        let first_byte: usize = table + mem::size_of::<Self>();
+        let first_byte: usize = table + size_of::<Self>();
         let first_byte: *const u8 = first_byte as *const u8;
-        let size: usize = self.header.table_size() - mem::size_of::<Self>();
+        let size: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(first_byte, size)
         }

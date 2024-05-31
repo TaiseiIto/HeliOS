@@ -2,7 +2,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::{
@@ -23,7 +23,7 @@ pub struct Table {
 impl Table {
     pub fn entries(&self) -> Vec<system_description::Table<'_>> {
         self.bytes()
-            .chunks(mem::size_of::<usize>())
+            .chunks(size_of::<usize>())
             .map(|entry_address_bytes| {
                 let entry: usize = entry_address_bytes
                     .iter()
@@ -40,7 +40,7 @@ impl Table {
 
     pub fn hpet(&self) -> &high_precision_event_timer::Table {
         self.bytes()
-            .chunks(mem::size_of::<usize>())
+            .chunks(size_of::<usize>())
             .find_map(|entry_address_bytes| {
                 let entry: usize = entry_address_bytes
                     .iter()
@@ -62,7 +62,7 @@ impl Table {
 
     pub fn hpet_mut(&mut self) -> &mut high_precision_event_timer::Table {
         self.bytes_mut()
-            .chunks(mem::size_of::<usize>())
+            .chunks(size_of::<usize>())
             .find_map(|entry_address_bytes| {
                 let entry: usize = entry_address_bytes
                     .iter()
@@ -91,7 +91,7 @@ impl Table {
 
     pub fn madt(&self) -> &multiple_apic_description::Table {
         self.bytes()
-            .chunks(mem::size_of::<usize>())
+            .chunks(size_of::<usize>())
             .find_map(|entry_address_bytes| {
                 let entry: usize = entry_address_bytes
                     .iter()
@@ -113,7 +113,7 @@ impl Table {
 
     pub fn madt_mut(&mut self) -> &mut multiple_apic_description::Table {
         self.bytes_mut()
-            .chunks(mem::size_of::<usize>())
+            .chunks(size_of::<usize>())
             .find_map(|entry_address_bytes| {
                 let entry: usize = entry_address_bytes
                     .iter()
@@ -136,9 +136,9 @@ impl Table {
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
-        let first_byte: usize = table + mem::size_of::<Self>();
+        let first_byte: usize = table + size_of::<Self>();
         let first_byte: *const u8 = first_byte as *const u8;
-        let length: usize = self.header.table_size() - mem::size_of::<Self>();
+        let length: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(first_byte, length)
         }
@@ -147,9 +147,9 @@ impl Table {
     fn bytes_mut(&mut self) -> &mut [u8] {
         let table: *mut Self = self as *mut Self;
         let table: usize = table as usize;
-        let first_byte: usize = table + mem::size_of::<Self>();
+        let first_byte: usize = table + size_of::<Self>();
         let first_byte: *mut u8 = first_byte as *mut u8;
-        let length: usize = self.header.table_size() - mem::size_of::<Self>();
+        let length: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts_mut(first_byte, length)
         }

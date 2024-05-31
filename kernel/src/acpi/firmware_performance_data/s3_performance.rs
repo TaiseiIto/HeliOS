@@ -6,7 +6,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
         str,
     },
@@ -29,7 +29,7 @@ impl Table {
             table.add(1)
         };
         let bytes: *const u8 = bytes as *const u8;
-        let length: usize = self.length() - mem::size_of::<Self>();
+        let length: usize = self.length() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(bytes, length)
         }

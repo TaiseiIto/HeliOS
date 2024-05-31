@@ -1,7 +1,7 @@
 use {
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -23,9 +23,9 @@ impl Table {
     fn definition_block(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
-        let definition_block: usize = table + mem::size_of::<Self>();
+        let definition_block: usize = table + size_of::<Self>();
         let definition_block: *const u8 = definition_block as *const u8;
-        let definition_block_size: usize = self.header.table_size() - mem::size_of::<Self>();
+        let definition_block_size: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(definition_block, definition_block_size)
         }

@@ -1,7 +1,7 @@
 use {
     core::{
         arch::asm,
-        mem,
+        mem::size_of,
     },
     super::super::{
         super::short,
@@ -34,7 +34,7 @@ impl Register {
     }
 
     pub fn length(&self) -> usize {
-        (self.limit as usize + 1) / mem::size_of::<short::Descriptor>()
+        (self.limit as usize + 1) / size_of::<short::Descriptor>()
     }
 
     #[inline(never)]

@@ -1,7 +1,7 @@
 use {
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -28,7 +28,7 @@ impl Table {
             address.add(1)
         };
         let address: *const ConfigurationSpaceBaseAddressAllocation = address as *const ConfigurationSpaceBaseAddressAllocation;
-        let length: usize = (self.header.table_size() - mem::size_of::<Self>()) / mem::size_of::<ConfigurationSpaceBaseAddressAllocation>();
+        let length: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<ConfigurationSpaceBaseAddressAllocation>();
         unsafe {
             slice::from_raw_parts(address, length)
         }

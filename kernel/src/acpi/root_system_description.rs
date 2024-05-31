@@ -2,7 +2,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         str,
     },
     super::{
@@ -61,8 +61,8 @@ impl Pointer {
 
     fn extended_checksum(&self) -> bool {
         let rsdp: *const Self = self as *const Self;
-        let rsdp: *const [u8; mem::size_of::<Self>()] = rsdp as *const [u8; mem::size_of::<Self>()];
-        let rsdp: &[u8; mem::size_of::<Self>()]  = unsafe {
+        let rsdp: *const [u8; size_of::<Self>()] = rsdp as *const [u8; size_of::<Self>()];
+        let rsdp: &[u8; size_of::<Self>()]  = unsafe {
             &*rsdp
         };
         rsdp.iter()
@@ -123,9 +123,9 @@ impl Table {
     pub fn entries(&self) -> Vec<system_description::Table<'_>> {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
-        let first_entry: usize = table + mem::size_of::<Self>();
+        let first_entry: usize = table + size_of::<Self>();
         let first_entry: *const u32 = first_entry as *const u32;
-        let entries: usize = (self.header.table_size() - mem::size_of::<Self>()) / mem::size_of::<u32>();
+        let entries: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<u32>();
         (0..entries)
             .map(|index| {
                 let entry: u32 = unsafe {

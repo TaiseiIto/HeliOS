@@ -1,6 +1,6 @@
 use core::{
     fmt,
-    mem,
+    mem::size_of,
     slice,
     str,
 };
@@ -28,7 +28,7 @@ impl Structure {
             structure.add(1)
         };
         let acpi_object_name: *const u8 = acpi_object_name as *const u8;
-        let length: usize = self.length() - mem::size_of::<Self>();
+        let length: usize = self.length() - size_of::<Self>();
         let acpi_object_name: &[u8] = unsafe {
             slice::from_raw_parts(acpi_object_name, length)
         };

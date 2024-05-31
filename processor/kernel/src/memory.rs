@@ -19,7 +19,7 @@ use {
         cell::UnsafeCell,
         cmp,
         fmt,
-        mem,
+        mem::size_of,
         ops::Range,
     },
     crate::{
@@ -119,7 +119,7 @@ struct NodeList {
     nodes: [Node; NODE_LIST_LENGTH],
 }
 
-const NODE_LIST_LENGTH: usize = page::SIZE / mem::size_of::<Node>();
+const NODE_LIST_LENGTH: usize = page::SIZE / size_of::<Node>();
 
 impl NodeList {
     fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
@@ -414,7 +414,7 @@ impl Node {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
         let offset: usize = address % page::SIZE;
-        offset / mem::size_of::<Self>()
+        offset / size_of::<Self>()
     }
 
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {

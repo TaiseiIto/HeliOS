@@ -6,7 +6,7 @@
 use {
     bitfield_struct::bitfield,
     core::{
-        mem,
+        mem::size_of,
         slice,
     },
     super::super::super::{
@@ -36,7 +36,7 @@ impl<'a> IntoIterator for Table<'a> {
 
 impl<'a> From<&'a [u8]> for Table<'a> {
     fn from(bytes: &'a [u8]) -> Self {
-        let len: usize = bytes.len() / mem::size_of::<Entry>();
+        let len: usize = bytes.len() / size_of::<Entry>();
         let entry: &u8 = bytes
             .first()
             .unwrap();

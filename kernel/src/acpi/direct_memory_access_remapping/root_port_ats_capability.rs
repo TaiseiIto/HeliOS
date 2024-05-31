@@ -3,7 +3,7 @@ use {
     bitfield_struct::bitfield,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::hardware_unit_definition,
@@ -29,7 +29,7 @@ impl Structure {
             structure.add(1)
         };
         let first_byte: *const u8 = first_byte as *const u8;
-        let size: usize = self.length() - mem::size_of::<Self>();
+        let size: usize = self.length() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(first_byte, size)
         }
