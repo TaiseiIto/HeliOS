@@ -10,6 +10,10 @@ use {
     core::{
         cell::OnceCell,
         mem::MaybeUninit,
+        sync::atomic::{
+            AtomicBool,
+            Ordering,
+        },
     },
     crate::{
         acpi,
@@ -28,7 +32,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Controller {
-    boot_completed: bool,
+    boot_completed: AtomicBool,
     heap: Vec<MaybeUninit<u8>>,
     kernel_completed: bool,
     kernel_entry: usize,
@@ -50,14 +54,14 @@ impl Controller {
         local_apic_registers.send_init(local_apic_id, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
-        while !self.boot_completed {
+        while !self.boot_completed.load(Ordering::Acquire) {
             x64::pause();
         }
         com2_println!("{}", boot_loader.log());
     }
 
     pub fn boot_complete(&mut self) {
-        self.boot_completed = true;
+        self.boot_completed.store(true, Ordering::Release);
     }
 
     pub fn delete_messages() {
@@ -98,7 +102,7 @@ impl Controller {
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
-        let boot_completed: bool = false;
+        let boot_completed: AtomicBool = AtomicBool::new(false);
         let kernel_completed: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
