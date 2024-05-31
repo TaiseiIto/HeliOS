@@ -5,7 +5,10 @@ use {
     },
     core::{
         fmt,
-        mem,
+        mem::{
+            size_of,
+            MaybeUninit,
+        },
         ops::Range,
         slice,
     },
@@ -28,7 +31,7 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
+    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
         self.initialize_stack();
         self.set_arguments(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
         self.set_temporary_pml4_table(paging);
@@ -60,7 +63,7 @@ impl Loader {
     }
 
     fn arguments_mut(&mut self) -> &mut Arguments {
-        let arguments: usize = self.program_address_range.end - mem::size_of::<Arguments>();
+        let arguments: usize = self.program_address_range.end - size_of::<Arguments>();
         let arguments: *mut Arguments = arguments as *mut Arguments;
         unsafe {
             &mut *arguments
@@ -73,7 +76,7 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
+    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
         *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
     }
 
@@ -91,7 +94,7 @@ impl Loader {
     }
 
     fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
-        let temporary_pml4_table: usize = self.program_address_range.end - mem::size_of::<Arguments>() - memory::page::SIZE;
+        let temporary_pml4_table: usize = self.program_address_range.end - size_of::<Arguments>() - memory::page::SIZE;
         com2_println!("temporary_pml4_table = {:#x?}", temporary_pml4_table);
         let temporary_pml4_table: *mut u8 = temporary_pml4_table as *mut u8;
         let length: usize = memory::page::SIZE;
@@ -132,7 +135,7 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[u8], bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
+    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
         let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;

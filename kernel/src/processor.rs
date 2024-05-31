@@ -7,7 +7,10 @@ use {
         string::String,
         vec::Vec,
     },
-    core::cell::OnceCell,
+    core::{
+        cell::OnceCell,
+        mem::MaybeUninit,
+    },
     crate::{
         acpi,
         com2_print,
@@ -26,7 +29,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 #[derive(Debug)]
 pub struct Controller {
     boot_completed: bool,
-    heap: Vec<u8>,
+    heap: Vec<MaybeUninit<u8>>,
     kernel_completed: bool,
     kernel_entry: usize,
     kernel_stack: memory::Stack,
@@ -94,7 +97,7 @@ impl Controller {
         &self.log
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<u8>) -> Self {
+    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
         let boot_completed: bool = false;
         let kernel_completed: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);

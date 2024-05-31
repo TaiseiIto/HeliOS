@@ -31,6 +31,7 @@ use {
     },
     core::{
         arch::asm,
+        mem::MaybeUninit,
         ops::Range,
         panic::PanicInfo,
     },
@@ -199,7 +200,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .into_iter()
         .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
         .map(|processor_local_apic| {
-            let mut heap: Vec<u8> = Vec::with_capacity(processor_heap_size);
+            let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(processor_heap_size);
             unsafe {
                 heap.set_len(processor_heap_size);
             }
@@ -207,16 +208,11 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .collect();
     processor::Controller::set_all(processors);
-    processor::Controller::get_all()
-        .into_iter()
-        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
-    while !processor::Controller::get_all()
-        .into_iter()
-        .all(|processor| processor.kernel_is_completed()) {
+    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
+    while !processor::Controller::get_all().all(|processor| processor.kernel_is_completed()) {
         x64::pause();
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
-        .into_iter()
         .map(|processor| (processor.local_apic_id(), processor.log()))
         .collect();
     local_apic_id2log
