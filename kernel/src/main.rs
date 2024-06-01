@@ -154,14 +154,17 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
-    // Start HPET.
-    Argument::get()
+    // Set HPET.
+    let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()
         .hpet_mut()
-        .registers_mut()
-        .start_counting();
+        .registers_mut();
+    let hpet_interrupt_period_milliseconds: usize = 1000;
+    let hpet_irq: u8 = hpet.set_periodic_interrupt(hpet_interrupt_period_milliseconds);
+    com2_println!("hpet_irq = {:#x?}", hpet_irq);
+    hpet.start();
     let hpet: &timer::hpet::Registers = Argument::get()
         .efi_system_table()
         .rsdp()

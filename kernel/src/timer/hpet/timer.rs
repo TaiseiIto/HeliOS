@@ -18,3 +18,23 @@ pub struct Registers {
     reserved0: u64,
 }
 
+impl Registers {
+    pub fn is_enable(&self) -> bool {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
+        configuration_and_capability.is_enable()
+    }
+
+    pub fn set_periodic_interrupt(&mut self, comparator: u64) -> u8 {
+        let mut configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
+        let irq: u8 = configuration_and_capability.set_periodic_interrupt();
+        self.configuration_and_capability = configuration_and_capability;
+        self.comparator_value = comparator::Register::create(comparator);
+        irq
+    }
+
+    pub fn supports_periodic_interrupt(&self) -> bool {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
+        configuration_and_capability.supports_periodic_interrupt()
+    }
+}
+

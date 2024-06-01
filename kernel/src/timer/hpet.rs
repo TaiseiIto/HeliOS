@@ -37,7 +37,16 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn start_counting(&mut self) {
+    pub fn set_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
+        let comparator: u64 = 1000000000000 * (milliseconds as u64) / self.get_femtoseconds_per_increment();
+        self.timers_mut()
+            .iter_mut()
+            .find(|timer| timer.supports_periodic_interrupt() && !timer.is_enable())
+            .unwrap()
+            .set_periodic_interrupt(comparator)
+    }
+
+    pub fn start(&mut self) {
         let general_configuration: general_configuration::Register = self.general_configuration;
         if !general_configuration.is_counting() {
             self.general_configuration = general_configuration.start_counting();
@@ -101,6 +110,18 @@ impl Registers {
         let length: usize = general_capabilities_and_id.number_of_timers();
         unsafe {
             slice::from_raw_parts(timers, length)
+        }
+    }
+
+    fn timers_mut(&mut self) -> &mut [timer::Registers] {
+        let registers: *mut Self = self as *mut Self;
+        let timers: *mut timer::Registers = unsafe {
+            registers.add(1)
+        } as *mut timer::Registers;
+        let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
+        let length: usize = general_capabilities_and_id.number_of_timers();
+        unsafe {
+            slice::from_raw_parts_mut(timers, length)
         }
     }
 }
