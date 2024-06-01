@@ -20,5 +20,9 @@ impl Register {
     pub fn get_femtoseconds_per_increment(&self) -> u64 {
         self.counter_clk_period() as u64
     }
+
+    pub fn number_of_timers(&self) -> usize {
+        (self.num_tim_cap() as usize) + 1
+    }
 }
 

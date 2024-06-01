@@ -5,7 +5,10 @@ pub mod main_counter_value;
 pub mod timer;
 
 use {
-    core::fmt,
+    core::{
+        fmt,
+        slice,
+    },
     crate::x64,
 };
 
@@ -26,7 +29,6 @@ pub struct Registers {
     main_counter_value: main_counter_value::Register,
     #[allow(dead_code)]
     reserved3: u64,
-    timer: [timer::Registers; 0x18],
 }
 
 impl Registers {
@@ -84,6 +86,18 @@ impl Registers {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
         general_capabilities_and_id.get_femtoseconds_per_increment()
     }
+
+    fn timers(&self) -> &[timer::Registers] {
+        let registers: *const Self = self as *const Self;
+        let timers: *const timer::Registers = unsafe {
+            registers.add(1)
+        } as *const timer::Registers;
+        let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
+        let length: usize = general_capabilities_and_id.number_of_timers();
+        unsafe {
+            slice::from_raw_parts(timers, length)
+        }
+    }
 }
 
 impl fmt::Debug for Registers {
@@ -92,14 +106,14 @@ impl fmt::Debug for Registers {
         let general_configuration: general_configuration::Register = self.general_configuration;
         let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
         let main_counter_value: main_counter_value::Register = self.main_counter_value;
-        let timer: [timer::Registers; 0x18] = self.timer;
+        let timers: &[timer::Registers] = self.timers();
         formatter
             .debug_struct("Registers")
             .field("general_capabilities_and_id", &general_capabilities_and_id)
             .field("general_configuration", &general_configuration)
             .field("general_interrupt_status", &general_interrupt_status)
             .field("main_counter_value", &main_counter_value)
-            .field("timer", &timer)
+            .field("timers", &timers)
             .finish()
     }
 }

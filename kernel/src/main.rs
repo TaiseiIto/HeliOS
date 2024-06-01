@@ -168,6 +168,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .xsdt()
         .hpet()
         .registers();
+    com2_println!("hpet = {:#x?}", hpet);
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()
