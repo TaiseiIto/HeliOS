@@ -5,6 +5,11 @@ pub mod main_counter_value;
 pub mod timer;
 
 use {
+    alloc::{
+        collections::BTreeMap,
+        format,
+        string::String,
+    },
     core::{
         fmt,
         slice,
@@ -104,9 +109,12 @@ impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
         let general_configuration: general_configuration::Register = self.general_configuration;
-        let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
         let main_counter_value: main_counter_value::Register = self.main_counter_value;
         let timers: &[timer::Registers] = self.timers();
+        let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
+        let general_interrupt_status: BTreeMap<String, bool> = (0..timers.len())
+            .map(|timer| (format!("Timer {:#x?} interactive active", timer), general_interrupt_status.timer_interactive_active(timer)))
+            .collect();
         formatter
             .debug_struct("Registers")
             .field("general_capabilities_and_id", &general_capabilities_and_id)
