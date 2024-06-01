@@ -48,7 +48,7 @@ pub struct Controller {
 
 impl Controller {
     pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8, bsp_heap_start: usize) {
-        boot_loader.initialize(&self.paging, self.kernel_entry, self.kernel_stack_floor, bsp_heap_start, &self.heap, bsp_local_apic_id, &self.message);
+        boot_loader.initialize(self, bsp_heap_start, bsp_local_apic_id);
         let local_apic_id: u8 = self.local_apic_structure.apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
         let entry_point: usize = boot_loader.entry_point();
@@ -86,12 +86,24 @@ impl Controller {
             .iter_mut()
     }
 
+    pub fn heap(&self) -> &[MaybeUninit<u8>] {
+        &self.heap
+    }
+
     pub fn kernel_complete(&mut self) {
         self.kernel_completed = true;
     }
 
+    pub fn kernel_entry(&self) -> usize {
+        self.kernel_entry
+    }
+
     pub fn kernel_is_completed(&self) -> bool {
         self.kernel_completed
+    }
+
+    pub fn kernel_stack_floor(&self) -> usize {
+        self.kernel_stack_floor
     }
 
     pub fn local_apic_id(&self) -> u8 {
@@ -100,6 +112,10 @@ impl Controller {
 
     pub fn log(&self) -> &str {
         &self.log
+    }
+
+    pub fn message(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.message
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
@@ -126,6 +142,10 @@ impl Controller {
             message,
             paging,
         }
+    }
+
+    pub fn paging(&self) -> &memory::Paging {
+        &self.paging
     }
 
     pub fn process_messages() {

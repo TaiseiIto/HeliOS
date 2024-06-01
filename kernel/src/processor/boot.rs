@@ -18,7 +18,10 @@ use {
         memory,
         sync,
     },
-    super::message,
+    super::{
+        Controller,
+        message,
+    },
 };
 
 pub struct Loader {
@@ -31,10 +34,10 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
+    pub fn initialize(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
         self.initialize_stack();
-        self.set_arguments(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
-        self.set_temporary_pml4_table(paging);
+        self.set_arguments(controller, bsp_heap_start, bsp_local_apic_id);
+        self.set_temporary_pml4_table(controller);
     }
 
     pub fn log(&self) -> String {
@@ -76,13 +79,13 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], my_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) {
-        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, bsp_heap_start, heap, my_local_apic_id, message);
+    fn set_arguments(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
+        *self.arguments_mut() = Arguments::new(controller, bsp_heap_start, bsp_local_apic_id);
     }
 
-    fn set_temporary_pml4_table(&mut self, paging: &memory::Paging) {
+    fn set_temporary_pml4_table(&mut self, controller: &Controller) {
         self.temporary_pml4_table_mut()
-            .copy_from_slice(paging.table())
+            .copy_from_slice(controller.paging().table())
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -135,9 +138,14 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_heap_start: usize, heap: &[MaybeUninit<u8>], bsp_local_apic_id: u8, message: &sync::spin::Lock<Option<message::Content>>) -> Self {
+    pub fn new(controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) -> Self {
+        let paging: &memory::Paging = controller.paging();
+        let kernel_entry: usize = controller.kernel_entry();
+        let kernel_stack_floor: usize = controller.kernel_stack_floor();
+        let heap: &[MaybeUninit<u8>] = controller.heap();
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
+        let message: &sync::spin::Lock<Option<message::Content>> = controller.message();
         let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;
         let message: usize = message as usize;
         let cr3: u64 = paging.cr3().into();
