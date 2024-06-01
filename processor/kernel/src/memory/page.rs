@@ -69,16 +69,19 @@ impl Page {
         }
     }
 
+    #[allow(dead_code)]
     pub fn paddr_range(&self) -> Range<usize> {
         self.paddr..self.paddr + SIZE
     }
 
+    #[allow(dead_code)]
     pub fn vaddr2paddr(&self, vaddr: usize) -> usize {
         assert!(self.vaddr_range().contains(&vaddr));
         let offset: usize = vaddr & !self.vaddr;
         offset | self.paddr
     }
 
+    #[allow(dead_code)]
     pub fn vaddr_range(&self) -> Range<usize> {
         self.vaddr..self.vaddr + SIZE
     }

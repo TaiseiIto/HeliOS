@@ -3,7 +3,6 @@ pub mod message;
 
 use {
     alloc::{
-        collections::BTreeMap,
         string::String,
         vec::Vec,
     },
@@ -36,8 +35,10 @@ pub struct Controller {
     heap: Vec<MaybeUninit<u8>>,
     kernel_completed: bool,
     kernel_entry: usize,
+    #[allow(dead_code)]
     kernel_stack: memory::Stack,
     kernel_stack_floor: usize,
+    #[allow(dead_code)]
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,

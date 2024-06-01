@@ -4,10 +4,7 @@ pub mod segment;
 pub mod stack;
 
 pub use {
-    page::{
-        ContinuousPages,
-        Page,
-    },
+    page::ContinuousPages,
     paging::Paging,
     stack::Stack,
 };
@@ -22,10 +19,7 @@ use {
         mem::size_of,
         ops::Range,
     },
-    crate::{
-        Argument,
-        task,
-    },
+    crate::task,
 };
 
 pub const KIB: usize = 1 << 10;

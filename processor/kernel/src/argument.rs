@@ -1,7 +1,6 @@
 //! Kernel arguments.
 
 use {
-    alloc::alloc::Layout,
     core::{
         cell::OnceCell,
         fmt::{

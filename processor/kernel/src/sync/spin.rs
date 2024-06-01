@@ -62,6 +62,7 @@ pub struct Lock<T> {
 }
 
 impl<T> Lock<T> {
+    #[allow(dead_code)]
     pub const fn new(value: T) -> Self {
         let locked = AtomicBool::new(false);
         let value = UnsafeCell::new(value);

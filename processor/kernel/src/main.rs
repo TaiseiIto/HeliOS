@@ -50,10 +50,6 @@ fn main(argument: &'static Argument<'static>) {
     gdtr.set();
     let cs: memory::segment::Selector = memory::segment::Selector::cs();
     let ds: memory::segment::Selector = memory::segment::Selector::ds();
-    let es: memory::segment::Selector = memory::segment::Selector::es();
-    let fs: memory::segment::Selector = memory::segment::Selector::fs();
-    let gs: memory::segment::Selector = memory::segment::Selector::gs();
-    let ss: memory::segment::Selector = memory::segment::Selector::ss();
     let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
         .descriptor(&cs)
         .unwrap();

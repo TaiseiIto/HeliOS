@@ -3,17 +3,14 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use {
-    alloc::collections::BTreeMap,
-    crate::{
-        Argument,
-        com2_print,
-        com2_println,
-        memory,
-        processor,
-        task,
-        x64,
-    },
+use crate::{
+    Argument,
+    com2_print,
+    com2_println,
+    memory,
+    processor,
+    task,
+    x64,
 };
 
 pub enum Handler {
@@ -1110,7 +1107,7 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
 }
 
 /// # Interprocessor interrupt
-extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }

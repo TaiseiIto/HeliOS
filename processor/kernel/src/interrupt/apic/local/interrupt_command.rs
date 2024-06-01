@@ -22,6 +22,7 @@ pub struct Register {
 }
 
 impl Register {
+    #[allow(dead_code)]
     pub fn assert_init(&mut self, processor_local_apic_id: u8) {
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
@@ -29,6 +30,7 @@ impl Register {
         *self.low_mut() = low.into();
     }
 
+    #[allow(dead_code)]
     pub fn deassert_init(&mut self, processor_local_apic_id: u8) {
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
@@ -43,6 +45,7 @@ impl Register {
         *self.low_mut() = low.into();
     }
 
+    #[allow(dead_code)]
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
@@ -143,6 +146,7 @@ struct Low {
 }
 
 impl Low {
+    #[allow(dead_code)]
     fn assert_init() -> Self {
         Self::new()
             .with_vector(0)
@@ -153,6 +157,7 @@ impl Low {
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 
+    #[allow(dead_code)]
     fn deassert_init() -> Self {
         Self::new()
             .with_vector(0)
@@ -178,6 +183,7 @@ impl Low {
             .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 
+    #[allow(dead_code)]
     fn send_sipi(entry_point: usize) -> Self {
         Self::new()
             .with_vector((entry_point / memory::page::SIZE) as u8)

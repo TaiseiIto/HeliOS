@@ -3,16 +3,12 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use {
-    alloc::collections::BTreeMap,
-    crate::{
-        bsp_print,
-        bsp_println,
-        memory,
-        processor,
-        task,
-        x64,
-    },
+use crate::{
+    bsp_print,
+    bsp_println,
+    memory,
+    task,
+    x64,
 };
 
 pub const INTERPROCESSOR_INTERRUPT: u8 = 0x20;

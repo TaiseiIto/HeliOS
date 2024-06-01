@@ -1,7 +1,4 @@
-use {
-    alloc::alloc::Layout,
-    super::Controller,
-};
+use super::Controller;
 
 #[derive(Clone, Debug)]
 pub enum Content {

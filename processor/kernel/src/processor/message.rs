@@ -1,5 +1,3 @@
-use alloc::alloc::Layout;
-
 #[derive(Clone, Debug)]
 pub enum Content {
     BootCompleted,
