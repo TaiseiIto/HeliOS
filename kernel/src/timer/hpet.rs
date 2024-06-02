@@ -38,6 +38,9 @@ pub struct Registers {
 
 impl Registers {
     pub fn set_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
+        self.stop();
+        let main_counter_value: u64 = 0;
+        self.main_counter_value = main_counter_value::Register::create(main_counter_value);
         let comparator: u64 = 1000000000000 * (milliseconds as u64) / self.get_femtoseconds_per_increment();
         self.timers_mut()
             .iter_mut()
@@ -47,10 +50,11 @@ impl Registers {
     }
 
     pub fn start(&mut self) {
-        let general_configuration: general_configuration::Register = self.general_configuration;
-        if !general_configuration.is_counting() {
-            self.general_configuration = general_configuration.start_counting();
-        }
+        let general_configuration: general_configuration::Register = self.general_configuration.start_counting();
+    }
+
+    pub fn stop(&mut self) {
+        let general_configuration: general_configuration::Register = self.general_configuration.stop_counting();
     }
 
     pub fn wait_femtoseconds(&self, femtoseconds: u64) {

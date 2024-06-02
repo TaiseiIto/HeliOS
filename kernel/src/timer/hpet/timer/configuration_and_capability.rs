@@ -54,6 +54,7 @@ impl Register {
         self.with_tn_int_type_cnf(InterruptType::Edge.into())
             .with_tn_int_enb_cnf(true)
             .with_tn_type_cnf(Type::Periodic.into())
+            .with_tn_val_set_cnf(true)
             .with_tn_32mode_cnf(Mode::Bit64.into())
             .with_interrupt_destination(&interrupt_destination)
     }

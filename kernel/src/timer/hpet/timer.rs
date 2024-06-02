@@ -29,13 +29,7 @@ impl Registers {
     pub fn set_periodic_interrupt(&mut self, period: u64) -> u8 {
         let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability.set_periodic_interrupt();
         self.configuration_and_capability = configuration_and_capability;
-        let registers: *mut Self = self as *mut Self;
-        let registers: *mut u64 = registers as *mut u64;
-        unsafe {
-            registers
-                .add(1)
-                .write(period);
-        }
+        self.comparator = comparator::Register::create(period);
         configuration_and_capability.irq()
     }
 
