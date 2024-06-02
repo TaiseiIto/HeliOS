@@ -38,7 +38,11 @@ impl Register {
         self.tn_int_enb_cnf()
     }
 
-    pub fn set_periodic_interrupt(&mut self) -> u8 {
+    pub fn irq(&self) -> u8 {
+        self.tn_int_route_cnf()
+    }
+
+    pub fn set_periodic_interrupt(self) -> Self {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
@@ -47,28 +51,27 @@ impl Register {
         let interrupt_destination = InterruptDestination::IoApic {
             irq,
         };
-        self.set_tn_int_type_cnf(InterruptType::Edge.into());
-        self.set_tn_int_enb_cnf(true);
-        self.set_tn_type_cnf(Type::Periodic.into());
-        self.set_tn_32mode_cnf(Mode::Bit64.into());
-        self.set_interrupt_destination(&interrupt_destination);
-        irq
+        self.with_tn_int_type_cnf(InterruptType::Edge.into())
+            .with_tn_int_enb_cnf(true)
+            .with_tn_type_cnf(Type::Periodic.into())
+            .with_tn_32mode_cnf(Mode::Bit64.into())
+            .with_interrupt_destination(&interrupt_destination)
     }
 
     pub fn supports_periodic_interrupt(&self) -> bool {
         self.tn_per_int_cap()
     }
 
-    fn set_interrupt_destination(&mut self, interrupt_destination: &InterruptDestination) {
+    fn with_interrupt_destination(self, interrupt_destination: &InterruptDestination) -> Self {
         match interrupt_destination {
             InterruptDestination::Fsb => {
-                self.set_tn_fsb_en_cnf(true);
+                self.with_tn_fsb_en_cnf(true)
             },
             InterruptDestination::IoApic {
                 irq,
             } => {
-                self.set_tn_fsb_en_cnf(false);
-                self.set_tn_int_route_cnf(*irq);
+                self.with_tn_fsb_en_cnf(false)
+                    .with_tn_int_route_cnf(*irq)
             },
         }
     }
