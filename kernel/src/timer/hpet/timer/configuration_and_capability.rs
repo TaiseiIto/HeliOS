@@ -74,64 +74,61 @@ impl Register {
     }
 }
 
+#[derive(Debug)]
 pub struct Controller {
-    interrupt_type: InterruptType,
-    interrupt_enable: bool,
-    timer_type: Type,
     periodic_interrupt_capable: bool,
     size: Size,
     resetting_comparator_value: bool,
-    mode: Mode,
-    interrupt_destination: InterruptDestination,
     available_irq_numbers: BTreeSet<u8>,
+    interrupt: Interrupt,
 }
 
 impl From<&Register> for Controller {
     fn from(register: &Register) -> Self {
-        let interrupt_type: InterruptType = register.tn_int_type_cnf().into();
-        let interrupt_enable: bool = register.tn_int_enb_cnf();
-        let timer_type: Type = register.tn_type_cnf().into();
         let periodic_interrupt_capable: bool = register.tn_per_int_cap();
         let size: Size = register.tn_size_cap().into();
         let resetting_comparator_value: bool = register.tn_val_set_cnf();
-        let mode: Mode = register.tn_32mode_cnf().into();
-        let interrupt_destination: InterruptDestination = register.into();
         let available_irq_numbers: BTreeSet<u8> = (0..u32::BITS)
             .filter_map(|irq| (register.tn_int_route_cap() & (1 << irq) != 0).then(|| irq as u8))
             .collect();
+        let interrupt: Interrupt = register.into();
         Self {
-            interrupt_type,
-            interrupt_enable,
-            timer_type,
             periodic_interrupt_capable,
             size,
             resetting_comparator_value,
-            mode,
-            interrupt_destination,
             available_irq_numbers,
+            interrupt,
         }
     }
 }
 
-impl fmt::Debug for Controller {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Controller");
-        debug_struct.field("interrupt_enable", &self.interrupt_enable);
-        debug_struct.field("periodic_interrupt_capable", &self.periodic_interrupt_capable);
-        debug_struct.field("size", &self.size);
-        debug_struct.field("resetting_comparator_value", &self.resetting_comparator_value);
-        debug_struct.field("available_irq_numbers", &self.available_irq_numbers);
-        if self.interrupt_enable {
-            debug_struct.field("interrupt_type", &self.interrupt_type);
-            if self.periodic_interrupt_capable {
-                debug_struct.field("timer_type", &self.timer_type);
+#[derive(Debug)]
+enum Interrupt {
+    Disable,
+    Enable {
+        interrupt_type: InterruptType,
+        timer_type: Type,
+        mode: Mode,
+        interrupt_destination: InterruptDestination,
+    },
+}
+
+impl From<&Register> for Interrupt {
+    fn from(register: &Register) -> Self {
+        if register.tn_int_enb_cnf() {
+            let interrupt_type: InterruptType = register.tn_int_type_cnf().into();
+            let timer_type: Type = register.tn_type_cnf().into();
+            let mode: Mode = register.tn_32mode_cnf().into();
+            let interrupt_destination: InterruptDestination = register.into();
+            Self::Enable {
+                interrupt_type,
+                timer_type,
+                mode,
+                interrupt_destination,
             }
-            if matches!(self.size, Size::Bit64) {
-                debug_struct.field("mode", &self.mode);
-            }
-            debug_struct.field("interrupt_destination", &self.interrupt_destination);
+        } else {
+            Self::Disable
         }
-        debug_struct.finish()
     }
 }
 
