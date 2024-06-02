@@ -1,4 +1,10 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    crate::{
+        com2_print,
+        com2_println,
+    },
+};
 
 /// # Timer N Comparator Register
 /// ## References
@@ -10,6 +16,7 @@ pub struct Register {
 
 impl Register {
     pub fn create(tn_comparator_value: u64) -> Self {
+        com2_println!("tn_comparator_value = {:#x?}", tn_comparator_value);
         Self::default().with_tn_comparator_value(tn_comparator_value)
     }
 }

@@ -1135,9 +1135,17 @@ extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
+    let count: u64 = Argument::get()
+        .efi_system_table()
+        .rsdp()
+        .xsdt()
+        .hpet()
+        .registers()
+        .get_counter_value();
     com2_println!("HPET interrupt {:#x?}", unsafe {
         COUNT
     });
+    com2_println!("count = {:#x?}", count);
     unsafe {
         COUNT += 1;
     }

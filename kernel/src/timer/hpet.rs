@@ -91,7 +91,7 @@ impl Registers {
         self.wait_milliseconds(1000 * seconds)
     }
 
-    fn get_counter_value(&self) -> u64 {
+    pub fn get_counter_value(&self) -> u64 {
         let main_counter_value: main_counter_value::Register = self.main_counter_value;
         main_counter_value.get()
     }
