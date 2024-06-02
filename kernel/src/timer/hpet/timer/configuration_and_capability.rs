@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
 /// # Timer N Configuration and Capabilities Register
 /// ## References
@@ -54,11 +57,14 @@ impl Register {
     }
 }
 
-#[derive(Debug)]
 pub struct Controller {
     interrupt_type: InterruptType,
     interrupt_enable: bool,
     timer_type: Type,
+    periodic_interrupt_capable: bool,
+    size: Size,
+    resetting_comparator_value: bool,
+    mode: Mode,
 }
 
 impl From<&Register> for Controller {
@@ -66,11 +72,37 @@ impl From<&Register> for Controller {
         let interrupt_type: InterruptType = register.tn_int_type_cnf().into();
         let interrupt_enable: bool = register.tn_int_enb_cnf();
         let timer_type: Type = register.tn_type_cnf().into();
+        let periodic_interrupt_capable: bool = register.tn_per_int_cap();
+        let size: Size = register.tn_size_cap().into();
+        let resetting_comparator_value: bool = register.tn_val_set_cnf();
+        let mode: Mode = register.tn_32mode_cnf().into();
         Self {
             interrupt_type,
             interrupt_enable,
             timer_type,
+            periodic_interrupt_capable,
+            size,
+            resetting_comparator_value,
+            mode,
         }
+    }
+}
+
+impl fmt::Debug for Controller {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Controller");
+        debug_struct.field("interrupt_type", &self.interrupt_type);
+        debug_struct.field("interrupt_enable", &self.interrupt_enable);
+        if self.periodic_interrupt_capable {
+            debug_struct.field("timer_type", &self.timer_type);
+        }
+        debug_struct.field("periodic_interrupt_capable", &self.periodic_interrupt_capable);
+        debug_struct.field("size", &self.size);
+        debug_struct.field("resetting_comparator_value", &self.resetting_comparator_value);
+        if matches!(self.size, Size::Bit64) {
+            debug_struct.field("mode", &self.mode);
+        }
+        debug_struct.finish()
     }
 }
 
@@ -120,6 +152,56 @@ impl From<Type> for bool {
         match timer_type {
             Type::OneShot => false,
             Type::Periodic => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Size {
+    Bit32,
+    Bit64,
+}
+
+impl From<bool> for Size {
+    fn from(size: bool) -> Self {
+        if size {
+            Self::Bit64
+        } else {
+            Self::Bit32
+        }
+    }
+}
+
+impl From<Size> for bool {
+    fn from(size: Size) -> Self {
+        match size {
+            Size::Bit32 => false,
+            Size::Bit64 => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Mode {
+    Bit32,
+    Bit64,
+}
+
+impl From<bool> for Mode {
+    fn from(mode: bool) -> Self {
+        if mode {
+            Self::Bit32
+        } else {
+            Self::Bit64
+        }
+    }
+}
+
+impl From<Mode> for bool {
+    fn from(mode: Mode) -> Self {
+        match mode {
+            Mode::Bit32 => true,
+            Mode::Bit64 => false,
         }
     }
 }
