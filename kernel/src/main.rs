@@ -233,10 +233,6 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
-    // Shutdown.
-    Argument::get()
-        .efi_system_table()
-        .shutdown();
     panic!("End of kernel.elf");
 }
 

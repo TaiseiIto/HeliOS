@@ -1127,6 +1127,7 @@ extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
 /// # HPET interrupt
 extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x21;
+    static mut COUNT: usize = 0x00;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -1134,7 +1135,12 @@ extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    com2_println!("HPET interrupt");
+    com2_println!("HPET interrupt {:#x?}", unsafe {
+        COUNT
+    });
+    unsafe {
+        COUNT += 1;
+    }
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
