@@ -43,17 +43,33 @@ impl Register {
         let irq: u8 = (0..u32::BITS)
             .find(|irq| tn_int_route_cap & (1 << irq) != 0)
             .unwrap() as u8;
+        let interrupt_destination = InterruptDestination::IoApic {
+            irq,
+        };
         self.set_tn_int_type_cnf(InterruptType::Edge.into());
         self.set_tn_int_enb_cnf(true);
-        self.set_tn_type_cnf(Type::Periodic.into());         // Periodic interrupt
-        self.set_tn_32mode_cnf(false);      // 64 bit mode
-        self.set_tn_int_route_cnf(irq);
-        self.set_tn_fsb_en_cnf(false);      // I/O APIC
+        self.set_tn_type_cnf(Type::Periodic.into());
+        self.set_tn_32mode_cnf(Mode::Bit64.into());
+        self.set_interrupt_destination(&interrupt_destination);
         irq
     }
 
     pub fn supports_periodic_interrupt(&self) -> bool {
         self.tn_per_int_cap()
+    }
+
+    fn set_interrupt_destination(&mut self, interrupt_destination: &InterruptDestination) {
+        match interrupt_destination {
+            InterruptDestination::Fsb => {
+                self.set_tn_fsb_en_cnf(true);
+            },
+            InterruptDestination::IoApic {
+                irq,
+            } => {
+                self.set_tn_fsb_en_cnf(false);
+                self.set_tn_int_route_cnf(*irq);
+            },
+        }
     }
 }
 
@@ -65,6 +81,7 @@ pub struct Controller {
     size: Size,
     resetting_comparator_value: bool,
     mode: Mode,
+    interrupt_destination: InterruptDestination,
 }
 
 impl From<&Register> for Controller {
@@ -76,6 +93,7 @@ impl From<&Register> for Controller {
         let size: Size = register.tn_size_cap().into();
         let resetting_comparator_value: bool = register.tn_val_set_cnf();
         let mode: Mode = register.tn_32mode_cnf().into();
+        let interrupt_destination: InterruptDestination = register.into();
         Self {
             interrupt_type,
             interrupt_enable,
@@ -84,6 +102,7 @@ impl From<&Register> for Controller {
             size,
             resetting_comparator_value,
             mode,
+            interrupt_destination,
         }
     }
 }
@@ -102,6 +121,7 @@ impl fmt::Debug for Controller {
         if matches!(self.size, Size::Bit64) {
             debug_struct.field("mode", &self.mode);
         }
+        debug_struct.field("interrupt_destination", &self.interrupt_destination);
         debug_struct.finish()
     }
 }
@@ -202,6 +222,27 @@ impl From<Mode> for bool {
         match mode {
             Mode::Bit32 => true,
             Mode::Bit64 => false,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum InterruptDestination {
+    Fsb,
+    IoApic {
+        irq: u8,
+    },
+}
+
+impl From<&Register> for InterruptDestination {
+    fn from(register: &Register) -> Self {
+        if register.tn_fsb_int_del_cap() && register.tn_fsb_en_cnf() {
+            Self::Fsb
+        } else {
+            let irq: u8 = register.tn_int_route_cnf();
+            Self::IoApic {
+                irq,
+            }
         }
     }
 }
