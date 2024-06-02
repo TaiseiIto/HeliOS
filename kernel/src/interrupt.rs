@@ -1134,14 +1134,6 @@ extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .madt_mut()
-        .io_apic_mut()
-        .registers_mut()
-        .end_interruption(interrupt_number);
     com2_println!("HPET interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
