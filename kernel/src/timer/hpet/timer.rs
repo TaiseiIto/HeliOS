@@ -13,7 +13,7 @@ pub struct Registers {
     #[allow(dead_code)]
     configuration_and_capability: configuration_and_capability::Register,
     #[allow(dead_code)]
-    comparator_value: comparator::Register,
+    comparator: comparator::Register,
     #[allow(dead_code)]
     fsb_interrupt_route: fsb_interrupt_route::Register,
     #[allow(dead_code)]
@@ -26,10 +26,16 @@ impl Registers {
         configuration_and_capability.is_enable()
     }
 
-    pub fn set_periodic_interrupt(&mut self, comparator: u64) -> u8 {
+    pub fn set_periodic_interrupt(&mut self, period: u64) -> u8 {
         let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability.set_periodic_interrupt();
         self.configuration_and_capability = configuration_and_capability;
-        self.comparator_value = comparator::Register::create(comparator);
+        let registers: *mut Self = self as *mut Self;
+        let registers: *mut u64 = registers as *mut u64;
+        unsafe {
+            registers
+                .add(1)
+                .write(period);
+        }
         configuration_and_capability.irq()
     }
 
@@ -43,12 +49,12 @@ impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
         let configuration_and_capability: configuration_and_capability::Controller = (&configuration_and_capability).into();
-        let comparator_value: comparator::Register = self.comparator_value;
+        let comparator: comparator::Register = self.comparator;
         let fsb_interrupt_route: fsb_interrupt_route::Register = self.fsb_interrupt_route;
         formatter
             .debug_struct("Registers")
             .field("configuration_and_capability", &configuration_and_capability)
-            .field("comparator_value", &comparator_value)
+            .field("comparator", &comparator)
             .field("fsb_interrupt_route", &fsb_interrupt_route)
             .finish()
     }
