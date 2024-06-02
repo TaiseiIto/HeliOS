@@ -1125,13 +1125,20 @@ extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
 }
 
 /// # HPET interrupt
-extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x21;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .end_interruption(interrupt_number);
+    com2_println!("HPET interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

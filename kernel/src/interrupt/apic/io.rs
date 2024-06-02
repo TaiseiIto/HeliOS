@@ -27,6 +27,10 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn end_interruption(&mut self, interrupt_number: u8) {
+        self.eoi.ends_interruption(interrupt_number);
+    }
+
     pub fn identification(&mut self) -> identification::Register {
         self.get_u32(0).into()
     }
