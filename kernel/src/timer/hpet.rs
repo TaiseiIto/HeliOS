@@ -50,11 +50,11 @@ impl Registers {
     }
 
     pub fn start(&mut self) {
-        let general_configuration: general_configuration::Register = self.general_configuration.start_counting();
+        self.general_configuration = self.general_configuration.start_counting();
     }
 
     pub fn stop(&mut self) {
-        let general_configuration: general_configuration::Register = self.general_configuration.stop_counting();
+        self.general_configuration = self.general_configuration.stop_counting();
     }
 
     pub fn wait_femtoseconds(&self, femtoseconds: u64) {
