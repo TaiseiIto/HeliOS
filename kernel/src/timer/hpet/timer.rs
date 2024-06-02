@@ -2,10 +2,12 @@ pub mod comparator;
 pub mod configuration_and_capability;
 pub mod fsb_interrupt_route;
 
+use core::fmt;
+
 /// # Timer Registers
 /// ## References
 /// * [IA-PC HPET (High Precision Event Timers Specification)](https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/software-developers-hpet-spec-1-0a.pdf) 2.3.1 Register Overview Table 2 Memory-Mapped Registers
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[repr(packed)]
 pub struct Registers {
     #[allow(dead_code)]
@@ -35,6 +37,21 @@ impl Registers {
     pub fn supports_periodic_interrupt(&self) -> bool {
         let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
         configuration_and_capability.supports_periodic_interrupt()
+    }
+}
+
+impl fmt::Debug for Registers {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
+        let configuration_and_capability: configuration_and_capability::Controller = (&configuration_and_capability).into();
+        let comparator_value: comparator::Register = self.comparator_value;
+        let fsb_interrupt_route: fsb_interrupt_route::Register = self.fsb_interrupt_route;
+        formatter
+            .debug_struct("Registers")
+            .field("configuration_and_capability", &configuration_and_capability)
+            .field("comparator_value", &comparator_value)
+            .field("fsb_interrupt_route", &fsb_interrupt_route)
+            .finish()
     }
 }
 
