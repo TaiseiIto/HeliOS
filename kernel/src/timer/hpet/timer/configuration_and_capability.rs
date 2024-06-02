@@ -116,19 +116,21 @@ impl From<&Register> for Controller {
 impl fmt::Debug for Controller {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Controller");
-        debug_struct.field("interrupt_type", &self.interrupt_type);
         debug_struct.field("interrupt_enable", &self.interrupt_enable);
-        if self.periodic_interrupt_capable {
-            debug_struct.field("timer_type", &self.timer_type);
-        }
         debug_struct.field("periodic_interrupt_capable", &self.periodic_interrupt_capable);
         debug_struct.field("size", &self.size);
         debug_struct.field("resetting_comparator_value", &self.resetting_comparator_value);
-        if matches!(self.size, Size::Bit64) {
-            debug_struct.field("mode", &self.mode);
-        }
-        debug_struct.field("interrupt_destination", &self.interrupt_destination);
         debug_struct.field("available_irq_numbers", &self.available_irq_numbers);
+        if self.interrupt_enable {
+            debug_struct.field("interrupt_type", &self.interrupt_type);
+            if self.periodic_interrupt_capable {
+                debug_struct.field("timer_type", &self.timer_type);
+            }
+            if matches!(self.size, Size::Bit64) {
+                debug_struct.field("mode", &self.mode);
+            }
+            debug_struct.field("interrupt_destination", &self.interrupt_destination);
+        }
         debug_struct.finish()
     }
 }
