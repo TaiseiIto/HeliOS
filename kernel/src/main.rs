@@ -163,7 +163,14 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut();
     let hpet_interrupt_period_milliseconds: usize = 1000;
     let hpet_irq: u8 = hpet.set_periodic_interrupt(hpet_interrupt_period_milliseconds);
-    com2_println!("hpet_irq = {:#x?}", hpet_irq);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(hpet_irq, local_apic_registers.apic_id(), interrupt::HPET_INTERRUPT);
     hpet.start();
     let hpet: &timer::hpet::Registers = Argument::get()
         .efi_system_table()

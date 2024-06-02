@@ -16,6 +16,14 @@ impl FatRegister {
         let register: Register = self.register;
         register.data()
     }
+
+    pub fn set(&mut self, data: u32) {
+        let register: *mut Self = self as *mut Self;
+        let register: *mut u32 = register as *mut u32;
+        unsafe {
+            register.write(data);
+        }
+    }
 }
 
 impl fmt::Debug for FatRegister {

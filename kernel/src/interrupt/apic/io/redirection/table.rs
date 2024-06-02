@@ -9,6 +9,7 @@ pub struct Entry {
     #[bits(3)]
     delivery_mode: u8,
     destination_mode: bool,
+    #[bits(access = RO)]
     delivery_status: bool,
     polarity: bool,
     remote_irr: bool,
@@ -18,5 +19,19 @@ pub struct Entry {
     reserved0: u32,
     extended_destination_id: u8,
     destination_id: u8,
+}
+
+impl Entry {
+    pub fn with_redirection(self, local_apic_id: u8, interrupt_number: u8) -> Self {
+        self.with_vector(interrupt_number)
+            .with_delivery_mode(0)
+            .with_destination_mode(false)
+            .with_polarity(false)
+            .with_remote_irr(false)
+            .with_trigger_mode(false)
+            .with_mask(false)
+            .with_extended_destination_id(0)
+            .with_destination_id(local_apic_id)
+    }
 }
 

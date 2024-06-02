@@ -13,6 +13,8 @@ use crate::{
     x64,
 };
 
+pub const HPET_INTERRUPT: u8 = 0x21;
+
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
     WithoutErrorCode(extern "x86-interrupt" fn(StackFrame)),
@@ -355,7 +357,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         2, // int 0x1e Security Exception (\#SX)
         2, // int 0x1f Reserved Exception 7
         1, // int 0x20 Interprocessor interrupt
-        1, // int 0x21
+        1, // int 0x21 HPET interrupt
         1, // int 0x22
         1, // int 0x23
         1, // int 0x24
@@ -1122,6 +1124,7 @@ extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     }
 }
 
+/// # HPET interrupt
 extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x21;
     if let Some(current_task) = task::Controller::get_current_mut() {
