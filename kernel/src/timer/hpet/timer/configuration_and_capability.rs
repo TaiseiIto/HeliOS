@@ -1,4 +1,5 @@
 use {
+    alloc::collections::BTreeSet,
     bitfield_struct::bitfield,
     core::fmt,
 };
@@ -82,6 +83,7 @@ pub struct Controller {
     resetting_comparator_value: bool,
     mode: Mode,
     interrupt_destination: InterruptDestination,
+    available_irq_numbers: BTreeSet<u8>,
 }
 
 impl From<&Register> for Controller {
@@ -94,6 +96,9 @@ impl From<&Register> for Controller {
         let resetting_comparator_value: bool = register.tn_val_set_cnf();
         let mode: Mode = register.tn_32mode_cnf().into();
         let interrupt_destination: InterruptDestination = register.into();
+        let available_irq_numbers: BTreeSet<u8> = (0..u32::BITS)
+            .filter_map(|irq| (register.tn_int_route_cap() & (1 << irq) != 0).then(|| irq as u8))
+            .collect();
         Self {
             interrupt_type,
             interrupt_enable,
@@ -103,6 +108,7 @@ impl From<&Register> for Controller {
             resetting_comparator_value,
             mode,
             interrupt_destination,
+            available_irq_numbers,
         }
     }
 }
@@ -122,6 +128,7 @@ impl fmt::Debug for Controller {
             debug_struct.field("mode", &self.mode);
         }
         debug_struct.field("interrupt_destination", &self.interrupt_destination);
+        debug_struct.field("available_irq_numbers", &self.available_irq_numbers);
         debug_struct.finish()
     }
 }
