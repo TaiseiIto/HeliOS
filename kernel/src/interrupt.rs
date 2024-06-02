@@ -1117,7 +1117,7 @@ extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
         .unwrap()
         .registers_mut()
-        .end_of_interrupt();
+        .end_interruption();
     processor::Controller::delete_messages();
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
@@ -1130,6 +1130,10 @@ extern "x86-interrupt" fn handler_0x21(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()

@@ -104,7 +104,7 @@ impl Registers {
         self.local_apic_id.apic_id()
     }
 
-    pub fn end_of_interrupt(&mut self) {
+    pub fn end_interruption(&mut self) {
         self.end_of_interrupt.write(0);
     }
 
