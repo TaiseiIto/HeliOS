@@ -15,7 +15,7 @@ run
 # break hw/timer/hpet.c:380
 
 # Interrupt 0x21
-break hw/intc/apic.c:737 if intno == 0x21
+break apic_bus_deliver if vector_num == 0x21
 
 continue
 
