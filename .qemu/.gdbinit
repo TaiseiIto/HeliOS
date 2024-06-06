@@ -15,7 +15,7 @@ run
 # break hw/timer/hpet.c:380
 
 # Interrupt 0x21
-break do_interrupt_all if intno == 0x21
+break hw/intc/apic.c:737 if intno == 0x21
 
 continue
 
