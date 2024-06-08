@@ -18,7 +18,7 @@ run
 # break apic_bus_deliver if vector_num == 0x21
 # break hw/intc/ioapic.c:106 if info->data == 0x21
 # break hw/timer/i8254.c:264 if s->irq->handler == hpet_handle_legacy_irq
-break hw/timer/hpet.c:769
+break qdev_init_gpio_in if handler == pit_irq_control || handler == hpet_handle_legacy_irq
 
 continue
 
