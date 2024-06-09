@@ -19,6 +19,12 @@ run
 break hw/intc/ioapic.c:106 if info->data == 0x21
 # break hw/timer/i8254.c:264 if s->irq->handler == hpet_handle_legacy_irq
 # break qdev_init_gpio_in if handler == pit_irq_control || handler == hpet_handle_legacy_irq
-
+continue
+break pit_irq_timer_update
+continue
+continue
+continue
+continue
+continue
 continue
 
