@@ -38,6 +38,12 @@ debug:
 debug_qemu:
 	gdb --args $(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC)
 
+# Debug QEMU without HPET by GDB.
+# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
+.PHONY: debug_qemu_without_hpet
+debug_qemu_without_hpet:
+	gdb --args $(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) -machine hpet=off
+
 # Stop the OS on QEMU.
 # Usage: $ make stop
 .PHONY: stop

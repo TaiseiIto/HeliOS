@@ -171,6 +171,19 @@ debug_qemu: $(TARGET)
 debug_qemu_on_tmux:
 	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
+# Debug QEMU without HPET by GDB.
+# Usage: make debug_qemu_without_hpet
+.PHONY: debug_qemu_without_hpet
+debug_qemu_without_hpet: $(TARGET)
+	-make debug_qemu_without_hpet -C .tmux -s
+
+# Run the OS on QEMU without HPET.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: debug_qemu_without_hpet_on_tmux
+debug_qemu_without_hpet_on_tmux:
+	-make debug_qemu_without_hpet -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+
 # Delete all "#[allow(dead_code)]" lines
 .PHONY: delete_allow_dead_code
 delete_allow_dead_code:

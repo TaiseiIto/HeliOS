@@ -19,6 +19,12 @@ debug:
 debug_qemu:
 	-tmux new-session \; source-file debug_qemu.conf
 	
+# Debug QEMU without HPET by GDB
+# Usage: make debug_qemu_without_hpet
+.PHONY: debug_qemu_without_hpet
+debug_qemu_without_hpet:
+	-tmux new-session \; source-file debug_qemu_without_hpet.conf
+	
 # Stop the OS on QEMU.
 # Usage: make stop
 .PHONY: stop
