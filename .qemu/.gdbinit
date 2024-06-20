@@ -16,5 +16,5 @@ run
 break qemu_clock_run_all_timers
 continue
 backtrace
-info symbol ((PITChannelState*)main_loop_tlg.tl[1]->active_timers->opaque)->irq->handler
+info symbol ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler
 
