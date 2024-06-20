@@ -1,6 +1,9 @@
 break main
 run
-break pit_irq_control
+break pit_irq_timer_update
 continue
-info symbol ((PITCommonState*)opaque)->channels[0].irq->handler
+continue
+continue
+backtrace
+info symbol s->irq->handler
 
