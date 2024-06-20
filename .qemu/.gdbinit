@@ -8,8 +8,13 @@ run
 # backtrace
 # info symbol s->irq->handler
 
-break pit_irq_timer
+# break pit_irq_timer
+# continue
+# backtrace
+# info symbol ((PITChannelState*)opaque)->irq->handler
+
+break qemu_clock_run_all_timers
 continue
 backtrace
-info symbol ((PITChannelState*)opaque)->irq->handler
+info symbol ((PITChannelState*)main_loop_tlg.tl[1]->active_timers->opaque)->irq->handler
 
