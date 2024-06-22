@@ -61,11 +61,14 @@ run
 # print "input_pin->handler"
 # print input_pin->handler
 
-break i8254_pit_init
+# break i8254_pit_init
+# continue
+# backtrace
+# print "isa_irq"
+# print isa_irq
+# print "0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler"
+# print 0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler
+
+break do_interrupt_all if intno == 0x21
 continue
-backtrace
-print "isa_irq"
-print isa_irq
-print "0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler"
-print 0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler
 
