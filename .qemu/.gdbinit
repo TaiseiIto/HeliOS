@@ -47,7 +47,9 @@ run
 
 break i8254_pit_init
 continue
-break qom/object.c:1952 if ((qemu_irq)new_target)->handler == hpet_handle_legacy_irq
+break qom/object.c:1952
 continue
 backtrace
+print "((qemu_irq)new_target)->handler"
+print ((qemu_irq)new_target)->handler
 
