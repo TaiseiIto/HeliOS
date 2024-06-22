@@ -45,11 +45,19 @@ run
 # print "((PITChannelState*)ts->timer_list->active_timers->opaque)->irq->handler"
 # print ((PITChannelState*)ts->timer_list->active_timers->opaque)->irq->handler
 
+# break i8254_pit_init
+# continue
+# break qom/object.c:1952
+# continue
+# backtrace
+# print "((qemu_irq)new_target)->handler"
+# print ((qemu_irq)new_target)->handler
+
 break i8254_pit_init
 continue
-break qom/object.c:1952
+break qdev_connect_gpio_out_named
 continue
 backtrace
-print "((qemu_irq)new_target)->handler"
-print ((qemu_irq)new_target)->handler
+print "input_pin->handler"
+print input_pin->handler
 
