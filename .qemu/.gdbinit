@@ -69,6 +69,9 @@ run
 # print "0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler"
 # print 0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler
 
-break do_interrupt_all if intno == 0x21
+# break do_interrupt_all if intno == 0x21
+# continue
+
+break hw/intc/apic.c: 737 if intno == 0x21
 continue
 
