@@ -13,8 +13,33 @@ run
 # backtrace
 # info symbol ((PITChannelState*)opaque)->irq->handler
 
-break qemu_clock_run_all_timers
+# break qemu_clock_run_all_timers
+# continue
+# backtrace
+# info symbol ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler
+
+print "main_loop_tlg"
+print main_loop_tlg
+print "main_loop_tlg.tl"
+print main_loop_tlg.tl
+print "main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]"
+print main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]
+watch main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]
 continue
 backtrace
-info symbol ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler
+print "main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]"
+print main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]
+print "main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers"
+print main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers
+watch main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers
+continue
+backtrace
+print "main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers"
+print main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers
+print "main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque"
+print main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque
+print "((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq"
+print ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq
+print "((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler"
+print ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler
 
