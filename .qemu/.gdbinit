@@ -53,11 +53,19 @@ run
 # print "((qemu_irq)new_target)->handler"
 # print ((qemu_irq)new_target)->handler
 
+# break i8254_pit_init
+# continue
+# break qdev_connect_gpio_out_named
+# continue
+# backtrace
+# print "input_pin->handler"
+# print input_pin->handler
+
 break i8254_pit_init
 continue
-break qdev_connect_gpio_out_named
-continue
 backtrace
-print "input_pin->handler"
-print input_pin->handler
+print "isa_irq"
+print isa_irq
+print "0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler"
+print 0 <= isa_irq ? bus->irqs_in[isa_irq]->handler : alt_irq->handler
 
