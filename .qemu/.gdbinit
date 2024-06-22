@@ -42,4 +42,6 @@ print "((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->o
 print ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq
 print "((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler"
 print ((PITChannelState*)main_loop_tlg.tl[QEMU_CLOCK_VIRTUAL]->active_timers->opaque)->irq->handler
+print "((PITChannelState*)ts->timer_list->active_timers->opaque)->irq->handler"
+print ((PITChannelState*)ts->timer_list->active_timers->opaque)->irq->handler
 
