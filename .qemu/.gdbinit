@@ -89,4 +89,9 @@ continue
 backtrace
 print "info.vector"
 p/x info.vector
+break ioapic_service if s->irr == 4
+continue
+backtrace
+print "s->irr"
+p/x s->irr
 
