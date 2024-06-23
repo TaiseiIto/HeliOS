@@ -72,11 +72,15 @@ run
 # break do_interrupt_all if intno == 0x21
 # continue
 
-break hw/intc/apic.c: 737 if intno == 0x21
+# break hw/intc/apic.c: 737 if intno == 0x21
+# continue
+# backtrace
+# print "intno"
+# p/x intno
+# print "s->irr"
+# p/x s->irr
+
+break apic_bus_deliver if vector_num == 0x21
 continue
 backtrace
-print "intno"
-p/x intno
-print "s->irr"
-p/x s->irr
 
