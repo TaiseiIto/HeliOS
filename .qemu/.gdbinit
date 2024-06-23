@@ -80,7 +80,13 @@ run
 # print "s->irr"
 # p/x s->irr
 
-break apic_bus_deliver if vector_num == 0x21
+# break apic_bus_deliver if vector_num == 0x21
+# continue
+# backtrace
+
+break ../hw/intc/ioapic.c: 138 if info.vector == 0x21
 continue
 backtrace
+print "info.vector"
+p/x info.vector
 
