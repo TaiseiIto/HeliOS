@@ -84,14 +84,31 @@ run
 # continue
 # backtrace
 
+# break ../hw/intc/ioapic.c: 138 if info.vector == 0x21
+# continue
+# backtrace
+# print "info.vector"
+# p/x info.vector
+# break ioapic_service if s->irr == 4
+# continue
+# backtrace
+# print "s->irr"
+# p/x s->irr
+
 break ../hw/intc/ioapic.c: 138 if info.vector == 0x21
 continue
-backtrace
-print "info.vector"
-p/x info.vector
-break ioapic_service if s->irr == 4
+delete 1
+delete 2
+break pit_irq_timer_update
+break ioapic_service
+continue
+continue
+continue
+continue
+continue
+continue
+continue
+continue
 continue
 backtrace
-print "s->irr"
-p/x s->irr
 
