@@ -77,4 +77,6 @@ continue
 backtrace
 print "intno"
 p/x intno
+print "s->irr"
+p/x s->irr
 
