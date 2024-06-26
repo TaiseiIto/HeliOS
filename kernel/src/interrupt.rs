@@ -356,7 +356,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         2, // int 0x1d VMM Communication Exception (\#VC)
         2, // int 0x1e Security Exception (\#SX)
         2, // int 0x1f Reserved Exception 7
-        1, // int 0x20 IRQ 0x00 i8254
+        1, // int 0x20 IRQ 0x00 PIT
         1, // int 0x21 IRQ 0x01
         1, // int 0x22 IRQ 0x02 HPET
         1, // int 0x23 IRQ 0x03
@@ -1108,7 +1108,7 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     }
 }
 
-/// # IRQ 0x00 i8254 interrupt
+/// # IRQ 0x00 PIT interrupt
 extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x20;
     if let Some(current_task) = task::Controller::get_current_mut() {
