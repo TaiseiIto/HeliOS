@@ -166,6 +166,14 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
     // Set RTC.
+    let status_register_a = timer::rtc::status_register::A::get();
+    com2_println!("status_register_a = {:#x?}", status_register_a);
+    let status_register_b = timer::rtc::status_register::B::get();
+    com2_println!("status_register_b = {:#x?}", status_register_b);
+    let status_register_c = timer::rtc::status_register::C::get();
+    com2_println!("status_register_c = {:#x?}", status_register_c);
+    let status_register_d = timer::rtc::status_register::D::get();
+    com2_println!("status_register_d = {:#x?}", status_register_d);
     let time = timer::rtc::Time::get();
     com2_println!("time = {:#x?}", time);
     // Set HPET.
