@@ -13,6 +13,7 @@ use crate::{
     x64,
 };
 
+pub const PIT_INTERRUPT: u8 = 0x20;
 pub const HPET_INTERRUPT: u8 = 0x22;
 
 pub enum Handler {
@@ -1114,8 +1115,11 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
+    com2_println!("PIT interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

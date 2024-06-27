@@ -154,6 +154,17 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    // Set PIT.
+    let pit_frequency: usize = 0x20; // Hz
+    let pit_irq: u8 = timer::pit::set_frequency(pit_frequency);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
     // Set HPET.
     let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()

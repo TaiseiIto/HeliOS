@@ -37,7 +37,7 @@ impl Register {
 pub enum Mode {
     InterruptOnTerminalCount,
     HardwareRetriggerableOneShot,
-    RageGenerator,
+    RateGenerator,
     SquareWaveMode,
     SoftwareTriggeredStrobe,
     HardwareTriggeredStrobe,
@@ -48,7 +48,7 @@ impl From<u8> for Mode {
         match mode {
             0 => Self::InterruptOnTerminalCount,
             1 => Self::HardwareRetriggerableOneShot,
-            2 => Self::RageGenerator,
+            2 => Self::RateGenerator,
             3 => Self::SquareWaveMode,
             4 => Self::SoftwareTriggeredStrobe,
             5 => Self::HardwareTriggeredStrobe,
@@ -62,7 +62,7 @@ impl From<Mode> for u8 {
         match mode {
             Mode::InterruptOnTerminalCount => 0,
             Mode::HardwareRetriggerableOneShot => 1,
-            Mode::RageGenerator => 2,
+            Mode::RateGenerator => 2,
             Mode::SquareWaveMode => 3,
             Mode::SoftwareTriggeredStrobe => 4,
             Mode::HardwareTriggeredStrobe => 5,
