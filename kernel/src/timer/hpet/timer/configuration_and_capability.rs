@@ -1,7 +1,6 @@
 use {
     alloc::collections::BTreeSet,
     bitfield_struct::bitfield,
-    core::fmt,
 };
 
 /// # Timer N Configuration and Capabilities Register

@@ -165,6 +165,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .io_apic_mut()
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
+    // Set RTC.
+    let time = timer::rtc::Time::get();
+    com2_println!("time = {:#x?}", time);
     // Set HPET.
     let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()
