@@ -79,6 +79,10 @@ impl Table {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
     }
 
+    pub fn pm_tmr_len(&self) -> u8 {
+        self.pm_tmr_len
+    }
+
     fn dsdt(&self) -> Option<system_description::Table> {
         let dsdt: Option<usize> = (44 <= self.header.table_size()).then_some(self.dsdt as usize);
         let x_dsdt: Option<usize> = (148 <= self.header.table_size()).then_some(self.x_dsdt as usize);
