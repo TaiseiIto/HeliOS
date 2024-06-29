@@ -20,8 +20,21 @@ pub struct A {
 impl A {
     const ADDRESS: u8 = 0x0a;
 
-    pub fn get() -> Self {
+    pub fn read() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
+    }
+
+    pub fn set_frequency(self, hz: usize) -> Self {
+        assert!(hz.is_power_of_two());
+        let log2hz: u8 = hz.ilog2() as u8;
+        assert!(log2hz < 16);
+        let rate: u8 = 16 - (hz.ilog2() as u8);
+        assert!(rate < 16);
+        self.with_rate(rate)
+    }
+
+    pub fn write(self) {
+        x64::cmos::write(Self::ADDRESS, self.into())
     }
 }
 
@@ -69,8 +82,16 @@ impl B {
         }
     }
 
-    pub fn get() -> Self {
+    pub fn enable_periodic_interrupt(self) -> Self {
+        self.with_pie(true)
+    }
+
+    pub fn read() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
+    }
+
+    pub fn write(self) {
+        x64::cmos::write(Self::ADDRESS, self.into())
     }
 }
 
@@ -87,7 +108,7 @@ pub struct C {
 impl C {
     const ADDRESS: u8 = 0x0c;
 
-    pub fn get() -> Self {
+    pub fn read() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
     }
 }
@@ -102,7 +123,7 @@ pub struct D {
 impl D {
     const ADDRESS: u8 = 0x0d;
 
-    pub fn get() -> Self {
+    pub fn read() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
     }
 }

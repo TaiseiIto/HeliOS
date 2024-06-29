@@ -11,11 +11,13 @@ use crate::{
     memory,
     processor,
     task,
+    timer,
     x64,
 };
 
-pub const PIT_INTERRUPT: u8 = 0x20;
 pub const HPET_INTERRUPT: u8 = 0x22;
+pub const PIT_INTERRUPT: u8 = 0x20;
+pub const RTC_INTERRUPT: u8 = 0x28;
 
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
@@ -366,7 +368,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0x25 IRQ 0x05
         1, // int 0x26 IRQ 0x06
         1, // int 0x27 IRQ 0x07
-        1, // int 0x28 IRQ 0x08
+        1, // int 0x28 IRQ 0x08 RIC
         1, // int 0x29 IRQ 0x09
         1, // int 0x2a IRQ 0x0a
         1, // int 0x2b IRQ 0x0b
@@ -1220,14 +1222,18 @@ extern "x86-interrupt" fn handler_0x27(stack_frame: StackFrame) {
     }
 }
 
-/// # IRQ 0x08
+/// # IRQ 0x08 RIC
 extern "x86-interrupt" fn handler_0x28(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x28;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
+    timer::rtc::end_interruption();
+    com2_println!("RTC interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

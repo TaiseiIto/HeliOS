@@ -10,9 +10,35 @@ use {
     core::fmt,
     crate::{
         Argument,
+        interrupt,
+        task,
         x64,
     },
 };
+
+pub fn end_interruption() {
+    status_register::C::read();
+}
+
+pub fn set_periodic_interrupt(hz: usize) -> u8 {
+    let irq: u8 = 8;
+    task::Controller::get_current_mut()
+        .unwrap()
+        .cli();
+    interrupt::non_maskable::disable();
+    status_register::A::read()
+        .set_frequency(hz)
+        .write();
+    status_register::B::read()
+        .enable_periodic_interrupt()
+        .write();
+    end_interruption();
+    interrupt::non_maskable::enable();
+    task::Controller::get_current_mut()
+        .unwrap()
+        .sti();
+    irq
+}
 
 pub struct Time {
     second: u8,
@@ -34,7 +60,7 @@ impl Time {
     const YEAR_ADDRESS: u8 = 0x09;
 
     pub fn get() -> Self {
-        let status_register_b = status_register::B::get();
+        let status_register_b = status_register::B::read();
         let second: u8 = status_register_b.binarize(x64::cmos::read(Self::SECOND_ADDRESS));
         let minute: u8 = status_register_b.binarize(x64::cmos::read(Self::MINUTE_ADDRESS));
         let hour: u8 = status_register_b.correct_hour(x64::cmos::read(Self::HOUR_ADDRESS));
@@ -60,6 +86,7 @@ impl Time {
             year,
         }
     }
+
 }
 
 impl fmt::Debug for Time {

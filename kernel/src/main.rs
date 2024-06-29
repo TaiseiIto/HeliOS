@@ -156,7 +156,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz
-    let pit_irq: u8 = timer::pit::set_frequency(pit_frequency);
+    let pit_irq: u8 = timer::pit::set_periodic_interrupt(pit_frequency);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
@@ -166,16 +166,26 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
     // Set RTC.
-    let status_register_a = timer::rtc::status_register::A::get();
+    let status_register_a = timer::rtc::status_register::A::read();
     com2_println!("status_register_a = {:#x?}", status_register_a);
-    let status_register_b = timer::rtc::status_register::B::get();
+    let status_register_b = timer::rtc::status_register::B::read();
     com2_println!("status_register_b = {:#x?}", status_register_b);
-    let status_register_c = timer::rtc::status_register::C::get();
+    let status_register_c = timer::rtc::status_register::C::read();
     com2_println!("status_register_c = {:#x?}", status_register_c);
-    let status_register_d = timer::rtc::status_register::D::get();
+    let status_register_d = timer::rtc::status_register::D::read();
     com2_println!("status_register_d = {:#x?}", status_register_d);
     let time = timer::rtc::Time::get();
     com2_println!("time = {:#?}", time);
+    let rtc_frequency: usize = 0x2; // Hz
+    let rtc_irq: u8 = timer::rtc::set_periodic_interrupt(rtc_frequency);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(rtc_irq, local_apic_registers.apic_id(), interrupt::RTC_INTERRUPT);
     // Set HPET.
     let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()
