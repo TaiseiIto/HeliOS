@@ -17,7 +17,6 @@ pub fn read_counter_value() -> u32 {
     let fadt: &acpi::fixed_acpi_description::Table = rsdp
         .xsdt()
         .fadt();
-    com2_println!("fadt = {:#x?}", fadt);
     assert_eq!(fadt.pm_tmr_len(), 4);
     0
 }

@@ -13,6 +13,7 @@ mod processor;
 mod efi;
 mod elf;
 mod interrupt;
+mod io;
 mod memory;
 mod rs232c;
 mod sync;
