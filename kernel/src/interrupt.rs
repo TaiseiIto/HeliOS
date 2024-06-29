@@ -1,5 +1,6 @@
 pub mod apic;
 pub mod descriptor;
+pub mod non_maskable;
 
 pub use descriptor::Descriptor;
 
