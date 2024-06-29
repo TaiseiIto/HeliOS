@@ -27,6 +27,32 @@ impl Mapped {
         }
     }
 
+    pub fn read_u16(&self) -> u16 {
+        match self {
+            Self::Memory(address) => {
+                let address: usize = *address;
+                let address: *const u16 = address as *const u16;
+                unsafe {
+                    *address
+                }
+            },
+            Self::Port(port) => x64::port::inw(*port),
+        }
+    }
+
+    pub fn read_u32(&self) -> u32 {
+        match self {
+            Self::Memory(address) => {
+                let address: usize = *address;
+                let address: *const u32 = address as *const u32;
+                unsafe {
+                    *address
+                }
+            },
+            Self::Port(port) => x64::port::inl(*port),
+        }
+    }
+
     pub fn write_u8(&mut self, value: u8) {
         match self {
             Self::Memory(address) => {
@@ -37,6 +63,32 @@ impl Mapped {
                 }
             },
             Self::Port(port) => x64::port::outb(*port, value),
+        }
+    }
+
+    pub fn write_u16(&mut self, value: u16) {
+        match self {
+            Self::Memory(address) => {
+                let address: usize = *address;
+                let address: *mut u16 = address as *mut u16;
+                unsafe {
+                    *address = value;
+                }
+            },
+            Self::Port(port) => x64::port::outw(*port, value),
+        }
+    }
+
+    pub fn write_u32(&mut self, value: u32) {
+        match self {
+            Self::Memory(address) => {
+                let address: usize = *address;
+                let address: *mut u32 = address as *mut u32;
+                unsafe {
+                    *address = value;
+                }
+            },
+            Self::Port(port) => x64::port::outl(*port, value),
         }
     }
 }
