@@ -52,6 +52,23 @@ impl B {
         }
     }
 
+    pub fn correct_hour(&self, hour: u8) -> u8 {
+        if self.hour_mode_24() {
+            self.binarize(hour)
+        } else {
+            const PM: u8 = 0x80;
+            let pm: bool = hour & PM != 0;
+            let hour: u8 = hour & !PM;
+            let hour: u8 = self.binarize(hour);
+            let hour: u8 = hour % 12;
+            hour + if pm {
+                12
+            } else {
+                0
+            }
+        }
+    }
+
     pub fn get() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
     }

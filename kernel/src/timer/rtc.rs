@@ -37,7 +37,7 @@ impl Time {
         let status_register_b = status_register::B::get();
         let second: u8 = status_register_b.binarize(x64::cmos::read(Self::SECOND_ADDRESS));
         let minute: u8 = status_register_b.binarize(x64::cmos::read(Self::MINUTE_ADDRESS));
-        let hour: u8 = status_register_b.binarize(x64::cmos::read(Self::HOUR_ADDRESS));
+        let hour: u8 = status_register_b.correct_hour(x64::cmos::read(Self::HOUR_ADDRESS));
         let day_of_week: DayOfWeak = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS)).into();
         let day_of_month: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS));
         let month: u8 = status_register_b.binarize(x64::cmos::read(Self::MONTH_ADDRESS));
