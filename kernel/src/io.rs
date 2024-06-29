@@ -1,4 +1,7 @@
-use crate::x64;
+use crate::{
+    acpi,
+    x64,
+};
 
 pub enum Mapped {
     Memory(usize),
@@ -90,6 +93,13 @@ impl Mapped {
             },
             Self::Port(port) => x64::port::outl(*port, value),
         }
+    }
+}
+
+impl From<&acpi::generic_address::Structure> for Mapped {
+    fn from(address: &acpi::generic_address::Structure) -> Self {
+        let address: usize = address.address();
+        Self::Memory(address)
     }
 }
 

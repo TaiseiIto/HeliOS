@@ -16,7 +16,15 @@ pub struct Structure {
 }
 
 impl Structure {
-    pub fn address<T>(&self) -> &T {
+    pub fn address(&self) -> usize {
+        self.address as usize
+    }
+
+    pub fn is_null(&self) -> bool {
+        self.address == 0
+    }
+
+    pub fn get<T>(&self) -> &T {
         let address: usize = self.address as usize;
         let address: *const T = address as *const T;
         unsafe {
@@ -24,7 +32,7 @@ impl Structure {
         }
     }
 
-    pub fn address_mut<T>(&mut self) -> &mut T {
+    pub fn get_mut<T>(&mut self) -> &mut T {
         let address: usize = self.address as usize;
         let address: *mut T = address as *mut T;
         unsafe {

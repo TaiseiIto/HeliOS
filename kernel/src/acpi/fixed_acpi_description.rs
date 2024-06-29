@@ -1,6 +1,10 @@
 use {
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+    },
+    crate::io,
     super::{
         firmware_acpi_control,
         generic_address,
@@ -72,16 +76,31 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn acpi_timer(&self) -> Option<io::Mapped> {
+        (self.pm_tmr_len == 4).then(|| {
+            let self_address: *const Self = self as *const Self;
+            let self_address: usize = self_address as usize;
+            let x_pm_tmr_blk_address: *const generic_address::Structure = (&self.x_pm_tmr_blk) as *const generic_address::Structure;
+            let x_pm_tmr_blk_address: usize = x_pm_tmr_blk_address as usize;
+            if x_pm_tmr_blk_address + mem::size_of::<generic_address::Structure>() <= self_address + self.header.table_size() {
+                let x_pm_tmr_blk: generic_address::Structure = self.x_pm_tmr_blk;
+                if x_pm_tmr_blk.is_null() {
+                    io::Mapped::port(self.pm_tmr_blk as u16)
+                } else {
+                    (&x_pm_tmr_blk).into()
+                }
+            } else {
+                io::Mapped::port(self.pm_tmr_blk as u16)
+            }
+        })
+    }
+
     pub fn century(&self) -> u8 {
         self.century
     }
 
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
-    }
-
-    pub fn pm_tmr_len(&self) -> u8 {
-        self.pm_tmr_len
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {

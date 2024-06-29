@@ -27,11 +27,11 @@ impl Table {
     }
 
     pub fn registers(&self) -> &timer::hpet::Registers {
-        self.base_address.address()
+        self.base_address.get()
     }
 
     pub fn registers_mut(&mut self) -> &mut timer::hpet::Registers {
-        self.base_address.address_mut()
+        self.base_address.get_mut()
     }
 }
 

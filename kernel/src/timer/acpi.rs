@@ -10,14 +10,13 @@ use crate::{
 };
 
 pub fn read_counter_value() -> u32 {
-    let rsdp: &acpi::root_system_description::Pointer = Argument::get()
+    Argument::get()
         .efi_system_table()
-        .rsdp();
-    com2_println!("rsdp = {:#x?}", rsdp);
-    let fadt: &acpi::fixed_acpi_description::Table = rsdp
+        .rsdp()
         .xsdt()
-        .fadt();
-    assert_eq!(fadt.pm_tmr_len(), 4);
-    0
+        .fadt()
+        .acpi_timer()
+        .unwrap()
+        .read_u32()
 }
 
