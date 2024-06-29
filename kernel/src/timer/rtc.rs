@@ -16,11 +16,10 @@ pub struct Time {
     second: u8,
     minute: u8,
     hour: u8,
-    day_of_week: u8,
+    day_of_week: DayOfWeak,
     day_of_month: u8,
     month: u8,
-    year: u8,
-    century: Option<u8>,
+    year: usize,
 }
 
 impl Time {
@@ -37,7 +36,7 @@ impl Time {
         let second: u8 = status_register_b.binarize(x64::cmos::read(Self::SECOND_ADDRESS));
         let minute: u8 = status_register_b.binarize(x64::cmos::read(Self::MINUTE_ADDRESS));
         let hour: u8 = status_register_b.binarize(x64::cmos::read(Self::HOUR_ADDRESS));
-        let day_of_week: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS));
+        let day_of_week: DayOfWeak = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS)).into();
         let day_of_month: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS));
         let month: u8 = status_register_b.binarize(x64::cmos::read(Self::MONTH_ADDRESS));
         let year: u8 = status_register_b.binarize(x64::cmos::read(Self::YEAR_ADDRESS));
@@ -48,6 +47,7 @@ impl Time {
             .fadt()
             .century();
         let century: Option<u8> = (century != 0).then(|| status_register_b.binarize(x64::cmos::read(century)));
+        let year: usize = (year as usize) + 100 * (century.unwrap_or(0) as usize);
         Self {
             second,
             minute,
@@ -56,7 +56,32 @@ impl Time {
             day_of_month,
             month,
             year,
-            century,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum DayOfWeak {
+    Sunday,
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+}
+
+impl From<u8> for DayOfWeak {
+    fn from(day_of_weak: u8) -> Self {
+        match day_of_weak {
+            1 => Self::Sunday,
+            2 => Self::Monday,
+            3 => Self::Tuesday,
+            4 => Self::Wednesday,
+            5 => Self::Thursday,
+            6 => Self::Friday,
+            7 => Self::Saturday,
+            _ => unreachable!(),
         }
     }
 }
