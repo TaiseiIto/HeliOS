@@ -6,12 +6,14 @@
 
 pub mod status_register;
 
-use crate::{
-    Argument,
-    x64,
+use {
+    core::fmt,
+    crate::{
+        Argument,
+        x64,
+    },
 };
 
-#[derive(Debug)]
 pub struct Time {
     second: u8,
     minute: u8,
@@ -60,6 +62,12 @@ impl Time {
     }
 }
 
+impl fmt::Debug for Time {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{:#?}/{:#?}/{:#?} {:#?} {:#?}:{:#?}:{:#?}", self.year, self.month, self.day_of_month, self.day_of_week, self.hour, self.minute, self.second)
+    }
+}
+
 #[derive(Debug)]
 pub enum DayOfWeak {
     Sunday,
@@ -72,8 +80,8 @@ pub enum DayOfWeak {
 }
 
 impl From<u8> for DayOfWeak {
-    fn from(day_of_weak: u8) -> Self {
-        match day_of_weak {
+    fn from(day_of_week: u8) -> Self {
+        match day_of_week {
             1 => Self::Sunday,
             2 => Self::Monday,
             3 => Self::Tuesday,
