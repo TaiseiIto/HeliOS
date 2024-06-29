@@ -40,6 +40,18 @@ pub struct B {
 impl B {
     const ADDRESS: u8 = 0x0b;
 
+    pub fn binarize(&self, value: u8) -> u8 {
+        if self.dm() {
+            value
+        } else {
+            let ones_place: u8 = value % 0x10;
+            assert!(ones_place < 10);
+            let tens_place: u8 = value / 0x10;
+            assert!(tens_place < 10);
+            10 * tens_place + ones_place
+        }
+    }
+
     pub fn get() -> Self {
         x64::cmos::read(Self::ADDRESS).into()
     }

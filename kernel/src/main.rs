@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let status_register_d = timer::rtc::status_register::D::get();
     com2_println!("status_register_d = {:#x?}", status_register_d);
     let time = timer::rtc::Time::get();
-    com2_println!("time = {:#x?}", time);
+    com2_println!("time = {:#?}", time);
     // Set HPET.
     let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()

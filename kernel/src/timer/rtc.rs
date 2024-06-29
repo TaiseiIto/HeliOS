@@ -33,20 +33,21 @@ impl Time {
     const YEAR_ADDRESS: u8 = 0x09;
 
     pub fn get() -> Self {
-        let second: u8 = x64::cmos::read(Self::SECOND_ADDRESS);
-        let minute: u8 = x64::cmos::read(Self::MINUTE_ADDRESS);
-        let hour: u8 = x64::cmos::read(Self::HOUR_ADDRESS);
-        let day_of_week: u8 = x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS);
-        let day_of_month: u8 = x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS);
-        let month: u8 = x64::cmos::read(Self::MONTH_ADDRESS);
-        let year: u8 = x64::cmos::read(Self::YEAR_ADDRESS);
+        let status_register_b = status_register::B::get();
+        let second: u8 = status_register_b.binarize(x64::cmos::read(Self::SECOND_ADDRESS));
+        let minute: u8 = status_register_b.binarize(x64::cmos::read(Self::MINUTE_ADDRESS));
+        let hour: u8 = status_register_b.binarize(x64::cmos::read(Self::HOUR_ADDRESS));
+        let day_of_week: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS));
+        let day_of_month: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS));
+        let month: u8 = status_register_b.binarize(x64::cmos::read(Self::MONTH_ADDRESS));
+        let year: u8 = status_register_b.binarize(x64::cmos::read(Self::YEAR_ADDRESS));
         let century: u8 = Argument::get()
             .efi_system_table()
             .rsdp()
             .xsdt()
             .fadt()
             .century();
-        let century: Option<u8> = (century != 0).then(|| x64::cmos::read(century));
+        let century: Option<u8> = (century != 0).then(|| status_register_b.binarize(x64::cmos::read(century)));
         Self {
             second,
             minute,
