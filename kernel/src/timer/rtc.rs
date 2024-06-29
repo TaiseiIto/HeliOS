@@ -6,7 +6,10 @@
 
 pub mod status_register;
 
-use crate::x64;
+use crate::{
+    Argument,
+    x64,
+};
 
 #[derive(Debug)]
 pub struct Time {
@@ -17,6 +20,7 @@ pub struct Time {
     day_of_month: u8,
     month: u8,
     year: u8,
+    century: Option<u8>,
 }
 
 impl Time {
@@ -36,6 +40,13 @@ impl Time {
         let day_of_month: u8 = x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS);
         let month: u8 = x64::cmos::read(Self::MONTH_ADDRESS);
         let year: u8 = x64::cmos::read(Self::YEAR_ADDRESS);
+        let century: u8 = Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .xsdt()
+            .fadt()
+            .century();
+        let century: Option<u8> = (century != 0).then(|| x64::cmos::read(century));
         Self {
             second,
             minute,
@@ -44,6 +55,7 @@ impl Time {
             day_of_month,
             month,
             year,
+            century,
         }
     }
 }

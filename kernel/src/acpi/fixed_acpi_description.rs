@@ -71,6 +71,10 @@ pub struct Table {
 }
 
 impl Table {
+    pub fn century(&self) -> u8 {
+        self.century
+    }
+
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
     }
