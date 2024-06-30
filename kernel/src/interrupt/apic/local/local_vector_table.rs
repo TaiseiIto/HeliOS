@@ -16,15 +16,17 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn overwrite(self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) -> Self {
-        let Self {
-            register,
-            reserved0,
-        } = self;
+    pub fn set(&mut self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) {
+        let register: Register = self.register;
         let register: Register = register.overwrite(vector, delivery_mode, interrupt_input_pin_polarity, trigger_mode, mask, timer_mode);
-        Self {
-            register,
-            reserved0,
+        *self.register_mut() = register.into();
+    }
+
+    fn register_mut(&mut self) -> &mut u32 {
+        let address: *mut Self = self as *mut Self;
+        let address: *mut u32 = address as *mut u32;
+        unsafe {
+            &mut *address
         }
     }
 }

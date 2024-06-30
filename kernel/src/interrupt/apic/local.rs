@@ -136,10 +136,10 @@ impl Registers {
 
     pub fn timer_frequency(&mut self, hpet: &timer::hpet::Registers) -> u32 {
         let divisor: u8 = 1;
-        self.divide_configuration = self.divide_configuration.overwrite(divisor);
-        self.lvt_timer = self.lvt_timer.overwrite(APIC_TIMER_INTERRUPT, DeliveryMode::Fixed, local_vector_table::InterruptInputPinPolarity::ActiveHigh, TriggerMode::Edge, local_vector_table::Mask::InhibitInterrupt, local_vector_table::TimerMode::OneShot);
+        self.divide_configuration.set(divisor);
+        self.lvt_timer.set(APIC_TIMER_INTERRUPT, DeliveryMode::Fixed, local_vector_table::InterruptInputPinPolarity::ActiveHigh, TriggerMode::Edge, local_vector_table::Mask::InhibitInterrupt, local_vector_table::TimerMode::OneShot);
         let start = u32::MAX;
-        self.initial_count = self.initial_count.overwrite(start);
+        self.initial_count.set(start);
         hpet.wait_seconds(1);
         let end: u32 = self.current_count.get();
         start - end

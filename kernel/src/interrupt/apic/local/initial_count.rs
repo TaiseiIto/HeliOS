@@ -12,15 +12,17 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn overwrite(self, initial_count: u32) -> Self {
-        let Self {
-            register,
-            reserved0
-        } = self;
+    pub fn set(&mut self, initial_count: u32) {
+        let register: Register = self.register;
         let register: Register = register.with_initial_count(initial_count);
-        Self {
-            register,
-            reserved0,
+        *self.register_mut() = register.into();
+    }
+
+    fn register_mut(&mut self) -> &mut u32 {
+        let address: *mut Self = self as *mut Self;
+        let address: *mut u32 = address as *mut u32;
+        unsafe {
+            &mut *address
         }
     }
 }
