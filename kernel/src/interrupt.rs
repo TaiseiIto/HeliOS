@@ -2688,6 +2688,10 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
     com2_println!("APIC timer interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();

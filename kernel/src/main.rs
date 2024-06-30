@@ -206,8 +206,8 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers();
     com2_println!("hpet = {:#x?}", hpet);
     // Set APIC Timer.
-    let apic_timer_frequency: u32 = local_apic_registers.timer_frequency(hpet);
-    com2_println!("apic_timer_frequency = {:#x?}", apic_timer_frequency);
+    let apic_timer_interrupt_frequency: usize = 1; // Hz
+    local_apic_registers.set_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
     // Test ACPI Timer.
     com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
     com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
