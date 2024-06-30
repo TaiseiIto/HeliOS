@@ -167,23 +167,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .io_apic_mut()
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
-    // Test TSC.
-    com2_println!("Time stamp counter is {}", if timer::tsc::is_invariant() {
-        "invariant"
-    } else {
-        "variant"
-    });
-    com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
-    com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Set RTC.
-    let status_register_a = timer::rtc::status_register::A::read();
-    com2_println!("status_register_a = {:#x?}", status_register_a);
-    let status_register_b = timer::rtc::status_register::B::read();
-    com2_println!("status_register_b = {:#x?}", status_register_b);
-    let status_register_c = timer::rtc::status_register::C::read();
-    com2_println!("status_register_c = {:#x?}", status_register_c);
-    let status_register_d = timer::rtc::status_register::D::read();
-    com2_println!("status_register_d = {:#x?}", status_register_d);
     let time = timer::rtc::Time::get();
     com2_println!("time = {:#?}", time);
     let rtc_frequency: usize = 0x2; // Hz
@@ -221,9 +205,20 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet()
         .registers();
     com2_println!("hpet = {:#x?}", hpet);
-    // Test ACPI Timer
+    // Set APIC Timer.
+    let apic_timer_frequency: u32 = local_apic_registers.timer_frequency(hpet);
+    com2_println!("apic_timer_frequency = {:#x?}", apic_timer_frequency);
+    // Test ACPI Timer.
     com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
     com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
+    // Test TSC.
+    com2_println!("Time stamp counter is {}", if timer::tsc::is_invariant() {
+        "invariant"
+    } else {
+        "variant"
+    });
+    com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
+    com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()

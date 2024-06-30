@@ -12,8 +12,16 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn set_divisor(&mut self, divisor: u8) {
-        self.register = self.register.set_divisor(divisor);
+    pub fn overwrite(self, divisor: u8) -> Self {
+        let Self {
+            register,
+            reserved0,
+        } = self;
+        let register = register.set_divisor(divisor);
+        Self {
+            register,
+            reserved0,
+        }
     }
 }
 

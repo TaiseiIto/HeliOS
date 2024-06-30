@@ -12,7 +12,7 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn get(self) -> u32 {
+    pub fn get(&self) -> u32 {
         let register: Register = self.register;
         register.current_count()
     }
