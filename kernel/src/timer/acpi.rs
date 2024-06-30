@@ -15,8 +15,17 @@ pub fn read_counter_value() -> u32 {
         .rsdp()
         .xsdt()
         .fadt()
-        .acpi_timer()
+        .timer()
         .unwrap()
         .read_u32()
+}
+
+pub fn bits() -> usize {
+    Argument::get()
+        .efi_system_table()
+        .rsdp()
+        .xsdt()
+        .fadt()
+        .timer_bits()
 }
 

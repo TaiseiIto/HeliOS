@@ -76,7 +76,7 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn acpi_timer(&self) -> Option<io::Mapped> {
+    pub fn timer(&self) -> Option<io::Mapped> {
         (self.pm_tmr_len == 4).then(|| {
             let self_address: *const Self = self as *const Self;
             let self_address: usize = self_address as usize;
@@ -101,6 +101,11 @@ impl Table {
 
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
+    }
+
+    pub fn timer_bits(&self) -> usize {
+        let flags: Flags = self.flags;
+        flags.timer_bits()
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {
@@ -284,5 +289,15 @@ struct Flags {
     persistent_cpu_caches: u8,
     #[bits(access = RO)]
     reserved0: u8,
+}
+
+impl Flags {
+    fn timer_bits(&self) -> usize {
+        if self.tmr_val_ext() {
+            32
+        } else {
+            24
+        }
+    }
 }
 

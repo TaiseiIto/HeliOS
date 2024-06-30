@@ -213,6 +213,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers();
     com2_println!("hpet = {:#x?}", hpet);
     // Test ACPI Timer
+    com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
     com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::read_counter_value());
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
