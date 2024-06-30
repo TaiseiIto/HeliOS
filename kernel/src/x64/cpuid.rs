@@ -270,6 +270,12 @@ impl Cpuid {
             .as_ref()
             .map_or(false, |eax0x80000001| eax0x80000001.supports_intel64_architecture())
     }
+
+    pub fn tsc_is_invariant(&self) -> bool {
+        self.eax0x80000007
+            .as_ref()
+            .map_or(false, |eax0x80000007| eax0x80000007.tsc_is_invariant())
+    }
 }
 
 pub struct Return {

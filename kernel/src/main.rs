@@ -167,6 +167,11 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
     // Test TSC.
+    com2_println!("Time stamp counter is {}", if timer::tsc::is_invariant() {
+        "invariant"
+    } else {
+        "variant"
+    });
     com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Set RTC.
     let status_register_a = timer::rtc::status_register::A::read();
