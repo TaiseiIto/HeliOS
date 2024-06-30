@@ -11,7 +11,7 @@ use crate::{
     x64,
 };
 
-pub const INTERPROCESSOR_INTERRUPT: u8 = 0x98;
+pub const INTERPROCESSOR_INTERRUPT: u8 = 0x99;
 
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
@@ -474,8 +474,8 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0x95 IRQ 0x75
         1, // int 0x96 IRQ 0x76
         1, // int 0x97 IRQ 0x77
-        1, // int 0x98 Interprocessor interrupt
-        1, // int 0x99
+        1, // int 0x98 APIC timer interrupt
+        1, // int 0x99 Interprocessor interrupt
         1, // int 0x9a
         1, // int 0x9b
         1, // int 0x9c
@@ -2666,7 +2666,7 @@ extern "x86-interrupt" fn handler_0x97(stack_frame: StackFrame) {
     }
 }
 
-/// # Interprocessor interrupt
+/// # APIC timer interrupt
 extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x98;
     if let Some(current_task) = task::Controller::get_current_mut() {
@@ -2679,6 +2679,7 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
     }
 }
 
+/// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x99;
     if let Some(current_task) = task::Controller::get_current_mut() {

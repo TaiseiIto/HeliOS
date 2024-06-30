@@ -15,6 +15,7 @@ use crate::{
     x64,
 };
 
+pub const APIC_TIMER_INTERRUPT: u8 = 0x98;
 pub const HPET_INTERRUPT: u8 = 0x22;
 pub const PIT_INTERRUPT: u8 = 0x20;
 pub const RTC_INTERRUPT: u8 = 0x28;
@@ -480,8 +481,8 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0x95 IRQ 0x75
         1, // int 0x96 IRQ 0x76
         1, // int 0x97 IRQ 0x77
-        1, // int 0x98 Interprocessor interrupt
-        1, // int 0x99
+        1, // int 0x98 APIC timer interrupt
+        1, // int 0x99 Interprocessor interrupt
         1, // int 0x9a
         1, // int 0x9b
         1, // int 0x9c
@@ -2682,8 +2683,19 @@ extern "x86-interrupt" fn handler_0x97(stack_frame: StackFrame) {
     }
 }
 
+/// # APIC timer interrupt
+extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.start_interrupt();
+    }
+    com2_println!("APIC timer interrupt");
+    if let Some(current_task) = task::Controller::get_current_mut() {
+        current_task.end_interrupt();
+    }
+}
+
 /// # Interprocessor interrupt
-extern "x86-interrupt" fn handler_0x98(_stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -2693,19 +2705,6 @@ extern "x86-interrupt" fn handler_0x98(_stack_frame: StackFrame) {
         .registers_mut()
         .end_interruption();
     processor::Controller::delete_messages();
-    if let Some(current_task) = task::Controller::get_current_mut() {
-        current_task.end_interrupt();
-    }
-}
-
-
-extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x99;
-    if let Some(current_task) = task::Controller::get_current_mut() {
-        current_task.start_interrupt();
-    }
-    com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame = {:#x?}", stack_frame);
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
