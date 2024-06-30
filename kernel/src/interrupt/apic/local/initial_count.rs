@@ -11,6 +11,20 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn overwrite(self, initial_count: u32) -> Self {
+        let Self {
+            register,
+            reserved0
+        } = self;
+        let register: Register = register.with_initial_count(initial_count);
+        Self {
+            register,
+            reserved0,
+        }
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
