@@ -12,7 +12,7 @@ use crate::{
 
 const FREQUENCY: usize = 3579545; // Hz
 
-pub fn read_counter_value() -> u32 {
+pub fn counter_value() -> u32 {
     Argument::get()
         .efi_system_table()
         .rsdp()
@@ -33,14 +33,14 @@ pub fn bits() -> usize {
 }
 
 pub fn wait_microseconds(microseconds: usize) {
-    let current_counter_value: usize = read_counter_value() as usize;
+    let current_counter_value: usize = counter_value() as usize;
     let bits: usize = bits();
     let increments: usize = microseconds * FREQUENCY / 1000000;
     assert!(increments < 1 << (bits - 1));
     let minimum_counter_value: usize = (current_counter_value + increments) % (1 << bits);
     let maximum_counter_value: usize = (minimum_counter_value + (1 << (bits - 1))) % (1 << bits);
     while {
-        let current_counter_value: usize = read_counter_value() as usize;
+        let current_counter_value: usize = counter_value() as usize;
         if minimum_counter_value < maximum_counter_value {
             !(minimum_counter_value..maximum_counter_value).contains(&current_counter_value)
         } else {

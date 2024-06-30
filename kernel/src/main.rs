@@ -166,6 +166,8 @@ fn main(argument: &'static mut Argument<'static>) {
         .io_apic_mut()
         .registers_mut()
         .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
+    // Test TSC.
+    com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Set RTC.
     let status_register_a = timer::rtc::status_register::A::read();
     com2_println!("status_register_a = {:#x?}", status_register_a);
@@ -214,7 +216,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("hpet = {:#x?}", hpet);
     // Test ACPI Timer
     com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
-    com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::read_counter_value());
+    com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()

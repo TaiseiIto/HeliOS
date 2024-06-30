@@ -52,6 +52,23 @@ pub fn pause() {
     }
 }
 
+/// # Read Timer Stamp Counter
+/// ## References
+/// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-550
+#[inline(never)]
+pub fn rdtsc() -> u64 {
+    let eax: u32;
+    let edx: u32;
+    unsafe {
+        asm!(
+            "rdtsc",
+            out("eax") eax,
+            out("edx") edx,
+        );
+    }
+    ((edx as u64) << u32::BITS) + (eax as u64)
+}
+
 /// # Set Interrupt Flag
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-662
