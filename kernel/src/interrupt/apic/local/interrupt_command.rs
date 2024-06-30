@@ -8,6 +8,11 @@ use {
         memory,
         x64,
     },
+    super::super::{
+        DeliveryMode,
+        DeliveryStatus,
+        TriggerMode,
+    },
 };
 
 /// # Interrupt Command Register
@@ -173,45 +178,6 @@ impl Low {
 }
 
 #[derive(Debug)]
-enum DeliveryMode {
-    Fixed,
-    LowestPriority,
-    Smi,
-    Nmi,
-    Init,
-    StartUp,
-}
-
-impl TryFrom<u8> for DeliveryMode {
-    type Error = ();
-
-    fn try_from(delivery_mode: u8) -> Result<Self, Self::Error> {
-        match delivery_mode {
-            0b000 => Ok(Self::Fixed),
-            0b001 => Ok(Self::LowestPriority),
-            0b010 => Ok(Self::Smi),
-            0b100 => Ok(Self::Nmi),
-            0b101 => Ok(Self::Init),
-            0b110 => Ok(Self::StartUp),
-            _ => Err(()),
-        }
-    }
-}
-
-impl From<DeliveryMode> for u8 {
-    fn from(delivery_mode: DeliveryMode) -> Self {
-        match delivery_mode {
-            DeliveryMode::Fixed => 0b000,
-            DeliveryMode::LowestPriority => 0b001,
-            DeliveryMode::Smi => 0b010,
-            DeliveryMode::Nmi => 0b100,
-            DeliveryMode::Init => 0b101,
-            DeliveryMode::StartUp => 0b110,
-        }
-    }
-}
-
-#[derive(Debug)]
 enum DestinationMode {
     Physical,
     Logical,
@@ -231,30 +197,6 @@ impl From<DestinationMode> for bool {
         match destination_mode {
             DestinationMode::Physical => false,
             DestinationMode::Logical => true,
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq)]
-enum DeliveryStatus {
-    Idle,
-    SendPending,
-}
-
-impl From<bool> for DeliveryStatus {
-    fn from(delivery_status: bool) -> Self {
-        match delivery_status {
-            false => Self::Idle,
-            true => Self::SendPending,
-        }
-    }
-}
-
-impl From<DeliveryStatus> for bool {
-    fn from(delivery_status: DeliveryStatus) -> Self {
-        match delivery_status {
-            DeliveryStatus::Idle => false,
-            DeliveryStatus::SendPending => true,
         }
     }
 }
@@ -279,30 +221,6 @@ impl From<Level> for bool {
         match level {
             Level::Deassert => false,
             Level::Assert => true,
-        }
-    }
-}
-
-#[derive(Debug)]
-enum TriggerMode {
-    Edge,
-    Level,
-}
-
-impl From<bool> for TriggerMode {
-    fn from(trigger_mode: bool) -> Self {
-        match trigger_mode {
-            false => Self::Edge,
-            true => Self::Level,
-        }
-    }
-}
-
-impl From<TriggerMode> for bool {
-    fn from(trigger_mode: TriggerMode) -> Self {
-        match trigger_mode {
-            TriggerMode::Edge => false,
-            TriggerMode::Level => true,
         }
     }
 }

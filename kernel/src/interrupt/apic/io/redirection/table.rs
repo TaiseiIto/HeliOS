@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::super::super::DeliveryMode,
+};
 
 /// # Redirection Table Entry
 /// ## References
@@ -24,7 +27,7 @@ pub struct Entry {
 impl Entry {
     pub fn with_redirection(self, local_apic_id: u8, interrupt_number: u8) -> Self {
         self.with_vector(interrupt_number)
-            .with_delivery_mode(0)
+            .with_delivery_mode(DeliveryMode::Fixed.into())
             .with_destination_mode(false)
             .with_polarity(false)
             .with_remote_irr(false)
