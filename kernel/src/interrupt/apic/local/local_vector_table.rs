@@ -57,3 +57,30 @@ struct Register {
     reserved1: u16,
 }
 
+pub enum TimerMode {
+    OneShot,
+    Periodic,
+    TscDeadline,
+}
+
+impl From<u8> for TimerMode {
+    fn from(timer_mode: u8) -> Self {
+        match timer_mode {
+            0b00 => Self::OneShot,
+            0b01 => Self::Periodic,
+            0b10 => Self::TscDeadline,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<TimerMode> for u8 {
+    fn from(timer_mode: TimerMode) -> Self {
+        match timer_mode {
+            TimerMode::OneShot => 0b00,
+            TimerMode::Periodic => 0b01,
+            TimerMode::TscDeadline => 0b10,
+        }
+    }
+}
+
