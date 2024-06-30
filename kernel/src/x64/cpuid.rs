@@ -271,6 +271,12 @@ impl Cpuid {
             .map_or(false, |eax0x80000001| eax0x80000001.supports_intel64_architecture())
     }
 
+    pub fn tsc_frequency(&self) -> Option<u64> {
+        self.eax0x00000015
+            .as_ref()
+            .and_then(|eax0x00000015| eax0x00000015.frequency())
+    }
+
     pub fn tsc_is_invariant(&self) -> bool {
         self.eax0x80000007
             .as_ref()

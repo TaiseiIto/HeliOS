@@ -11,6 +11,12 @@ pub fn counter_value() -> u64 {
     x64::rdtsc()
 }
 
+pub fn frequency() -> Option<u64> {
+    Argument::get()
+        .cpuid()
+        .tsc_frequency()
+}
+
 pub fn is_invariant() -> bool {
     Argument::get()
         .cpuid()

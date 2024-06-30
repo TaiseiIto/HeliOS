@@ -172,6 +172,7 @@ fn main(argument: &'static mut Argument<'static>) {
     } else {
         "variant"
     });
+    com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
     com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Set RTC.
     let status_register_a = timer::rtc::status_register::A::read();
