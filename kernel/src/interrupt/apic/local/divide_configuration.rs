@@ -14,10 +14,10 @@ pub struct FatRegister {
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
-        let divide_value: u8 = register.divide_value();
+        let divisor: u8 = register.divisor();
         formatter
             .debug_struct("Register")
-            .field("divide_value", &divide_value)
+            .field("divisor", &divisor)
             .finish()
     }
 }
@@ -43,6 +43,10 @@ impl Register {
         } else {
             0
         }
+    }
+
+    fn divisor(&self) -> u8 {
+        1 << ((self.divide_value() + 1) % 0b1000)
     }
 }
 

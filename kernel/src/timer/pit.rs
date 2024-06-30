@@ -12,11 +12,11 @@ const BASE_OSCILATOR_FREQUENCY: usize = 14318180;
 pub fn set_periodic_interrupt(hz: usize) -> u8 {
     let counter: u8 = 0;
     let irq: u8 = 0;
-    let divider: usize = BASE_OSCILATOR_FREQUENCY / (12 * hz);
-    assert!(divider < 0x10000);
-    let divider: u16 = divider as u16;
-    let low: u8 = divider as u8;
-    let high: u8 = (divider >> u8::BITS) as u8;
+    let divisor: usize = BASE_OSCILATOR_FREQUENCY / (12 * hz);
+    assert!(divisor < 0x10000);
+    let divisor: u16 = divisor as u16;
+    let low: u8 = divisor as u8;
+    let high: u8 = (divisor >> u8::BITS) as u8;
     let bcd: bool = false;
     control::Register::create(bcd, control::Mode::RateGenerator, control::Access::LowAndHigh, control::Selector::Counter(counter)).set();
     x64::port::outb(counter_port(counter), low);

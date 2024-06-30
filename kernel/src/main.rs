@@ -155,6 +155,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz
     let pit_irq: u8 = timer::pit::set_periodic_interrupt(pit_frequency);
