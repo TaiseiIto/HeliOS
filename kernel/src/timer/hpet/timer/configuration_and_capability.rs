@@ -44,8 +44,9 @@ impl Register {
     pub fn set_periodic_interrupt(self) -> Self {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
-        let irq: u8 = 2;
-        assert!(tn_int_route_cap & (1 << irq) != 0);
+        let irq: u8 = (0..u32::BITS)
+            .find(|irq| tn_int_route_cap & (1 << irq) != 0)
+            .unwrap() as u8;
         let interrupt_destination = InterruptDestination::IoApic {
             irq,
         };

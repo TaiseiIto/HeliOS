@@ -44,8 +44,7 @@ pub struct Time {
     second: u8,
     minute: u8,
     hour: u8,
-    day_of_week: DayOfWeak,
-    day_of_month: u8,
+    day: u8,
     month: u8,
     year: usize,
 }
@@ -54,8 +53,7 @@ impl Time {
     const SECOND_ADDRESS: u8 = 0x00;
     const MINUTE_ADDRESS: u8 = 0x02;
     const HOUR_ADDRESS: u8 = 0x04;
-    const DAY_OF_WEEK_ADDRESS: u8 = 0x06;
-    const DAY_OF_MONTH_ADDRESS: u8 = 0x07;
+    const DAY_ADDRESS: u8 = 0x07;
     const MONTH_ADDRESS: u8 = 0x08;
     const YEAR_ADDRESS: u8 = 0x09;
 
@@ -64,8 +62,7 @@ impl Time {
         let second: u8 = status_register_b.binarize(x64::cmos::read(Self::SECOND_ADDRESS));
         let minute: u8 = status_register_b.binarize(x64::cmos::read(Self::MINUTE_ADDRESS));
         let hour: u8 = status_register_b.correct_hour(x64::cmos::read(Self::HOUR_ADDRESS));
-        let day_of_week: DayOfWeak = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_WEEK_ADDRESS)).into();
-        let day_of_month: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_OF_MONTH_ADDRESS));
+        let day: u8 = status_register_b.binarize(x64::cmos::read(Self::DAY_ADDRESS));
         let month: u8 = status_register_b.binarize(x64::cmos::read(Self::MONTH_ADDRESS));
         let year: u8 = status_register_b.binarize(x64::cmos::read(Self::YEAR_ADDRESS));
         let century: u8 = Argument::get()
@@ -80,8 +77,7 @@ impl Time {
             second,
             minute,
             hour,
-            day_of_week,
-            day_of_month,
+            day,
             month,
             year,
         }
@@ -91,12 +87,13 @@ impl Time {
 
 impl fmt::Debug for Time {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:#?}/{:#?}/{:#?} {:#?} {:#?}:{:#?}:{:#?}", self.year, self.month, self.day_of_month, self.day_of_week, self.hour, self.minute, self.second)
+        let day_of_week: DayOfWeek = self.into();
+        write!(formatter, "{:#?}/{:#?}/{:#?} {:#?} {:#?}:{:#?}:{:#?}", self.year, self.month, self.day, day_of_week, self.hour, self.minute, self.second)
     }
 }
 
 #[derive(Debug)]
-pub enum DayOfWeak {
+pub enum DayOfWeek {
     Sunday,
     Monday,
     Tuesday,
@@ -106,16 +103,33 @@ pub enum DayOfWeak {
     Saturday,
 }
 
-impl From<u8> for DayOfWeak {
-    fn from(day_of_week: u8) -> Self {
-        match day_of_week {
+/// # References
+/// * [Zeller's congruence](https://en.wikipedia.org/wiki/Zeller%27s_congruence)
+impl From<&Time> for DayOfWeek {
+    fn from(time: &Time) -> Self {
+        let Time {
+            second,
+            minute,
+            hour,
+            day,
+            month,
+            year,
+        } = time;
+        let q: usize = *day as usize;
+        let (m, year): (usize, usize) = match month {
+            1 | 2 => ((*month as usize) + 12, (*year as usize) - 1),
+            _ => (*month as usize, *year as usize),
+        };
+        let (k, j): (usize, usize) = (year % 100, year / 100);
+        let h: usize = (q + (13 * (m + 1)) / 5 + k + k / 4 + j / 4 - 2 * j) % 7;
+        match h {
+            0 => Self::Saturday,
             1 => Self::Sunday,
             2 => Self::Monday,
             3 => Self::Tuesday,
             4 => Self::Wednesday,
             5 => Self::Thursday,
             6 => Self::Friday,
-            7 => Self::Saturday,
             _ => unreachable!(),
         }
     }
