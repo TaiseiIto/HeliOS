@@ -10,7 +10,7 @@ TARGET=$(PRODUCT).img
 BLOCK_SIZE=4K
 
 # A number of blocks in the OS image
-BLOCK_COUNT=8K
+BLOCK_COUNT=16K
 
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
@@ -142,6 +142,7 @@ environment:
 clippy:
 	make clippy -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_BOOT_LOADER_BASE=$(PROCESSOR_BOOT_LOADER_BASE) PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(PROCESSOR_BOOT_LOADER_STACK_FLOOR) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
 	make clippy -C $(KERNEL_DIRECTORY)
+	make clippy -C $(PROCESSOR_KERNEL_DIRECTORY)
 	for application in $(APPLICATIONS); do make clippy -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
 
 # Debug the OS on QEMU by GDB.
@@ -169,6 +170,19 @@ debug_qemu: $(TARGET)
 .PHONY: debug_qemu_on_tmux
 debug_qemu_on_tmux:
 	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+
+# Debug QEMU without HPET by GDB.
+# Usage: make debug_qemu_without_hpet
+.PHONY: debug_qemu_without_hpet
+debug_qemu_without_hpet: $(TARGET)
+	-make debug_qemu_without_hpet -C .tmux -s
+
+# Run the OS on QEMU without HPET.
+# This target is called from .tmux/run.conf
+# Don't execute this directly.
+.PHONY: debug_qemu_without_hpet_on_tmux
+debug_qemu_without_hpet_on_tmux:
+	-make debug_qemu_without_hpet -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Delete all "#[allow(dead_code)]" lines
 .PHONY: delete_allow_dead_code

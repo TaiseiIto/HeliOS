@@ -2,7 +2,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
         str,
     },
@@ -54,7 +54,7 @@ impl Table2 {
             table.add(1)
         };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - mem::size_of::<Self>();
+        let size: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(table, size)
         }
@@ -134,12 +134,12 @@ impl DeviceInformation {
         let address_sizes: &u8 = &self.bytes()[offset];
         let address_sizes: *const u8 = address_sizes as *const u8;
         let length: usize = self.number_of_generic_address_registers as usize;
-        let size: usize = mem::size_of::<u32>() * length;
+        let size: usize = size_of::<u32>() * length;
         let address_sizes: &[u8] = unsafe {
             slice::from_raw_parts(address_sizes, size)
         };
         address_sizes
-            .chunks(mem::size_of::<u32>())
+            .chunks(size_of::<u32>())
             .map(|chunk| chunk
                 .iter()
                 .rev()

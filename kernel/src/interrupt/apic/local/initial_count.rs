@@ -11,6 +11,22 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn set(&mut self, initial_count: u32) {
+        let register: Register = self.register;
+        let register: Register = register.with_initial_count(initial_count);
+        *self.register_mut() = register.into();
+    }
+
+    fn register_mut(&mut self) -> &mut u32 {
+        let address: *mut Self = self as *mut Self;
+        let address: *mut u32 = address as *mut u32;
+        unsafe {
+            &mut *address
+        }
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;

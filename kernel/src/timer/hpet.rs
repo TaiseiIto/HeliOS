@@ -5,7 +5,15 @@ pub mod main_counter_value;
 pub mod timer;
 
 use {
-    core::fmt,
+    alloc::{
+        collections::BTreeMap,
+        format,
+        string::String,
+    },
+    core::{
+        fmt,
+        slice,
+    },
     crate::x64,
 };
 
@@ -26,14 +34,32 @@ pub struct Registers {
     main_counter_value: main_counter_value::Register,
     #[allow(dead_code)]
     reserved3: u64,
-    timer: [timer::Registers; 0x18],
 }
 
 impl Registers {
-    pub fn start_counting(&mut self) {
+    pub fn set_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
+        self.stop();
+        let main_counter_value: u64 = 0;
+        self.main_counter_value = main_counter_value::Register::create(main_counter_value);
+        let comparator: u64 = 1000000000000 * (milliseconds as u64) / self.get_femtoseconds_per_increment();
+        self.timers_mut()
+            .iter_mut()
+            .find(|timer| timer.supports_periodic_interrupt() && !timer.is_enable())
+            .unwrap()
+            .set_periodic_interrupt(comparator)
+    }
+
+    pub fn start(&mut self) {
         let general_configuration: general_configuration::Register = self.general_configuration;
         if !general_configuration.is_counting() {
             self.general_configuration = general_configuration.start_counting();
+        }
+    }
+
+    pub fn stop(&mut self) {
+        let general_configuration: general_configuration::Register = self.general_configuration;
+        if general_configuration.is_counting() {
+            self.general_configuration = general_configuration.stop_counting();
         }
     }
 
@@ -75,7 +101,7 @@ impl Registers {
         self.wait_milliseconds(1000 * seconds)
     }
 
-    fn get_counter_value(&self) -> u64 {
+    pub fn get_counter_value(&self) -> u64 {
         let main_counter_value: main_counter_value::Register = self.main_counter_value;
         main_counter_value.get()
     }
@@ -84,22 +110,49 @@ impl Registers {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
         general_capabilities_and_id.get_femtoseconds_per_increment()
     }
+
+    fn timers(&self) -> &[timer::Registers] {
+        let registers: *const Self = self as *const Self;
+        let timers: *const timer::Registers = unsafe {
+            registers.add(1)
+        } as *const timer::Registers;
+        let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
+        let length: usize = general_capabilities_and_id.number_of_timers();
+        unsafe {
+            slice::from_raw_parts(timers, length)
+        }
+    }
+
+    fn timers_mut(&mut self) -> &mut [timer::Registers] {
+        let registers: *mut Self = self as *mut Self;
+        let timers: *mut timer::Registers = unsafe {
+            registers.add(1)
+        } as *mut timer::Registers;
+        let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
+        let length: usize = general_capabilities_and_id.number_of_timers();
+        unsafe {
+            slice::from_raw_parts_mut(timers, length)
+        }
+    }
 }
 
 impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let general_capabilities_and_id: general_capabilities_and_id::Register = self.general_capabilities_and_id;
         let general_configuration: general_configuration::Register = self.general_configuration;
-        let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
         let main_counter_value: main_counter_value::Register = self.main_counter_value;
-        let timer: [timer::Registers; 0x18] = self.timer;
+        let timers: &[timer::Registers] = self.timers();
+        let general_interrupt_status: general_interrupt_status::Register = self.general_interrupt_status;
+        let general_interrupt_status: BTreeMap<String, bool> = (0..timers.len())
+            .map(|timer| (format!("Timer {:#x?} interactive active", timer), general_interrupt_status.timer_interactive_active(timer)))
+            .collect();
         formatter
             .debug_struct("Registers")
             .field("general_capabilities_and_id", &general_capabilities_and_id)
             .field("general_configuration", &general_configuration)
             .field("general_interrupt_status", &general_interrupt_status)
             .field("main_counter_value", &main_counter_value)
-            .field("timer", &timer)
+            .field("timers", &timers)
             .finish()
     }
 }

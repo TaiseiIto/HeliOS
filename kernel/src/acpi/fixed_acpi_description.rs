@@ -1,8 +1,13 @@
 use {
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+    },
+    crate::io,
     super::{
         firmware_acpi_control,
+        generic_address,
         system_description,
     },
 };
@@ -51,28 +56,56 @@ pub struct Table {
     iapc_boot_arch: u16,
     reserved1: u8,
     flags: Flags,
-    reset_reg: [u8; 12],
+    reset_reg: generic_address::Structure,
     reser_value: u8,
     arm_boot_arch: u16,
     fadt_minor_version: u8,
     x_firmware_ctrl: u64,
     x_dsdt: u64,
-    x_pm1a_evt_blk: [u8; 12],
-    x_pm1b_evt_blk: [u8; 12],
-    x_pm1a_cnt_blk: [u8; 12],
-    x_pm1b_cnt_blk: [u8; 12],
-    x_pm2_cnt_blk: [u8; 12],
-    x_pm_tmr_blk: [u8; 12],
-    x_gpe0_blk: [u8; 12],
-    x_gpe1_blk: [u8; 12],
-    sleep_control_reg: [u8; 12],
-    sleep_status_reg: [u8; 12],
+    x_pm1a_evt_blk: generic_address::Structure,
+    x_pm1b_evt_blk: generic_address::Structure,
+    x_pm1a_cnt_blk: generic_address::Structure,
+    x_pm1b_cnt_blk: generic_address::Structure,
+    x_pm2_cnt_blk: generic_address::Structure,
+    x_pm_tmr_blk: generic_address::Structure,
+    x_gpe0_blk: generic_address::Structure,
+    x_gpe1_blk: generic_address::Structure,
+    sleep_control_reg: generic_address::Structure,
+    sleep_status_reg: generic_address::Structure,
     hypervisor_vendor_identity: u64,
 }
 
 impl Table {
+    pub fn timer(&self) -> Option<io::Mapped> {
+        (self.pm_tmr_len == 4).then(|| {
+            let self_address: *const Self = self as *const Self;
+            let self_address: usize = self_address as usize;
+            let x_pm_tmr_blk_address: *const generic_address::Structure = (&self.x_pm_tmr_blk) as *const generic_address::Structure;
+            let x_pm_tmr_blk_address: usize = x_pm_tmr_blk_address as usize;
+            if x_pm_tmr_blk_address + mem::size_of::<generic_address::Structure>() <= self_address + self.header.table_size() {
+                let x_pm_tmr_blk: generic_address::Structure = self.x_pm_tmr_blk;
+                if x_pm_tmr_blk.is_null() {
+                    io::Mapped::port(self.pm_tmr_blk as u16)
+                } else {
+                    (&x_pm_tmr_blk).into()
+                }
+            } else {
+                io::Mapped::port(self.pm_tmr_blk as u16)
+            }
+        })
+    }
+
+    pub fn century(&self) -> u8 {
+        self.century
+    }
+
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
+    }
+
+    pub fn timer_bits(&self) -> usize {
+        let flags: Flags = self.flags;
+        flags.timer_bits()
     }
 
     fn dsdt(&self) -> Option<system_description::Table> {
@@ -150,20 +183,20 @@ impl fmt::Debug for Table {
         let iapc_boot_arch: u16 = self.iapc_boot_arch;
         let reserved1: u8 = self.reserved1;
         let flags: Flags = self.flags;
-        let reset_reg: [u8; 12] = self.reset_reg;
+        let reset_reg: generic_address::Structure = self.reset_reg;
         let reser_value: u8 = self.reser_value;
         let arm_boot_arch: u16 = self.arm_boot_arch;
         let fadt_minor_version: u8 = self.fadt_minor_version;
-        let x_pm1a_evt_blk: [u8; 12] = self.x_pm1a_evt_blk;
-        let x_pm1b_evt_blk: [u8; 12] = self.x_pm1b_evt_blk;
-        let x_pm1a_cnt_blk: [u8; 12] = self.x_pm1a_cnt_blk;
-        let x_pm1b_cnt_blk: [u8; 12] = self.x_pm1b_cnt_blk;
-        let x_pm2_cnt_blk: [u8; 12] = self.x_pm2_cnt_blk;
-        let x_pm_tmr_blk: [u8; 12] = self.x_pm_tmr_blk;
-        let x_gpe0_blk: [u8; 12] = self.x_gpe0_blk;
-        let x_gpe1_blk: [u8; 12] = self.x_gpe1_blk;
-        let sleep_control_reg: [u8; 12] = self.sleep_control_reg;
-        let sleep_status_reg: [u8; 12] = self.sleep_status_reg;
+        let x_pm1a_evt_blk: generic_address::Structure = self.x_pm1a_evt_blk;
+        let x_pm1b_evt_blk: generic_address::Structure = self.x_pm1b_evt_blk;
+        let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
+        let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
+        let x_pm2_cnt_blk: generic_address::Structure = self.x_pm2_cnt_blk;
+        let x_pm_tmr_blk: generic_address::Structure = self.x_pm_tmr_blk;
+        let x_gpe0_blk: generic_address::Structure = self.x_gpe0_blk;
+        let x_gpe1_blk: generic_address::Structure = self.x_gpe1_blk;
+        let sleep_control_reg: generic_address::Structure = self.sleep_control_reg;
+        let sleep_status_reg: generic_address::Structure = self.sleep_status_reg;
         let hypervisor_vendor_identity: u64 = self.hypervisor_vendor_identity;
         formatter
             .debug_struct("Table")
@@ -256,5 +289,15 @@ struct Flags {
     persistent_cpu_caches: u8,
     #[bits(access = RO)]
     reserved0: u8,
+}
+
+impl Flags {
+    fn timer_bits(&self) -> usize {
+        if self.tmr_val_ext() {
+            32
+        } else {
+            24
+        }
+    }
 }
 

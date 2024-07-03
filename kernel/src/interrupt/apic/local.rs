@@ -27,6 +27,11 @@ use {
         timer,
         x64,
     },
+    super::{
+        DeliveryMode,
+        TriggerMode,
+        super::APIC_TIMER_INTERRUPT,
+    },
 };
 
 /// # Local APIC Registers
@@ -104,7 +109,7 @@ impl Registers {
         self.local_apic_id.apic_id()
     }
 
-    pub fn end_of_interrupt(&mut self) {
+    pub fn end_interruption(&mut self) {
         self.end_of_interrupt.write(0);
     }
 
@@ -127,6 +132,24 @@ impl Registers {
         self.interrupt_command.send_sipi(processor_local_apic_id, entry_point);
         hpet.wait_microseconds(200);
         self.interrupt_command.wait_to_send();
+    }
+
+    pub fn set_periodic_interrupt(&mut self, hpet: &timer::hpet::Registers, interrupt_frequency: usize) {
+        let timer_frequency: usize = self.timer_frequency(hpet);
+        let initial_count: u32 = (timer_frequency / interrupt_frequency) as u32;
+        self.lvt_timer.set(APIC_TIMER_INTERRUPT, DeliveryMode::Fixed, local_vector_table::InterruptInputPinPolarity::ActiveHigh, TriggerMode::Edge, local_vector_table::Mask::EnableInterrupt, local_vector_table::TimerMode::Periodic);
+        self.initial_count.set(initial_count);
+    }
+
+    fn timer_frequency(&mut self, hpet: &timer::hpet::Registers) -> usize {
+        let divisor: u8 = 1;
+        self.divide_configuration.set(divisor);
+        self.lvt_timer.set(APIC_TIMER_INTERRUPT, DeliveryMode::Fixed, local_vector_table::InterruptInputPinPolarity::ActiveHigh, TriggerMode::Edge, local_vector_table::Mask::InhibitInterrupt, local_vector_table::TimerMode::OneShot);
+        let start = u32::MAX;
+        self.initial_count.set(start);
+        hpet.wait_seconds(1);
+        let end: u32 = self.current_count.get();
+        (start - end) as usize
     }
 }
 

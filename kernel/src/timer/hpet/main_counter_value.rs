@@ -9,6 +9,10 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn create(counter_value: u64) -> Self {
+        Self::default().with_counter_value(counter_value)
+    }
+
     pub fn get(&self) -> u64 {
         self.counter_value()
     }

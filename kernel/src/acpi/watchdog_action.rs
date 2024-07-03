@@ -4,7 +4,7 @@ use {
     bitfield_struct::bitfield,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -41,7 +41,7 @@ impl Table {
             table.add(1)
         };
         let instruction_entries: *const instruction::Entry = instruction_entries as *const instruction::Entry;
-        let length: usize = (self.header.table_size() - mem::size_of::<Self>()) / mem::size_of::<instruction::Entry>();
+        let length: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<instruction::Entry>();
         unsafe {
             slice::from_raw_parts(instruction_entries, length)
         }

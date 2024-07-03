@@ -1,7 +1,7 @@
 use {
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
         str,
     },
@@ -31,9 +31,9 @@ impl Structure {
     fn acpi_processor_uid_string(&self) -> &str {
         let structure: *const Self = self as *const Self;
         let structure: usize = structure as usize;
-        let acpi_processor_uid_string = structure + mem::size_of::<Self>();
+        let acpi_processor_uid_string = structure + size_of::<Self>();
         let acpi_processor_uid_string: *const u8 = acpi_processor_uid_string as *const u8;
-        let acpi_processor_uid_string_length: usize = (self.length as usize) - mem::size_of::<Self>();
+        let acpi_processor_uid_string_length: usize = (self.length as usize) - size_of::<Self>();
         let acpi_processor_uid_string: &[u8] = unsafe {
             slice::from_raw_parts(acpi_processor_uid_string, acpi_processor_uid_string_length)
         };

@@ -12,6 +12,8 @@ jobs:
         run: sudo apt-get install lld -y
       - name: Checkout the repository
         uses: actions/checkout@main
+      - name: Install rust nightly
+        run: rustup toolchain install nightly
       - name: Build the OS
         run: make SUDO=sudo
       - name: Upload the OS

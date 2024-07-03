@@ -323,6 +323,27 @@ main64:
 	movq	boot_argument_kernel_stack_floor,	%rdi
 	call	put_quad64
 	call	put_new_line64
+	# Print BSP heap start
+	leaq	bsp_heap_start_message,	%rdi
+	call	puts64
+	movq	boot_argument_bsp_heap_start,	%rdi
+	movq	%rdi,	kernel_argument_bsp_heap_start
+	call	put_quad64
+	call	put_new_line64
+	# Print heap start
+	leaq	heap_start_message,	%rdi
+	call	puts64
+	movq	boot_argument_heap_start,	%rdi
+	movq	%rdi,	kernel_argument_heap_start
+	call	put_quad64
+	call	put_new_line64
+	# Print heap size
+	leaq	heap_size_message,	%rdi
+	call	puts64
+	movq	boot_argument_heap_size,	%rdi
+	movq	%rdi,	kernel_argument_heap_size
+	call	put_quad64
+	call	put_new_line64
 	# Print message
 	leaq	message_message,	%rdi
 	call	puts64
@@ -653,6 +674,12 @@ cr3_message:
 	.string "CR3 = 0x"
 error_message:
 	.string	"ERROR!"
+bsp_heap_start_message:
+	.string "bsp_heap_start = 0x"
+heap_start_message:
+	.string "heap_start = 0x"
+heap_size_message:
+	.string "heap_size = 0x"
 kernel_entry_message:
 	.string "kernel_entry = 0x"
 kernel_stack_floor_message:
@@ -671,6 +698,12 @@ log_end_pointer:
 	.quad	log_start
 	.align	0x8
 kernel_argument:	# Argument of ../kernel/src/main.rs
+kernel_argument_bsp_heap_start:
+	.quad	0x0000000000000000
+kernel_argument_heap_start:
+	.quad	0x0000000000000000
+kernel_argument_heap_size:
+	.quad	0x0000000000000000
 kernel_argument_ia32_apic_base:
 	.quad	0x0000000000000000
 kernel_argument_message:
@@ -687,6 +720,12 @@ boot_argument_cr3:	# Argument of ../../kernel/src/processor/boot.rs
 boot_argument_kernel_entry:
 	.quad	0x0000000000000000
 boot_argument_kernel_stack_floor:
+	.quad	0x0000000000000000
+boot_argument_bsp_heap_start:
+	.quad	0x0000000000000000
+boot_argument_heap_start:
+	.quad	0x0000000000000000
+boot_argument_heap_size:
 	.quad	0x0000000000000000
 boot_argument_message:
 	.quad	0x0000000000000000

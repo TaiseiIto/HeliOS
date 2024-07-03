@@ -19,5 +19,9 @@ impl Register {
     pub fn start_counting(self) -> Self {
         self.with_enable_cnf(true)
     }
+
+    pub fn stop_counting(self) -> Self {
+        self.with_enable_cnf(false)
+    }
 }
 

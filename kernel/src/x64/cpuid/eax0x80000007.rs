@@ -28,6 +28,10 @@ impl Eax0x80000007 {
             }
         })
     }
+
+    pub fn tsc_is_invariant(&self) -> bool {
+        self.edx.invariant_tsc_available()
+    }
 }
 
 #[bitfield(u32)]

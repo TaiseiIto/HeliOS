@@ -5,7 +5,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -30,7 +30,7 @@ impl Table {
             table.add(1)
         };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - mem::size_of::<Self>();
+        let size: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(table, size)
         }
@@ -90,10 +90,10 @@ impl<'a> StateStructure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         let (structure_type, structure_type_length): (u32, usize) = bytes
             .iter()
-            .take(mem::size_of::<u32>())
+            .take(size_of::<u32>())
             .rev()
             .fold((0u32, 0usize), |(structure_type, structure_type_length), byte| ((structure_type << u8::BITS) + (*byte as u32), structure_type_length + 1));
-        (structure_type_length == mem::size_of::<u32>())
+        (structure_type_length == size_of::<u32>())
             .then(|| match structure_type {
                 0x00000000 => {
                     let structure: *const u8 = bytes

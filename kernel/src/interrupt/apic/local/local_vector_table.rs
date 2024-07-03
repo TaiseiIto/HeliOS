@@ -1,6 +1,10 @@
 use {
     bitfield_struct::bitfield,
     core::fmt,
+    super::super::{
+        DeliveryMode,
+        TriggerMode,
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -9,6 +13,22 @@ pub struct FatRegister {
     register: Register,
     #[allow(dead_code)]
     reserved0: [u32; 3],
+}
+
+impl FatRegister {
+    pub fn set(&mut self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) {
+        let register: Register = self.register;
+        let register: Register = register.overwrite(vector, delivery_mode, interrupt_input_pin_polarity, trigger_mode, mask, timer_mode);
+        *self.register_mut() = register.into();
+    }
+
+    fn register_mut(&mut self) -> &mut u32 {
+        let address: *mut Self = self as *mut Self;
+        let address: *mut u32 = address as *mut u32;
+        unsafe {
+            &mut *address
+        }
+    }
 }
 
 impl fmt::Debug for FatRegister {
@@ -55,5 +75,91 @@ struct Register {
     timer_mode: u8,
     #[bits(13, access = RO)]
     reserved1: u16,
+}
+
+impl Register {
+    fn overwrite(self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) -> Self {
+        self.with_vector(vector)
+            .with_delivery_mode(delivery_mode.into())
+            .with_interrupt_input_pin_polarity(interrupt_input_pin_polarity.into())
+            .with_trigger_mode(trigger_mode.into())
+            .with_mask(mask.into())
+            .with_timer_mode(timer_mode.into())
+    }
+}
+
+pub enum InterruptInputPinPolarity {
+    ActiveHigh,
+    ActiveLow,
+}
+
+impl From<bool> for InterruptInputPinPolarity {
+    fn from(interrupt_input_pin_polarity: bool) -> Self {
+        if interrupt_input_pin_polarity {
+            Self::ActiveLow
+        } else {
+            Self::ActiveHigh
+        }
+    }
+}
+
+impl From<InterruptInputPinPolarity> for bool {
+    fn from(interrupt_input_pin_polarity: InterruptInputPinPolarity) -> Self {
+        match interrupt_input_pin_polarity {
+            InterruptInputPinPolarity::ActiveHigh => false,
+            InterruptInputPinPolarity::ActiveLow => true,
+        }
+    }
+}
+
+pub enum Mask {
+    EnableInterrupt,
+    InhibitInterrupt,
+}
+
+impl From<bool> for Mask {
+    fn from(mask: bool) -> Self {
+        if mask {
+            Self::InhibitInterrupt
+        } else {
+            Self::EnableInterrupt
+        }
+    }
+}
+
+impl From<Mask> for bool {
+    fn from(mask: Mask) -> Self {
+        match mask {
+            Mask::EnableInterrupt => false,
+            Mask::InhibitInterrupt => true,
+        }
+    }
+}
+
+pub enum TimerMode {
+    OneShot,
+    Periodic,
+    TscDeadline,
+}
+
+impl From<u8> for TimerMode {
+    fn from(timer_mode: u8) -> Self {
+        match timer_mode {
+            0b00 => Self::OneShot,
+            0b01 => Self::Periodic,
+            0b10 => Self::TscDeadline,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<TimerMode> for u8 {
+    fn from(timer_mode: TimerMode) -> Self {
+        match timer_mode {
+            TimerMode::OneShot => 0b00,
+            TimerMode::Periodic => 0b01,
+            TimerMode::TscDeadline => 0b10,
+        }
+    }
 }
 

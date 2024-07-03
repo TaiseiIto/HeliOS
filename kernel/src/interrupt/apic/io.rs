@@ -27,21 +27,35 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn end_interruption(&mut self, interrupt_number: u8) {
+        self.eoi.ends_interruption(interrupt_number);
+    }
+
     pub fn identification(&mut self) -> identification::Register {
         self.get_u32(0).into()
     }
 
     pub fn redirection_table_entries(&mut self) -> Vec<redirection::table::Entry> {
         (0..)
-            .map_while(|index| self.redirection_table_entry(index))
+            .map_while(|irq| self.redirection_table_entry(irq))
             .collect()
     }
 
-    pub fn redirection_table_entry(&mut self, index: usize) -> Option<redirection::table::Entry> {
-        (index < self.version().redirection_table_length()).then(|| {
-            let index: u8 = 0x10 + 2 * (index as u8);
-            let low: u32 = self.get_u32(index);
-            let high: u32 = self.get_u32(index + 1);
+    pub fn redirect(&mut self, irq: u8, local_apic_id: u8, interrupt_number: u8) {
+        let redirection_table_entry: redirection::table::Entry = self
+            .redirection_table_entry(irq)
+            .unwrap()
+            .with_redirection(local_apic_id, interrupt_number);
+        self.set_redirection_table_entry(irq, redirection_table_entry);
+    }
+
+    pub fn redirection_table_entry(&mut self, irq: u8) -> Option<redirection::table::Entry> {
+        ((irq as usize) < self.version().redirection_table_length()).then(|| {
+            let index: u8 = 0x10 + 2 * irq;
+            let low_index: u8 = index;
+            let high_index: u8 = index + 1;
+            let low: u32 = self.get_u32(low_index);
+            let high: u32 = self.get_u32(high_index);
             let redirection_table_entry: u64 = (low as u64) + ((high as u64) << u32::BITS);
             redirection_table_entry.into()
         })
@@ -54,6 +68,23 @@ impl Registers {
     fn get_u32(&mut self, index: u8) -> u32 {
         self.index.set(index);
         self.data.get()
+    }
+
+    fn set_redirection_table_entry(&mut self, irq: u8, redirection_table_entry: redirection::table::Entry) {
+        assert!((irq as usize) < self.version().redirection_table_length());
+        let redirection_table_entry: u64 = redirection_table_entry.into();
+        let index: u8 = 0x10 + 2 * irq;
+        let low_index: u8 = index;
+        let high_index: u8 = index + 1;
+        let low_redirection_table_entry: u32 = (redirection_table_entry & 0x00000000ffffffff) as u32;
+        let high_redirection_table_entry: u32 = (redirection_table_entry >> u32::BITS) as u32;
+        self.set_u32(low_index, low_redirection_table_entry);
+        self.set_u32(high_index, high_redirection_table_entry);
+    }
+
+    fn set_u32(&mut self, index: u8, data: u32) {
+        self.index.set(index);
+        self.data.set(data);
     }
 }
 

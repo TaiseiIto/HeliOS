@@ -7,10 +7,12 @@ use {
             self,
             Write,
         },
+        ops::Range,
     },
     crate::{
         interrupt,
         processor,
+        sync,
         x64,
     },
 };
@@ -36,22 +38,29 @@ pub fn bsp_print(args: fmt::Arguments) {
 
 #[derive(Clone, Debug)]
 #[repr(packed)]
-pub struct Argument {
+pub struct Argument<'a> {
+    bsp_heap_start: usize,
+    heap_start: usize,
+    heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
-    message: *mut Option<processor::message::Content>,
+    message: &'a sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
 }
 
-impl Argument {
+impl Argument<'_> {
     pub fn boot_complete(&mut self) {
-        while self.message().is_some() {
+        while self.message.lock().is_some() {
             x64::pause();
         }
-        *self.message_mut() = Some(processor::message::Content::boot_completed());
+        *self.message.lock() = Some(processor::message::Content::boot_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
+    }
+
+    pub fn bsp_heap_start(&self) -> usize {
+        self.bsp_heap_start
     }
 
     pub fn get() -> &'static Self {
@@ -70,11 +79,17 @@ impl Argument {
         }
     }
 
+    pub fn heap_range(&self) -> Range<usize> {
+        let heap_start: usize = self.heap_start;
+        let heap_end: usize = heap_start + self.heap_size;
+        heap_start..heap_end
+    }
+
     pub fn kernel_complete(&mut self) {
-        while self.message().is_some() {
+        while self.message.lock().is_some() {
             x64::pause();
         }
-        *self.message_mut() = Some(processor::message::Content::kernel_completed());
+        *self.message.lock() = Some(processor::message::Content::kernel_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -82,37 +97,26 @@ impl Argument {
     }
 
     pub fn send_char(&mut self, character: char) {
-        while self.message().is_some() {
+        while self.message.lock().is_some() {
             x64::pause();
         }
-        *self.message_mut() = Some(processor::message::Content::char(character));
+        *self.message.lock() = Some(processor::message::Content::char(character));
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
     }
+}
 
+impl Argument<'static> {
     pub fn set(self) {
         unsafe {
             ARGUMENT.set(self)
         }.unwrap()
     }
-
-    fn message(&self) -> &Option<processor::message::Content> {
-        unsafe {
-            &*self.message
-        }
-    }
-
-    fn message_mut(&mut self) -> &mut Option<processor::message::Content> {
-        unsafe {
-            &mut *self.message
-        }
-    }
-
 }
 
-impl fmt::Write for Argument {
+impl fmt::Write for Argument<'_> {
     fn write_str(&mut self, string: &str) -> fmt::Result {
         string
             .chars()

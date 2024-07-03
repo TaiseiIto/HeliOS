@@ -11,6 +11,12 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn ends_interruption(&mut self, interrupt_number: u8) {
+        self.register = self.register.with_redirection_entry_clear(interrupt_number as u32);
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;

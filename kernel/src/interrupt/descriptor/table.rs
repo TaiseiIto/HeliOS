@@ -4,7 +4,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::{
@@ -39,7 +39,7 @@ impl Table {
 
     pub fn limit(&self) -> u16 {
         let length: usize = self.descriptors.len();
-        let size: usize = length * mem::size_of::<Descriptor>();
+        let size: usize = length * size_of::<Descriptor>();
         let limit: usize = size - 1;
         limit as u16
     }

@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use bitfield_struct::bitfield;
 
 /// # IRR, ISR and TMR Registers
 /// ## References
@@ -9,18 +6,21 @@ use {
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct FatRegisters {
+    #[allow(dead_code)]
     registers: [FatRegister; 8],
 }
 
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 struct FatRegister {
+    #[allow(dead_code)]
     register: Register,
     #[allow(dead_code)]
     reserved0: [u32; 3],
 }
 
 impl FatRegister {
+    #[allow(dead_code)]
     fn register(&self) -> u32 {
         let register: Register = self.register;
         register.register()

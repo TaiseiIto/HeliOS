@@ -7,7 +7,7 @@ use {
     alloc::vec::Vec,
     core::{
         fmt,
-        mem,
+        mem::size_of,
         slice,
     },
     super::system_description,
@@ -32,7 +32,7 @@ impl Table {
             table.add(1)
         };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - mem::size_of::<Self>();
+        let size: usize = self.header.table_size() - size_of::<Self>();
         unsafe {
             slice::from_raw_parts(table, size)
         }

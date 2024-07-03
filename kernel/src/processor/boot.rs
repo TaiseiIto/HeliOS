@@ -5,7 +5,10 @@ use {
     },
     core::{
         fmt,
-        mem,
+        mem::{
+            size_of,
+            MaybeUninit,
+        },
         ops::Range,
         slice,
     },
@@ -13,8 +16,12 @@ use {
         com2_print,
         com2_println,
         memory,
+        sync,
     },
-    super::message,
+    super::{
+        Controller,
+        message,
+    },
 };
 
 pub struct Loader {
@@ -27,10 +34,10 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
+    pub fn initialize(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
         self.initialize_stack();
-        self.set_arguments(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
-        self.set_temporary_pml4_table(paging);
+        self.set_arguments(controller, bsp_heap_start, bsp_local_apic_id);
+        self.set_temporary_pml4_table(controller);
     }
 
     pub fn log(&self) -> String {
@@ -59,7 +66,7 @@ impl Loader {
     }
 
     fn arguments_mut(&mut self) -> &mut Arguments {
-        let arguments: usize = self.program_address_range.end - mem::size_of::<Arguments>();
+        let arguments: usize = self.program_address_range.end - size_of::<Arguments>();
         let arguments: *mut Arguments = arguments as *mut Arguments;
         unsafe {
             &mut *arguments
@@ -72,13 +79,13 @@ impl Loader {
             .for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, my_local_apic_id: u8, message: &Option<message::Content>) {
-        *self.arguments_mut() = Arguments::new(paging, kernel_entry, kernel_stack_floor, my_local_apic_id, message);
+    fn set_arguments(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
+        *self.arguments_mut() = Arguments::new(controller, bsp_heap_start, bsp_local_apic_id);
     }
 
-    fn set_temporary_pml4_table(&mut self, paging: &memory::Paging) {
+    fn set_temporary_pml4_table(&mut self, controller: &Controller) {
         self.temporary_pml4_table_mut()
-            .copy_from_slice(paging.table())
+            .copy_from_slice(controller.paging().table())
     }
 
     fn stack_mut(&mut self) -> &mut [u8] {
@@ -90,7 +97,7 @@ impl Loader {
     }
 
     fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
-        let temporary_pml4_table: usize = self.program_address_range.end - mem::size_of::<Arguments>() - memory::page::SIZE;
+        let temporary_pml4_table: usize = self.program_address_range.end - size_of::<Arguments>() - memory::page::SIZE;
         com2_println!("temporary_pml4_table = {:#x?}", temporary_pml4_table);
         let temporary_pml4_table: *mut u8 = temporary_pml4_table as *mut u8;
         let length: usize = memory::page::SIZE;
@@ -119,14 +126,27 @@ struct Arguments {
     #[allow(dead_code)]
     kernel_stack_floor: usize,
     #[allow(dead_code)]
+    bsp_heap_start: usize,
+    #[allow(dead_code)]
+    heap_start: usize,
+    #[allow(dead_code)]
+    heap_size: usize,
+    #[allow(dead_code)]
     message: usize,
     #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
 
 impl Arguments {
-    pub fn new(paging: &memory::Paging, kernel_entry: usize, kernel_stack_floor: usize, bsp_local_apic_id: u8, message: &Option<message::Content>) -> Self {
-        let message: *const Option<message::Content> = message as *const Option<message::Content>;
+    pub fn new(controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) -> Self {
+        let paging: &memory::Paging = controller.paging();
+        let kernel_entry: usize = controller.kernel_entry();
+        let kernel_stack_floor: usize = controller.kernel_stack_floor();
+        let heap: &[MaybeUninit<u8>] = controller.heap();
+        let heap_start: usize = heap.as_ptr() as usize;
+        let heap_size: usize = heap.len();
+        let message: &sync::spin::Lock<Option<message::Content>> = controller.message();
+        let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;
         let message: usize = message as usize;
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
@@ -134,6 +154,9 @@ impl Arguments {
             cr3,
             kernel_entry,
             kernel_stack_floor,
+            bsp_heap_start,
+            heap_start,
+            heap_size,
             message,
             bsp_local_apic_id,
         }

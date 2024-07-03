@@ -21,6 +21,13 @@ pub struct Eax0x00000015 {
 }
 
 impl Eax0x00000015 {
+    pub fn frequency(&self) -> Option<u64> {
+        let denominator: u64 = self.eax.denominator() as u64;
+        let numerator: u64 = self.ebx.numerator() as u64;
+        let frequency: u64 = self.ecx.frequency() as u64;
+        (frequency != 0 && denominator != 0).then(|| frequency * numerator / denominator)
+    }
+
     pub fn get(eax0x00000000: &Eax0x00000000) -> Option<Self> {
         let eax: u32 = 0x00000015;
         let ecx: u32 = 0x00000000;
@@ -40,16 +47,16 @@ impl Eax0x00000015 {
 
 #[bitfield(u32)]
 struct Eax {
-    an_assigned_integer_which_is_the_denominator_of_the_tsc_core_crystal_clock_ratio: u32,
+    denominator: u32,
 }
 
 #[bitfield(u32)]
 struct Ebx {
-    an_assigned_integer_which_is_the_numerator_of_the_tsc_core_crystal_clock_ratio: u32,
+    numerator: u32,
 }
 
 #[bitfield(u32)]
 struct Ecx {
-    an_assigned_integer_which_is_the_nominal_frequency_of_the_core_crystal_clock_in_hz: u32,
+    frequency: u32,
 }
 

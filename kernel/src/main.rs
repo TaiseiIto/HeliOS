@@ -7,15 +7,16 @@
 extern crate alloc;
 
 mod acpi;
-mod allocator;
 mod application;
 mod argument;
 mod processor;
 mod efi;
 mod elf;
 mod interrupt;
+mod io;
 mod memory;
 mod rs232c;
+mod sync;
 mod syscall;
 mod task;
 mod timer;
@@ -31,6 +32,7 @@ use {
     },
     core::{
         arch::asm,
+        mem::MaybeUninit,
         ops::Range,
         panic::PanicInfo,
     },
@@ -40,12 +42,12 @@ const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
-    argument.set();
     x64::cli();
+    argument.set();
     rs232c::set_com2(Argument::get().com2_mut());
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
-    let heap_size: usize = allocator::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
+    let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     com2_println!("heap_size = {:#x?}", heap_size);
     // Check memory map.
     let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
@@ -103,6 +105,7 @@ fn main(argument: &'static mut Argument<'static>) {
     x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
+    interrupt::register_handlers(&mut idt);
     let idtr: interrupt::descriptor::table::Register = (&idt).into();
     idtr.set();
     let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
@@ -119,7 +122,6 @@ fn main(argument: &'static mut Argument<'static>) {
     task_register.set();
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
-    interrupt::register_handlers(&mut idt);
     // Initialize syscall.
     syscall::initialize(Argument::get().cpuid(), &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     // Initialize a current task.
@@ -153,20 +155,73 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
-    // Start HPET.
+    com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
+    // Set PIT.
+    let pit_frequency: usize = 0x20; // Hz
+    let pit_irq: u8 = timer::pit::set_periodic_interrupt(pit_frequency);
+    com2_println!("pit_irq = {:#x?}", pit_irq);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()
-        .hpet_mut()
+        .madt_mut()
+        .io_apic_mut()
         .registers_mut()
-        .start_counting();
+        .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
+    // Set RTC.
+    let time = timer::rtc::Time::get();
+    com2_println!("time = {:#?}", time);
+    let rtc_frequency: usize = 0x2; // Hz
+    let rtc_irq: u8 = timer::rtc::set_periodic_interrupt(rtc_frequency);
+    com2_println!("rtc_irq = {:#x?}", rtc_irq);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(rtc_irq, local_apic_registers.apic_id(), interrupt::RTC_INTERRUPT);
+    // Set HPET.
+    let hpet: &mut timer::hpet::Registers = Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .hpet_mut()
+        .registers_mut();
+    let hpet_interrupt_period_milliseconds: usize = 1000;
+    let hpet_irq: u8 = hpet.set_periodic_interrupt(hpet_interrupt_period_milliseconds);
+    com2_println!("hpet_irq = {:#x?}", hpet_irq);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(hpet_irq, local_apic_registers.apic_id(), interrupt::HPET_INTERRUPT);
+    hpet.start();
     let hpet: &timer::hpet::Registers = Argument::get()
         .efi_system_table()
         .rsdp()
         .xsdt()
         .hpet()
         .registers();
+    com2_println!("hpet = {:#x?}", hpet);
+    // Set APIC Timer.
+    let apic_timer_interrupt_frequency: usize = 1; // Hz
+    local_apic_registers.set_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
+    // Test ACPI Timer.
+    com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
+    com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
+    // Test TSC.
+    com2_println!("Time stamp counter is {}", if timer::tsc::is_invariant() {
+        "invariant"
+    } else {
+        "variant"
+    });
+    com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
+    com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Boot application processors.
     let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()
@@ -177,27 +232,41 @@ fn main(argument: &'static mut Argument<'static>) {
         .clone()
         .into();
     let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
-    let processors: Vec<processor::Controller> = Argument::get()
+    let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
         .efi_system_table()
         .rsdp()
         .xsdt()
         .madt()
         .processor_local_apic_structures()
-        .iter()
+        .into_iter()
+        .filter(|processor_local_apic| processor_local_apic.is_enabled())
+        .collect();
+    let number_of_processors: usize = processors.len();
+    com2_println!("number_of_processors = {:#x?}", number_of_processors);
+    let processor_heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
+    let processor_heap_size: usize = processor_heap_size / if processor_heap_size / 2 + (number_of_processors - 1) * processor_heap_size < heap_size {
+        1
+    } else {
+        2
+    };
+    com2_println!("processor_heap_size = {:#x?}", processor_heap_size);
+    let processors: Vec<processor::Controller> = processors
+        .into_iter()
         .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
-        .map(|processor_local_apic| processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel))
+        .map(|processor_local_apic| {
+            let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(processor_heap_size);
+            unsafe {
+                heap.set_len(processor_heap_size);
+            }
+            processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel, heap)
+        })
         .collect();
     processor::Controller::set_all(processors);
-    processor::Controller::get_all()
-        .into_iter()
-        .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id));
-    while !processor::Controller::get_all()
-        .into_iter()
-        .all(|processor| processor.kernel_is_completed()) {
+    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
+    while !processor::Controller::get_all().all(|processor| processor.kernel_is_completed()) {
         x64::pause();
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
-        .into_iter()
         .map(|processor| (processor.local_apic_id(), processor.log()))
         .collect();
     local_apic_id2log
