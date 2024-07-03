@@ -1,6 +1,7 @@
 use {
     alloc::collections::BTreeSet,
     bitfield_struct::bitfield,
+    crate::Argument,
 };
 
 /// # Timer N Configuration and Capabilities Register
@@ -45,8 +46,17 @@ impl Register {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
-            .find(|irq| tn_int_route_cap & (1 << irq) != 0)
-            .unwrap() as u8;
+            .zip(Argument::get()
+                .efi_system_table_mut()
+                .rsdp_mut()
+                .xsdt_mut()
+                .madt_mut()
+                .io_apic_mut()
+                .registers_mut()
+                .redirection_table_entries()
+                .into_iter())
+            .find(|(irq, redirection_table_entry)| tn_int_route_cap & (1 << irq) != 0 && !redirection_table_entry.is_enabled())
+            .unwrap().0 as u8;
         let interrupt_destination = InterruptDestination::IoApic {
             irq,
         };

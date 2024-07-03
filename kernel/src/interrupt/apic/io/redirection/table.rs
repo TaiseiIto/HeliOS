@@ -25,6 +25,10 @@ pub struct Entry {
 }
 
 impl Entry {
+    pub fn is_enabled(&self) -> bool {
+        !self.mask()
+    }
+
     pub fn with_redirection(self, local_apic_id: u8, interrupt_number: u8) -> Self {
         self.with_vector(interrupt_number)
             .with_delivery_mode(DeliveryMode::Fixed.into())

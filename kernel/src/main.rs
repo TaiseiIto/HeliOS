@@ -159,6 +159,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz
     let pit_irq: u8 = timer::pit::set_periodic_interrupt(pit_frequency);
+    com2_println!("pit_irq = {:#x?}", pit_irq);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
@@ -172,6 +173,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("time = {:#?}", time);
     let rtc_frequency: usize = 0x2; // Hz
     let rtc_irq: u8 = timer::rtc::set_periodic_interrupt(rtc_frequency);
+    com2_println!("rtc_irq = {:#x?}", rtc_irq);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
@@ -189,6 +191,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .registers_mut();
     let hpet_interrupt_period_milliseconds: usize = 1000;
     let hpet_irq: u8 = hpet.set_periodic_interrupt(hpet_interrupt_period_milliseconds);
+    com2_println!("hpet_irq = {:#x?}", hpet_irq);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
