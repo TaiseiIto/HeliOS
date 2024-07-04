@@ -2,6 +2,7 @@
 pub enum Content {
     BootCompleted,
     Char(char),
+    HpetInterrupt,
     KernelCompleted,
 }
 

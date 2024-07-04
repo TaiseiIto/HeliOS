@@ -103,6 +103,10 @@ impl Registers {
         self.local_apic_id.apic_id()
     }
 
+    pub fn end_interruption(&mut self) {
+        self.end_of_interrupt.write(0);
+    }
+
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
     }

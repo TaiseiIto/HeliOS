@@ -4,6 +4,7 @@ pub mod descriptor;
 pub use descriptor::Descriptor;
 
 use crate::{
+    Argument,
     bsp_print,
     bsp_println,
     memory,
@@ -2681,12 +2682,14 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
 
 /// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x99;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame = {:#x?}", stack_frame);
+    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
+    bsp_println!("Interprocessor interrupt from BSP to AP.");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
