@@ -4,7 +4,10 @@
 
 use {
     alloc::string::String,
-    core::arch::asm,
+    core::{
+        arch::asm,
+        cell::OnceCell,
+    },
     super::Rflags,
 };
 
@@ -77,6 +80,8 @@ pub use {
     eax0x80000007::Eax0x80000007,
     eax0x80000008::Eax0x80000008,
 };
+
+static mut CPUID: OnceCell<Cpuid> = OnceCell::new();
 
 /// # CPUID
 /// ## References
@@ -153,92 +158,100 @@ pub struct Cpuid {
 }
 
 impl Cpuid {
-    pub fn get() -> Option<Self> {
-        Rflags::cpuid_is_supported().then(|| {
-            let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
-            let eax0x00000001: Option<Eax0x00000001> = Eax0x00000001::get(&eax0x00000000);
-            let eax0x00000002: Option<Eax0x00000002> = Eax0x00000002::get(&eax0x00000000);
-            let eax0x00000003: Option<Eax0x00000003> = Eax0x00000003::get(&eax0x00000000, &eax0x00000001);
-            let eax0x00000004: Option<Eax0x00000004> = Eax0x00000004::get(&eax0x00000000);
-            let eax0x00000005: Option<Eax0x00000005> = Eax0x00000005::get(&eax0x00000000);
-            let eax0x00000006: Option<Eax0x00000006> = Eax0x00000006::get(&eax0x00000000);
-            let eax0x00000007: Option<Eax0x00000007> = Eax0x00000007::get(&eax0x00000000);
-            let eax0x00000009: Option<Eax0x00000009> = Eax0x00000009::get(&eax0x00000000);
-            let eax0x0000000a: Option<Eax0x0000000a> = Eax0x0000000a::get(&eax0x00000000);
-            let eax0x0000000b: Option<Eax0x0000000b> = Eax0x0000000b::get(&eax0x00000000);
-            let eax0x0000000d: Option<Eax0x0000000d> = Eax0x0000000d::get(&eax0x00000000);
-            let eax0x0000000f: Option<Eax0x0000000f> = Eax0x0000000f::get(&eax0x00000000);
-            let eax0x00000010: Option<Eax0x00000010> = Eax0x00000010::get(&eax0x00000000);
-            let eax0x00000012: Option<Eax0x00000012> = Eax0x00000012::get(&eax0x00000000, &eax0x00000007);
-            let eax0x00000014: Option<Eax0x00000014> = Eax0x00000014::get(&eax0x00000000);
-            let eax0x00000015: Option<Eax0x00000015> = Eax0x00000015::get(&eax0x00000000);
-            let eax0x00000016: Option<Eax0x00000016> = Eax0x00000016::get(&eax0x00000000);
-            let eax0x00000017: Option<Eax0x00000017> = Eax0x00000017::get(&eax0x00000000);
-            let eax0x00000018: Option<Eax0x00000018> = Eax0x00000018::get(&eax0x00000000);
-            let eax0x00000019: Option<Eax0x00000019> = Eax0x00000019::get(&eax0x00000000);
-            let eax0x0000001a: Option<Eax0x0000001a> = Eax0x0000001a::get(&eax0x00000000);
-            let eax0x0000001b: Option<Eax0x0000001b> = Eax0x0000001b::get(&eax0x00000000, &eax0x00000007);
-            let eax0x0000001c: Option<Eax0x0000001c> = Eax0x0000001c::get(&eax0x00000000);
-            let eax0x0000001d: Option<Eax0x0000001d> = Eax0x0000001d::get(&eax0x00000000);
-            let eax0x0000001e: Option<Eax0x0000001e> = Eax0x0000001e::get(&eax0x00000000);
-            let eax0x0000001f: Option<Eax0x0000001f> = Eax0x0000001f::get(&eax0x00000000);
-            let eax0x00000020: Option<Eax0x00000020> = Eax0x00000020::get(&eax0x00000000);
-            let eax0x80000000: Eax0x80000000 = Eax0x80000000::get();
-            let eax0x80000001: Option<Eax0x80000001> = Eax0x80000001::get(&eax0x80000000);
-            let processor_brand_string: Option<String> = String::from_utf8((0x80000002..=0x80000004)
-                    .take_while(|eax| *eax <= eax0x80000000.max_eax())
-                    .flat_map(|eax| {
-                        let ecx: u32 = 0x00000000;
-                        Return::get(eax, ecx)
-                            .eax_ebx_ecx_edx()
-                            .into_iter()
-                            .flat_map(|dword| dword
-                                .to_le_bytes()
-                                .into_iter())
-                    })
-                    .collect())
-                .ok()
-                .map(|processor_brand_string| processor_brand_string.replace('\0', ""));
-            let eax0x80000006: Option<Eax0x80000006> = Eax0x80000006::get(&eax0x80000000);
-            let eax0x80000007: Option<Eax0x80000007> = Eax0x80000007::get(&eax0x80000000);
-            let eax0x80000008: Option<Eax0x80000008> = Eax0x80000008::get(&eax0x80000000);
-            Self {
-                eax0x00000000,
-                eax0x00000001,
-                eax0x00000002,
-                eax0x00000003,
-                eax0x00000004,
-                eax0x00000005,
-                eax0x00000006,
-                eax0x00000007,
-                eax0x00000009,
-                eax0x0000000a,
-                eax0x0000000b,
-                eax0x0000000d,
-                eax0x0000000f,
-                eax0x00000010,
-                eax0x00000012,
-                eax0x00000014,
-                eax0x00000015,
-                eax0x00000016,
-                eax0x00000017,
-                eax0x00000018,
-                eax0x00000019,
-                eax0x0000001a,
-                eax0x0000001b,
-                eax0x0000001c,
-                eax0x0000001d,
-                eax0x0000001e,
-                eax0x0000001f,
-                eax0x00000020,
-                eax0x80000000,
-                eax0x80000001,
-                processor_brand_string,
-                eax0x80000006,
-                eax0x80000007,
-                eax0x80000008,
-            }
-        })
+    pub fn get() -> &'static Self {
+        unsafe {
+            CPUID.get()
+        }.unwrap()
+    }
+
+    pub fn set() {
+        assert!(Rflags::cpuid_is_supported());
+        let eax0x00000000: Eax0x00000000 = Eax0x00000000::get();
+        let eax0x00000001: Option<Eax0x00000001> = Eax0x00000001::get(&eax0x00000000);
+        let eax0x00000002: Option<Eax0x00000002> = Eax0x00000002::get(&eax0x00000000);
+        let eax0x00000003: Option<Eax0x00000003> = Eax0x00000003::get(&eax0x00000000, &eax0x00000001);
+        let eax0x00000004: Option<Eax0x00000004> = Eax0x00000004::get(&eax0x00000000);
+        let eax0x00000005: Option<Eax0x00000005> = Eax0x00000005::get(&eax0x00000000);
+        let eax0x00000006: Option<Eax0x00000006> = Eax0x00000006::get(&eax0x00000000);
+        let eax0x00000007: Option<Eax0x00000007> = Eax0x00000007::get(&eax0x00000000);
+        let eax0x00000009: Option<Eax0x00000009> = Eax0x00000009::get(&eax0x00000000);
+        let eax0x0000000a: Option<Eax0x0000000a> = Eax0x0000000a::get(&eax0x00000000);
+        let eax0x0000000b: Option<Eax0x0000000b> = Eax0x0000000b::get(&eax0x00000000);
+        let eax0x0000000d: Option<Eax0x0000000d> = Eax0x0000000d::get(&eax0x00000000);
+        let eax0x0000000f: Option<Eax0x0000000f> = Eax0x0000000f::get(&eax0x00000000);
+        let eax0x00000010: Option<Eax0x00000010> = Eax0x00000010::get(&eax0x00000000);
+        let eax0x00000012: Option<Eax0x00000012> = Eax0x00000012::get(&eax0x00000000, &eax0x00000007);
+        let eax0x00000014: Option<Eax0x00000014> = Eax0x00000014::get(&eax0x00000000);
+        let eax0x00000015: Option<Eax0x00000015> = Eax0x00000015::get(&eax0x00000000);
+        let eax0x00000016: Option<Eax0x00000016> = Eax0x00000016::get(&eax0x00000000);
+        let eax0x00000017: Option<Eax0x00000017> = Eax0x00000017::get(&eax0x00000000);
+        let eax0x00000018: Option<Eax0x00000018> = Eax0x00000018::get(&eax0x00000000);
+        let eax0x00000019: Option<Eax0x00000019> = Eax0x00000019::get(&eax0x00000000);
+        let eax0x0000001a: Option<Eax0x0000001a> = Eax0x0000001a::get(&eax0x00000000);
+        let eax0x0000001b: Option<Eax0x0000001b> = Eax0x0000001b::get(&eax0x00000000, &eax0x00000007);
+        let eax0x0000001c: Option<Eax0x0000001c> = Eax0x0000001c::get(&eax0x00000000);
+        let eax0x0000001d: Option<Eax0x0000001d> = Eax0x0000001d::get(&eax0x00000000);
+        let eax0x0000001e: Option<Eax0x0000001e> = Eax0x0000001e::get(&eax0x00000000);
+        let eax0x0000001f: Option<Eax0x0000001f> = Eax0x0000001f::get(&eax0x00000000);
+        let eax0x00000020: Option<Eax0x00000020> = Eax0x00000020::get(&eax0x00000000);
+        let eax0x80000000: Eax0x80000000 = Eax0x80000000::get();
+        let eax0x80000001: Option<Eax0x80000001> = Eax0x80000001::get(&eax0x80000000);
+        let processor_brand_string: Option<String> = String::from_utf8((0x80000002..=0x80000004)
+                .take_while(|eax| *eax <= eax0x80000000.max_eax())
+                .flat_map(|eax| {
+                    let ecx: u32 = 0x00000000;
+                    Return::get(eax, ecx)
+                        .eax_ebx_ecx_edx()
+                        .into_iter()
+                        .flat_map(|dword| dword
+                            .to_le_bytes()
+                            .into_iter())
+                })
+                .collect())
+            .ok()
+            .map(|processor_brand_string| processor_brand_string.replace('\0', ""));
+        let eax0x80000006: Option<Eax0x80000006> = Eax0x80000006::get(&eax0x80000000);
+        let eax0x80000007: Option<Eax0x80000007> = Eax0x80000007::get(&eax0x80000000);
+        let eax0x80000008: Option<Eax0x80000008> = Eax0x80000008::get(&eax0x80000000);
+        let cpuid = Self {
+            eax0x00000000,
+            eax0x00000001,
+            eax0x00000002,
+            eax0x00000003,
+            eax0x00000004,
+            eax0x00000005,
+            eax0x00000006,
+            eax0x00000007,
+            eax0x00000009,
+            eax0x0000000a,
+            eax0x0000000b,
+            eax0x0000000d,
+            eax0x0000000f,
+            eax0x00000010,
+            eax0x00000012,
+            eax0x00000014,
+            eax0x00000015,
+            eax0x00000016,
+            eax0x00000017,
+            eax0x00000018,
+            eax0x00000019,
+            eax0x0000001a,
+            eax0x0000001b,
+            eax0x0000001c,
+            eax0x0000001d,
+            eax0x0000001e,
+            eax0x0000001f,
+            eax0x00000020,
+            eax0x80000000,
+            eax0x80000001,
+            processor_brand_string,
+            eax0x80000006,
+            eax0x80000007,
+            eax0x80000008,
+        };
+        unsafe {
+            CPUID.set(cpuid)
+        }.unwrap()
     }
 
     pub fn supports_apic(&self) -> bool {

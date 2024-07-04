@@ -2685,7 +2685,7 @@ extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get(x64::Cpuid::get())
         .unwrap()
         .registers_mut()
         .end_interruption();

@@ -40,8 +40,8 @@ fn main(argument: &'static Argument<'static>) {
     memory::initialize(Argument::get().heap_range());
     bsp_println!("Hello, World!");
     bsp_println!("argument = {:#x?}", Argument::get());
-    let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
-    bsp_println!("cpuid = {:#x?}", cpuid);
+    x64::Cpuid::set();
+    let cpuid: &x64::Cpuid = x64::Cpuid::get();
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     // Initialize GDT.
