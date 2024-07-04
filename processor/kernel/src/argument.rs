@@ -43,16 +43,16 @@ pub struct Argument<'a> {
     heap_start: usize,
     heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
-    message: &'a sync::spin::Lock<Option<processor::message::Content>>,
+    sender: &'a sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
 }
 
 impl Argument<'_> {
     pub fn boot_complete(&mut self) {
-        while self.message.lock().is_some() {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::boot_completed());
+        *self.sender.lock() = Some(processor::message::Content::boot_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -86,10 +86,10 @@ impl Argument<'_> {
     }
 
     pub fn kernel_complete(&mut self) {
-        while self.message.lock().is_some() {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::kernel_completed());
+        *self.sender.lock() = Some(processor::message::Content::kernel_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -97,10 +97,10 @@ impl Argument<'_> {
     }
 
     pub fn send_char(&mut self, character: char) {
-        while self.message.lock().is_some() {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::char(character));
+        *self.sender.lock() = Some(processor::message::Content::char(character));
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()

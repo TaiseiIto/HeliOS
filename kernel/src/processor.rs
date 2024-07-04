@@ -42,7 +42,7 @@ pub struct Controller {
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,
-    message: sync::spin::Lock<Option<message::Content>>,
+    receiver: sync::spin::Lock<Option<message::Content>>,
     paging: memory::Paging,
 }
 
@@ -68,7 +68,7 @@ impl Controller {
     pub fn delete_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
-                *controller.message.lock() = None;
+                *controller.receiver.lock() = None;
             });
     }
 
@@ -114,8 +114,8 @@ impl Controller {
         &self.log
     }
 
-    pub fn message(&self) -> &sync::spin::Lock<Option<message::Content>> {
-        &self.message
+    pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.receiver
     }
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
@@ -128,7 +128,7 @@ impl Controller {
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
-        let message: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
+        let receiver: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
         Self {
             boot_completed,
             heap,
@@ -139,7 +139,7 @@ impl Controller {
             kernel_writable_pages,
             local_apic_structure,
             log,
-            message,
+            receiver,
             paging,
         }
     }
@@ -151,8 +151,8 @@ impl Controller {
     pub fn process_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
-                let message: Option<message::Content> = controller.message.lock().clone();
-                if let Some(message) = message {
+                let receiver: Option<message::Content> = controller.receiver.lock().clone();
+                if let Some(message) = receiver {
                     message.process(controller);
                 }
             })
