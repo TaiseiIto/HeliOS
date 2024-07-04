@@ -43,6 +43,7 @@ pub struct Argument<'a> {
     heap_start: usize,
     heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
+    receiver: &'a sync::spin::Lock<Option<processor::message::Content>>,
     sender: &'a sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
 }

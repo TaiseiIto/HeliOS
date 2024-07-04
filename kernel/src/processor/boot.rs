@@ -134,6 +134,8 @@ struct Arguments {
     #[allow(dead_code)]
     receiver: usize,
     #[allow(dead_code)]
+    sender: usize,
+    #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
 
@@ -148,6 +150,9 @@ impl Arguments {
         let receiver: &sync::spin::Lock<Option<message::Content>> = controller.receiver();
         let receiver: *const sync::spin::Lock<Option<message::Content>> = receiver as *const sync::spin::Lock<Option<message::Content>>;
         let receiver: usize = receiver as usize;
+        let sender: &sync::spin::Lock<Option<message::Content>> = controller.sender();
+        let sender: *const sync::spin::Lock<Option<message::Content>> = sender as *const sync::spin::Lock<Option<message::Content>>;
+        let sender: usize = sender as usize;
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
         Self {
@@ -158,6 +163,7 @@ impl Arguments {
             heap_start,
             heap_size,
             receiver,
+            sender,
             bsp_local_apic_id,
         }
     }

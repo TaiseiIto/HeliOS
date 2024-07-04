@@ -42,8 +42,9 @@ pub struct Controller {
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,
-    receiver: sync::spin::Lock<Option<message::Content>>,
     paging: memory::Paging,
+    receiver: sync::spin::Lock<Option<message::Content>>,
+    sender: sync::spin::Lock<Option<message::Content>>,
 }
 
 impl Controller {
@@ -114,10 +115,6 @@ impl Controller {
         &self.log
     }
 
-    pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
-        &self.receiver
-    }
-
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
         let boot_completed: AtomicBool = AtomicBool::new(false);
         let kernel_completed: bool = false;
@@ -129,6 +126,7 @@ impl Controller {
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
         let receiver: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
+        let sender: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
         Self {
             boot_completed,
             heap,
@@ -139,8 +137,9 @@ impl Controller {
             kernel_writable_pages,
             local_apic_structure,
             log,
-            receiver,
             paging,
+            receiver,
+            sender,
         }
     }
 
@@ -148,7 +147,7 @@ impl Controller {
         &self.paging
     }
 
-    pub fn process_messages() {
+    pub fn process_received_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
                 let receiver: Option<message::Content> = controller.receiver.lock().clone();
@@ -156,6 +155,14 @@ impl Controller {
                     message.process(controller);
                 }
             })
+    }
+
+    pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.receiver
+    }
+
+    pub fn sender(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.sender
     }
 
     pub fn receive_character(&mut self, character: char) {

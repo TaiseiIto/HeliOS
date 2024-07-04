@@ -2703,7 +2703,7 @@ extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    processor::Controller::process_messages();
+    processor::Controller::process_received_messages();
     x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
         .unwrap()
         .registers_mut()
