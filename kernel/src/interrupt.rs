@@ -29,15 +29,28 @@ pub enum Event {
 
 impl Event {
     pub fn pop() -> Option<Event> {
-        unsafe {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
+        let event: Option<Event> = unsafe {
             EVENTS.pop_back()
-        }
+        };
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
+        event
     }
     
     pub fn push(event: Event) {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
         unsafe {
             EVENTS.push_front(event);
         }
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
     }
 }
 
