@@ -86,11 +86,11 @@ impl Argument<'_> {
         heap_start..heap_end
     }
 
-    pub fn kernel_complete(&mut self) {
+    pub fn initialized(&mut self) {
         while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.sender.lock() = Some(processor::message::Content::kernel_completed());
+        *self.sender.lock() = Some(processor::message::Content::initialized());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()

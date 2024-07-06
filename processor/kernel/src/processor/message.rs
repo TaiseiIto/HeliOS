@@ -3,7 +3,7 @@ pub enum Content {
     BootCompleted,
     Char(char),
     HpetInterrupt,
-    KernelCompleted,
+    Initialized,
 }
 
 impl Content {
@@ -15,8 +15,8 @@ impl Content {
         Self::Char(character)
     }
 
-    pub fn kernel_completed() -> Self {
-        Self::KernelCompleted
+    pub fn initialized() -> Self {
+        Self::Initialized
     }
 }
 

@@ -133,7 +133,7 @@ fn main(argument: &'static Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     bsp_println!("APPLICATION PROCESSOR KERNEL PANIC!!!");
     bsp_println!("{}", panic);
-    Argument::get_mut().kernel_complete();
+    Argument::get_mut().initialized();
     loop {
         x64::hlt();
     }

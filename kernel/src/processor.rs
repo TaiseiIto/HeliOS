@@ -34,7 +34,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 pub struct Controller {
     boot_completed: AtomicBool,
     heap: Vec<MaybeUninit<u8>>,
-    kernel_completed: bool,
+    initialized: bool,
     kernel_entry: usize,
     #[allow(dead_code)]
     kernel_stack: memory::Stack,
@@ -92,16 +92,16 @@ impl Controller {
         &self.heap
     }
 
-    pub fn kernel_complete(&mut self) {
-        self.kernel_completed = true;
+    pub fn initialized(&mut self) {
+        self.initialized = true;
     }
 
     pub fn kernel_entry(&self) -> usize {
         self.kernel_entry
     }
 
-    pub fn kernel_is_completed(&self) -> bool {
-        self.kernel_completed
+    pub fn is_initialized(&self) -> bool {
+        self.initialized
     }
 
     pub fn kernel_stack_floor(&self) -> usize {
@@ -118,7 +118,7 @@ impl Controller {
 
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
         let boot_completed: AtomicBool = AtomicBool::new(false);
-        let kernel_completed: bool = false;
+        let initialized: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
@@ -131,7 +131,7 @@ impl Controller {
         Self {
             boot_completed,
             heap,
-            kernel_completed,
+            initialized,
             kernel_entry,
             kernel_stack,
             kernel_stack_floor,

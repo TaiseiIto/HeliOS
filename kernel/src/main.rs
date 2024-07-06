@@ -273,7 +273,12 @@ fn main(argument: &'static mut Argument<'static>) {
                 },
                 interrupt::Event::Hpet => {
                     com2_println!("HPET event.");
-                    processor::Controller::get_mut_all().for_each(|processor| processor.send(processor::message::Content::HpetInterrupt));
+                    processor::Controller::get_mut_all()
+                        .filter(|processor| processor.is_initialized())
+                        .for_each(|processor| {
+                            com2_println!("Send a HPET event from the BSP to an AP.");
+                            processor.send(processor::message::Content::HpetInterrupt);
+                        });
                 },
                 interrupt::Event::Pit => {
                     com2_println!("PIT event.");
@@ -285,9 +290,9 @@ fn main(argument: &'static mut Argument<'static>) {
             None => x64::hlt(),
         }
         loop_counter += 1;
-        shutdown = 0x100 <= loop_counter;
+        shutdown = 0x1000 <= loop_counter;
     }
-    while !processor::Controller::get_all().all(|processor| processor.kernel_is_completed()) {
+    while !processor::Controller::get_all().all(|processor| processor.is_initialized()) {
         x64::pause();
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()

@@ -5,7 +5,7 @@ pub enum Content {
     BootCompleted,
     Char(char),
     HpetInterrupt,
-    KernelCompleted,
+    Initialized,
 }
 
 impl Content {
@@ -18,7 +18,7 @@ impl Content {
             Self::BootCompleted => controller.boot_complete(),
             Self::Char(character) => controller.receive_character(character),
             Self::HpetInterrupt => unimplemented!(),
-            Self::KernelCompleted => controller.kernel_complete(),
+            Self::Initialized => controller.initialized(),
         }
     }
 }
