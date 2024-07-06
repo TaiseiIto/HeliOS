@@ -74,6 +74,7 @@ impl Register {
 
     fn high_mut(&mut self) -> &mut u32 {
         let high: usize = self.address() + size_of::<FatLow>();
+        com2_println!("high = {:#x?}", high);
         let high: *mut u32 = high as *mut u32;
         unsafe {
             &mut *high
@@ -87,6 +88,7 @@ impl Register {
 
     fn low_mut(&mut self) -> &mut u32 {
         let low: usize = self.address();
+        com2_println!("low = {:#x?}", low);
         let low: *mut u32 = low as *mut u32;
         unsafe {
             &mut *low
