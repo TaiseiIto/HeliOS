@@ -263,6 +263,9 @@ fn main(argument: &'static mut Argument<'static>) {
         .collect();
     processor::Controller::set_all(processors);
     processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
+    while !processor::Controller::get_all().all(|processor| processor.is_initialized()) {
+        x64::pause();
+    }
     let mut shutdown: bool = false;
     let mut loop_counter: usize = 0;
     while !shutdown {
@@ -290,10 +293,7 @@ fn main(argument: &'static mut Argument<'static>) {
             None => x64::hlt(),
         }
         loop_counter += 1;
-        shutdown = 0x1000 <= loop_counter;
-    }
-    while !processor::Controller::get_all().all(|processor| processor.is_initialized()) {
-        x64::pause();
+        shutdown = 0x100 <= loop_counter;
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
         .map(|processor| (processor.local_apic_id(), processor.log()))
