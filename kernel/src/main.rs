@@ -273,6 +273,7 @@ fn main(argument: &'static mut Argument<'static>) {
                 },
                 interrupt::Event::Hpet => {
                     com2_println!("HPET event.");
+                    processor::Controller::get_mut_all().for_each(|processor| processor.send(processor::message::Content::HpetInterrupt));
                 },
                 interrupt::Event::Pit => {
                     com2_println!("PIT event.");

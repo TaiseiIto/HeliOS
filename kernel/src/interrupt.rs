@@ -58,6 +58,7 @@ pub const APIC_TIMER_INTERRUPT: u8 = 0x98;
 pub const HPET_INTERRUPT: u8 = 0x22;
 pub const PIT_INTERRUPT: u8 = 0x20;
 pub const RTC_INTERRUPT: u8 = 0x28;
+pub const INTERPROCESSOR_INTERRUPT: u8 = 0x99;
 
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
