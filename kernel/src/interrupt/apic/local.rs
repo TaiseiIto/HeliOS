@@ -127,6 +127,12 @@ impl Registers {
         self.interrupt_command.wait_to_send();
     }
 
+    pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {
+        self.error_status.clear_all_errors();
+        self.interrupt_command.wait_to_send();
+        self.interrupt_command.send_interrupt(destination_local_apic_id, destination_vector);
+    }
+
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize, hpet: &timer::hpet::Registers) {
         self.error_status.clear_all_errors();
         self.interrupt_command.send_sipi(processor_local_apic_id, entry_point);
