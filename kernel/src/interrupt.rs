@@ -4,16 +4,42 @@ pub mod non_maskable;
 
 pub use descriptor::Descriptor;
 
-use crate::{
-    Argument,
-    com2_print,
-    com2_println,
-    memory,
-    processor,
-    task,
-    timer,
-    x64,
+use {
+    alloc::collections::VecDeque,
+    crate::{
+        Argument,
+        com2_print,
+        com2_println,
+        memory,
+        processor,
+        task,
+        timer,
+        x64,
+    },
 };
+
+static mut EVENTS: VecDeque<Event> = VecDeque::new();
+
+pub enum Event {
+    ApicTimer,
+    Hpet,
+    Pit,
+    Rtc,
+}
+
+impl Event {
+    pub fn pop() -> Option<Event> {
+        unsafe {
+            EVENTS.pop_back()
+        }
+    }
+    
+    pub fn push(event: Event) {
+        unsafe {
+            EVENTS.push_front(event);
+        }
+    }
+}
 
 pub const APIC_TIMER_INTERRUPT: u8 = 0x98;
 pub const HPET_INTERRUPT: u8 = 0x22;
@@ -1123,7 +1149,7 @@ extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    com2_println!("PIT interrupt");
+    Event::push(Event::Pit);
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1152,7 +1178,7 @@ extern "x86-interrupt" fn handler_0x22(stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    com2_println!("HPET interrupt");
+    Event::push(Event::Hpet);
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1234,7 +1260,7 @@ extern "x86-interrupt" fn handler_0x28(stack_frame: StackFrame) {
         .registers_mut()
         .end_interruption();
     timer::rtc::end_interruption();
-    com2_println!("RTC interrupt");
+    Event::push(Event::Rtc);
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -2692,7 +2718,7 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    com2_println!("APIC timer interrupt");
+    Event::push(Event::ApicTimer);
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
