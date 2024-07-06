@@ -5,6 +5,8 @@ use {
         mem::size_of,
     },
     crate::{
+        com2_print,
+        com2_println,
         memory,
         x64,
     },
@@ -42,9 +44,13 @@ impl Register {
     }
 
     pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {
+        com2_println!("destination_local_apic_id = {:#x?}", destination_local_apic_id);
+        com2_println!("destination_vector = {:#x?}", destination_vector);
         let high = High::select_processor(destination_local_apic_id);
+        com2_println!("high = {:#x?}", high);
         *self.high_mut() = high.into();
         let low = Low::send_interrupt(destination_vector);
+        com2_println!("low = {:#x?}", low);
         *self.low_mut() = low.into();
     }
 
