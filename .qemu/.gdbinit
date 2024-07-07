@@ -13,7 +13,8 @@ run
 # continue
 # backtrace
 
-break apic_set_irq if vector_num == 0x99
+break do_interrupt_all if intno == 0x9a
+break apic_set_irq if vector_num == 0x9a
 continue
 backtrace
 

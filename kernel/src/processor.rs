@@ -167,7 +167,7 @@ impl Controller {
         x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
             .unwrap()
             .registers_mut()
-            .send_interrupt(self.local_apic_id(), interrupt::INTERPROCESSOR_INTERRUPT);
+            .send_interrupt(self.local_apic_id(), 0x9a);
     }
 
     pub fn sender(&self) -> &sync::spin::Lock<Option<message::Content>> {
