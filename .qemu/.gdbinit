@@ -13,7 +13,7 @@ run
 # continue
 # backtrace
 
-break apic_deliver if vector_num == 0x99
+break apic_set_irq if vector_num == 0x99
 continue
 backtrace
 
