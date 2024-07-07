@@ -13,8 +13,15 @@ run
 # continue
 # backtrace
 
-break do_interrupt_all if intno == 0x9a
-break apic_set_irq if vector_num == 0x9a
+# AP to BSP
+break apic_deliver if vector_num == 0x99
+break do_interrupt_all if intno == 0x99
 continue
 backtrace
+
+# BSP to AP
+# break apic_deliver if vector_num == 0x9a
+# break do_interrupt_all if intno == 0x9a
+# continue
+# backtrace
 
