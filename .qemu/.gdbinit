@@ -17,7 +17,14 @@ run
 break apic_deliver if vector_num == 0x99
 continue
 backtrace
+break ../target/i386/tcg/sysemu/seg_helper.c:206
+continue
+next
+print "intno"
+p/x intno
 break ../target/i386/tcg/sysemu/seg_helper.c:207 if intno == 0x99
+continue
+backtrace
 break do_interrupt_all if intno == 0x99
 continue
 backtrace
