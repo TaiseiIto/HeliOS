@@ -103,6 +103,10 @@ impl Registers {
         self.local_apic_id.apic_id()
     }
 
+    pub fn enable_spurious_interrupt(&mut self, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) {
+        self.spurious_interrupt_vector.enable(focus_processor_checking, eoi_broadcast, spurious_vector);
+    }
+
     pub fn end_interruption(&mut self) {
         self.end_of_interrupt.write(0);
     }

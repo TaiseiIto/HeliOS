@@ -124,7 +124,10 @@ fn main(argument: &'static Argument<'static>) {
         .sti();
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
-    let local_apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
+    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    let focus_processor_checking: bool = true;
+    let eoi_broadcast: bool = true;
+    local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
     bsp_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Test interrupt.
     unimplemented!();
