@@ -139,7 +139,7 @@ fn panic(panic: &PanicInfo) -> ! {
     bsp_println!("{}", panic);
     Argument::get_mut().initialized();
     loop {
-        x64::pause();
+        x64::hlt();
     }
 }
 
