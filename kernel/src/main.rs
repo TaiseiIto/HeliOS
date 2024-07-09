@@ -155,6 +155,9 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    let focus_processor_checking: bool = true;
+    let eoi_broadcast: bool = true;
+    local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
     com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz

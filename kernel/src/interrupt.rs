@@ -59,6 +59,7 @@ pub const HPET_INTERRUPT: u8 = 0x22;
 pub const PIT_INTERRUPT: u8 = 0x20;
 pub const RTC_INTERRUPT: u8 = 0x28;
 pub const INTERPROCESSOR_INTERRUPT: u8 = 0x99;
+pub const SPURIOUS_INTERRUPT: u8 = 0x9f;
 
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
@@ -528,7 +529,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0x9c
         1, // int 0x9d
         1, // int 0x9e
-        1, // int 0x9f
+        1, // int 0x9f Spurious interrupt
         1, // int 0xa0
         1, // int 0xa1
         1, // int 0xa2
@@ -2814,11 +2815,13 @@ extern "x86-interrupt" fn handler_0x9e(stack_frame: StackFrame) {
     }
 }
 
+/// # Spurious Interrupt
 extern "x86-interrupt" fn handler_0x9f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9f;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
+    com2_println!("Spurious Interrupt");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
     if let Some(current_task) = task::Controller::get_current_mut() {

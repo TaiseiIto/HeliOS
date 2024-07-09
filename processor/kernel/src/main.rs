@@ -122,10 +122,11 @@ fn main(argument: &'static Argument<'static>) {
     task::Controller::get_current_mut()
         .unwrap()
         .sti();
+    let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
+    bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
+    let local_apic_registers: &interrupt::apic::local::Registers = ia32_apic_base.registers();
+    bsp_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Test interrupt.
-    unsafe {
-        asm!("int 0x80");
-    }
     unimplemented!();
 }
 
@@ -135,7 +136,7 @@ fn panic(panic: &PanicInfo) -> ! {
     bsp_println!("{}", panic);
     Argument::get_mut().initialized();
     loop {
-        x64::hlt();
+        x64::pause();
     }
 }
 

@@ -11,18 +11,25 @@ pub struct FatRegister {
     reserved0: [u32; 3],
 }
 
+impl FatRegister {
+    pub fn enable(&mut self, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) {
+        let apic_software_enable: bool = true;
+        self.register = Register::create(apic_software_enable, focus_processor_checking, eoi_broadcast, spurious_vector);
+    }
+}
+
 impl fmt::Debug for FatRegister {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let register: Register = self.register;
         let spurious_vector: u8 = register.spurious_vector();
         let apic_software_enable: bool = register.apic_software_enable();
-        let focus_processor_checking_enable: bool = register.focus_processor_checking_enable();
+        let focus_processor_checking_disable: bool = register.focus_processor_checking_disable();
         let eoi_broadcast_suppression: bool = register.eoi_broadcast_suppression();
         formatter
             .debug_struct("Register")
             .field("spurious_vector", &spurious_vector)
             .field("apic_software_enable", &apic_software_enable)
-            .field("focus_processor_checking_enable", &focus_processor_checking_enable)
+            .field("focus_processor_checking_disable", &focus_processor_checking_disable)
             .field("eoi_broadcast_suppression", &eoi_broadcast_suppression)
             .finish()
     }
@@ -35,11 +42,23 @@ impl fmt::Debug for FatRegister {
 struct Register {
     spurious_vector: u8,
     apic_software_enable: bool,
-    focus_processor_checking_enable: bool,
+    focus_processor_checking_disable: bool,
     #[bits(2, access = RO)]
     reserved0: u8,
     eoi_broadcast_suppression: bool,
     #[bits(19, access = RO)]
     reserved1: u32,
+}
+
+impl Register {
+    fn create(apic_software_enable: bool, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) -> Self {
+        let focus_processor_checking_disable: bool = !focus_processor_checking;
+        let eoi_broadcast_suppression: bool = !eoi_broadcast;
+        Self::new()
+            .with_spurious_vector(spurious_vector)
+            .with_apic_software_enable(apic_software_enable)
+            .with_focus_processor_checking_disable(focus_processor_checking_disable)
+            .with_eoi_broadcast_suppression(eoi_broadcast_suppression)
+    }
 }
 
