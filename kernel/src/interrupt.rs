@@ -71,8 +71,18 @@ impl Event {
                     .unwrap();
                 message.process(processor);
             },
-            Self::Pit => com2_println!("PIT event."),
-            Self::Rtc => com2_println!("RTC event."),
+            Self::Pit => {
+                com2_println!("PIT event.");
+                processor::Controller::get_mut_all()
+                    .filter(|processor| processor.is_initialized())
+                    .for_each(|processor| processor.send(processor::message::Content::PitInterrupt));
+            },
+            Self::Rtc => {
+                com2_println!("RTC event.");
+                processor::Controller::get_mut_all()
+                    .filter(|processor| processor.is_initialized())
+                    .for_each(|processor| processor.send(processor::message::Content::RtcInterrupt));
+            },
         }
     }
     

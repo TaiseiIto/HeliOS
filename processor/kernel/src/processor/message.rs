@@ -6,6 +6,8 @@ pub enum Content {
     Char(char),
     HpetInterrupt,
     Initialized,
+    PitInterrupt,
+    RtcInterrupt,
 }
 
 impl Content {
@@ -27,6 +29,8 @@ impl Content {
             Self::Char(character) => unimplemented!(),
             Self::HpetInterrupt => interrupt::Event::push(interrupt::Event::Hpet),
             Self::Initialized => unimplemented!(),
+            Self::PitInterrupt => interrupt::Event::push(interrupt::Event::Pit),
+            Self::RtcInterrupt => interrupt::Event::push(interrupt::Event::Rtc),
         }
     }
 }
