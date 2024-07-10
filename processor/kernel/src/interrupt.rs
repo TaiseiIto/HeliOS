@@ -10,6 +10,7 @@ use {
         bsp_print,
         bsp_println,
         memory,
+        processor,
         task,
         x64,
     },
@@ -20,11 +21,22 @@ static mut EVENTS: VecDeque<Event> = VecDeque::new();
 pub enum Event {
     ApicTimer,
     Hpet,
+    Interprocessor {
+        sender_local_apic_id: u8,
+        message: processor::message::Content,
+    },
     Pit,
     Rtc,
 }
 
 impl Event {
+    pub fn interprocessor(sender_local_apic_id: u8, message: processor::message::Content) -> Self {
+        Self::Interprocessor {
+            sender_local_apic_id,
+            message,
+        }
+    }
+
     pub fn pop() -> Option<Event> {
         task::Controller::get_current_mut()
             .unwrap()
@@ -36,6 +48,19 @@ impl Event {
             .unwrap()
             .sti();
         event
+    }
+
+    pub fn process(self) {
+        match self {
+            Self::ApicTimer => bsp_println!("APIC timer event."),
+            Self::Hpet => bsp_println!("HPET event."),
+            Self::Interprocessor {
+                sender_local_apic_id,
+                message,
+            } => message.process(),
+            Self::Pit => bsp_println!("PIT event."),
+            Self::Rtc => bsp_println!("RTC event."),
+        }
     }
     
     pub fn push(event: Event) {
@@ -2725,7 +2750,7 @@ extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    Argument::get_mut().process_received_message();
+    Argument::get_mut().save_received_message();
     x64::msr::ia32::ApicBase::get(x64::Cpuid::get())
         .unwrap()
         .registers_mut()

@@ -101,10 +101,11 @@ impl Argument<'_> {
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
     }
 
-    pub fn process_received_message(&mut self) {
-        let receiver: Option<processor::message::Content> = self.receiver.lock().clone();
-        if let Some(message) = receiver {
-            bsp_println!("message = {:#x?}", message);
+    pub fn save_received_message(&mut self) {
+        let message: Option<processor::message::Content> = self.receiver.lock().clone();
+        let sender_local_apic_id: u8 = self.bsp_local_apic_id;
+        if let Some(message) = message {
+            interrupt::Event::push(interrupt::Event::interprocessor(sender_local_apic_id, message));
         }
     }
 

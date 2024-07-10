@@ -135,20 +135,7 @@ fn main(argument: &'static Argument<'static>) {
     let shutdown: bool = false;
     while !shutdown {
         match interrupt::Event::pop() {
-            Some(event) => match event {
-                interrupt::Event::ApicTimer => {
-                    bsp_println!("APIC timer event.");
-                },
-                interrupt::Event::Hpet => {
-                    bsp_println!("HPET event.");
-                },
-                interrupt::Event::Pit => {
-                    bsp_println!("PIT event.");
-                },
-                interrupt::Event::Rtc => {
-                    bsp_println!("RTC event.");
-                },
-            }
+            Some(event) => event.process(),
             None => x64::hlt(),
         }
     }
