@@ -266,37 +266,15 @@ fn main(argument: &'static mut Argument<'static>) {
         .collect();
     processor::Controller::set_all(processors);
     processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
-    while !processor::Controller::get_all().all(|processor| processor.is_initialized()) {
-        x64::pause();
-    }
     let mut shutdown: bool = false;
     let mut loop_counter: usize = 0;
     while !shutdown {
         match interrupt::Event::pop() {
-            Some(event) => match event {
-                interrupt::Event::ApicTimer => {
-                    com2_println!("APIC timer event.");
-                },
-                interrupt::Event::Hpet => {
-                    com2_println!("HPET event.");
-                    processor::Controller::get_mut_all()
-                        .filter(|processor| processor.is_initialized())
-                        .for_each(|processor| {
-                            com2_println!("Send a HPET event from the BSP to an AP.");
-                            processor.send(processor::message::Content::HpetInterrupt);
-                        });
-                },
-                interrupt::Event::Pit => {
-                    com2_println!("PIT event.");
-                },
-                interrupt::Event::Rtc => {
-                    com2_println!("RTC event.");
-                },
-            },
+            Some(event) => event.process(),
             None => x64::hlt(),
         }
         loop_counter += 1;
-        shutdown = 0x100 <= loop_counter;
+        shutdown = 0x1000 <= loop_counter;
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
         .map(|processor| (processor.local_apic_id(), processor.log()))
@@ -308,11 +286,7 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
-    // Shutdown.
-    Argument::get()
-        .efi_system_table()
-        .shutdown();
-    panic!("End of kernel.elf");
+    unimplemented!();
 }
 
 /// # A panic handler of the kernel
@@ -320,8 +294,9 @@ fn main(argument: &'static mut Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     com2_println!("KERNEL PANIC!!!");
     com2_println!("{}", panic);
-    loop {
-        x64::hlt();
-    }
+    // Shutdown.
+    Argument::get()
+        .efi_system_table()
+        .shutdown()
 }
 

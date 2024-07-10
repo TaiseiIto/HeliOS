@@ -23,11 +23,23 @@ static mut EVENTS: VecDeque<Event> = VecDeque::new();
 pub enum Event {
     ApicTimer,
     Hpet,
+    Interprocessor {
+        sender_local_apic_id: u8,
+        message: processor::message::Content,
+    },
     Pit,
     Rtc,
 }
 
 impl Event {
+    pub fn interprocessor(controller: &processor::Controller, message: processor::message::Content) -> Self {
+        let sender_local_apic_id: u8 = controller.local_apic_id();
+        Self::Interprocessor {
+            sender_local_apic_id,
+            message,
+        }
+    }
+
     pub fn pop() -> Option<Event> {
         task::Controller::get_current_mut()
             .unwrap()
@@ -39,6 +51,29 @@ impl Event {
             .unwrap()
             .sti();
         event
+    }
+
+    pub fn process(self) {
+        match self {
+            Self::ApicTimer => com2_println!("APIC timer event."),
+            Self::Hpet => {
+                com2_println!("HPET event.");
+                processor::Controller::get_mut_all()
+                    .filter(|processor| processor.is_initialized())
+                    .for_each(|processor| processor.send(processor::message::Content::HpetInterrupt));
+            },
+            Self::Interprocessor {
+                sender_local_apic_id,
+                message,
+            } => {
+                let processor: &mut processor::Controller = processor::Controller::get_mut_all()
+                    .find(|processor| processor.local_apic_id() == sender_local_apic_id)
+                    .unwrap();
+                message.process(processor);
+            },
+            Self::Pit => com2_println!("PIT event."),
+            Self::Rtc => com2_println!("RTC event."),
+        }
     }
     
     pub fn push(event: Event) {
@@ -2744,7 +2779,7 @@ extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    processor::Controller::process_received_messages();
+    processor::Controller::save_received_messages();
     x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
         .unwrap()
         .registers_mut()

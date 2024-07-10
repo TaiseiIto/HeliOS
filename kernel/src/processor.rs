@@ -148,14 +148,17 @@ impl Controller {
         &self.paging
     }
 
-    pub fn process_received_messages() {
+    pub fn save_received_messages() {
         Self::get_mut_all()
-            .for_each(|controller| {
-                let receiver: Option<message::Content> = controller.receiver.lock().clone();
-                if let Some(message) = receiver {
-                    message.process(controller);
+            .for_each(|processor| {
+                let message: Option<message::Content> = processor.receiver.lock().clone();
+                if let Some(message) = message {
+                    match message {
+                        message::Content::BootCompleted => processor.boot_complete(),
+                        message => interrupt::Event::push(interrupt::Event::interprocessor(processor, message)),
+                    }
                 }
-            })
+            });
     }
 
     pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
