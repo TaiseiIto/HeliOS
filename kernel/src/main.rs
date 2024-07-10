@@ -273,7 +273,11 @@ fn main(argument: &'static mut Argument<'static>) {
             Some(event) => event.process(),
             None => x64::hlt(),
         }
-        loop_counter += 1;
+        loop_counter += if processor::Controller::get_all().all(|processor| processor.is_initialized()) {
+            1
+        } else {
+            0
+        };
         shutdown = 0x1000 <= loop_counter;
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
