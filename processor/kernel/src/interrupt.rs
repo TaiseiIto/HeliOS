@@ -3,14 +3,53 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use crate::{
-    Argument,
-    bsp_print,
-    bsp_println,
-    memory,
-    task,
-    x64,
+use {
+    alloc::collections::VecDeque,
+    crate::{
+        Argument,
+        bsp_print,
+        bsp_println,
+        memory,
+        task,
+        x64,
+    },
 };
+
+static mut EVENTS: VecDeque<Event> = VecDeque::new();
+
+pub enum Event {
+    ApicTimer,
+    Hpet,
+    Pit,
+    Rtc,
+}
+
+impl Event {
+    pub fn pop() -> Option<Event> {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
+        let event: Option<Event> = unsafe {
+            EVENTS.pop_back()
+        };
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
+        event
+    }
+    
+    pub fn push(event: Event) {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
+        unsafe {
+            EVENTS.push_front(event);
+        }
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
+    }
+}
 
 pub const INTERPROCESSOR_INTERRUPT: u8 = 0x99;
 pub const SPURIOUS_INTERRUPT: u8 = 0x9f;
@@ -2686,11 +2725,12 @@ extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
+    Argument::get_mut().process_received_message();
     x64::msr::ia32::ApicBase::get(x64::Cpuid::get())
         .unwrap()
         .registers_mut()
         .end_interruption();
-    bsp_println!("Interprocessor interrupt from BSP to AP.");
+    Argument::get_mut().delete_received_message();
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

@@ -2749,7 +2749,7 @@ extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
         .unwrap()
         .registers_mut()
         .end_interruption();
-    processor::Controller::delete_messages();
+    processor::Controller::delete_received_messages();
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

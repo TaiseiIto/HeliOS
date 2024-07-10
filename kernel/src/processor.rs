@@ -67,7 +67,7 @@ impl Controller {
         self.boot_completed.store(true, Ordering::Release);
     }
 
-    pub fn delete_messages() {
+    pub fn delete_received_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
                 *controller.receiver.lock() = None;

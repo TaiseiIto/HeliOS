@@ -64,6 +64,10 @@ impl Argument<'_> {
         self.bsp_heap_start
     }
 
+    pub fn delete_received_message(&mut self) {
+        *self.receiver.lock() = None;
+    }
+
     pub fn get() -> &'static Self {
         unsafe {
             ARGUMENT
@@ -95,6 +99,13 @@ impl Argument<'_> {
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
+    }
+
+    pub fn process_received_message(&mut self) {
+        let receiver: Option<processor::message::Content> = self.receiver.lock().clone();
+        if let Some(message) = receiver {
+            bsp_println!("message = {:#x?}", message);
+        }
     }
 
     pub fn send_char(&mut self, character: char) {

@@ -129,7 +129,29 @@ fn main(argument: &'static Argument<'static>) {
     let eoi_broadcast: bool = true;
     local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
     bsp_println!("local_apic_registers = {:#x?}", local_apic_registers);
-    // Test interrupt.
+    // Tell the BSP initialication completion.
+    Argument::get_mut().initialized();
+    // Event loop.
+    let shutdown: bool = false;
+    while !shutdown {
+        match interrupt::Event::pop() {
+            Some(event) => match event {
+                interrupt::Event::ApicTimer => {
+                    bsp_println!("APIC timer event.");
+                },
+                interrupt::Event::Hpet => {
+                    bsp_println!("HPET event.");
+                },
+                interrupt::Event::Pit => {
+                    bsp_println!("PIT event.");
+                },
+                interrupt::Event::Rtc => {
+                    bsp_println!("RTC event.");
+                },
+            }
+            None => x64::hlt(),
+        }
+    }
     unimplemented!();
 }
 
@@ -137,7 +159,6 @@ fn main(argument: &'static Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     bsp_println!("APPLICATION PROCESSOR KERNEL PANIC!!!");
     bsp_println!("{}", panic);
-    Argument::get_mut().initialized();
     loop {
         x64::hlt();
     }
