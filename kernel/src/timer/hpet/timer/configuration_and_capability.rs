@@ -34,15 +34,11 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn is_enable(&self) -> bool {
-        self.tn_int_enb_cnf()
+    pub fn disable_periodic_interrupt(self) -> Self {
+        self.with_tn_int_enb_cnf(false)
     }
 
-    pub fn irq(&self) -> u8 {
-        self.tn_int_route_cnf()
-    }
-
-    pub fn set_periodic_interrupt(self) -> Self {
+    pub fn enable_periodic_interrupt(self) -> Self {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
@@ -65,6 +61,14 @@ impl Register {
             .with_tn_val_set_cnf(true)
             .with_tn_32mode_cnf(Mode::Bit64.into())
             .with_interrupt_destination(&interrupt_destination)
+    }
+
+    pub fn is_enable(&self) -> bool {
+        self.tn_int_enb_cnf()
+    }
+
+    pub fn irq(&self) -> u8 {
+        self.tn_int_route_cnf()
     }
 
     pub fn supports_periodic_interrupt(&self) -> bool {

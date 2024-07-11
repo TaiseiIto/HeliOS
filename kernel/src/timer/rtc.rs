@@ -30,11 +30,7 @@ pub fn disable_periodic_interrupt() {
         .sti();
 }
 
-pub fn end_interruption() {
-    status_register::C::read();
-}
-
-pub fn set_periodic_interrupt(hz: usize) -> u8 {
+pub fn enable_periodic_interrupt(hz: usize) -> u8 {
     let irq: u8 = 8;
     task::Controller::get_current_mut()
         .unwrap()
@@ -52,6 +48,10 @@ pub fn set_periodic_interrupt(hz: usize) -> u8 {
         .unwrap()
         .sti();
     irq
+}
+
+pub fn end_interruption() {
+    status_register::C::read();
 }
 
 pub struct Time {

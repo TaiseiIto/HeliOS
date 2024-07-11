@@ -161,7 +161,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz
-    let pit_irq: u8 = timer::pit::set_periodic_interrupt(pit_frequency);
+    let pit_irq: u8 = timer::pit::enable_periodic_interrupt(pit_frequency);
     com2_println!("pit_irq = {:#x?}", pit_irq);
     Argument::get()
         .efi_system_table_mut()
@@ -175,7 +175,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let time = timer::rtc::Time::get();
     com2_println!("time = {:#?}", time);
     let rtc_frequency: usize = 0x2; // Hz
-    let rtc_irq: u8 = timer::rtc::set_periodic_interrupt(rtc_frequency);
+    let rtc_irq: u8 = timer::rtc::enable_periodic_interrupt(rtc_frequency);
     com2_println!("rtc_irq = {:#x?}", rtc_irq);
     Argument::get()
         .efi_system_table_mut()
@@ -193,7 +193,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .hpet_mut()
         .registers_mut();
     let hpet_interrupt_period_milliseconds: usize = 1000;
-    let hpet_irq: u8 = hpet.set_periodic_interrupt(hpet_interrupt_period_milliseconds);
+    let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
     com2_println!("hpet_irq = {:#x?}", hpet_irq);
     Argument::get()
         .efi_system_table_mut()
@@ -213,7 +213,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("hpet = {:#x?}", hpet);
     // Set APIC Timer.
     let apic_timer_interrupt_frequency: usize = 1; // Hz
-    local_apic_registers.set_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
+    local_apic_registers.enable_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
     // Test ACPI Timer.
     com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
     com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
@@ -283,13 +283,14 @@ fn main(argument: &'static mut Argument<'static>) {
     // Stop RTC interruptions.
     timer::rtc::disable_periodic_interrupt();
     // Stop HPET.
-    Argument::get()
+    let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()
         .hpet_mut()
-        .registers_mut()
-        .stop();
+        .registers_mut();
+    hpet.stop();
+    hpet.disable_periodic_interrupt();
     // Stop APIC interruptions.
     local_apic_registers.disable_periodic_interrupt();
     // Disable all interruptions.
