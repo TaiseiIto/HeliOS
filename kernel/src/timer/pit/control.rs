@@ -38,7 +38,7 @@ pub enum Mode {
     InterruptOnTerminalCount,
     HardwareRetriggerableOneShot,
     RateGenerator,
-    SquareWaveMode,
+    SquareWave,
     SoftwareTriggeredStrobe,
     HardwareTriggeredStrobe,
 }
@@ -49,7 +49,7 @@ impl From<u8> for Mode {
             0 => Self::InterruptOnTerminalCount,
             1 => Self::HardwareRetriggerableOneShot,
             2 => Self::RateGenerator,
-            3 => Self::SquareWaveMode,
+            3 => Self::SquareWave,
             4 => Self::SoftwareTriggeredStrobe,
             5 => Self::HardwareTriggeredStrobe,
             _ => unreachable!(),
@@ -63,7 +63,7 @@ impl From<Mode> for u8 {
             Mode::InterruptOnTerminalCount => 0,
             Mode::HardwareRetriggerableOneShot => 1,
             Mode::RateGenerator => 2,
-            Mode::SquareWaveMode => 3,
+            Mode::SquareWave => 3,
             Mode::SoftwareTriggeredStrobe => 4,
             Mode::HardwareTriggeredStrobe => 5,
         }
@@ -108,7 +108,7 @@ pub enum Selector {
 impl From<u8> for Selector {
     fn from(selector: u8) -> Self {
         match selector {
-            counter @ (0 | 1 | 2) => Self::Counter(counter),
+            counter @ 0..=2 => Self::Counter(counter),
             3 => Self::ReadBack,
             _ => unreachable!(),
         }

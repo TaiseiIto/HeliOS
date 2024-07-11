@@ -108,17 +108,17 @@ pub enum DayOfWeek {
 impl From<&Time> for DayOfWeek {
     fn from(time: &Time) -> Self {
         let Time {
-            second,
-            minute,
-            hour,
+            second: _,
+            minute: _,
+            hour: _,
             day,
             month,
             year,
         } = time;
         let q: usize = *day as usize;
         let (m, year): (usize, usize) = match month {
-            1 | 2 => ((*month as usize) + 12, (*year as usize) - 1),
-            _ => (*month as usize, *year as usize),
+            1 | 2 => ((*month as usize) + 12, *year - 1),
+            _ => (*month as usize, *year),
         };
         let (k, j): (usize, usize) = (year % 100, year / 100);
         let h: usize = (q + (13 * (m + 1)) / 5 + k + k / 4 + j / 4 - 2 * j) % 7;

@@ -24,7 +24,6 @@ use {
         vec::Vec,
     },
     core::{
-        arch::asm,
         ops::Range,
         panic::PanicInfo,
     },
@@ -42,7 +41,7 @@ fn main(argument: &'static Argument<'static>) {
     bsp_println!("argument = {:#x?}", Argument::get());
     x64::Cpuid::set();
     let cpuid: &x64::Cpuid = x64::Cpuid::get();
-    let mut paging = memory::Paging::get(&cpuid);
+    let mut paging = memory::Paging::get(cpuid);
     paging.set();
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
@@ -116,7 +115,7 @@ fn main(argument: &'static Argument<'static>) {
     let task_register = x64::task::Register::get();
     bsp_println!("task_register = {:#x?}", task_register);
     // Initialize syscall.
-    syscall::initialize(&cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    syscall::initialize(cpuid, &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
     // Initialize a current task.
     task::Controller::set_current();
     task::Controller::get_current_mut()
@@ -132,14 +131,12 @@ fn main(argument: &'static Argument<'static>) {
     // Tell the BSP initialication completion.
     Argument::get_mut().initialized();
     // Event loop.
-    let shutdown: bool = false;
-    while !shutdown {
+    loop {
         match interrupt::Event::pop() {
             Some(event) => event.process(),
             None => x64::hlt(),
         }
     }
-    unimplemented!();
 }
 
 #[panic_handler]

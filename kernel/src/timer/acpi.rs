@@ -7,6 +7,7 @@ use crate::{
     x64,
 };
 
+#[allow(dead_code)]
 const FREQUENCY: usize = 3579545; // Hz
 
 pub fn counter_value() -> u32 {
@@ -29,6 +30,7 @@ pub fn bits() -> usize {
         .timer_bits()
 }
 
+#[allow(dead_code)]
 pub fn wait_microseconds(microseconds: usize) {
     let current_counter_value: usize = counter_value() as usize;
     let bits: usize = bits();
@@ -48,10 +50,12 @@ pub fn wait_microseconds(microseconds: usize) {
     }
 }
 
+#[allow(dead_code)]
 pub fn wait_milliseconds(milliseconds: usize) {
     wait_microseconds(1000 * milliseconds)
 }
 
+#[allow(dead_code)]
 pub fn wait_seconds(seconds: usize) {
     wait_milliseconds(1000 * seconds)
 }

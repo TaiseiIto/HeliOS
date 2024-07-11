@@ -1200,8 +1200,7 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
 }
 
 /// # IRQ 0x00 PIT interrupt
-extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x20;
+extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -1229,8 +1228,7 @@ extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
 }
 
 /// # IRQ 0x02 HPET interrupt
-extern "x86-interrupt" fn handler_0x22(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x22;
+extern "x86-interrupt" fn handler_0x22(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -1310,8 +1308,7 @@ extern "x86-interrupt" fn handler_0x27(stack_frame: StackFrame) {
 }
 
 /// # IRQ 0x08 RIC
-extern "x86-interrupt" fn handler_0x28(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x28;
+extern "x86-interrupt" fn handler_0x28(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -2770,7 +2767,7 @@ extern "x86-interrupt" fn handler_0x97(stack_frame: StackFrame) {
 }
 
 /// # APIC timer interrupt
-extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x98(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
