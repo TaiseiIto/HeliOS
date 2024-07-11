@@ -43,16 +43,17 @@ pub struct Argument<'a> {
     heap_start: usize,
     heap_size: usize,
     ia32_apic_base: x64::msr::ia32::ApicBase,
-    message: &'a sync::spin::Lock<Option<processor::message::Content>>,
+    receiver: &'a sync::spin::Lock<Option<processor::message::Content>>,
+    sender: &'a sync::spin::Lock<Option<processor::message::Content>>,
     bsp_local_apic_id: u8,
 }
 
 impl Argument<'_> {
     pub fn boot_complete(&mut self) {
-        while self.message.lock().is_some() {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::boot_completed());
+        *self.sender.lock() = Some(processor::message::Content::boot_completed());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
@@ -61,6 +62,10 @@ impl Argument<'_> {
 
     pub fn bsp_heap_start(&self) -> usize {
         self.bsp_heap_start
+    }
+
+    pub fn delete_received_message(&mut self) {
+        *self.receiver.lock() = None;
     }
 
     pub fn get() -> &'static Self {
@@ -85,22 +90,30 @@ impl Argument<'_> {
         heap_start..heap_end
     }
 
-    pub fn kernel_complete(&mut self) {
-        while self.message.lock().is_some() {
+    pub fn initialized(&mut self) {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::kernel_completed());
+        *self.sender.lock() = Some(processor::message::Content::initialized());
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()
             .send_interrupt(self.bsp_local_apic_id, interrupt::INTERPROCESSOR_INTERRUPT);
     }
 
+    pub fn save_received_message(&mut self) {
+        let message: Option<processor::message::Content> = self.receiver.lock().clone();
+        let sender_local_apic_id: u8 = self.bsp_local_apic_id;
+        if let Some(message) = message {
+            interrupt::Event::push(interrupt::Event::interprocessor(sender_local_apic_id, message));
+        }
+    }
+
     pub fn send_char(&mut self, character: char) {
-        while self.message.lock().is_some() {
+        while self.sender.lock().is_some() {
             x64::pause();
         }
-        *self.message.lock() = Some(processor::message::Content::char(character));
+        *self.sender.lock() = Some(processor::message::Content::char(character));
         let mut ia32_apic_base: x64::msr::ia32::ApicBase = self.ia32_apic_base;
         ia32_apic_base
             .registers_mut()

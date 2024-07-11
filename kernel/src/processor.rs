@@ -15,6 +15,7 @@ use {
         },
     },
     crate::{
+        Argument,
         acpi,
         com2_print,
         com2_println,
@@ -33,7 +34,7 @@ static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
 pub struct Controller {
     boot_completed: AtomicBool,
     heap: Vec<MaybeUninit<u8>>,
-    kernel_completed: bool,
+    initialized: bool,
     kernel_entry: usize,
     #[allow(dead_code)]
     kernel_stack: memory::Stack,
@@ -42,8 +43,9 @@ pub struct Controller {
     kernel_writable_pages: Vec<memory::Page>,
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,
-    message: sync::spin::Lock<Option<message::Content>>,
     paging: memory::Paging,
+    receiver: sync::spin::Lock<Option<message::Content>>,
+    sender: sync::spin::Lock<Option<message::Content>>,
 }
 
 impl Controller {
@@ -65,10 +67,10 @@ impl Controller {
         self.boot_completed.store(true, Ordering::Release);
     }
 
-    pub fn delete_messages() {
+    pub fn delete_received_messages() {
         Self::get_mut_all()
             .for_each(|controller| {
-                *controller.message.lock() = None;
+                *controller.receiver.lock() = None;
             });
     }
 
@@ -90,16 +92,16 @@ impl Controller {
         &self.heap
     }
 
-    pub fn kernel_complete(&mut self) {
-        self.kernel_completed = true;
+    pub fn initialized(&mut self) {
+        self.initialized = true;
     }
 
     pub fn kernel_entry(&self) -> usize {
         self.kernel_entry
     }
 
-    pub fn kernel_is_completed(&self) -> bool {
-        self.kernel_completed
+    pub fn is_initialized(&self) -> bool {
+        self.initialized
     }
 
     pub fn kernel_stack_floor(&self) -> usize {
@@ -114,13 +116,9 @@ impl Controller {
         &self.log
     }
 
-    pub fn message(&self) -> &sync::spin::Lock<Option<message::Content>> {
-        &self.message
-    }
-
     pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
         let boot_completed: AtomicBool = AtomicBool::new(false);
-        let kernel_completed: bool = false;
+        let initialized: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
@@ -128,19 +126,21 @@ impl Controller {
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
-        let message: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
+        let receiver: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
+        let sender: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
         Self {
             boot_completed,
             heap,
-            kernel_completed,
+            initialized,
             kernel_entry,
             kernel_stack,
             kernel_stack_floor,
             kernel_writable_pages,
             local_apic_structure,
             log,
-            message,
             paging,
+            receiver,
+            sender,
         }
     }
 
@@ -148,14 +148,33 @@ impl Controller {
         &self.paging
     }
 
-    pub fn process_messages() {
+    pub fn save_received_messages() {
         Self::get_mut_all()
-            .for_each(|controller| {
-                let message: Option<message::Content> = controller.message.lock().clone();
+            .for_each(|processor| {
+                let message: Option<message::Content> = processor.receiver.lock().clone();
                 if let Some(message) = message {
-                    message.process(controller);
+                    match message {
+                        message::Content::BootCompleted => processor.boot_complete(),
+                        message => interrupt::Event::push(interrupt::Event::interprocessor(processor, message)),
+                    }
                 }
-            })
+            });
+    }
+
+    pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.receiver
+    }
+
+    pub fn send(&mut self, message: message::Content) {
+        *self.sender.lock() = Some(message);
+        x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+            .unwrap()
+            .registers_mut()
+            .send_interrupt(self.local_apic_id(), interrupt::INTERPROCESSOR_INTERRUPT);
+    }
+
+    pub fn sender(&self) -> &sync::spin::Lock<Option<message::Content>> {
+        &self.sender
     }
 
     pub fn receive_character(&mut self, character: char) {

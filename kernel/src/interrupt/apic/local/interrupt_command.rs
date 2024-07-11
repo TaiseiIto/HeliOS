@@ -41,6 +41,13 @@ impl Register {
         *self.low_mut() = low.into();
     }
 
+    pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {
+        let high = High::select_processor(destination_local_apic_id);
+        *self.high_mut() = high.into();
+        let low = Low::send_interrupt(destination_vector);
+        *self.low_mut() = low.into();
+    }
+
     pub fn send_sipi(&mut self, processor_local_apic_id: u8, entry_point: usize) {
         let high = High::select_processor(processor_local_apic_id);
         *self.high_mut() = high.into();
@@ -164,6 +171,16 @@ impl Low {
     fn is_sending(&self) -> bool {
         let delivery_status: DeliveryStatus = self.delivery_status().into();
         delivery_status == DeliveryStatus::SendPending
+    }
+
+    fn send_interrupt(destination_vector: u8) -> Self {
+        Self::new()
+            .with_vector(destination_vector)
+            .with_delivery_mode(DeliveryMode::Fixed.into())
+            .with_destination_mode(DestinationMode::Physical.into())
+            .with_level(Level::Assert.into())
+            .with_trigger_mode(TriggerMode::Level.into())
+            .with_destination_shorthand(DestinationShorthand::NoShorthand.into())
     }
 
     fn send_sipi(entry_point: usize) -> Self {

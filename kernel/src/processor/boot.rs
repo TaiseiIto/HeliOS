@@ -132,7 +132,9 @@ struct Arguments {
     #[allow(dead_code)]
     heap_size: usize,
     #[allow(dead_code)]
-    message: usize,
+    receiver: usize,
+    #[allow(dead_code)]
+    sender: usize,
     #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
@@ -145,9 +147,12 @@ impl Arguments {
         let heap: &[MaybeUninit<u8>] = controller.heap();
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
-        let message: &sync::spin::Lock<Option<message::Content>> = controller.message();
-        let message: *const sync::spin::Lock<Option<message::Content>> = message as *const sync::spin::Lock<Option<message::Content>>;
-        let message: usize = message as usize;
+        let receiver: &sync::spin::Lock<Option<message::Content>> = controller.receiver();
+        let receiver: *const sync::spin::Lock<Option<message::Content>> = receiver as *const sync::spin::Lock<Option<message::Content>>;
+        let receiver: usize = receiver as usize;
+        let sender: &sync::spin::Lock<Option<message::Content>> = controller.sender();
+        let sender: *const sync::spin::Lock<Option<message::Content>> = sender as *const sync::spin::Lock<Option<message::Content>>;
+        let sender: usize = sender as usize;
         let cr3: u64 = paging.cr3().into();
         com2_println!("cr3 = {:#x?}", cr3);
         Self {
@@ -157,7 +162,8 @@ impl Arguments {
             bsp_heap_start,
             heap_start,
             heap_size,
-            message,
+            receiver,
+            sender,
             bsp_local_apic_id,
         }
     }

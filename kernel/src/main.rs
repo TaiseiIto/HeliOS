@@ -155,6 +155,9 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(Argument::get().cpuid()).unwrap();
     ia32_apic_base.enable();
     let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    let focus_processor_checking: bool = true;
+    let eoi_broadcast: bool = true;
+    local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
     com2_println!("local_apic_registers = {:#x?}", local_apic_registers);
     // Set PIT.
     let pit_frequency: usize = 0x20; // Hz
@@ -263,8 +266,19 @@ fn main(argument: &'static mut Argument<'static>) {
         .collect();
     processor::Controller::set_all(processors);
     processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
-    while !processor::Controller::get_all().all(|processor| processor.kernel_is_completed()) {
-        x64::pause();
+    let mut shutdown: bool = false;
+    let mut loop_counter: usize = 0;
+    while !shutdown {
+        match interrupt::Event::pop() {
+            Some(event) => event.process(),
+            None => x64::hlt(),
+        }
+        loop_counter += if processor::Controller::get_all().all(|processor| processor.is_initialized()) {
+            1
+        } else {
+            0
+        };
+        shutdown = 0x1000 <= loop_counter;
     }
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
         .map(|processor| (processor.local_apic_id(), processor.log()))
@@ -276,11 +290,7 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
-    // Shutdown.
-    Argument::get()
-        .efi_system_table()
-        .shutdown();
-    panic!("End of kernel.elf");
+    unimplemented!();
 }
 
 /// # A panic handler of the kernel
@@ -288,8 +298,9 @@ fn main(argument: &'static mut Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     com2_println!("KERNEL PANIC!!!");
     com2_println!("{}", panic);
-    loop {
-        x64::hlt();
-    }
+    // Shutdown.
+    Argument::get()
+        .efi_system_table()
+        .shutdown()
 }
 

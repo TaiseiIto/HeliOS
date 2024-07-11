@@ -4,15 +4,25 @@ use super::Controller;
 pub enum Content {
     BootCompleted,
     Char(char),
-    KernelCompleted,
+    HpetInterrupt,
+    Initialized,
+    PitInterrupt,
+    RtcInterrupt,
 }
 
 impl Content {
+    pub fn hpet_interrupt() -> Self {
+        Self::HpetInterrupt
+    }
+
     pub fn process(self, controller: &mut Controller) {
         match self {
             Self::BootCompleted => controller.boot_complete(),
             Self::Char(character) => controller.receive_character(character),
-            Self::KernelCompleted => controller.kernel_complete(),
+            Self::HpetInterrupt => unimplemented!(),
+            Self::Initialized => controller.initialized(),
+            Self::PitInterrupt => unimplemented!(),
+            Self::RtcInterrupt => unimplemented!(),
         }
     }
 }

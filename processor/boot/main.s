@@ -344,11 +344,18 @@ main64:
 	movq	%rdi,	kernel_argument_heap_size
 	call	put_quad64
 	call	put_new_line64
-	# Print message
+	# Print receiver
 	leaq	message_message,	%rdi
 	call	puts64
-	movq	boot_argument_message,	%rdi
-	movq	%rdi,	kernel_argument_message
+	movq	boot_argument_receiver,	%rdi
+	movq	%rdi,	kernel_argument_receiver
+	call	put_quad64
+	call	put_new_line64
+	# Print sender
+	leaq	message_message,	%rdi
+	call	puts64
+	movq	boot_argument_sender,	%rdi
+	movq	%rdi,	kernel_argument_sender
 	call	put_quad64
 	call	put_new_line64
 	# Print my local APIC ID.
@@ -706,7 +713,9 @@ kernel_argument_heap_size:
 	.quad	0x0000000000000000
 kernel_argument_ia32_apic_base:
 	.quad	0x0000000000000000
-kernel_argument_message:
+kernel_argument_receiver:
+	.quad	0x0000000000000000
+kernel_argument_sender:
 	.quad	0x0000000000000000
 kernel_argument_bsp_local_apic_id:
 	.byte	0x00
@@ -727,7 +736,9 @@ boot_argument_heap_start:
 	.quad	0x0000000000000000
 boot_argument_heap_size:
 	.quad	0x0000000000000000
-boot_argument_message:
+boot_argument_sender:
+	.quad	0x0000000000000000
+boot_argument_receiver:
 	.quad	0x0000000000000000
 boot_argument_bsp_local_apic_id:
 	.byte	0x00

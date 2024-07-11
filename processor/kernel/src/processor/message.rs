@@ -1,8 +1,13 @@
+use crate::interrupt;
+
 #[derive(Clone, Debug)]
 pub enum Content {
     BootCompleted,
     Char(char),
-    KernelCompleted,
+    HpetInterrupt,
+    Initialized,
+    PitInterrupt,
+    RtcInterrupt,
 }
 
 impl Content {
@@ -14,8 +19,19 @@ impl Content {
         Self::Char(character)
     }
 
-    pub fn kernel_completed() -> Self {
-        Self::KernelCompleted
+    pub fn initialized() -> Self {
+        Self::Initialized
+    }
+
+    pub fn process(self) {
+        match self {
+            Self::BootCompleted => unimplemented!(),
+            Self::Char(character) => unimplemented!(),
+            Self::HpetInterrupt => interrupt::Event::push(interrupt::Event::Hpet),
+            Self::Initialized => unimplemented!(),
+            Self::PitInterrupt => interrupt::Event::push(interrupt::Event::Pit),
+            Self::RtcInterrupt => interrupt::Event::push(interrupt::Event::Rtc),
+        }
     }
 }
 

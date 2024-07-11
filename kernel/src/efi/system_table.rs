@@ -4,7 +4,10 @@ use {
         fmt,
         iter,
     },
-    crate::acpi,
+    crate::{
+        acpi,
+        x64,
+    },
     super::{
         BootServices,
         Guid,
@@ -98,8 +101,11 @@ impl SystemTable<'_> {
         self.configuration_tables.rsdp_mut()
     }
 
-    pub fn shutdown(&self) {
+    pub fn shutdown(&self) -> ! {
         self.runtime_services.shutdown();
+        loop {
+            x64::hlt();
+        }
     }
 }
 

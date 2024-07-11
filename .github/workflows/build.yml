@@ -14,6 +14,8 @@ jobs:
         uses: actions/checkout@main
       - name: Install rust nightly
         run: rustup toolchain install nightly
+      - name: Install rust nightly-2024-01-01-x86_64-unknown-linux-gnu
+        run: rustup toolchain install nightly-2024-01-01-x86_64-unknown-linux-gnu
       - name: Build the OS
         run: make SUDO=sudo
       - name: Upload the OS

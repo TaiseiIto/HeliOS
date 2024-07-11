@@ -40,8 +40,8 @@ fn main(argument: &'static Argument<'static>) {
     memory::initialize(Argument::get().heap_range());
     bsp_println!("Hello, World!");
     bsp_println!("argument = {:#x?}", Argument::get());
-    let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
-    bsp_println!("cpuid = {:#x?}", cpuid);
+    x64::Cpuid::set();
+    let cpuid: &x64::Cpuid = x64::Cpuid::get();
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     // Initialize GDT.
@@ -122,9 +122,22 @@ fn main(argument: &'static Argument<'static>) {
     task::Controller::get_current_mut()
         .unwrap()
         .sti();
-    // Test interrupt.
-    unsafe {
-        asm!("int 0x80");
+    let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
+    bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
+    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
+    let focus_processor_checking: bool = true;
+    let eoi_broadcast: bool = true;
+    local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
+    bsp_println!("local_apic_registers = {:#x?}", local_apic_registers);
+    // Tell the BSP initialication completion.
+    Argument::get_mut().initialized();
+    // Event loop.
+    let shutdown: bool = false;
+    while !shutdown {
+        match interrupt::Event::pop() {
+            Some(event) => event.process(),
+            None => x64::hlt(),
+        }
     }
     unimplemented!();
 }
@@ -133,7 +146,6 @@ fn main(argument: &'static Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     bsp_println!("APPLICATION PROCESSOR KERNEL PANIC!!!");
     bsp_println!("{}", panic);
-    Argument::get_mut().kernel_complete();
     loop {
         x64::hlt();
     }

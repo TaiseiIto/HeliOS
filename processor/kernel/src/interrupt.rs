@@ -3,15 +3,81 @@ pub mod descriptor;
 
 pub use descriptor::Descriptor;
 
-use crate::{
-    bsp_print,
-    bsp_println,
-    memory,
-    task,
-    x64,
+use {
+    alloc::collections::VecDeque,
+    crate::{
+        Argument,
+        bsp_print,
+        bsp_println,
+        memory,
+        processor,
+        task,
+        x64,
+    },
 };
 
+static mut EVENTS: VecDeque<Event> = VecDeque::new();
+
+pub enum Event {
+    ApicTimer,
+    Hpet,
+    Interprocessor {
+        sender_local_apic_id: u8,
+        message: processor::message::Content,
+    },
+    Pit,
+    Rtc,
+}
+
+impl Event {
+    pub fn interprocessor(sender_local_apic_id: u8, message: processor::message::Content) -> Self {
+        Self::Interprocessor {
+            sender_local_apic_id,
+            message,
+        }
+    }
+
+    pub fn pop() -> Option<Event> {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
+        let event: Option<Event> = unsafe {
+            EVENTS.pop_back()
+        };
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
+        event
+    }
+
+    pub fn process(self) {
+        match self {
+            Self::ApicTimer => bsp_println!("APIC timer event."),
+            Self::Hpet => bsp_println!("HPET event."),
+            Self::Interprocessor {
+                sender_local_apic_id,
+                message,
+            } => message.process(),
+            Self::Pit => bsp_println!("PIT event."),
+            Self::Rtc => bsp_println!("RTC event."),
+        }
+    }
+    
+    pub fn push(event: Event) {
+        task::Controller::get_current_mut()
+            .unwrap()
+            .cli();
+        unsafe {
+            EVENTS.push_front(event);
+        }
+        task::Controller::get_current_mut()
+            .unwrap()
+            .sti();
+    }
+}
+
 pub const INTERPROCESSOR_INTERRUPT: u8 = 0x99;
+pub const SPURIOUS_INTERRUPT: u8 = 0x9f;
 
 pub enum Handler {
     WithErrorCode(extern "x86-interrupt" fn(StackFrameAndErrorCode)),
@@ -481,7 +547,7 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0x9c
         1, // int 0x9d
         1, // int 0x9e
-        1, // int 0x9f
+        1, // int 0x9f Spurious interrupt
         1, // int 0xa0
         1, // int 0xa1
         1, // int 0xa2
@@ -2681,12 +2747,15 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
 
 /// # Interprocessor interrupt
 extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x99;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame = {:#x?}", stack_frame);
+    Argument::get_mut().save_received_message();
+    x64::msr::ia32::ApicBase::get(x64::Cpuid::get())
+        .unwrap()
+        .registers_mut()
+        .end_interruption();
+    Argument::get_mut().delete_received_message();
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -2752,11 +2821,13 @@ extern "x86-interrupt" fn handler_0x9e(stack_frame: StackFrame) {
     }
 }
 
+/// # Spurious Interrupt
 extern "x86-interrupt" fn handler_0x9f(stack_frame: StackFrame) {
     let interrupt_number: u8 = 0x9f;
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
+    bsp_println!("Spurious Interrupt");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
     bsp_println!("stack_frame = {:#x?}", stack_frame);
     if let Some(current_task) = task::Controller::get_current_mut() {
