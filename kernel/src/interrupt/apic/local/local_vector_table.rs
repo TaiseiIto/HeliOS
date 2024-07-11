@@ -16,6 +16,11 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
+    pub fn disable_periodic_interrupt(&mut self) {
+        let register: Register = self.register.with_mask(Mask::InhibitInterrupt.into());
+        *self.register_mut() = register.into();
+    }
+
     pub fn set(&mut self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) {
         let register: Register = self.register;
         let register: Register = register.overwrite(vector, delivery_mode, interrupt_input_pin_polarity, trigger_mode, mask, timer_mode);

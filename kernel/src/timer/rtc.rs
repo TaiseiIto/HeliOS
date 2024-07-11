@@ -16,6 +16,20 @@ use {
     },
 };
 
+pub fn disable_periodic_interrupt() {
+    task::Controller::get_current_mut()
+        .unwrap()
+        .cli();
+    interrupt::non_maskable::disable();
+    status_register::B::read()
+        .disable_periodic_interrupt()
+        .write();
+    interrupt::non_maskable::enable();
+    task::Controller::get_current_mut()
+        .unwrap()
+        .sti();
+}
+
 pub fn end_interruption() {
     status_register::C::read();
 }

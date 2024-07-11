@@ -109,6 +109,10 @@ impl Registers {
         self.local_apic_id.apic_id()
     }
 
+    pub fn disable_periodic_interrupt(&mut self) {
+        self.lvt_timer.disable_periodic_interrupt();
+    }
+
     pub fn enable_spurious_interrupt(&mut self, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) {
         self.spurious_interrupt_vector.enable(focus_processor_checking, eoi_broadcast, spurious_vector);
     }

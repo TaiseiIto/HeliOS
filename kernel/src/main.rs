@@ -280,6 +280,23 @@ fn main(argument: &'static mut Argument<'static>) {
         };
         shutdown = 0x1000 <= loop_counter;
     }
+    // Stop RTC interruptions.
+    timer::rtc::disable_periodic_interrupt();
+    // Stop HPET.
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .hpet_mut()
+        .registers_mut()
+        .stop();
+    // Stop APIC interruptions.
+    local_apic_registers.disable_periodic_interrupt();
+    // Disable all interruptions.
+    task::Controller::get_current_mut()
+        .unwrap()
+        .cli();
+    // Print AP log.
     let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
         .map(|processor| (processor.local_apic_id(), processor.log()))
         .collect();

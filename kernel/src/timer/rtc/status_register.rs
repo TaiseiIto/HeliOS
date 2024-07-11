@@ -82,6 +82,10 @@ impl B {
         }
     }
 
+    pub fn disable_periodic_interrupt(self) -> Self {
+        self.with_pie(false)
+    }
+
     pub fn enable_periodic_interrupt(self) -> Self {
         self.with_pie(true)
     }
