@@ -4,7 +4,11 @@ use {
         fmt,
         mem,
     },
-    crate::io,
+    crate::{
+        com2_print,
+        com2_println,
+        io,
+    },
     super::{
         firmware_acpi_control,
         generic_address,
@@ -101,6 +105,17 @@ impl Table {
 
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
+    }
+
+    pub fn shutdown(&self) {
+        let pm1a_cnt_blk: u32 = self.pm1a_cnt_blk;
+        let pm1b_cnt_blk: u32 = self.pm1b_cnt_blk;
+        let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
+        let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
+        com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
+        com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
+        com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
+        com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
     }
 
     pub fn timer_bits(&self) -> usize {

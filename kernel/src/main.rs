@@ -319,6 +319,13 @@ fn panic(panic: &PanicInfo) -> ! {
     // Shutdown.
     Argument::get()
         .efi_system_table()
+        .rsdp()
+        .xsdt()
+        .fadt()
+        .shutdown();
+    com2_println!("FADT shutdown is failed!");
+    Argument::get()
+        .efi_system_table()
         .shutdown()
 }
 
