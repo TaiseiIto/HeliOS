@@ -45,11 +45,7 @@ pub struct Header {
 
 impl Header {
     pub fn is_correct(&self) -> bool {
-        let header: *const Self = self as *const Self;
-        let first_byte: *const u8 = header as *const u8;
-        let table: &[u8] = unsafe {
-            slice::from_raw_parts(first_byte, self.length as usize)
-        };
+        let table: &[u8] = self.into();
         table
             .iter()
             .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
@@ -93,6 +89,17 @@ impl fmt::Debug for Header {
             .field("creater_id", &self.creater_id())
             .field("creater_revision", &creater_revision)
             .finish()
+    }
+}
+
+impl<'a> From<&'a Header> for &'a [u8] {
+    fn from(header: &'a Header) -> Self {
+        let length: usize = header.length as usize;
+        let header: *const Header = header as *const Header;
+        let first_byte: *const u8 = header as *const u8;
+        unsafe {
+            slice::from_raw_parts(first_byte, length)
+        }
     }
 }
 
@@ -308,6 +315,33 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Xsdt(table)
             },
             _ => Self::Other(header),
+        }
+    }
+}
+
+impl<'a> From<&'a Table<'a>> for &'a [u8] {
+    fn from(table: &'a Table<'a>) -> Self {
+        match table {
+            Table::Bgrt(table) => unimplemented!(),
+            Table::Dbg2(table) => unimplemented!(),
+            Table::Dbgp(table) => unimplemented!(),
+            Table::Dmar(table) => unimplemented!(),
+            Table::Dsdt(table) => (*table).into(),
+            Table::Fadt(table) => unimplemented!(),
+            Table::Fpdt(table) => unimplemented!(),
+            Table::Hpet(table) => unimplemented!(),
+            Table::Lpit(table) => unimplemented!(),
+            Table::Madt(table) => unimplemented!(),
+            Table::Mcfg(table) => unimplemented!(),
+            Table::Other(table) => unimplemented!(),
+            Table::Rsdt(table) => unimplemented!(),
+            Table::Srat(table) => unimplemented!(),
+            Table::Ssdt(table) => unimplemented!(),
+            Table::Tpm2(table) => unimplemented!(),
+            Table::Waet(table) => unimplemented!(),
+            Table::Wdat(table) => unimplemented!(),
+            Table::Wsmt(table) => unimplemented!(),
+            Table::Xsdt(table) => unimplemented!(),
         }
     }
 }
