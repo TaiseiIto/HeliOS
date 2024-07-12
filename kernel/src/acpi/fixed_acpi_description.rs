@@ -118,7 +118,7 @@ impl Table {
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
         com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
-        com2_println!("dsdt = {:#x?}", dsdt);
+        com2_println!("dsdt = {:#04x?}", dsdt);
     }
 
     pub fn timer_bits(&self) -> usize {
