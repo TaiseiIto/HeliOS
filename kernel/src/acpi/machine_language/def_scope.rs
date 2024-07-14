@@ -1,4 +1,5 @@
 use super::{
+    NameString,
     PkgLength,
     ScopeOp,
 };
@@ -10,6 +11,7 @@ use super::{
 pub struct DefScope {
     scope_op: ScopeOp,
     pkg_length: PkgLength,
+    name_string: NameString,
 }
 
 impl From<&[u8]> for DefScope {
@@ -17,11 +19,13 @@ impl From<&[u8]> for DefScope {
         match bytes.first().unwrap() {
             0x10 => {
                 let scope_op: ScopeOp = bytes.into();
-                let bytes: &[u8] = &bytes[scope_op.length()..];
-                let pkg_length: PkgLength = bytes.into();
+                let pkg_length: PkgLength = (&bytes[scope_op.length()..]).into();
+                let bytes: &[u8] = &bytes[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];
+                let name_string: NameString = bytes.into();
                 Self {
                     scope_op,
                     pkg_length,
+                    name_string,
                 }
             },
             unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),

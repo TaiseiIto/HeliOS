@@ -6,18 +6,22 @@ use bitfield_struct::bitfield;
 #[bitfield(u8)]
 pub struct PkgLeadByte {
     #[bits(6)]
-    package_length: u8,
+    nybble: u8,
     #[bits(2)]
-    bytedata_count: u8,
+    byte_data_count: u8,
 }
 
 impl PkgLeadByte {
-    pub fn bytedata_length(&self) -> usize {
-        self.bytedata_count() as usize
+    pub fn byte_data_length(&self) -> usize {
+        self.byte_data_count() as usize
     }
 
     pub fn length(&self) -> usize {
         1
+    }
+
+    pub fn pkg_length(&self) -> usize {
+        self.nybble() as usize
     }
 }
 

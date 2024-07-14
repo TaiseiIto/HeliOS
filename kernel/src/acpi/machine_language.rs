@@ -5,6 +5,7 @@
 pub mod byte_data;
 pub mod def_scope;
 pub mod name_space_modifier_obj;
+pub mod name_string;
 pub mod object;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
@@ -16,6 +17,7 @@ pub use {
     byte_data::ByteData,
     def_scope::DefScope,
     name_space_modifier_obj::NameSpaceModifierObj,
+    name_string::NameString,
     object::Object,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,

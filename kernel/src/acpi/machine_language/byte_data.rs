@@ -8,6 +8,10 @@ impl ByteData {
     pub fn length(&self) -> usize {
         1
     }
+
+    pub fn pkg_length(&self) -> usize {
+        self.0 as usize
+    }
 }
 
 impl From<&[u8]> for ByteData {
