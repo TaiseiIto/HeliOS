@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::NullName,
+    super::{
+        NullName,
+        NULL_NAME,
+    },
 };
 
 /// # NamePath
@@ -40,8 +43,8 @@ impl fmt::Debug for NamePath {
 
 impl From<&[u8]> for NamePath {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first().unwrap() {
-            0x00 => {
+        match *bytes.first().unwrap() {
+            NULL_NAME => {
                 let null_name: NullName = bytes.into();
                 Self::NullName(null_name)
             },

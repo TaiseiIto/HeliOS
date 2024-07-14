@@ -22,12 +22,21 @@ pub use {
     name_path::NamePath,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,
-    null_name::NullName,
+    null_name::{
+        NullName,
+        NULL_NAME,
+    },
     object::Object,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
-    root_char::RootChar,
-    scope_op::ScopeOp,
+    root_char::{
+        RootChar,
+        ROOT_CHAR,
+    },
+    scope_op::{
+        ScopeOp,
+        SCOPE_OP,
+    },
     term_list::TermList,
     term_obj::TermObj,
 };

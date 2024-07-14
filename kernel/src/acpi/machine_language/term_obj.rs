@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::Object,
+    super::{
+        Object,
+        SCOPE_OP,
+    },
 };
 
 /// # TermObj
@@ -27,8 +30,8 @@ impl fmt::Debug for TermObj {
 
 impl From<&[u8]> for TermObj {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first().unwrap() {
-            0x10 => {
+        match *bytes.first().unwrap() {
+            SCOPE_OP => {
                 let object: Object = bytes.into();
                 Self::Object(object)
             },

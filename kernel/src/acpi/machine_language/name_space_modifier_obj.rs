@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::DefScope,
+    super::{
+        DefScope,
+        SCOPE_OP,
+    },
 };
 
 /// # NameSpaceModifierObj
@@ -27,8 +30,8 @@ impl fmt::Debug for NameSpaceModifierObj {
 
 impl From<&[u8]> for NameSpaceModifierObj {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first().unwrap() {
-            0x10 => {
+        match *bytes.first().unwrap() {
+            SCOPE_OP => {
                 let def_scope: DefScope = bytes.into();
                 Self::DefScope(def_scope)
             },

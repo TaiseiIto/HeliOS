@@ -4,6 +4,7 @@ use {
         NameString,
         PkgLength,
         ScopeOp,
+        SCOPE_OP,
         TermList,
     },
 };
@@ -21,8 +22,8 @@ pub struct DefScope {
 
 impl From<&[u8]> for DefScope {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first().unwrap() {
-            0x10 => {
+        match *bytes.first().unwrap() {
+            SCOPE_OP => {
                 let scope_op: ScopeOp = bytes.into();
                 let pkg_length: PkgLength = (&bytes[scope_op.length()..]).into();
                 let bytes: &[u8] = &bytes[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];

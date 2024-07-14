@@ -3,6 +3,7 @@ use {
     super::{
         NamePath,
         RootChar,
+        ROOT_CHAR,
     },
 };
 
@@ -47,8 +48,8 @@ impl fmt::Debug for NameString {
 
 impl From<&[u8]> for NameString {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first().unwrap() {
-            0x5c => {
+        match *bytes.first().unwrap() {
+            ROOT_CHAR => {
                 let root_char: RootChar = bytes.into();
                 let bytes: &[u8] = &bytes[root_char.length()..];
                 let name_path: NamePath = bytes.into();
