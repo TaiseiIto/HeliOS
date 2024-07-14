@@ -38,7 +38,7 @@ impl From<&[u8]> for NameSpaceModifierObj {
                     def_scope,
                 }
             },
-            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
+            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }
 }

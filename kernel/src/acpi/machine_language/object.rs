@@ -36,7 +36,7 @@ impl From<&[u8]> for Object {
                     name_space_modifier_obj,
                 }
             },
-            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
+            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }
 }

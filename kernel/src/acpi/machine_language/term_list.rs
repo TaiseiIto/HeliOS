@@ -16,7 +16,7 @@ pub enum TermList {
 impl fmt::Debug for TermList {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Nothing => write!(formatter, "TermList"),
+            Self::Nothing => write!(formatter, "TermList::Nothing"),
             Self::TermObjTermList {
                 term_obj,
             } => formatter

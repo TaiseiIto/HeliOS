@@ -9,6 +9,7 @@ pub mod name_string;
 pub mod object;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
+pub mod root_char;
 pub mod scope_op;
 pub mod term_list;
 pub mod term_obj;
@@ -21,6 +22,7 @@ pub use {
     object::Object,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
+    root_char::RootChar,
     scope_op::ScopeOp,
     term_list::TermList,
     term_obj::TermObj,
