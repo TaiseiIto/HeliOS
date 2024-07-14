@@ -323,7 +323,7 @@ fn panic(panic: &PanicInfo) -> ! {
         .xsdt()
         .fadt()
         .shutdown();
-    com2_println!("FADT shutdown is failed!");
+    com2_println!("ACPI shutdown is failed!");
     Argument::get()
         .efi_system_table()
         .shutdown()

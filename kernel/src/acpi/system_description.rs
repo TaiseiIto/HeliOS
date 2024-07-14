@@ -131,6 +131,31 @@ pub enum Table<'a> {
 }
 
 impl Table<'_> {
+    pub fn definition_block(&self) -> &[u8] {
+        match self {
+            Self::Bgrt(table) => unimplemented!(),
+            Self::Dbg2(table) => unimplemented!(),
+            Self::Dbgp(table) => unimplemented!(),
+            Self::Dmar(table) => unimplemented!(),
+            Self::Dsdt(table) => table.definition_block(),
+            Self::Fadt(table) => unimplemented!(),
+            Self::Fpdt(table) => unimplemented!(),
+            Self::Hpet(table) => unimplemented!(),
+            Self::Lpit(table) => unimplemented!(),
+            Self::Madt(table) => unimplemented!(),
+            Self::Mcfg(table) => unimplemented!(),
+            Self::Other(table) => unimplemented!(),
+            Self::Rsdt(table) => unimplemented!(),
+            Self::Srat(table) => unimplemented!(),
+            Self::Ssdt(table) => table.definition_block(),
+            Self::Tpm2(table) => unimplemented!(),
+            Self::Waet(table) => unimplemented!(),
+            Self::Wdat(table) => unimplemented!(),
+            Self::Wsmt(table) => unimplemented!(),
+            Self::Xsdt(table) => unimplemented!(),
+        }
+    }
+
     pub fn is_correct(&self) -> bool {
         match self {
             Self::Bgrt(table) => table.is_correct(),

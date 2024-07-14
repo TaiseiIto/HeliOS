@@ -9,18 +9,14 @@ use {
 
 /// # DSDT
 /// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.9 Fixed ACPI Description Table (FADT)
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.11.1 Differentiated System Description Table
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
 }
 
 impl Table {
-    pub fn is_correct(&self) -> bool {
-        self.header.is_correct()
-    }
-
-    fn definition_block(&self) -> &[u8] {
+    pub fn definition_block(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
         let definition_block: usize = table + size_of::<Self>();
@@ -29,6 +25,10 @@ impl Table {
         unsafe {
             slice::from_raw_parts(definition_block, definition_block_size)
         }
+    }
+
+    pub fn is_correct(&self) -> bool {
+        self.header.is_correct()
     }
 }
 

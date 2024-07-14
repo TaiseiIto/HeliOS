@@ -113,7 +113,7 @@ impl Table {
         let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
         let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
         let dsdt: system_description::Table = self.dsdt().unwrap();
-        let dsdt: &[u8] = (&dsdt).into();
+        let dsdt: &[u8] = dsdt.definition_block();
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
