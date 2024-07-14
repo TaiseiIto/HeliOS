@@ -1,20 +1,20 @@
 use {
     core::fmt,
-    super::def_scope,
+    super::DefScope,
 };
 
 /// # NameSpaceModifierObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-pub enum Symbol {
+pub enum NameSpaceModifierObj {
     DefAlias,
     DefName,
     DefScope {
-        def_scope: def_scope::Symbol,
+        def_scope: DefScope,
     },
 }
 
-impl fmt::Debug for Symbol {
+impl fmt::Debug for NameSpaceModifierObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::DefAlias => write!(formatter, "NameSpaceModifierObj"),
@@ -29,12 +29,12 @@ impl fmt::Debug for Symbol {
     }
 }
 
-impl From<&[u8]> for Symbol {
+impl From<&[u8]> for NameSpaceModifierObj {
     fn from(bytes: &[u8]) -> Self {
         match bytes.first() {
             Some(first_byte) => match first_byte {
                 0x10 => {
-                    let def_scope: def_scope::Symbol = bytes.into();
+                    let def_scope: DefScope = bytes.into();
                     Self::DefScope {
                         def_scope,
                     }

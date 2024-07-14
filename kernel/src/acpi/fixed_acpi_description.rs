@@ -114,7 +114,7 @@ impl Table {
         let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
         let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
         let dsdt: system_description::Table = self.dsdt().unwrap();
-        let dsdt: machine_language::term_list::Symbol = dsdt.definition_block().into();
+        let dsdt: machine_language::TermList = dsdt.definition_block().into();
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);

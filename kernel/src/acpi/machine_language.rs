@@ -9,3 +9,12 @@ pub mod scope_op;
 pub mod term_list;
 pub mod term_obj;
 
+pub use {
+    def_scope::DefScope,
+    name_space_modifier_obj::NameSpaceModifierObj,
+    object::Object,
+    scope_op::ScopeOp,
+    term_list::TermList,
+    term_obj::TermObj,
+};
+
