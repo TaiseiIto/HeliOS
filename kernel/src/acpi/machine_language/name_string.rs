@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::RootChar,
+    super::{
+        NamePath,
+        RootChar,
+    },
 };
 
 /// # NameString
@@ -9,6 +12,7 @@ use {
 pub enum NameString {
     RootCharNamePath {
         root_char: RootChar,
+        name_path: NamePath,
     },
     PrefixPathNamePath,
 }
@@ -17,10 +21,12 @@ impl fmt::Debug for NameString {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::RootCharNamePath {
-                root_char
+                root_char,
+                name_path,
             } => formatter
                 .debug_struct("NameString")
                 .field("root_char", root_char)
+                .field("name_path", name_path)
                 .finish(),
             Self::PrefixPathNamePath => write!(formatter, "NameString::PrefixPathNamePath"),
         }
@@ -32,8 +38,11 @@ impl From<&[u8]> for NameString {
         match bytes.first().unwrap() {
             0x5c => {
                 let root_char: RootChar = bytes.into();
+                let bytes: &[u8] = &bytes[root_char.length()..];
+                let name_path: NamePath = bytes.into();
                 Self::RootCharNamePath {
                     root_char,
+                    name_path,
                 }
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),

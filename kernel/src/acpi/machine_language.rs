@@ -4,8 +4,10 @@
 
 pub mod byte_data;
 pub mod def_scope;
+pub mod name_path;
 pub mod name_space_modifier_obj;
 pub mod name_string;
+pub mod null_name;
 pub mod object;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
@@ -17,8 +19,10 @@ pub mod term_obj;
 pub use {
     byte_data::ByteData,
     def_scope::DefScope,
+    name_path::NamePath,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,
+    null_name::NullName,
     object::Object,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
