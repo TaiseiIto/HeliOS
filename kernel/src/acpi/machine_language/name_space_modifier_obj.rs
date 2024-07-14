@@ -1,4 +1,7 @@
-use core::fmt;
+use {
+    core::fmt,
+    super::def_scope,
+};
 
 /// # NameSpaceModifierObj
 /// ## References
@@ -6,12 +9,23 @@ use core::fmt;
 pub enum Symbol {
     DefAlias,
     DefName,
-    DefScope,
+    DefScope {
+        def_scope: def_scope::Symbol,
+    },
 }
 
 impl fmt::Debug for Symbol {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "NameSpaceModifierObj")
+        match self {
+            Self::DefAlias => write!(formatter, "NameSpaceModifierObj"),
+            Self::DefName => write!(formatter, "NameSpaceModifierObj"),
+            Self::DefScope {
+                def_scope,
+            } => formatter
+                .debug_struct("NameSpaceModifierObj")
+                .field("def_scope", def_scope)
+                .finish(),
+        }
     }
 }
 
@@ -19,8 +33,13 @@ impl From<&[u8]> for Symbol {
     fn from(bytes: &[u8]) -> Self {
         match bytes.first() {
             Some(first_byte) => match first_byte {
-                0x10 => Self::DefScope,
-                _ => unimplemented!(),
+                0x10 => {
+                    let def_scope: def_scope::Symbol = bytes.into();
+                    Self::DefScope {
+                        def_scope,
+                    }
+                },
+                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
             }
             None => unimplemented!(),
         }

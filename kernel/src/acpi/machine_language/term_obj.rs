@@ -39,7 +39,7 @@ impl From<&[u8]> for Symbol {
                         object,
                     }
                 },
-                _ => unimplemented!(),
+                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
             }
             None => unimplemented!(),
         }

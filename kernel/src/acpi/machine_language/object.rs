@@ -37,7 +37,7 @@ impl From<&[u8]> for Symbol {
                         name_space_modifier_obj,
                     }
                 },
-                _ => unimplemented!(),
+                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
             }
             None => unimplemented!(),
         }
