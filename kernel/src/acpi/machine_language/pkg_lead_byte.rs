@@ -11,6 +11,16 @@ pub struct PkgLeadByte {
     bytedata_count: u8,
 }
 
+impl PkgLeadByte {
+    pub fn bytedata_length(&self) -> usize {
+        self.bytedata_count() as usize
+    }
+
+    pub fn length(&self) -> usize {
+        1
+    }
+}
+
 impl From<&[u8]> for PkgLeadByte {
     fn from(bytes: &[u8]) -> Self {
         (*bytes.first().unwrap()).into()
