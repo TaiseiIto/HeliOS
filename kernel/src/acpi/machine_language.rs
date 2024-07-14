@@ -5,6 +5,7 @@
 pub mod def_scope;
 pub mod name_space_modifier_obj;
 pub mod object;
+pub mod scope_op;
 pub mod term_list;
 pub mod term_obj;
 
