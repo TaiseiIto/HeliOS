@@ -9,9 +9,7 @@ use {
 pub enum NameSpaceModifierObj {
     DefAlias,
     DefName,
-    DefScope {
-        def_scope: DefScope,
-    },
+    DefScope(DefScope),
 }
 
 impl fmt::Debug for NameSpaceModifierObj {
@@ -19,9 +17,7 @@ impl fmt::Debug for NameSpaceModifierObj {
         match self {
             Self::DefAlias => write!(formatter, "NameSpaceModifierObj"),
             Self::DefName => write!(formatter, "NameSpaceModifierObj"),
-            Self::DefScope {
-                def_scope,
-            } => formatter
+            Self::DefScope(def_scope) => formatter
                 .debug_struct("NameSpaceModifierObj")
                 .field("def_scope", def_scope)
                 .finish(),
@@ -34,9 +30,7 @@ impl From<&[u8]> for NameSpaceModifierObj {
         match bytes.first().unwrap() {
             0x10 => {
                 let def_scope: DefScope = bytes.into();
-                Self::DefScope {
-                    def_scope,
-                }
+                Self::DefScope(def_scope)
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
