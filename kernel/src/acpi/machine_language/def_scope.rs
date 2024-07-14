@@ -1,4 +1,7 @@
-use super::ScopeOp;
+use super::{
+    PkgLength,
+    ScopeOp,
+};
 
 /// # DefScope
 /// ## References
@@ -6,21 +9,22 @@ use super::ScopeOp;
 #[derive(Debug)]
 pub struct DefScope {
     scope_op: ScopeOp,
+    pkg_length: PkgLength,
 }
 
 impl From<&[u8]> for DefScope {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first() {
-            Some(first_byte) => match first_byte {
-                0x10 => {
-                    let scope_op: ScopeOp = bytes.into();
-                    Self {
-                        scope_op,
-                    }
-                },
-                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
-            }
-            None => unimplemented!(),
+        match bytes.first().unwrap() {
+            0x10 => {
+                let scope_op: ScopeOp = bytes.into();
+                let bytes: &[u8] = &bytes[scope_op.length()..];
+                let pkg_length: PkgLength = bytes.into();
+                Self {
+                    scope_op,
+                    pkg_length,
+                }
+            },
+            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
         }
     }
 }

@@ -31,17 +31,14 @@ impl fmt::Debug for TermObj {
 
 impl From<&[u8]> for TermObj {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first() {
-            Some(first_byte) => match first_byte {
-                0x10 => {
-                    let object: Object = bytes.into();
-                    Self::Object {
-                        object,
-                    }
-                },
-                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
-            }
-            None => unimplemented!(),
+        match bytes.first().unwrap() {
+            0x10 => {
+                let object: Object = bytes.into();
+                Self::Object {
+                    object,
+                }
+            },
+            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
         }
     }
 }

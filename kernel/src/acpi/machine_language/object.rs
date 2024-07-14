@@ -29,17 +29,14 @@ impl fmt::Debug for Object {
 
 impl From<&[u8]> for Object {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first() {
-            Some(first_byte) => match first_byte {
-                0x10 => {
-                    let name_space_modifier_obj: NameSpaceModifierObj = bytes.into();
-                    Self::NameSpaceModifierObj {
-                        name_space_modifier_obj,
-                    }
-                },
-                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
-            }
-            None => unimplemented!(),
+        match bytes.first().unwrap() {
+            0x10 => {
+                let name_space_modifier_obj: NameSpaceModifierObj = bytes.into();
+                Self::NameSpaceModifierObj {
+                    name_space_modifier_obj,
+                }
+            },
+            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
         }
     }
 }

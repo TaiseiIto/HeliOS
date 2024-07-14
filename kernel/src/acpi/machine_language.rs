@@ -5,6 +5,8 @@
 pub mod def_scope;
 pub mod name_space_modifier_obj;
 pub mod object;
+pub mod pkg_lead_byte;
+pub mod pkg_length;
 pub mod scope_op;
 pub mod term_list;
 pub mod term_obj;
@@ -13,6 +15,8 @@ pub use {
     def_scope::DefScope,
     name_space_modifier_obj::NameSpaceModifierObj,
     object::Object,
+    pkg_lead_byte::PkgLeadByte,
+    pkg_length::PkgLength,
     scope_op::ScopeOp,
     term_list::TermList,
     term_obj::TermObj,

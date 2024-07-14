@@ -31,17 +31,14 @@ impl fmt::Debug for NameSpaceModifierObj {
 
 impl From<&[u8]> for NameSpaceModifierObj {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first() {
-            Some(first_byte) => match first_byte {
-                0x10 => {
-                    let def_scope: DefScope = bytes.into();
-                    Self::DefScope {
-                        def_scope,
-                    }
-                },
-                unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
-            }
-            None => unimplemented!(),
+        match bytes.first().unwrap() {
+            0x10 => {
+                let def_scope: DefScope = bytes.into();
+                Self::DefScope {
+                    def_scope,
+                }
+            },
+            unknown_byte => panic!("Unknown byte {:#x?}", unknown_byte),
         }
     }
 }
