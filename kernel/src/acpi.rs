@@ -13,6 +13,7 @@ pub mod fixed_acpi_description;
 pub mod generic_address;
 pub mod high_precision_event_timer;
 pub mod low_power_idle;
+pub mod machine_language;
 pub mod memory_mapped_configuration;
 pub mod multiple_apic_description;
 pub mod root_system_description;
