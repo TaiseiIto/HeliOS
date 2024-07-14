@@ -17,6 +17,18 @@ pub enum NameString {
     PrefixPathNamePath,
 }
 
+impl NameString {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::RootCharNamePath {
+                root_char,
+                name_path,
+            } => root_char.length() + name_path.length(),
+            Self::PrefixPathNamePath => unimplemented!(),
+        }
+    }
+}
+
 impl fmt::Debug for NameString {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

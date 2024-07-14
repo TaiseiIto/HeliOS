@@ -1,7 +1,11 @@
-use super::{
-    NameString,
-    PkgLength,
-    ScopeOp,
+use {
+    alloc::boxed::Box,
+    super::{
+        NameString,
+        PkgLength,
+        ScopeOp,
+        TermList,
+    },
 };
 
 /// # DefScope
@@ -12,6 +16,7 @@ pub struct DefScope {
     scope_op: ScopeOp,
     pkg_length: PkgLength,
     name_string: NameString,
+    term_list: Box<TermList>,
 }
 
 impl From<&[u8]> for DefScope {
@@ -22,10 +27,13 @@ impl From<&[u8]> for DefScope {
                 let pkg_length: PkgLength = (&bytes[scope_op.length()..]).into();
                 let bytes: &[u8] = &bytes[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];
                 let name_string: NameString = bytes.into();
+                let bytes: &[u8] = &bytes[name_string.length()..];
+                let term_list: Box<TermList> = Box::new(bytes.into());
                 Self {
                     scope_op,
                     pkg_length,
                     name_string,
+                    term_list,
                 }
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),

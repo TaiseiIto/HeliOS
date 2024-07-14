@@ -16,3 +16,4 @@ impl From<&[u8]> for RootChar {
         Self
     }
 }
+

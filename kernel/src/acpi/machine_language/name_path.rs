@@ -10,9 +10,18 @@ pub enum NamePath {
     NameSeg,
     DualNamePath,
     MultiNamePath,
-    NullName {
-        null_name: NullName,
-    },
+    NullName(NullName),
+}
+
+impl NamePath {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::NameSeg => unimplemented!(),
+            Self::DualNamePath => unimplemented!(),
+            Self::MultiNamePath => unimplemented!(),
+            Self::NullName(null_name) => null_name.length(),
+        }
+    }
 }
 
 impl fmt::Debug for NamePath {
@@ -21,9 +30,7 @@ impl fmt::Debug for NamePath {
             Self::NameSeg => write!(formatter, "NamePath::NameSeg"),
             Self::DualNamePath => write!(formatter, "NamePath::DualNamePath"),
             Self::MultiNamePath => write!(formatter, "NamePath::MultiNamePath"),
-            Self::NullName {
-                null_name,
-            } => formatter
+            Self::NullName(null_name) => formatter
                 .debug_struct("NamePath")
                 .field("null_name", null_name)
                 .finish(),
@@ -36,9 +43,7 @@ impl From<&[u8]> for NamePath {
         match bytes.first().unwrap() {
             0x00 => {
                 let null_name: NullName = bytes.into();
-                Self::NullName {
-                    null_name,
-                }
+                Self::NullName(null_name)
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
