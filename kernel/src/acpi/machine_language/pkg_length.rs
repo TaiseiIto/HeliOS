@@ -1,5 +1,6 @@
 use {
     alloc::vec::Vec,
+    core::fmt,
     super::{
         ByteData,
         PkgLeadByte,
@@ -9,7 +10,6 @@ use {
 /// # PkgLength
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
-#[derive(Debug)]
 pub struct PkgLength {
     pkg_lead_byte: PkgLeadByte,
     byte_data: Vec<ByteData>,
@@ -28,6 +28,20 @@ impl PkgLength {
             .iter()
             .rev()
             .fold(0, |length, byte_data| (length << u8::BITS) + byte_data.pkg_length()) << 4) + self.pkg_lead_byte.pkg_length()
+    }
+}
+
+impl fmt::Debug for PkgLength {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            pkg_lead_byte,
+            byte_data,
+        } = self;
+        formatter
+            .debug_tuple("PkgLength")
+            .field(pkg_lead_byte)
+            .field(byte_data)
+            .finish()
     }
 }
 
