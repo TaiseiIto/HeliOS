@@ -26,8 +26,8 @@ impl PkgLeadByte {
 }
 
 impl From<&[u8]> for PkgLeadByte {
-    fn from(bytes: &[u8]) -> Self {
-        (*bytes.first().unwrap()).into()
+    fn from(aml: &[u8]) -> Self {
+        (*aml.first().unwrap()).into()
     }
 }
 

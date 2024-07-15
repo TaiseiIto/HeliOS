@@ -13,8 +13,8 @@ impl NullName {
 }
 
 impl From<&[u8]> for NullName {
-    fn from(bytes: &[u8]) -> Self {
-        assert_eq!(*bytes.first().unwrap(), NULL_NAME);
+    fn from(aml: &[u8]) -> Self {
+        assert_eq!(*aml.first().unwrap(), NULL_NAME);
         Self
     }
 }

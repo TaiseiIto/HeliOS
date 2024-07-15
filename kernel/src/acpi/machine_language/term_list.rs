@@ -20,12 +20,12 @@ impl TermList {
 }
 
 impl From<&[u8]> for TermList {
-    fn from(bytes: &[u8]) -> Self {
-        let mut bytes: &[u8] = bytes;
+    fn from(aml: &[u8]) -> Self {
+        let mut aml: &[u8] = aml;
         let mut term_list: Vec<TermObj> = Vec::new();
-        while !bytes.is_empty() {
-            let term_obj: TermObj = bytes.into();
-            bytes = &bytes[term_obj.length()..];
+        while !aml.is_empty() {
+            let term_obj: TermObj = aml.into();
+            aml = &aml[term_obj.length()..];
             term_list.push(term_obj);
         }
         Self(term_list)

@@ -32,15 +32,15 @@ impl PkgLength {
 }
 
 impl From<&[u8]> for PkgLength {
-    fn from(bytes: &[u8]) -> Self {
-        let pkg_lead_byte: PkgLeadByte = bytes.into();
-        let bytes: &[u8] = &bytes[pkg_lead_byte.length()..];
-        let (bytes, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
-            .fold((bytes, Vec::new()), |(bytes, mut byte_data), _| {
-                let new_byte_data: ByteData = bytes.into();
-                let bytes: &[u8] = &bytes[new_byte_data.length()..];
+    fn from(aml: &[u8]) -> Self {
+        let pkg_lead_byte: PkgLeadByte = aml.into();
+        let aml: &[u8] = &aml[pkg_lead_byte.length()..];
+        let (aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
+            .fold((aml, Vec::new()), |(aml, mut byte_data), _| {
+                let new_byte_data: ByteData = aml.into();
+                let aml: &[u8] = &aml[new_byte_data.length()..];
                 byte_data.push(new_byte_data);
-                (bytes, byte_data)
+                (aml, byte_data)
             });
         Self {
             pkg_lead_byte,

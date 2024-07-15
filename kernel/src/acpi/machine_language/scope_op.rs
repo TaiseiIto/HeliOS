@@ -13,8 +13,8 @@ impl ScopeOp {
 }
 
 impl From<&[u8]> for ScopeOp {
-    fn from(bytes: &[u8]) -> Self {
-        assert_eq!(*bytes.first().unwrap(), SCOPE_OP);
+    fn from(aml: &[u8]) -> Self {
+        assert_eq!(*aml.first().unwrap(), SCOPE_OP);
         Self
     }
 }

@@ -7,8 +7,8 @@ pub const EXT_OP_PREFIX: u8 = 0x5b;
 pub struct ExtOpPrefix;
 
 impl From<&[u8]> for ExtOpPrefix {
-    fn from(bytes: &[u8]) -> Self {
-        assert_eq!(*bytes.first().unwrap(), EXT_OP_PREFIX);
+    fn from(aml: &[u8]) -> Self {
+        assert_eq!(*aml.first().unwrap(), EXT_OP_PREFIX);
         Self
     }
 }

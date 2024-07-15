@@ -3,10 +3,6 @@ use {
         fmt,
         slice,
     },
-    crate::{
-        com2_print,
-        com2_println,
-    },
     super::{
         EXT_OP_PREFIX,
         Object,
@@ -47,12 +43,11 @@ impl fmt::Debug for TermObj {
 }
 
 impl From<&[u8]> for TermObj {
-    fn from(bytes: &[u8]) -> Self {
-        let mut aml_iterator: slice::Iter<u8> = bytes.iter();
+    fn from(aml: &[u8]) -> Self {
+        let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
             SCOPE_OP => {
-                let object: Object = bytes.into();
-                com2_println!("object = {:#x?}", object);
+                let object: Object = aml.into();
                 Self::Object(object)
             },
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {

@@ -42,10 +42,10 @@ impl fmt::Debug for NamePath {
 }
 
 impl From<&[u8]> for NamePath {
-    fn from(bytes: &[u8]) -> Self {
-        match *bytes.first().unwrap() {
+    fn from(aml: &[u8]) -> Self {
+        match *aml.first().unwrap() {
             NULL_NAME => {
-                let null_name: NullName = bytes.into();
+                let null_name: NullName = aml.into();
                 Self::NullName(null_name)
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),

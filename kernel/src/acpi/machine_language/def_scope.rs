@@ -30,15 +30,15 @@ impl DefScope {
 }
 
 impl From<&[u8]> for DefScope {
-    fn from(bytes: &[u8]) -> Self {
-        match *bytes.first().unwrap() {
+    fn from(aml: &[u8]) -> Self {
+        match *aml.first().unwrap() {
             SCOPE_OP => {
-                let scope_op: ScopeOp = bytes.into();
-                let pkg_length: PkgLength = (&bytes[scope_op.length()..]).into();
-                let bytes: &[u8] = &bytes[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];
-                let name_string: NameString = bytes.into();
-                let bytes: &[u8] = &bytes[name_string.length()..];
-                let term_list: TermList = bytes.into();
+                let scope_op: ScopeOp = aml.into();
+                let pkg_length: PkgLength = (&aml[scope_op.length()..]).into();
+                let aml: &[u8] = &aml[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];
+                let name_string: NameString = aml.into();
+                let aml: &[u8] = &aml[name_string.length()..];
+                let term_list: TermList = aml.into();
                 Self {
                     scope_op,
                     pkg_length,

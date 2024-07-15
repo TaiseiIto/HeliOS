@@ -15,8 +15,8 @@ impl ByteData {
 }
 
 impl From<&[u8]> for ByteData {
-    fn from(bytes: &[u8]) -> Self {
-        Self(*bytes.first().unwrap())
+    fn from(aml: &[u8]) -> Self {
+        Self(*aml.first().unwrap())
     }
 }
 

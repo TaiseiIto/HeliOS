@@ -39,10 +39,10 @@ impl fmt::Debug for NameSpaceModifierObj {
 }
 
 impl From<&[u8]> for NameSpaceModifierObj {
-    fn from(bytes: &[u8]) -> Self {
-        match *bytes.first().unwrap() {
+    fn from(aml: &[u8]) -> Self {
+        match *aml.first().unwrap() {
             SCOPE_OP => {
-                let def_scope: DefScope = bytes.into();
+                let def_scope: DefScope = aml.into();
                 Self::DefScope(def_scope)
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
