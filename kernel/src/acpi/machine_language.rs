@@ -8,6 +8,7 @@ pub mod ext_op_prefix;
 pub mod name_path;
 pub mod name_space_modifier_obj;
 pub mod name_string;
+pub mod named_obj;
 pub mod null_name;
 pub mod object;
 pub mod op_region_op;
@@ -25,6 +26,7 @@ pub use {
     name_path::NamePath,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,
+    named_obj::NamedObj,
     null_name::{
         NullName,
         NULL_NAME,

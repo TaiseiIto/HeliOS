@@ -47,16 +47,16 @@ impl From<&[u8]> for TermObj {
     fn from(aml: &[u8]) -> Self {
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
-            SCOPE_OP => {
-                let object: Object = aml.into();
-                Self::Object(object)
-            },
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
                 OP_REGION_OP => {
                     let object: Object = aml.into();
                     Self::Object(object)
                 },
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+            },
+            SCOPE_OP => {
+                let object: Object = aml.into();
+                Self::Object(object)
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
