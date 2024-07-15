@@ -49,16 +49,10 @@ impl From<&[u8]> for Object {
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                OP_REGION_OP => {
-                    let named_obj: NamedObj = aml.into();
-                    Self::NamedObj(named_obj)
-                },
+                OP_REGION_OP => Self::NamedObj(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             }
-            SCOPE_OP => {
-                let name_space_modifier_obj: NameSpaceModifierObj = aml.into();
-                Self::NameSpaceModifierObj(name_space_modifier_obj)
-            },
+            SCOPE_OP => Self::NameSpaceModifierObj(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }

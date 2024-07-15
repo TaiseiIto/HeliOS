@@ -38,7 +38,10 @@ impl fmt::Debug for RegionSpace {
             Self::GeneralPurposeIo => write!(formatter, "RegionSpace::"),
             Self::GenericSerialBus => write!(formatter, "RegionSpace::"),
             Self::Pcc => write!(formatter, "RegionSpace::"),
-            Self::OemDefined(region_space) => write!(formatter, "RegionSpace::OemDerined({:#x?})", region_space),
+            Self::OemDefined(oem_defined) => formatter
+                .debug_tuple("RegionSpace::OemDefined")
+                .field(oem_defined)
+                .finish(),
         }
     }
 }

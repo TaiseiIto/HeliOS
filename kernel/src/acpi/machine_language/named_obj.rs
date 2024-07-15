@@ -33,10 +33,7 @@ impl From<&[u8]> for NamedObj {
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                OP_REGION_OP => {
-                    let def_op_region: DefOpRegion = aml.into();
-                    Self::DefOpRegion(def_op_region)
-                },
+                OP_REGION_OP => Self::DefOpRegion(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),

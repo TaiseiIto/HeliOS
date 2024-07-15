@@ -3,6 +3,7 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 pub mod byte_data;
+pub mod data_object;
 pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
@@ -27,9 +28,11 @@ pub mod scope_op;
 pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
+pub mod word_prefix;
 
 pub use {
     byte_data::ByteData,
+    data_object::DataObject,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
     digit_char::DigitChar,
@@ -72,5 +75,6 @@ pub use {
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
+    word_prefix::WORD_PREFIX,
 };
 
