@@ -85,7 +85,11 @@ impl From<&[u8]> for NameString {
                     aml = &aml[new_prefix_path.length()..];
                     prefix_path.push(new_prefix_path);
                 }
-                unimplemented!()
+                let name_path: NamePath = aml.into();
+                Self::PrefixPathNamePath {
+                    prefix_path,
+                    name_path,
+                }
             }
         }
     }
