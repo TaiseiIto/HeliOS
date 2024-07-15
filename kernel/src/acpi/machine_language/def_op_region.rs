@@ -1,5 +1,4 @@
 use {
-    alloc::string::String,
     core::fmt,
     super::{
         NameString,

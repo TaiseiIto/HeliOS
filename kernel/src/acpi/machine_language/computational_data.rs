@@ -20,6 +20,21 @@ pub enum ComputationalData {
     DefBuffer,
 }
 
+impl ComputationalData {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::ByteConst => unimplemented!(),
+            Self::WordConst(word_const) => word_const.length(),
+            Self::DwordConst => unimplemented!(),
+            Self::QwordConst => unimplemented!(),
+            Self::String => unimplemented!(),
+            Self::ConstObj => unimplemented!(),
+            Self::RevisionOp => unimplemented!(),
+            Self::DefBuffer => unimplemented!(),
+        }
+    }
+}
+
 impl fmt::Debug for ComputationalData {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

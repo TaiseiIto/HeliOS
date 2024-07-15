@@ -30,6 +30,7 @@ pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
 pub mod word_const;
+pub mod word_data;
 pub mod word_prefix;
 
 pub use {
@@ -79,6 +80,7 @@ pub use {
     term_list::TermList,
     term_obj::TermObj,
     word_const::WordConst,
+    word_data::WordData,
     word_prefix::{
         WORD_PREFIX,
         WordPrefix,

@@ -18,7 +18,12 @@ pub enum TermArg {
 
 impl TermArg {
     pub fn length(&self) -> usize {
-        unimplemented!()
+        match self {
+            Self::ExpressionOpcode => unimplemented!(),
+            Self::DataObject(data_object) => data_object.length(),
+            Self::ArgObj => unimplemented!(),
+            Self::LocalObj => unimplemented!(),
+        }
     }
 }
 

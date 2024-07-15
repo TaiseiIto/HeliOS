@@ -15,6 +15,16 @@ pub enum DataObject {
     DefVarPackage,
 }
 
+impl DataObject {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::ComputationalData(computational_data) => computational_data.length(),
+            Self::DefPackage => unimplemented!(),
+            Self::DefVarPackage => unimplemented!(),
+        }
+    }
+}
+
 impl fmt::Debug for DataObject {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

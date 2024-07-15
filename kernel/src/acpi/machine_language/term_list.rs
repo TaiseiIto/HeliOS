@@ -1,6 +1,5 @@
 use {
     alloc::vec::Vec,
-    core::fmt,
     super::TermObj,
 };
 
