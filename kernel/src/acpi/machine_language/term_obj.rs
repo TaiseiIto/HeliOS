@@ -35,8 +35,8 @@ impl fmt::Debug for TermObj {
         match self {
             Self::ExpressionOpcode => write!(formatter, "TermObj"),
             Self::Object(object) => formatter
-                .debug_struct("TermObj")
-                .field("object", object)
+                .debug_tuple("TermObj")
+                .field(object)
                 .finish(),
             Self::StatementOpcode => write!(formatter, "TermObj"),
         }

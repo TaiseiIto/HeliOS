@@ -37,9 +37,9 @@ impl fmt::Debug for NameString {
                 root_char,
                 name_path,
             } => formatter
-                .debug_struct("NameString")
-                .field("root_char", root_char)
-                .field("name_path", name_path)
+                .debug_tuple("NameString")
+                .field(root_char)
+                .field(name_path)
                 .finish(),
             Self::PrefixPathNamePath => write!(formatter, "NameString::PrefixPathNamePath"),
         }

@@ -34,8 +34,8 @@ impl fmt::Debug for NamePath {
             Self::DualNamePath => write!(formatter, "NamePath::DualNamePath"),
             Self::MultiNamePath => write!(formatter, "NamePath::MultiNamePath"),
             Self::NullName(null_name) => formatter
-                .debug_struct("NamePath")
-                .field("null_name", null_name)
+                .debug_tuple("NamePath")
+                .field(null_name)
                 .finish(),
         }
     }

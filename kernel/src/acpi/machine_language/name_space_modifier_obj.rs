@@ -31,8 +31,8 @@ impl fmt::Debug for NameSpaceModifierObj {
             Self::DefAlias => write!(formatter, "NameSpaceModifierObj"),
             Self::DefName => write!(formatter, "NameSpaceModifierObj"),
             Self::DefScope(def_scope) => formatter
-                .debug_struct("NameSpaceModifierObj")
-                .field("def_scope", def_scope)
+                .debug_tuple("NameSpaceModifierObj")
+                .field(def_scope)
                 .finish(),
         }
     }

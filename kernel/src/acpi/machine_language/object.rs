@@ -33,12 +33,12 @@ impl fmt::Debug for Object {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NameSpaceModifierObj(name_space_modifier_obj) => formatter
-                .debug_struct("Object")
-                .field("name_space_modifier_obj", name_space_modifier_obj)
+                .debug_tuple("Object")
+                .field(name_space_modifier_obj)
                 .finish(),
             Self::NamedObj(named_obj) => formatter
-                .debug_struct("Object")
-                .field("named_obj", named_obj)
+                .debug_tuple("Object")
+                .field(named_obj)
                 .finish(),
         }
     }
