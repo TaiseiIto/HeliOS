@@ -15,6 +15,16 @@ pub enum TermObj {
     StatementOpcode,
 }
 
+impl TermObj {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::ExpressionOpcode => unimplemented!(),
+            Self::Object(object) => object.length(),
+            Self::StatementOpcode => unimplemented!(),
+        }
+    }
+}
+
 impl fmt::Debug for TermObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

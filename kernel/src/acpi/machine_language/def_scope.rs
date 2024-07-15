@@ -1,12 +1,9 @@
-use {
-    alloc::boxed::Box,
-    super::{
-        NameString,
-        PkgLength,
-        ScopeOp,
-        SCOPE_OP,
-        TermList,
-    },
+use super::{
+    NameString,
+    PkgLength,
+    ScopeOp,
+    SCOPE_OP,
+    TermList,
 };
 
 /// # DefScope
@@ -17,7 +14,19 @@ pub struct DefScope {
     scope_op: ScopeOp,
     pkg_length: PkgLength,
     name_string: NameString,
-    term_list: Box<TermList>,
+    term_list: TermList,
+}
+
+impl DefScope {
+    pub fn length(&self) -> usize {
+        let Self {
+            scope_op,
+            pkg_length,
+            name_string,
+            term_list,
+        } = self;
+        scope_op.length() + pkg_length.length() + name_string.length() + term_list.length()
+    }
 }
 
 impl From<&[u8]> for DefScope {
@@ -29,7 +38,7 @@ impl From<&[u8]> for DefScope {
                 let bytes: &[u8] = &bytes[scope_op.length() + pkg_length.length()..pkg_length.pkg_length()];
                 let name_string: NameString = bytes.into();
                 let bytes: &[u8] = &bytes[name_string.length()..];
-                let term_list: Box<TermList> = Box::new(bytes.into());
+                let term_list: TermList = bytes.into();
                 Self {
                     scope_op,
                     pkg_length,

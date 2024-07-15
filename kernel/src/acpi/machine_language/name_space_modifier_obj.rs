@@ -15,6 +15,16 @@ pub enum NameSpaceModifierObj {
     DefScope(DefScope),
 }
 
+impl NameSpaceModifierObj {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::DefAlias => unimplemented!(),
+            Self::DefName => unimplemented!(),
+            Self::DefScope(def_scope) => def_scope.length(),
+        }
+    }
+}
+
 impl fmt::Debug for NameSpaceModifierObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

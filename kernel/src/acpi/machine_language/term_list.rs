@@ -1,4 +1,5 @@
 use {
+    alloc::vec::Vec,
     core::fmt,
     super::TermObj,
 };
@@ -6,38 +7,28 @@ use {
 /// # TermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-pub enum TermList {
-    Nothing,
-    TermObjTermList {
-        term_obj: TermObj,
-    },
-}
+#[derive(Debug)]
+pub struct TermList(Vec<TermObj>);
 
-impl fmt::Debug for TermList {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Nothing => write!(formatter, "TermList::Nothing"),
-            Self::TermObjTermList {
-                term_obj,
-            } => formatter
-                .debug_struct("TermList")
-                .field("term_obj", term_obj)
-                .finish(),
-        }
+impl TermList {
+    pub fn length(&self) -> usize {
+        self.0
+            .iter()
+            .map(|term_obj| term_obj.length())
+            .sum::<usize>()
     }
 }
 
 impl From<&[u8]> for TermList {
     fn from(bytes: &[u8]) -> Self {
-        match bytes.first() {
-            Some(first_byte) => {
-                let term_obj: TermObj = bytes.into();
-                Self::TermObjTermList {
-                    term_obj,
-                }
-            },
-            None => Self::Nothing,
+        let mut bytes: &[u8] = bytes;
+        let mut term_list: Vec<TermObj> = Vec::new();
+        while !bytes.is_empty() {
+            let term_obj: TermObj = bytes.into();
+            bytes = &bytes[term_obj.length()..];
+            term_list.push(term_obj);
         }
+        Self(term_list)
     }
 }
 

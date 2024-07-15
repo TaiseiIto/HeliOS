@@ -14,6 +14,15 @@ pub enum Object {
     NamedObj,
 }
 
+impl Object {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.length(),
+            Self::NamedObj => unimplemented!(),
+        }
+    }
+}
+
 impl fmt::Debug for Object {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
