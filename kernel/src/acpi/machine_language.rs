@@ -15,6 +15,7 @@ pub mod object;
 pub mod op_region_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
+pub mod prefix_path;
 pub mod root_char;
 pub mod scope_op;
 pub mod term_list;
@@ -43,6 +44,10 @@ pub use {
     },
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
+    prefix_path::{
+        PREFIX_PATH,
+        PrefixPath,
+    },
     root_char::{
         ROOT_CHAR,
         RootChar,

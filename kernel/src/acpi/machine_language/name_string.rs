@@ -1,9 +1,12 @@
 use {
+    alloc::vec::Vec,
     core::fmt,
     super::{
         NamePath,
-        RootChar,
+        PREFIX_PATH,
+        PrefixPath,
         ROOT_CHAR,
+        RootChar,
     },
 };
 
@@ -15,7 +18,10 @@ pub enum NameString {
         root_char: RootChar,
         name_path: NamePath,
     },
-    PrefixPathNamePath,
+    PrefixPathNamePath {
+        prefix_path: Vec<PrefixPath>,
+        name_path: NamePath,
+    },
 }
 
 impl NameString {
@@ -25,7 +31,13 @@ impl NameString {
                 root_char,
                 name_path,
             } => root_char.length() + name_path.length(),
-            Self::PrefixPathNamePath => unimplemented!(),
+            Self::PrefixPathNamePath {
+                prefix_path,
+                name_path,
+            } => prefix_path
+                .iter()
+                .map(|prefix_path| prefix_path.length())
+                .sum::<usize>() + name_path.length(),
         }
     }
 }
@@ -41,7 +53,14 @@ impl fmt::Debug for NameString {
                 .field(root_char)
                 .field(name_path)
                 .finish(),
-            Self::PrefixPathNamePath => write!(formatter, "NameString::PrefixPathNamePath"),
+            Self::PrefixPathNamePath {
+                prefix_path,
+                name_path,
+            } => formatter
+                .debug_tuple("NameString")
+                .field(prefix_path)
+                .field(name_path)
+                .finish(),
         }
     }
 }
@@ -58,7 +77,16 @@ impl From<&[u8]> for NameString {
                     name_path,
                 }
             },
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+            _ => {
+                let mut aml: &[u8] = aml;
+                let mut prefix_path: Vec<PrefixPath> = Vec::new();
+                while *aml.first().unwrap() == PREFIX_PATH {
+                    let new_prefix_path: PrefixPath = aml.into();
+                    aml = &aml[new_prefix_path.length()..];
+                    prefix_path.push(new_prefix_path);
+                }
+                unimplemented!()
+            }
         }
     }
 }
