@@ -6,6 +6,12 @@ pub const EXT_OP_PREFIX: u8 = 0x5b;
 #[derive(Debug)]
 pub struct ExtOpPrefix;
 
+impl ExtOpPrefix {
+    pub fn length(&self) -> usize {
+        1
+    }
+}
+
 impl From<&[u8]> for ExtOpPrefix {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), EXT_OP_PREFIX);
