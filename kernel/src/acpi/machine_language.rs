@@ -4,6 +4,7 @@
 
 pub mod byte_data;
 pub mod def_scope;
+pub mod ext_op_prefix;
 pub mod name_path;
 pub mod name_space_modifier_obj;
 pub mod name_string;
@@ -19,6 +20,7 @@ pub mod term_obj;
 pub use {
     byte_data::ByteData,
     def_scope::DefScope,
+    ext_op_prefix::EXT_OP_PREFIX,
     name_path::NamePath,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,

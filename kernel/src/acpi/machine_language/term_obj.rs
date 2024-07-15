@@ -1,6 +1,14 @@
 use {
-    core::fmt,
+    core::{
+        fmt,
+        slice,
+    },
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::{
+        EXT_OP_PREFIX,
         Object,
         SCOPE_OP,
     },
@@ -40,10 +48,15 @@ impl fmt::Debug for TermObj {
 
 impl From<&[u8]> for TermObj {
     fn from(bytes: &[u8]) -> Self {
-        match *bytes.first().unwrap() {
+        let mut aml_iterator: slice::Iter<u8> = bytes.iter();
+        match *aml_iterator.next().unwrap() {
             SCOPE_OP => {
                 let object: Object = bytes.into();
+                com2_println!("object = {:#x?}", object);
                 Self::Object(object)
+            },
+            EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
+                unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
