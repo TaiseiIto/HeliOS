@@ -4,6 +4,8 @@ use {
     super::{
         NameString,
         OpRegionOp,
+        RegionLen,
+        RegionOffset,
         RegionSpace,
     },
 };
@@ -14,7 +16,9 @@ use {
 pub struct DefOpRegion {
     op_region_op: OpRegionOp,
     name_string: NameString,
-    region_space: RegionSpace
+    region_space: RegionSpace,
+    region_offset: RegionOffset,
+    region_len: RegionLen,
 }
 
 impl fmt::Debug for DefOpRegion {
@@ -23,12 +27,16 @@ impl fmt::Debug for DefOpRegion {
             op_region_op,
             name_string,
             region_space,
+            region_offset,
+            region_len,
         } = self;
         formatter
             .debug_tuple("DefOpRegion")
             .field(op_region_op)
             .field(name_string)
             .field(region_space)
+            .field(region_offset)
+            .field(region_len)
             .finish()
     }
 }
@@ -41,7 +49,16 @@ impl From<&[u8]> for DefOpRegion {
         let aml: &[u8] = &aml[name_string.length()..];
         let region_space: RegionSpace = aml.into();
         let aml: &[u8] = &aml[region_space.length()..];
-        unimplemented!()
+        let region_offset: RegionOffset = aml.into();
+        let aml: &[u8] = &aml[region_offset.length()..];
+        let region_len: RegionLen = aml.into();
+        Self {
+            op_region_op,
+            name_string,
+            region_space,
+            region_offset,
+            region_len,
+        }
     }
 }
 

@@ -19,9 +19,12 @@ pub mod op_region_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod prefix_path;
+pub mod region_len;
+pub mod region_offset;
 pub mod region_space;
 pub mod root_char;
 pub mod scope_op;
+pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
 
@@ -55,6 +58,8 @@ pub use {
         PREFIX_PATH,
         PrefixPath,
     },
+    region_len::RegionLen,
+    region_offset::RegionOffset,
     region_space::RegionSpace,
     root_char::{
         ROOT_CHAR,
@@ -64,6 +69,7 @@ pub use {
         SCOPE_OP,
         ScopeOp,
     },
+    term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
 };
