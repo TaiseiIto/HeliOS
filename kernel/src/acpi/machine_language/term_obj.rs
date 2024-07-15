@@ -6,6 +6,7 @@ use {
     super::{
         EXT_OP_PREFIX,
         Object,
+        OP_REGION_OP,
         SCOPE_OP,
     },
 };
@@ -51,6 +52,10 @@ impl From<&[u8]> for TermObj {
                 Self::Object(object)
             },
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
+                OP_REGION_OP => {
+                    let object: Object = aml.into();
+                    Self::Object(object)
+                },
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),

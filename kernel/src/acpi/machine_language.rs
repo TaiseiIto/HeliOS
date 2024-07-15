@@ -10,6 +10,7 @@ pub mod name_space_modifier_obj;
 pub mod name_string;
 pub mod null_name;
 pub mod object;
+pub mod op_region_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod root_char;
@@ -29,6 +30,7 @@ pub use {
         NULL_NAME,
     },
     object::Object,
+    op_region_op::OP_REGION_OP,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
     root_char::{
