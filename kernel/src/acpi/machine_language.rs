@@ -19,6 +19,7 @@ pub mod op_region_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod prefix_path;
+pub mod region_space;
 pub mod root_char;
 pub mod scope_op;
 pub mod term_list;
@@ -54,6 +55,7 @@ pub use {
         PREFIX_PATH,
         PrefixPath,
     },
+    region_space::RegionSpace,
     root_char::{
         ROOT_CHAR,
         RootChar,
