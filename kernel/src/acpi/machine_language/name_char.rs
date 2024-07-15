@@ -38,6 +38,15 @@ impl fmt::Debug for NameChar {
     }
 }
 
+impl From<&NameChar> for char {
+    fn from(name_char: &NameChar) -> Self {
+        match name_char {
+            NameChar::DigitChar(digit_char) => digit_char.into(),
+            NameChar::LeadNameChar(lead_name_char) => lead_name_char.into(),
+        }
+    }
+}
+
 impl From<&[u8]> for NameChar {
     fn from(aml: &[u8]) -> Self {
         let character: char = *aml.first().unwrap() as char;

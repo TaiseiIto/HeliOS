@@ -1,5 +1,10 @@
 use {
+    alloc::string::String,
     core::fmt,
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::{
         NameString,
         OpRegionOp,
@@ -33,6 +38,8 @@ impl From<&[u8]> for DefOpRegion {
         let op_region_op: OpRegionOp = aml.into();
         let aml: &[u8] = &aml[op_region_op.length()..];
         let name_string: NameString = aml.into();
+        let name: String = (&name_string).into();
+        com2_println!("name = {:#x?}", name);
         let aml: &[u8] = &aml[name_string.length()..];
         unimplemented!()
     }

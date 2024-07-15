@@ -12,6 +12,12 @@ impl PrefixPath {
     }
 }
 
+impl From<&PrefixPath> for char {
+    fn from(prefix_path: &PrefixPath) -> Self {
+        PREFIX_PATH as Self
+    }
+}
+
 impl From<&[u8]> for PrefixPath {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), PREFIX_PATH);

@@ -12,6 +12,12 @@ impl RootChar {
     }
 }
 
+impl From<&RootChar> for char {
+    fn from(root_char: &RootChar) -> Self {
+        ROOT_CHAR as Self
+    }
+}
+
 impl From<&[u8]> for RootChar {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), ROOT_CHAR);

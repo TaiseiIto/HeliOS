@@ -1,6 +1,12 @@
 use {
-    alloc::vec::Vec,
-    core::fmt,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
+    core::{
+        fmt,
+        iter,
+    },
     super::{
         LeadNameChar,
         NameChar,
@@ -57,6 +63,28 @@ impl fmt::Debug for NamePath {
                 .debug_tuple("NamePath")
                 .field(null_name)
                 .finish(),
+        }
+    }
+}
+
+impl From<&NamePath> for String {
+    fn from(name_path: &NamePath) -> Self {
+        match name_path {
+            NamePath::NameSeg {
+                lead_name_char,
+                name_char,
+            } => iter::once({
+                    let lead_name_char: char = lead_name_char.into();
+                    lead_name_char
+                })
+                .chain(name_char
+                    .as_slice()
+                    .iter()
+                    .map(|name_char| name_char.into()))
+                .collect(),
+            NamePath::DualNamePath => unimplemented!(),
+            NamePath::MultiNamePath => unimplemented!(),
+            NamePath::NullName(null_name) => Self::new(),
         }
     }
 }

@@ -10,6 +10,12 @@ impl LeadNameChar {
     }
 }
 
+impl From<&LeadNameChar> for char {
+    fn from(lead_name_char: &LeadNameChar) -> Self {
+        lead_name_char.0
+    }
+}
+
 impl From<&[u8]> for LeadNameChar {
     fn from(aml: &[u8]) -> Self {
         let character: char = *aml.first().unwrap() as char;

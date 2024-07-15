@@ -10,6 +10,12 @@ impl DigitChar {
     }
 }
 
+impl From<&DigitChar> for char {
+    fn from(digit_char: &DigitChar) -> char {
+        digit_char.0
+    }
+}
+
 impl From<&[u8]> for DigitChar {
     fn from(aml: &[u8]) -> Self {
         let character: char = *aml.first().unwrap() as char;
