@@ -3,15 +3,13 @@ use {
         string::String,
         vec::Vec,
     },
-    core::{
-        fmt,
-        iter,
-    },
+    core::fmt,
     super::{
-        LeadNameChar,
-        NameChar,
-        NullName,
+        DUAL_NAME_PREFIX,
+        MULTI_NAME_PREFIX,
         NULL_NAME,
+        NameSeg,
+        NullName,
     },
 };
 
@@ -19,10 +17,7 @@ use {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 pub enum NamePath {
-    NameSeg {
-        lead_name_char: LeadNameChar,
-        name_char: [NameChar; 3],
-    },
+    NameSeg(NameSeg),
     DualNamePath,
     MultiNamePath,
     NullName(NullName),
@@ -31,14 +26,7 @@ pub enum NamePath {
 impl NamePath {
     pub fn length(&self) -> usize {
         match self {
-            Self::NameSeg {
-                lead_name_char,
-                name_char,
-            } => lead_name_char.length() + name_char
-                .as_slice()
-                .iter()
-                .map(|name_char| name_char.length())
-                .sum::<usize>(),
+            Self::NameSeg(name_seg) => name_seg.length(),
             Self::DualNamePath => unimplemented!(),
             Self::MultiNamePath => unimplemented!(),
             Self::NullName(null_name) => null_name.length(),
@@ -49,13 +37,9 @@ impl NamePath {
 impl fmt::Debug for NamePath {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::NameSeg {
-                lead_name_char,
-                name_char,
-            } => formatter
-                .debug_tuple("NamePath")
-                .field(lead_name_char)
-                .field(name_char)
+            Self::NameSeg(name_seg) => formatter
+                .debug_tuple("NameSeg")
+                .field(name_seg)
                 .finish(),
             Self::DualNamePath => write!(formatter, "NamePath::DualNamePath"),
             Self::MultiNamePath => write!(formatter, "NamePath::MultiNamePath"),
@@ -70,18 +54,7 @@ impl fmt::Debug for NamePath {
 impl From<&NamePath> for String {
     fn from(name_path: &NamePath) -> Self {
         match name_path {
-            NamePath::NameSeg {
-                lead_name_char,
-                name_char,
-            } => iter::once({
-                    let lead_name_char: char = lead_name_char.into();
-                    lead_name_char
-                })
-                .chain(name_char
-                    .as_slice()
-                    .iter()
-                    .map(|name_char| name_char.into()))
-                .collect(),
+            NamePath::NameSeg(name_seg) => name_seg.into(),
             NamePath::DualNamePath => unimplemented!(),
             NamePath::MultiNamePath => unimplemented!(),
             NamePath::NullName(null_name) => Self::new(),
@@ -92,28 +65,10 @@ impl From<&NamePath> for String {
 impl From<&[u8]> for NamePath {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
-            NULL_NAME => {
-                let null_name: NullName = aml.into();
-                Self::NullName(null_name)
-            },
-            first_byte => {
-                let lead_name_char: LeadNameChar = aml.into();
-                let aml: &[u8] = &aml[lead_name_char.length()..];
-                let (aml, name_char): (&[u8], Vec<NameChar>) = (0..3)
-                    .fold((aml, Vec::new()), |(aml, mut name_char), _| {
-                        let new_name_char: NameChar = aml.into();
-                        let aml: &[u8] = &aml[new_name_char.length()..];
-                        name_char.push(new_name_char);
-                        (aml, name_char)
-                    });
-                let name_char: [NameChar; 3] = name_char
-                    .try_into()
-                    .unwrap();
-                Self::NameSeg {
-                    lead_name_char,
-                    name_char,
-                }
-            },
+            DUAL_NAME_PREFIX => unimplemented!(),
+            MULTI_NAME_PREFIX => unimplemented!(),
+            NULL_NAME => Self::NullName(aml.into()),
+            _ => Self::NameSeg(aml.into()),
         }
     }
 }

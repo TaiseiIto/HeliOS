@@ -10,14 +10,17 @@ pub mod def_field;
 pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
+pub mod dual_name_prefix;
 pub mod ext_op_prefix;
 pub mod field_element;
 pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
 pub mod lead_name_char;
+pub mod multi_name_prefix;
 pub mod name_char;
 pub mod name_path;
+pub mod name_seg;
 pub mod name_space_modifier_obj;
 pub mod name_string;
 pub mod named_obj;
@@ -49,6 +52,7 @@ pub use {
     def_op_region::DefOpRegion,
     def_scope::DefScope,
     digit_char::DigitChar,
+    dual_name_prefix::DUAL_NAME_PREFIX,
     ext_op_prefix::{
         EXT_OP_PREFIX,
         ExtOpPrefix,
@@ -61,8 +65,10 @@ pub use {
         FieldOp,
     },
     lead_name_char::LeadNameChar,
+    multi_name_prefix::MULTI_NAME_PREFIX,
     name_char::NameChar,
     name_path::NamePath,
+    name_seg::NameSeg,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,
     named_obj::NamedObj,
