@@ -1,6 +1,8 @@
 use {
     core::fmt,
     super::{
+        ConstObj,
+        ONE_OP,
         WORD_PREFIX,
         WordConst,
     },
@@ -15,7 +17,7 @@ pub enum ComputationalData {
     DwordConst,
     QwordConst,
     String,
-    ConstObj,
+    ConstObj(ConstObj),
     RevisionOp,
     DefBuffer,
 }
@@ -28,7 +30,7 @@ impl ComputationalData {
             Self::DwordConst => unimplemented!(),
             Self::QwordConst => unimplemented!(),
             Self::String => unimplemented!(),
-            Self::ConstObj => unimplemented!(),
+            Self::ConstObj(const_obj) => const_obj.length(),
             Self::RevisionOp => unimplemented!(),
             Self::DefBuffer => unimplemented!(),
         }
@@ -46,7 +48,10 @@ impl fmt::Debug for ComputationalData {
             Self::DwordConst => write!(formatter, "ComputationalData::DwordConst"),
             Self::QwordConst => write!(formatter, "ComputationalData::QwordConst"),
             Self::String => write!(formatter, "ComputationalData::String"),
-            Self::ConstObj => write!(formatter, "ComputationalData::ConstObj"),
+            Self::ConstObj(const_obj) => formatter
+                .debug_tuple("ComputationalData")
+                .field(const_obj)
+                .finish(),
             Self::RevisionOp => write!(formatter, "ComputationalData::RevisionOp"),
             Self::DefBuffer => write!(formatter, "ComputationalData::DefBuffer"),
         }
@@ -56,6 +61,7 @@ impl fmt::Debug for ComputationalData {
 impl From<&[u8]> for ComputationalData {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
+            ONE_OP => Self::ConstObj(aml.into()),
             WORD_PREFIX => Self::WordConst(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }

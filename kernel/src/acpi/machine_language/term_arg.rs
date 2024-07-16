@@ -2,6 +2,7 @@ use {
     core::fmt,
     super::{
         DataObject,
+        ONE_OP,
         WORD_PREFIX,
     },
 };
@@ -44,7 +45,7 @@ impl fmt::Debug for TermArg {
 impl From<&[u8]> for TermArg {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
-            WORD_PREFIX => Self::DataObject(aml.into()),
+            ONE_OP | WORD_PREFIX => Self::DataObject(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }

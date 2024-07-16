@@ -4,6 +4,7 @@
 
 pub mod byte_data;
 pub mod computational_data;
+pub mod const_obj;
 pub mod data_object;
 pub mod def_op_region;
 pub mod def_scope;
@@ -17,6 +18,7 @@ pub mod name_string;
 pub mod named_obj;
 pub mod null_name;
 pub mod object;
+pub mod one_op;
 pub mod op_region_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
@@ -36,6 +38,7 @@ pub mod word_prefix;
 pub use {
     byte_data::ByteData,
     computational_data::ComputationalData,
+    const_obj::ConstObj,
     data_object::DataObject,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
@@ -55,6 +58,10 @@ pub use {
         NullName,
     },
     object::Object,
+    one_op::{
+        ONE_OP,
+        OneOp,
+    },
     op_region_op::{
         OP_REGION_OP,
         OpRegionOp,
