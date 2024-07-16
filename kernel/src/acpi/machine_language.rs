@@ -6,6 +6,7 @@ pub mod byte_data;
 pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
+pub mod def_field;
 pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
@@ -41,6 +42,7 @@ pub use {
     computational_data::ComputationalData,
     const_obj::ConstObj,
     data_object::DataObject,
+    def_field::DefField,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
     digit_char::DigitChar,
