@@ -1,5 +1,9 @@
 use {
     core::fmt,
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::{
         FieldFlags,
         FieldList,
@@ -59,14 +63,23 @@ impl fmt::Debug for DefField {
 
 impl From<&[u8]> for DefField {
     fn from(aml: &[u8]) -> Self {
+        com2_println!("aml = {:#x?}", aml);
         let field_op: FieldOp = aml.into();
+        com2_println!("field_op = {:#x?}", field_op);
         let pkg_length: PkgLength = (&aml[field_op.length()..]).into();
+        com2_println!("pkg_length = {:#x?}", pkg_length);
         let aml: &[u8] = &aml[field_op.length() + pkg_length.length()..pkg_length.pkg_length()];
+        com2_println!("aml = {:#x?}", aml);
         let name_string: NameString = aml.into();
+        com2_println!("name_string = {:#x?}", name_string);
         let aml: &[u8] = &aml[name_string.length()..];
+        com2_println!("aml = {:#x?}", aml);
         let field_flags: FieldFlags = aml.into();
+        com2_println!("field_flags = {:#x?}", field_flags);
         let aml: &[u8] = &aml[field_flags.length()..];
+        com2_println!("aml = {:#x?}", aml);
         let field_list: FieldList = aml.into();
+        com2_println!("field_list = {:#x?}", field_list);
         Self {
             field_op,
             pkg_length,
