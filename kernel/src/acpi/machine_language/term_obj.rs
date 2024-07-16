@@ -5,6 +5,7 @@ use {
     },
     super::{
         EXT_OP_PREFIX,
+        FIELD_OP,
         Object,
         OP_REGION_OP,
         SCOPE_OP,
@@ -48,7 +49,7 @@ impl From<&[u8]> for TermObj {
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                OP_REGION_OP => Self::Object(aml.into()),
+                FIELD_OP | OP_REGION_OP => Self::Object(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             SCOPE_OP => Self::Object(aml.into()),

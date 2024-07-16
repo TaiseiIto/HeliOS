@@ -10,6 +10,7 @@ pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
 pub mod ext_op_prefix;
+pub mod field_op;
 pub mod lead_name_char;
 pub mod name_char;
 pub mod name_path;
@@ -46,6 +47,10 @@ pub use {
     ext_op_prefix::{
         EXT_OP_PREFIX,
         ExtOpPrefix,
+    },
+    field_op::{
+        FIELD_OP,
+        FieldOp,
     },
     lead_name_char::LeadNameChar,
     name_char::NameChar,
