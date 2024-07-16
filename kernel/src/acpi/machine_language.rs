@@ -23,6 +23,7 @@ pub mod name_path;
 pub mod name_seg;
 pub mod name_space_modifier_obj;
 pub mod name_string;
+pub mod named_field;
 pub mod named_obj;
 pub mod null_name;
 pub mod object;
@@ -71,6 +72,7 @@ pub use {
     name_seg::NameSeg,
     name_space_modifier_obj::NameSpaceModifierObj,
     name_string::NameString,
+    named_field::NamedField,
     named_obj::NamedObj,
     null_name::{
         NULL_NAME,
