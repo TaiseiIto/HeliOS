@@ -24,7 +24,7 @@ impl Object {
     pub fn length(&self) -> usize {
         match self {
             Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.length(),
-            Self::NamedObj(named_obj) => unimplemented!(),
+            Self::NamedObj(named_obj) => named_obj.length(),
         }
     }
 }

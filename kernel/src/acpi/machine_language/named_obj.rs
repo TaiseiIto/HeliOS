@@ -17,6 +17,14 @@ pub enum NamedObj {
     DefOpRegion(DefOpRegion),
 }
 
+impl NamedObj {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::DefOpRegion(def_op_region) => def_op_region.length(),
+        }
+    }
+}
+
 impl fmt::Debug for NamedObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

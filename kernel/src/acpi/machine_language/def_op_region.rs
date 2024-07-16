@@ -20,6 +20,23 @@ pub struct DefOpRegion {
     region_len: RegionLen,
 }
 
+impl DefOpRegion {
+    pub fn length(&self) -> usize {
+        let Self {
+            op_region_op,
+            name_string,
+            region_space,
+            region_offset,
+            region_len,
+        } = self;
+        op_region_op.length()
+        + name_string.length()
+        + region_space.length()
+        + region_offset.length()
+        + region_len.length()
+    }
+}
+
 impl fmt::Debug for DefOpRegion {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
