@@ -11,7 +11,9 @@ pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
 pub mod ext_op_prefix;
+pub mod field_element;
 pub mod field_flags;
+pub mod field_list;
 pub mod field_op;
 pub mod lead_name_char;
 pub mod name_char;
@@ -51,7 +53,9 @@ pub use {
         EXT_OP_PREFIX,
         ExtOpPrefix,
     },
+    field_element::FieldElement,
     field_flags::FieldFlags,
+    field_list::FieldList,
     field_op::{
         FIELD_OP,
         FieldOp,
