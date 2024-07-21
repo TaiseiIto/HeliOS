@@ -34,6 +34,7 @@ pub mod null_name;
 pub mod object;
 pub mod one_op;
 pub mod op_region_op;
+pub mod operand;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod prefix_path;
@@ -101,6 +102,7 @@ pub use {
         OP_REGION_OP,
         OpRegionOp,
     },
+    operand::Operand,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
     prefix_path::{
