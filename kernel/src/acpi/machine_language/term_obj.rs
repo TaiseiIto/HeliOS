@@ -6,8 +6,9 @@ use {
     super::{
         EXT_OP_PREFIX,
         FIELD_OP,
-        Object,
+        METHOD_OP,
         OP_REGION_OP,
+        Object,
         SCOPE_OP,
     },
 };
@@ -52,7 +53,7 @@ impl From<&[u8]> for TermObj {
                 FIELD_OP | OP_REGION_OP => Self::Object(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
-            SCOPE_OP => Self::Object(aml.into()),
+            METHOD_OP | SCOPE_OP => Self::Object(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }

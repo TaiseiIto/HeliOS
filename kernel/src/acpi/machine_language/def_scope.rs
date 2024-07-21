@@ -1,9 +1,5 @@
 use {
     core::fmt,
-    crate::{
-        com2_print,
-        com2_println,
-    },
     super::{
         NameString,
         PkgLength,
@@ -57,21 +53,13 @@ impl From<&[u8]> for DefScope {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
             SCOPE_OP => {
-                com2_println!("aml = {:#x?}", aml);
                 let scope_op: ScopeOp = aml.into();
-                com2_println!("scope_op = {:#x?}", scope_op);
                 let aml: &[u8] = &aml[scope_op.length()..];
-                com2_println!("aml = {:#x?}", aml);
                 let pkg_length: PkgLength = (aml).into();
-                com2_println!("pkg_length = {:#x?}", pkg_length);
                 let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-                com2_println!("aml = {:#x?}", aml);
                 let name_string: NameString = aml.into();
-                com2_println!("name_string = {:#x?}", name_string);
                 let aml: &[u8] = &aml[name_string.length()..];
-                com2_println!("aml = {:#x?}", aml);
                 let term_list: TermList = aml.into();
-                com2_println!("term_list = {:#x?}", term_list);
                 Self {
                     scope_op,
                     pkg_length,

@@ -7,6 +7,7 @@ pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
 pub mod def_field;
+pub mod def_method;
 pub mod def_op_region;
 pub mod def_scope;
 pub mod digit_char;
@@ -17,6 +18,7 @@ pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
 pub mod lead_name_char;
+pub mod method_op;
 pub mod multi_name_prefix;
 pub mod name_char;
 pub mod name_path;
@@ -50,6 +52,7 @@ pub use {
     const_obj::ConstObj,
     data_object::DataObject,
     def_field::DefField,
+    def_method::DefMethod,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
     digit_char::DigitChar,
@@ -66,6 +69,10 @@ pub use {
         FieldOp,
     },
     lead_name_char::LeadNameChar,
+    method_op::{
+        METHOD_OP,
+        MethodOp,
+    },
     multi_name_prefix::MULTI_NAME_PREFIX,
     name_char::NameChar,
     name_path::NamePath,

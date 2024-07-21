@@ -6,6 +6,7 @@ use {
     super::{
         EXT_OP_PREFIX,
         FIELD_OP,
+        METHOD_OP,
         NameSpaceModifierObj,
         NamedObj,
         OP_REGION_OP,
@@ -53,6 +54,7 @@ impl From<&[u8]> for Object {
                 FIELD_OP | OP_REGION_OP => Self::NamedObj(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             }
+            METHOD_OP => Self::NamedObj(aml.into()),
             SCOPE_OP => Self::NameSpaceModifierObj(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }

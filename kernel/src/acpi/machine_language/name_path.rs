@@ -1,8 +1,5 @@
 use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
+    alloc::string::String,
     core::fmt,
     super::{
         DUAL_NAME_PREFIX,
