@@ -1,8 +1,10 @@
 break main
 run
-break ../hw/timer/hpet.c:539
+break memory_region_dispatch_write if mr->ops->write==hpet_ram_write && addr==0x108
 continue
 backtrace
-print "s->timer[0]"
-p/x s->timer[0]
+print "mr->ops->impl.min_access_size"
+p/x mr->ops->impl.min_access_size
+print "mr->ops->impl.max_access_size"
+p/x mr->ops->impl.max_access_size
 
