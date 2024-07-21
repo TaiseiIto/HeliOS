@@ -18,6 +18,7 @@ pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
 pub mod lead_name_char;
+pub mod method_flags;
 pub mod method_op;
 pub mod multi_name_prefix;
 pub mod name_char;
@@ -69,6 +70,7 @@ pub use {
         FieldOp,
     },
     lead_name_char::LeadNameChar,
+    method_flags::MethodFlags,
     method_op::{
         METHOD_OP,
         MethodOp,
