@@ -66,9 +66,11 @@ impl From<&[u8]> for DefField {
         com2_println!("aml = {:#x?}", aml);
         let field_op: FieldOp = aml.into();
         com2_println!("field_op = {:#x?}", field_op);
-        let pkg_length: PkgLength = (&aml[field_op.length()..]).into();
+        let aml: &[u8] = &aml[field_op.length()..];
+        com2_println!("aml = {:#x?}", aml);
+        let pkg_length: PkgLength = aml.into();
         com2_println!("pkg_length = {:#x?}", pkg_length);
-        let aml: &[u8] = &aml[field_op.length() + pkg_length.length()..pkg_length.pkg_length()];
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         com2_println!("aml = {:#x?}", aml);
         let name_string: NameString = aml.into();
         com2_println!("name_string = {:#x?}", name_string);
