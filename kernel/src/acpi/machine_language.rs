@@ -10,8 +10,10 @@ pub mod def_field;
 pub mod def_method;
 pub mod def_op_region;
 pub mod def_scope;
+pub mod def_to_hex_string;
 pub mod digit_char;
 pub mod dual_name_prefix;
+pub mod expression_opcode;
 pub mod ext_op_prefix;
 pub mod field_element;
 pub mod field_flags;
@@ -43,6 +45,7 @@ pub mod scope_op;
 pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
+pub mod to_hex_string_op;
 pub mod word_const;
 pub mod word_data;
 pub mod word_prefix;
@@ -56,8 +59,10 @@ pub use {
     def_method::DefMethod,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
+    def_to_hex_string::DefToHexString,
     digit_char::DigitChar,
     dual_name_prefix::DUAL_NAME_PREFIX,
+    expression_opcode::ExpressionOpcode,
     ext_op_prefix::{
         EXT_OP_PREFIX,
         ExtOpPrefix,
@@ -116,6 +121,10 @@ pub use {
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
+    to_hex_string_op::{
+        TO_HEX_STRING_OP,
+        ToHexStringOp,
+    },
     word_const::WordConst,
     word_data::WordData,
     word_prefix::{

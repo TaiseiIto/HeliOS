@@ -10,6 +10,8 @@ use {
         OP_REGION_OP,
         Object,
         SCOPE_OP,
+        ExpressionOpcode,
+        TO_HEX_STRING_OP,
     },
 };
 
@@ -17,7 +19,7 @@ use {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 pub enum TermObj {
-    ExpressionOpcode,
+    ExpressionOpcode(ExpressionOpcode),
     Object(Object),
     StatementOpcode,
 }
@@ -25,7 +27,7 @@ pub enum TermObj {
 impl TermObj {
     pub fn length(&self) -> usize {
         match self {
-            Self::ExpressionOpcode => unimplemented!(),
+            Self::ExpressionOpcode(expression_opcode) => expression_opcode.length(),
             Self::Object(object) => object.length(),
             Self::StatementOpcode => unimplemented!(),
         }
@@ -35,7 +37,10 @@ impl TermObj {
 impl fmt::Debug for TermObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::ExpressionOpcode => write!(formatter, "TermObj"),
+            Self::ExpressionOpcode(expression_opcode) => formatter
+                .debug_tuple("TermObj")
+                .field(expression_opcode)
+                .finish(),
             Self::Object(object) => formatter
                 .debug_tuple("TermObj")
                 .field(object)
@@ -54,6 +59,7 @@ impl From<&[u8]> for TermObj {
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             METHOD_OP | SCOPE_OP => Self::Object(aml.into()),
+            TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }
