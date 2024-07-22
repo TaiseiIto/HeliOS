@@ -21,6 +21,7 @@ pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
 pub mod lead_name_char;
+pub mod local_obj;
 pub mod method_flags;
 pub mod method_op;
 pub mod multi_name_prefix;
@@ -44,6 +45,8 @@ pub mod region_offset;
 pub mod region_space;
 pub mod root_char;
 pub mod scope_op;
+pub mod simple_name;
+pub mod super_name;
 pub mod target;
 pub mod term_arg;
 pub mod term_list;
@@ -83,6 +86,11 @@ pub use {
         FieldOp,
     },
     lead_name_char::LeadNameChar,
+    local_obj::{
+        LOCAL_OBJ_MAX,
+        LOCAL_OBJ_MIN,
+        LocalObj,
+    },
     method_flags::MethodFlags,
     method_op::{
         METHOD_OP,
@@ -127,6 +135,8 @@ pub use {
         SCOPE_OP,
         ScopeOp,
     },
+    simple_name::SimpleName,
+    super_name::SuperName,
     target::Target,
     term_arg::TermArg,
     term_list::TermList,
