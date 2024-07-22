@@ -2,6 +2,7 @@
 //! ## References
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
+pub mod arg_obj;
 pub mod byte_data;
 pub mod computational_data;
 pub mod const_obj;
@@ -52,6 +53,11 @@ pub mod word_data;
 pub mod word_prefix;
 
 pub use {
+    arg_obj::{
+        ARG_OBJ_MAX,
+        ARG_OBJ_MIN,
+        ArgObj,
+    },
     byte_data::ByteData,
     computational_data::ComputationalData,
     const_obj::ConstObj,
