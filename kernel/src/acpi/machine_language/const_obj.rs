@@ -15,16 +15,6 @@ pub enum ConstObj {
     OnesOp,
 }
 
-impl Reader<'_> for ConstObj {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::ZeroOp => unimplemented!(),
-            Self::OneOp(one_op) => one_op.length(),
-            Self::OnesOp => unimplemented!(),
-        }
-    }
-}
-
 impl fmt::Debug for ConstObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -43,6 +33,16 @@ impl From<&[u8]> for ConstObj {
         match *aml.first().unwrap() {
             ONE_OP => Self::OneOp(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for ConstObj {
+    fn length(&self) -> usize {
+        match self {
+            Self::ZeroOp => unimplemented!(),
+            Self::OneOp(one_op) => one_op.length(),
+            Self::OnesOp => unimplemented!(),
         }
     }
 }

@@ -35,7 +35,7 @@ impl From<&[u8]> for ExpressionOpcode {
 }
 
 impl Reader<'_> for ExpressionOpcode {
-    pub fn length(&self) -> usize {
+    fn length(&self) -> usize {
         match self {
             Self::DefToHexString(def_to_hex_string) => def_to_hex_string.length(),
         }

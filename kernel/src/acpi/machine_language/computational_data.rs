@@ -23,21 +23,6 @@ pub enum ComputationalData {
     DefBuffer,
 }
 
-impl Reader<'_> for ComputationalData {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::ByteConst => unimplemented!(),
-            Self::WordConst(word_const) => word_const.length(),
-            Self::DwordConst => unimplemented!(),
-            Self::QwordConst => unimplemented!(),
-            Self::String => unimplemented!(),
-            Self::ConstObj(const_obj) => const_obj.length(),
-            Self::RevisionOp => unimplemented!(),
-            Self::DefBuffer => unimplemented!(),
-        }
-    }
-}
-
 impl fmt::Debug for ComputationalData {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -65,6 +50,21 @@ impl From<&[u8]> for ComputationalData {
             ONE_OP => Self::ConstObj(aml.into()),
             WORD_PREFIX => Self::WordConst(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for ComputationalData {
+    fn length(&self) -> usize {
+        match self {
+            Self::ByteConst => unimplemented!(),
+            Self::WordConst(word_const) => word_const.length(),
+            Self::DwordConst => unimplemented!(),
+            Self::QwordConst => unimplemented!(),
+            Self::String => unimplemented!(),
+            Self::ConstObj(const_obj) => const_obj.length(),
+            Self::RevisionOp => unimplemented!(),
+            Self::DefBuffer => unimplemented!(),
         }
     }
 }

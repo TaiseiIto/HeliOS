@@ -96,7 +96,7 @@ impl From<&[u8]> for NameString {
                 let mut aml: &[u8] = aml;
                 let mut prefix_path: Vec<PrefixPath> = Vec::new();
                 while *aml.first().unwrap() == PREFIX_PATH {
-                    let (new_prefix_path, reamaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
+                    let (new_prefix_path, remaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
                     aml = remaining_aml;
                     prefix_path.push(new_prefix_path);
                 }
@@ -111,7 +111,7 @@ impl From<&[u8]> for NameString {
 }
 
 impl Reader<'_> for NameString {
-    pub fn length(&self) -> usize {
+    fn length(&self) -> usize {
         match self {
             Self::RootCharNamePath {
                 root_char,

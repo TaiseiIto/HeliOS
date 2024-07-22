@@ -31,7 +31,7 @@ impl From<&[u8]> for PkgLeadByte {
 }
 
 impl Reader<'_> for PkgLeadByte {
-    pub fn length(&self) -> usize {
+    fn length(&self) -> usize {
         1
     }
 }

@@ -15,7 +15,7 @@ impl From<&[u8]> for OneOp {
     }
 }
 
-impl Reader<'_> OneOp {
+impl Reader<'_> for OneOp {
     fn length(&self) -> usize {
         1
     }
