@@ -5,6 +5,9 @@ use {
         ARG_OBJ_MIN,
         ArgObj,
         DataObject,
+        LOCAL_OBJ_MAX,
+        LOCAL_OBJ_MIN,
+        LocalObj,
         ONE_OP,
         Reader,
         WORD_PREFIX,
@@ -18,7 +21,7 @@ pub enum TermArg {
     ExpressionOpcode,
     DataObject(DataObject),
     ArgObj(ArgObj),
-    LocalObj,
+    LocalObj(LocalObj),
 }
 
 impl fmt::Debug for TermArg {
@@ -30,10 +33,13 @@ impl fmt::Debug for TermArg {
                 .field(data_object)
                 .finish(),
             Self::ArgObj(arg_obj) => formatter
-                .debug_tuple("ArgObj")
+                .debug_tuple("TermArg")
                 .field(arg_obj)
                 .finish(),
-            Self::LocalObj => write!(formatter, "TermArg::LocalObj"),
+            Self::LocalObj(local_obj) => formatter
+                .debug_tuple("TermArg")
+                .field(local_obj)
+                .finish(),
         }
     }
 }
@@ -43,6 +49,7 @@ impl From<&[u8]> for TermArg {
         match *aml.first().unwrap() {
             ONE_OP | WORD_PREFIX => Self::DataObject(aml.into()),
             ARG_OBJ_MIN..=ARG_OBJ_MAX => Self::ArgObj(aml.into()),
+            LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX => Self::LocalObj(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }
@@ -54,7 +61,7 @@ impl Reader<'_> for TermArg {
             Self::ExpressionOpcode => unimplemented!(),
             Self::DataObject(data_object) => data_object.length(),
             Self::ArgObj(arg_obj) => arg_obj.length(),
-            Self::LocalObj => unimplemented!(),
+            Self::LocalObj(local_obj) => local_obj.length(),
         }
     }
 }
