@@ -11,6 +11,7 @@ pub mod def_field;
 pub mod def_method;
 pub mod def_op_region;
 pub mod def_scope;
+pub mod def_to_buffer;
 pub mod def_to_hex_string;
 pub mod digit_char;
 pub mod dual_name_prefix;
@@ -51,6 +52,7 @@ pub mod target;
 pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
+pub mod to_buffer_op;
 pub mod to_hex_string_op;
 pub mod word_const;
 pub mod word_data;
@@ -70,6 +72,7 @@ pub use {
     def_method::DefMethod,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
+    def_to_buffer::DefToBuffer,
     def_to_hex_string::DefToHexString,
     digit_char::DigitChar,
     dual_name_prefix::DUAL_NAME_PREFIX,
@@ -141,6 +144,10 @@ pub use {
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
+    to_buffer_op::{
+        TO_BUFFER_OP,
+        ToBufferOp,
+    },
     to_hex_string_op::{
         TO_HEX_STRING_OP,
         ToHexStringOp,

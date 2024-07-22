@@ -12,6 +12,7 @@ use {
         Object,
         Reader,
         SCOPE_OP,
+        TO_BUFFER_OP,
         TO_HEX_STRING_OP,
     },
 };
@@ -22,7 +23,6 @@ use {
 pub enum TermObj {
     ExpressionOpcode(ExpressionOpcode),
     Object(Object),
-    StatementOpcode,
 }
 
 impl fmt::Debug for TermObj {
@@ -36,7 +36,6 @@ impl fmt::Debug for TermObj {
                 .debug_tuple("TermObj")
                 .field(object)
                 .finish(),
-            Self::StatementOpcode => write!(formatter, "TermObj"),
         }
     }
 }
@@ -50,7 +49,7 @@ impl From<&[u8]> for TermObj {
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
             METHOD_OP | SCOPE_OP => Self::Object(aml.into()),
-            TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
+            TO_BUFFER_OP | TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }
@@ -61,7 +60,6 @@ impl Reader<'_> for TermObj {
         match self {
             Self::ExpressionOpcode(expression_opcode) => expression_opcode.length(),
             Self::Object(object) => object.length(),
-            Self::StatementOpcode => unimplemented!(),
         }
     }
 }
