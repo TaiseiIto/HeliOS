@@ -17,7 +17,8 @@ impl From<&[u8]> for FieldList {
         let mut aml: &[u8] = aml;
         let mut field_list: Vec<FieldElement> = Vec::new();
         while !aml.is_empty() {
-            let (field_element, aml): (FieldElement, &[u8]) = FieldElement::read(aml);
+            let (field_element, remaining_aml): (FieldElement, &[u8]) = FieldElement::read(aml);
+            aml = remaining_aml;
             field_list.push(field_element);
         }
         Self(field_list)

@@ -30,6 +30,12 @@ impl PkgLength {
             .rev()
             .fold(0, |length, byte_data| (length << u8::BITS) + byte_data.pkg_length()) << 4) + self.pkg_lead_byte.pkg_length()
     }
+
+    pub fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let pkg_length: Self = aml.into();
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
+        (pkg_length, aml)
+    }
 }
 
 impl fmt::Debug for PkgLength {
