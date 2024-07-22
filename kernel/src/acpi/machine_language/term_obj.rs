@@ -12,6 +12,7 @@ use {
         Object,
         Reader,
         SCOPE_OP,
+        SUBTRACT_OP,
         TO_BUFFER_OP,
         TO_HEX_STRING_OP,
     },
@@ -45,11 +46,15 @@ impl From<&[u8]> for TermObj {
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         match *aml_iterator.next().unwrap() {
             EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                FIELD_OP | OP_REGION_OP => Self::Object(aml.into()),
+                FIELD_OP
+                | OP_REGION_OP => Self::Object(aml.into()),
                 unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
             },
-            METHOD_OP | SCOPE_OP => Self::Object(aml.into()),
-            TO_BUFFER_OP | TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
+            METHOD_OP
+            | SCOPE_OP => Self::Object(aml.into()),
+            SUBTRACT_OP
+            | TO_BUFFER_OP
+            | TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
     }

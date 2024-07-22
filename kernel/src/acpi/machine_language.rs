@@ -11,6 +11,7 @@ pub mod def_field;
 pub mod def_method;
 pub mod def_op_region;
 pub mod def_scope;
+pub mod def_subtract;
 pub mod def_to_buffer;
 pub mod def_to_hex_string;
 pub mod digit_char;
@@ -47,6 +48,7 @@ pub mod region_space;
 pub mod root_char;
 pub mod scope_op;
 pub mod simple_name;
+pub mod subtract_op;
 pub mod super_name;
 pub mod target;
 pub mod term_arg;
@@ -72,6 +74,7 @@ pub use {
     def_method::DefMethod,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
+    def_subtract::DefSubtract,
     def_to_buffer::DefToBuffer,
     def_to_hex_string::DefToHexString,
     digit_char::DigitChar,
@@ -139,6 +142,10 @@ pub use {
         ScopeOp,
     },
     simple_name::SimpleName,
+    subtract_op::{
+        SUBTRACT_OP,
+        SubtractOp,
+    },
     super_name::SuperName,
     target::Target,
     term_arg::TermArg,
