@@ -1,4 +1,7 @@
-use super::TermArg;
+use super::{
+    Reader,
+    TermArg,
+};
 
 /// # Operand
 /// ## References
@@ -6,15 +9,15 @@ use super::TermArg;
 #[derive(Debug)]
 pub struct Operand(TermArg);
 
-impl Operand {
-    pub fn length(&self) -> usize {
-        self.0.length()
-    }
-}
-
 impl From<&[u8]> for Operand {
     fn from(aml: &[u8]) -> Self {
         Self(aml.into())
+    }
+}
+
+impl Reader<'_> for Operand {
+    fn length(&self) -> usize {
+        self.0.length()
     }
 }
 

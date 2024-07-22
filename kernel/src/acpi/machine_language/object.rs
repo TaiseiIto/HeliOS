@@ -10,6 +10,7 @@ use {
         NameSpaceModifierObj,
         NamedObj,
         OP_REGION_OP,
+        Reader,
         SCOPE_OP,
     },
 };
@@ -20,15 +21,6 @@ use {
 pub enum Object {
     NameSpaceModifierObj(NameSpaceModifierObj),
     NamedObj(NamedObj),
-}
-
-impl Object {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.length(),
-            Self::NamedObj(named_obj) => named_obj.length(),
-        }
-    }
 }
 
 impl fmt::Debug for Object {
@@ -57,6 +49,15 @@ impl From<&[u8]> for Object {
             METHOD_OP => Self::NamedObj(aml.into()),
             SCOPE_OP => Self::NameSpaceModifierObj(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for Object {
+    fn length(&self) -> usize {
+        match self {
+            Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.length(),
+            Self::NamedObj(named_obj) => named_obj.length(),
         }
     }
 }

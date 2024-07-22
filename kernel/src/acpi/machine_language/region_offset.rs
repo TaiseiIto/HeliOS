@@ -1,4 +1,7 @@
-use super::TermArg;
+use super::{
+    Reader,
+    TermArg,
+};
 
 /// # RegionOffset
 /// ## References
@@ -6,15 +9,15 @@ use super::TermArg;
 #[derive(Debug)]
 pub struct RegionOffset(TermArg);
 
-impl RegionOffset {
-    pub fn length(&self) -> usize {
-        self.0.length()
-    }
-}
-
 impl From<&[u8]> for RegionOffset {
     fn from(aml: &[u8]) -> Self {
         Self(aml.into())
+    }
+}
+
+impl Reader<'_> for RegionOffset {
+    fn length(&self) -> usize {
+        self.0.length()
     }
 }
 

@@ -3,6 +3,7 @@ use {
     super::{
         DigitChar,
         LeadNameChar,
+        Reader,
     },
 };
 
@@ -12,15 +13,6 @@ use {
 pub enum NameChar {
     DigitChar(DigitChar),
     LeadNameChar(LeadNameChar),
-}
-
-impl NameChar {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::DigitChar(digit_char) => digit_char.length(),
-            Self::LeadNameChar(lead_name_char) => lead_name_char.length(),
-        }
-    }
 }
 
 impl fmt::Debug for NameChar {
@@ -54,6 +46,15 @@ impl From<&[u8]> for NameChar {
             '0'..='0' => Self::DigitChar(aml.into()),
             'A'..='Z' | '_' => Self::LeadNameChar(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for NameChar {
+    fn length(&self) -> usize {
+        match self {
+            Self::DigitChar(digit_char) => digit_char.length(),
+            Self::LeadNameChar(lead_name_char) => lead_name_char.length(),
         }
     }
 }

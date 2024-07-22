@@ -3,6 +3,7 @@ use {
     super::{
         NameString,
         OpRegionOp,
+        Reader,
         RegionLen,
         RegionOffset,
         RegionSpace,
@@ -18,23 +19,6 @@ pub struct DefOpRegion {
     region_space: RegionSpace,
     region_offset: RegionOffset,
     region_len: RegionLen,
-}
-
-impl DefOpRegion {
-    pub fn length(&self) -> usize {
-        let Self {
-            op_region_op,
-            name_string,
-            region_space,
-            region_offset,
-            region_len,
-        } = self;
-        op_region_op.length()
-        + name_string.length()
-        + region_space.length()
-        + region_offset.length()
-        + region_len.length()
-    }
 }
 
 impl fmt::Debug for DefOpRegion {
@@ -59,15 +43,11 @@ impl fmt::Debug for DefOpRegion {
 
 impl From<&[u8]> for DefOpRegion {
     fn from(aml: &[u8]) -> Self {
-        let op_region_op: OpRegionOp = aml.into();
-        let aml: &[u8] = &aml[op_region_op.length()..];
-        let name_string: NameString = aml.into();
-        let aml: &[u8] = &aml[name_string.length()..];
-        let region_space: RegionSpace = aml.into();
-        let aml: &[u8] = &aml[region_space.length()..];
-        let region_offset: RegionOffset = aml.into();
-        let aml: &[u8] = &aml[region_offset.length()..];
-        let region_len: RegionLen = aml.into();
+        let (op_region_op, aml): (OpRegionOp, &[u8]) = OpRegionOp::read(aml);
+        let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+        let (region_space, aml): (RegionSpace, &[u8]) = RegionSpace::read(aml);
+        let (region_offset, aml): (RegionOffset, &[u8]) = RegionOffset::read(aml);
+        let (region_len, aml): (RegionLen, &[u8]) = RegionLen::read(aml);
         Self {
             op_region_op,
             name_string,
@@ -75,6 +55,23 @@ impl From<&[u8]> for DefOpRegion {
             region_offset,
             region_len,
         }
+    }
+}
+
+impl Reader<'_> for DefOpRegion {
+    fn length(&self) -> usize {
+        let Self {
+            op_region_op,
+            name_string,
+            region_space,
+            region_offset,
+            region_len,
+        } = self;
+        op_region_op.length()
+        + name_string.length()
+        + region_space.length()
+        + region_offset.length()
+        + region_len.length()
     }
 }
 

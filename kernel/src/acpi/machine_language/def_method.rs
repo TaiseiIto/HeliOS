@@ -5,6 +5,7 @@ use {
         MethodOp,
         NameString,
         PkgLength,
+        Reader,
         TermList,
     },
 };
@@ -18,23 +19,6 @@ pub struct DefMethod {
     name_string: NameString,
     method_flags: MethodFlags,
     term_list: TermList,
-}
-
-impl DefMethod {
-    pub fn length(&self) -> usize {
-        let Self {
-            method_op,
-            pkg_length,
-            name_string,
-            method_flags,
-            term_list,
-        } = self;
-        method_op.length()
-        + pkg_length.length()
-        + name_string.length()
-        + method_flags.length()
-        + term_list.length()
-    }
 }
 
 impl fmt::Debug for DefMethod {
@@ -59,16 +43,11 @@ impl fmt::Debug for DefMethod {
 
 impl From<&[u8]> for DefMethod {
     fn from(aml: &[u8]) -> Self {
-        let method_op: MethodOp = aml.into();
-        let aml: &[u8] = &aml[method_op.length()..];
-        let pkg_length: PkgLength = aml.into();
-        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-        let name_string: NameString = aml.into();
-        let aml: &[u8] = &aml[name_string.length()..];
-        let method_flags: MethodFlags = aml.into();
-        let aml: &[u8] = &aml[method_flags.length()..];
-        let term_list: TermList = aml.into();
-        let aml: &[u8] = &aml[term_list.length()..];
+        let (method_op, aml): (MethodOp, &[u8]) = MethodOp::read(aml);
+        let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
+        let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+        let (method_flags, aml): (MethodFlags, &[u8]) = MethodFlags::read(aml);
+        let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
         Self {
             method_op,
             pkg_length,
@@ -76,6 +55,23 @@ impl From<&[u8]> for DefMethod {
             method_flags,
             term_list,
         }
+    }
+}
+
+impl Reader<'_> for DefMethod {
+    fn length(&self) -> usize {
+        let Self {
+            method_op,
+            pkg_length,
+            name_string,
+            method_flags,
+            term_list,
+        } = self;
+        method_op.length()
+        + pkg_length.length()
+        + name_string.length()
+        + method_flags.length()
+        + term_list.length()
     }
 }
 

@@ -7,6 +7,7 @@ use {
         NULL_NAME,
         NameSeg,
         NullName,
+        Reader,
     },
 };
 
@@ -18,17 +19,6 @@ pub enum NamePath {
     DualNamePath,
     MultiNamePath,
     NullName(NullName),
-}
-
-impl NamePath {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::NameSeg(name_seg) => name_seg.length(),
-            Self::DualNamePath => unimplemented!(),
-            Self::MultiNamePath => unimplemented!(),
-            Self::NullName(null_name) => null_name.length(),
-        }
-    }
 }
 
 impl fmt::Debug for NamePath {
@@ -66,6 +56,17 @@ impl From<&[u8]> for NamePath {
             MULTI_NAME_PREFIX => unimplemented!(),
             NULL_NAME => Self::NullName(aml.into()),
             _ => Self::NameSeg(aml.into()),
+        }
+    }
+}
+
+impl Reader<'_> for NamePath {
+    fn length(&self) -> usize {
+        match self {
+            Self::NameSeg(name_seg) => name_seg.length(),
+            Self::DualNamePath => unimplemented!(),
+            Self::MultiNamePath => unimplemented!(),
+            Self::NullName(null_name) => null_name.length(),
         }
     }
 }

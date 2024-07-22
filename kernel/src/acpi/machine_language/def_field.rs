@@ -6,6 +6,7 @@ use {
         FieldOp,
         NameString,
         PkgLength,
+        Reader,
     },
 };
 
@@ -18,23 +19,6 @@ pub struct DefField {
     name_string: NameString,
     field_flags: FieldFlags,
     field_list: FieldList,
-}
-
-impl DefField {
-    pub fn length(&self) -> usize {
-        let Self {
-            field_op,
-            pkg_length,
-            name_string,
-            field_flags,
-            field_list,
-        } = self;
-        field_op.length()
-        + pkg_length.length()
-        + name_string.length()
-        + field_flags.length()
-        + field_list.length()
-    }
 }
 
 impl fmt::Debug for DefField {
@@ -59,15 +43,11 @@ impl fmt::Debug for DefField {
 
 impl From<&[u8]> for DefField {
     fn from(aml: &[u8]) -> Self {
-        let field_op: FieldOp = aml.into();
-        let aml: &[u8] = &aml[field_op.length()..];
-        let pkg_length: PkgLength = aml.into();
-        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-        let name_string: NameString = aml.into();
-        let aml: &[u8] = &aml[name_string.length()..];
-        let field_flags: FieldFlags = aml.into();
-        let aml: &[u8] = &aml[field_flags.length()..];
-        let field_list: FieldList = aml.into();
+        let (field_op, aml): (FieldOp, &[u8]) = FieldOp::read(aml);
+        let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
+        let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+        let (field_flags, aml): (FieldFlags, &[u8]) = FieldFlags::read(aml);
+        let (field_list, aml): (FieldList, &[u8]) = FieldList::read(aml);
         Self {
             field_op,
             pkg_length,
@@ -75,6 +55,23 @@ impl From<&[u8]> for DefField {
             field_flags,
             field_list,
         }
+    }
+}
+
+impl Reader<'_> for DefField {
+    fn length(&self) -> usize {
+        let Self {
+            field_op,
+            pkg_length,
+            name_string,
+            field_flags,
+            field_list,
+        } = self;
+        field_op.length()
+        + pkg_length.length()
+        + name_string.length()
+        + field_flags.length()
+        + field_list.length()
     }
 }
 

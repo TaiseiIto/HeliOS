@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::Reader,
+};
 
 /// # FieldFlags
 /// ## References
@@ -14,15 +17,15 @@ pub struct FieldFlags {
     reserved0: bool,
 }
 
-impl FieldFlags {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for FieldFlags {
     fn from(aml: &[u8]) -> Self {
         (*aml.first().unwrap()).into()
+    }
+}
+
+impl Reader<'_> for FieldFlags {
+    fn length(&self) -> usize {
+        1
     }
 }
 

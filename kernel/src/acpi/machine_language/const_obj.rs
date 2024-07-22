@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::OneOp,
+    super::{
+        OneOp,
+        Reader,
+    },
 };
 
 /// # ConstObj
@@ -12,7 +15,7 @@ pub enum ConstObj {
     OnesOp,
 }
 
-impl ConstObj {
+impl Reader<'_> for ConstObj {
     pub fn length(&self) -> usize {
         match self {
             Self::ZeroOp => unimplemented!(),

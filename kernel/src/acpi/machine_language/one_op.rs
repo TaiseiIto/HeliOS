@@ -1,3 +1,5 @@
+use super::Reader;
+
 pub const ONE_OP: u8 = 0x01;
 
 /// # OneOp
@@ -6,16 +8,16 @@ pub const ONE_OP: u8 = 0x01;
 #[derive(Debug)]
 pub struct OneOp;
 
-impl OneOp {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for OneOp {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), ONE_OP);
         Self
+    }
+}
+
+impl Reader<'_> OneOp {
+    fn length(&self) -> usize {
+        1
     }
 }
 

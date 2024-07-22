@@ -2,6 +2,7 @@ use {
     core::fmt,
     super::{
         Operand,
+        Reader,
         ToHexStringOp,
     },
 };
@@ -12,17 +13,6 @@ use {
 pub struct DefToHexString {
     to_hex_string_op: ToHexStringOp,
     operand: Operand,
-}
-
-impl DefToHexString {
-    pub fn length(&self) -> usize {
-        let Self {
-            to_hex_string_op,
-            operand,
-        } = self;
-        to_hex_string_op.length()
-        + operand.length()
-    }
 }
 
 impl fmt::Debug for DefToHexString {
@@ -41,11 +31,20 @@ impl fmt::Debug for DefToHexString {
 
 impl From<&[u8]> for DefToHexString {
     fn from(aml: &[u8]) -> Self {
-        let to_hex_string_op: ToHexStringOp = aml.into();
-        let aml: &[u8] = &aml[to_hex_string_op.length()..];
-        let operand: Operand = aml.into();
-        let aml: &[u8] = &aml[operand.length()..];
+        let (to_hex_string_op, aml): (ToHexStringOp, &[u8]) = ToHexStringOp::read(aml);
+        let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
         unimplemented!()
+    }
+}
+
+impl Reader<'_> for DefToHexString {
+    fn length(&self) -> usize {
+        let Self {
+            to_hex_string_op,
+            operand,
+        } = self;
+        to_hex_string_op.length()
+        + operand.length()
     }
 }
 

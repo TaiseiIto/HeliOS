@@ -3,6 +3,7 @@ use {
     super::{
         ConstObj,
         ONE_OP,
+        Reader,
         WORD_PREFIX,
         WordConst,
     },
@@ -22,7 +23,7 @@ pub enum ComputationalData {
     DefBuffer,
 }
 
-impl ComputationalData {
+impl Reader<'_> for ComputationalData {
     pub fn length(&self) -> usize {
         match self {
             Self::ByteConst => unimplemented!(),

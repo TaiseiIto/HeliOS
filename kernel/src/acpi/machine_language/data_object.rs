@@ -3,6 +3,7 @@ use {
     super::{
         ComputationalData,
         ONE_OP,
+        Reader,
         WORD_PREFIX,
     },
 };
@@ -16,8 +17,8 @@ pub enum DataObject {
     DefVarPackage,
 }
 
-impl DataObject {
-    pub fn length(&self) -> usize {
+impl Reader<'_> for DataObject {
+    fn length(&self) -> usize {
         match self {
             Self::ComputationalData(computational_data) => computational_data.length(),
             Self::DefPackage => unimplemented!(),

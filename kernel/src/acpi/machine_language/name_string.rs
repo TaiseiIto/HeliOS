@@ -12,6 +12,7 @@ use {
         PREFIX_PATH,
         PrefixPath,
         ROOT_CHAR,
+        Reader,
         RootChar,
     },
 };
@@ -28,24 +29,6 @@ pub enum NameString {
         prefix_path: Vec<PrefixPath>,
         name_path: NamePath,
     },
-}
-
-impl NameString {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::RootCharNamePath {
-                root_char,
-                name_path,
-            } => root_char.length() + name_path.length(),
-            Self::PrefixPathNamePath {
-                prefix_path,
-                name_path,
-            } => prefix_path
-                .iter()
-                .map(|prefix_path| prefix_path.length())
-                .sum::<usize>() + name_path.length(),
-        }
-    }
 }
 
 impl fmt::Debug for NameString {
@@ -102,8 +85,7 @@ impl From<&[u8]> for NameString {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
             ROOT_CHAR => {
-                let root_char: RootChar = aml.into();
-                let aml: &[u8] = &aml[root_char.length()..];
+                let (root_char, aml): (RootChar, &[u8]) = RootChar::read(aml);
                 let name_path: NamePath = aml.into();
                 Self::RootCharNamePath {
                     root_char,
@@ -114,8 +96,8 @@ impl From<&[u8]> for NameString {
                 let mut aml: &[u8] = aml;
                 let mut prefix_path: Vec<PrefixPath> = Vec::new();
                 while *aml.first().unwrap() == PREFIX_PATH {
-                    let new_prefix_path: PrefixPath = aml.into();
-                    aml = &aml[new_prefix_path.length()..];
+                    let (new_prefix_path, reamaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
+                    aml = remaining_aml;
                     prefix_path.push(new_prefix_path);
                 }
                 let name_path: NamePath = aml.into();
@@ -124,6 +106,24 @@ impl From<&[u8]> for NameString {
                     name_path,
                 }
             }
+        }
+    }
+}
+
+impl Reader<'_> for NameString {
+    pub fn length(&self) -> usize {
+        match self {
+            Self::RootCharNamePath {
+                root_char,
+                name_path,
+            } => root_char.length() + name_path.length(),
+            Self::PrefixPathNamePath {
+                prefix_path,
+                name_path,
+            } => prefix_path
+                .iter()
+                .map(|prefix_path| prefix_path.length())
+                .sum::<usize>() + name_path.length(),
         }
     }
 }

@@ -1,4 +1,7 @@
-use super::TermArg;
+use super::{
+    Reader,
+    TermArg,
+};
 
 /// # RegionLen
 /// ## References
@@ -6,15 +9,15 @@ use super::TermArg;
 #[derive(Debug)]
 pub struct RegionLen(TermArg);
 
-impl RegionLen {
-    pub fn length(&self) -> usize {
-        self.0.length()
-    }
-}
-
 impl From<&[u8]> for RegionLen {
     fn from(aml: &[u8]) -> Self {
         Self(aml.into())
+    }
+}
+
+impl Reader<'_> for RegionLen {
+    fn length(&self) -> usize {
+        self.0.length()
     }
 }
 

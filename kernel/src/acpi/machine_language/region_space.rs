@@ -1,4 +1,7 @@
-use core::fmt;
+use {
+    core::fmt,
+    super::Reader,
+};
 
 /// # RegionSpace
 /// ## References
@@ -16,12 +19,6 @@ pub enum RegionSpace {
     GenericSerialBus,
     Pcc,
     OemDefined(u8),
-}
-
-impl RegionSpace {
-    pub fn length(&self) -> usize {
-        1
-    }
 }
 
 impl fmt::Debug for RegionSpace {
@@ -68,6 +65,12 @@ impl From<u8> for RegionSpace {
 impl From<&[u8]> for RegionSpace {
     fn from(aml: &[u8]) -> Self {
         (*aml.first().unwrap()).into()
+    }
+}
+
+impl Reader<'_> for RegionSpace {
+    fn length(&self) -> usize {
+        1
     }
 }
 

@@ -3,6 +3,7 @@ use {
     super::{
         NameString,
         PkgLength,
+        Reader,
         ScopeOp,
         SCOPE_OP,
         TermList,
@@ -17,18 +18,6 @@ pub struct DefScope {
     pkg_length: PkgLength,
     name_string: NameString,
     term_list: TermList,
-}
-
-impl DefScope {
-    pub fn length(&self) -> usize {
-        let Self {
-            scope_op,
-            pkg_length,
-            name_string,
-            term_list,
-        } = self;
-        scope_op.length() + pkg_length.length() + name_string.length() + term_list.length()
-    }
 }
 
 impl fmt::Debug for DefScope {
@@ -53,13 +42,10 @@ impl From<&[u8]> for DefScope {
     fn from(aml: &[u8]) -> Self {
         match *aml.first().unwrap() {
             SCOPE_OP => {
-                let scope_op: ScopeOp = aml.into();
-                let aml: &[u8] = &aml[scope_op.length()..];
-                let pkg_length: PkgLength = (aml).into();
-                let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-                let name_string: NameString = aml.into();
-                let aml: &[u8] = &aml[name_string.length()..];
-                let term_list: TermList = aml.into();
+                let (scope_op, aml): (ScopeOp, &[u8]) = ScopeOp::read(aml);
+                let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
+                let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+                let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
                 Self {
                     scope_op,
                     pkg_length,
@@ -69,6 +55,18 @@ impl From<&[u8]> for DefScope {
             },
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
+    }
+}
+
+impl Reader<'_> for DefScope {
+    fn length(&self) -> usize {
+        let Self {
+            scope_op,
+            pkg_length,
+            name_string,
+            term_list,
+        } = self;
+        scope_op.length() + pkg_length.length() + name_string.length() + term_list.length()
     }
 }
 

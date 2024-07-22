@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::Reader,
+};
 
 /// # PkgLeadByte
 /// ## References
@@ -16,10 +19,6 @@ impl PkgLeadByte {
         self.byte_data_count() as usize
     }
 
-    pub fn length(&self) -> usize {
-        1
-    }
-
     pub fn pkg_length(&self) -> usize {
         self.nybble() as usize
     }
@@ -28,6 +27,12 @@ impl PkgLeadByte {
 impl From<&[u8]> for PkgLeadByte {
     fn from(aml: &[u8]) -> Self {
         (*aml.first().unwrap()).into()
+    }
+}
+
+impl Reader<'_> for PkgLeadByte {
+    pub fn length(&self) -> usize {
+        1
     }
 }
 

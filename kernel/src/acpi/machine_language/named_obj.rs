@@ -10,6 +10,7 @@ use {
         EXT_OP_PREFIX,
         FIELD_OP,
         OP_REGION_OP,
+        Reader,
     },
 };
 
@@ -20,16 +21,6 @@ pub enum NamedObj {
     DefField(DefField),
     DefMethod(DefMethod),
     DefOpRegion(DefOpRegion),
-}
-
-impl NamedObj {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::DefField(def_field) => def_field.length(),
-            Self::DefMethod(def_method) => def_method.length(),
-            Self::DefOpRegion(def_op_region) => def_op_region.length(),
-        }
-    }
 }
 
 impl fmt::Debug for NamedObj {
@@ -62,6 +53,16 @@ impl From<&[u8]> for NamedObj {
             },
             METHOD_OP => Self::DefMethod(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for NamedObj {
+    fn length(&self) -> usize {
+        match self {
+            Self::DefField(def_field) => def_field.length(),
+            Self::DefMethod(def_method) => def_method.length(),
+            Self::DefOpRegion(def_op_region) => def_op_region.length(),
         }
     }
 }

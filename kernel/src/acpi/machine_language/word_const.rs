@@ -1,6 +1,7 @@
 use {
     core::fmt,
     super::{
+        Reader,
         WordData,
         WordPrefix,
     },
@@ -12,16 +13,6 @@ use {
 pub struct WordConst {
     word_prefix: WordPrefix,
     word_data: WordData,
-}
-
-impl WordConst {
-    pub fn length(&self) -> usize {
-        let Self {
-            word_prefix,
-            word_data,
-        } = self;
-        word_prefix.length() + word_data.length()
-    }
 }
 
 impl fmt::Debug for WordConst {
@@ -40,13 +31,22 @@ impl fmt::Debug for WordConst {
 
 impl From<&[u8]> for WordConst {
     fn from(aml: &[u8]) -> Self {
-        let word_prefix: WordPrefix = aml.into();
-        let aml: &[u8] = &aml[word_prefix.length()..];
-        let word_data: WordData = aml.into();
+        let (word_prefix, aml): (WordPrefix, &[u8]) = WordPrefix::read(aml);
+        let (word_data, aml): (WordData, &[u8]) = WordData::read(aml);
         Self {
             word_prefix,
             word_data,
         }
+    }
+}
+
+impl Reader<'_> for WordConst {
+    fn length(&self) -> usize {
+        let Self {
+            word_prefix,
+            word_data,
+        } = self;
+        word_prefix.length() + word_data.length()
     }
 }
 

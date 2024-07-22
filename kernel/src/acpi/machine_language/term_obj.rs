@@ -5,12 +5,13 @@ use {
     },
     super::{
         EXT_OP_PREFIX,
+        ExpressionOpcode,
         FIELD_OP,
         METHOD_OP,
         OP_REGION_OP,
         Object,
+        Reader,
         SCOPE_OP,
-        ExpressionOpcode,
         TO_HEX_STRING_OP,
     },
 };
@@ -22,16 +23,6 @@ pub enum TermObj {
     ExpressionOpcode(ExpressionOpcode),
     Object(Object),
     StatementOpcode,
-}
-
-impl TermObj {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::ExpressionOpcode(expression_opcode) => expression_opcode.length(),
-            Self::Object(object) => object.length(),
-            Self::StatementOpcode => unimplemented!(),
-        }
-    }
 }
 
 impl fmt::Debug for TermObj {
@@ -61,6 +52,16 @@ impl From<&[u8]> for TermObj {
             METHOD_OP | SCOPE_OP => Self::Object(aml.into()),
             TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for TermObj {
+    fn length(&self) -> usize {
+        match self {
+            Self::ExpressionOpcode(expression_opcode) => expression_opcode.length(),
+            Self::Object(object) => object.length(),
+            Self::StatementOpcode => unimplemented!(),
         }
     }
 }

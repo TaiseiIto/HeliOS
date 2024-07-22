@@ -1,6 +1,9 @@
 use {
     alloc::vec::Vec,
-    super::FieldElement,
+    super::{
+        FieldElement,
+        Reader,
+    },
 };
 
 /// # FieldList
@@ -9,25 +12,24 @@ use {
 #[derive(Debug)]
 pub struct FieldList(Vec<FieldElement>);
 
-impl FieldList {
-    pub fn length(&self) -> usize {
-        self.0
-            .iter()
-            .map(|field_element| field_element.length())
-            .sum::<usize>()
-    }
-}
-
 impl From<&[u8]> for FieldList {
     fn from(aml: &[u8]) -> Self {
         let mut aml: &[u8] = aml;
         let mut field_list: Vec<FieldElement> = Vec::new();
         while !aml.is_empty() {
-            let field_element: FieldElement = aml.into();
-            aml = &aml[field_element.length()..];
+            let (field_element, aml): (FieldElement, &[u8]) = FieldElement::read(aml);
             field_list.push(field_element);
         }
         Self(field_list)
+    }
+}
+
+impl Reader<'_> for FieldList {
+    fn length(&self) -> usize {
+        self.0
+            .iter()
+            .map(|field_element| field_element.length())
+            .sum::<usize>()
     }
 }
 

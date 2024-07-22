@@ -1,3 +1,5 @@
+use super::Reader;
+
 pub const METHOD_OP: u8 = 0x14;
 
 /// # MethodOp
@@ -6,16 +8,16 @@ pub const METHOD_OP: u8 = 0x14;
 #[derive(Debug)]
 pub struct MethodOp;
 
-impl MethodOp {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for MethodOp {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), METHOD_OP);
         Self
+    }
+}
+
+impl Reader<'_> for MethodOp {
+    fn length(&self) -> usize {
+        1
     }
 }
 

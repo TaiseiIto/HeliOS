@@ -1,3 +1,5 @@
+use super::Reader;
+
 pub const TO_HEX_STRING_OP: u8 = 0x98;
 
 /// # ToHexStringOp
@@ -6,16 +8,16 @@ pub const TO_HEX_STRING_OP: u8 = 0x98;
 #[derive(Debug)]
 pub struct ToHexStringOp;
 
-impl ToHexStringOp {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for ToHexStringOp {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), TO_HEX_STRING_OP);
         Self
+    }
+}
+
+impl Reader<'_> for ToHexStringOp {
+    fn length(&self) -> usize {
+        1
     }
 }
 

@@ -1,3 +1,5 @@
+use super::Reader;
+
 pub const NULL_NAME: u8 = 0x00;
 
 /// # NullName
@@ -6,15 +8,16 @@ pub const NULL_NAME: u8 = 0x00;
 #[derive(Debug)]
 pub struct NullName;
 
-impl NullName {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for NullName {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), NULL_NAME);
         Self
     }
 }
+
+impl Reader<'_> for NullName {
+    fn length(&self) -> usize {
+        1
+    }
+}
+

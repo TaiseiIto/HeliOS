@@ -1,3 +1,5 @@
+use super::Reader;
+
 pub const SCOPE_OP: u8 = 0x10;
 
 /// # ScopeOp
@@ -6,16 +8,16 @@ pub const SCOPE_OP: u8 = 0x10;
 #[derive(Debug)]
 pub struct ScopeOp;
 
-impl ScopeOp {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for ScopeOp {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), SCOPE_OP);
         Self
+    }
+}
+
+impl Reader<'_> for ScopeOp {
+    fn length(&self) -> usize {
+        1
     }
 }
 

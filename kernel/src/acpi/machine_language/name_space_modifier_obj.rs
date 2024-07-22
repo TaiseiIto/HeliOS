@@ -2,6 +2,7 @@ use {
     core::fmt,
     super::{
         DefScope,
+        Reader,
         SCOPE_OP,
     },
 };
@@ -13,16 +14,6 @@ pub enum NameSpaceModifierObj {
     DefAlias,
     DefName,
     DefScope(DefScope),
-}
-
-impl NameSpaceModifierObj {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::DefAlias => unimplemented!(),
-            Self::DefName => unimplemented!(),
-            Self::DefScope(def_scope) => def_scope.length(),
-        }
-    }
 }
 
 impl fmt::Debug for NameSpaceModifierObj {
@@ -43,6 +34,16 @@ impl From<&[u8]> for NameSpaceModifierObj {
         match *aml.first().unwrap() {
             SCOPE_OP => Self::DefScope(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for NameSpaceModifierObj {
+    fn length(&self) -> usize {
+        match self {
+            Self::DefAlias => unimplemented!(),
+            Self::DefName => unimplemented!(),
+            Self::DefScope(def_scope) => def_scope.length(),
         }
     }
 }

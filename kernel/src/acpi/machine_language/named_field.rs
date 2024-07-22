@@ -3,6 +3,7 @@ use {
     super::{
         NameSeg,
         PkgLength,
+        Reader,
     },
 };
 
@@ -12,16 +13,6 @@ use {
 pub struct NamedField {
     name_seg: NameSeg,
     pkg_length: PkgLength,
-}
-
-impl NamedField {
-    pub fn length(&self) -> usize {
-        let Self {
-            name_seg,
-            pkg_length,
-        } = self;
-        name_seg.length() + pkg_length.length()
-    }
 }
 
 impl fmt::Debug for NamedField {
@@ -40,13 +31,22 @@ impl fmt::Debug for NamedField {
 
 impl From<&[u8]> for NamedField {
     fn from(aml: &[u8]) -> Self {
-        let name_seg: NameSeg = aml.into();
-        let aml: &[u8] = &aml[name_seg.length()..];
+        let (name_seg, aml): (NameSeg, &[u8]) = NameSeg::read(aml);
         let pkg_length: PkgLength = aml.into();
         Self {
             name_seg,
             pkg_length,
         }
+    }
+}
+
+impl Reader<'_> for NamedField {
+    fn length(&self) -> usize {
+        let Self {
+            name_seg,
+            pkg_length,
+        } = self;
+        name_seg.length() + pkg_length.length()
     }
 }
 

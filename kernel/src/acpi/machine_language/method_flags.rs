@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::Reader,
+};
 
 /// # MethodFlags
 /// ## References
@@ -12,15 +15,15 @@ pub struct MethodFlags {
     sync_level: u8,
 }
 
-impl MethodFlags {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for MethodFlags {
     fn from(aml: &[u8]) -> Self {
         (*aml.first().unwrap()).into()
+    }
+}
+
+impl Reader<'_> for MethodFlags {
+    fn length(&self) -> usize {
+        1
     }
 }
 

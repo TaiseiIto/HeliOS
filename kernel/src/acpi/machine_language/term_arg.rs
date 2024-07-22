@@ -3,6 +3,7 @@ use {
     super::{
         DataObject,
         ONE_OP,
+        Reader,
         WORD_PREFIX,
     },
 };
@@ -15,17 +16,6 @@ pub enum TermArg {
     DataObject(DataObject),
     ArgObj,
     LocalObj,
-}
-
-impl TermArg {
-    pub fn length(&self) -> usize {
-        match self {
-            Self::ExpressionOpcode => unimplemented!(),
-            Self::DataObject(data_object) => data_object.length(),
-            Self::ArgObj => unimplemented!(),
-            Self::LocalObj => unimplemented!(),
-        }
-    }
 }
 
 impl fmt::Debug for TermArg {
@@ -47,6 +37,17 @@ impl From<&[u8]> for TermArg {
         match *aml.first().unwrap() {
             ONE_OP | WORD_PREFIX => Self::DataObject(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        }
+    }
+}
+
+impl Reader<'_> for TermArg {
+    fn length(&self) -> usize {
+        match self {
+            Self::ExpressionOpcode => unimplemented!(),
+            Self::DataObject(data_object) => data_object.length(),
+            Self::ArgObj => unimplemented!(),
+            Self::LocalObj => unimplemented!(),
         }
     }
 }

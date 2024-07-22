@@ -10,6 +10,7 @@ use {
     super::{
         LeadNameChar,
         NameChar,
+        Reader,
     },
 };
 
@@ -19,20 +20,6 @@ use {
 pub struct NameSeg {
     lead_name_char: LeadNameChar,
     name_char: [NameChar; 3],
-}
-
-impl NameSeg {
-    pub fn length(&self) -> usize {
-        let Self {
-            lead_name_char,
-            name_char,
-        } = self;
-        lead_name_char.length() + name_char
-            .as_slice()
-            .iter()
-            .map(|name_char| name_char.length())
-            .sum::<usize>()
-    }
 }
 
 impl fmt::Debug for NameSeg {
@@ -69,12 +56,10 @@ impl From<&NameSeg> for String {
 
 impl From<&[u8]> for NameSeg {
     fn from(aml: &[u8]) -> Self {
-        let lead_name_char: LeadNameChar = aml.into();
-        let aml: &[u8] = &aml[lead_name_char.length()..];
+        let (lead_name_char, aml): (LeadNameChar, &[u8]) = LeadNameChar::read(aml);
         let (aml, name_char): (&[u8], Vec<NameChar>) = (0..3)
             .fold((aml, Vec::new()), |(aml, mut name_char), _| {
-                let new_name_char: NameChar = aml.into();
-                let aml: &[u8] = &aml[new_name_char.length()..];
+                let (new_name_char, aml): (NameChar, &[u8]) = NameChar::read(aml);
                 name_char.push(new_name_char);
                 (aml, name_char)
             });
@@ -85,6 +70,20 @@ impl From<&[u8]> for NameSeg {
             lead_name_char,
             name_char,
         }
+    }
+}
+
+impl Reader<'_> for NameSeg {
+    fn length(&self) -> usize {
+        let Self {
+            lead_name_char,
+            name_char,
+        } = self;
+        lead_name_char.length() + name_char
+            .as_slice()
+            .iter()
+            .map(|name_char| name_char.length())
+            .sum::<usize>()
     }
 }
 

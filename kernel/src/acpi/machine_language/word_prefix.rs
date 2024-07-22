@@ -1,3 +1,8 @@
+use super::{
+    Reader,
+    WordPrefix,
+};
+
 pub const WORD_PREFIX: u8 = 0x0b;
 
 /// # WordPrefix
@@ -6,16 +11,16 @@ pub const WORD_PREFIX: u8 = 0x0b;
 #[derive(Debug)]
 pub struct WordPrefix;
 
-impl WordPrefix {
-    pub fn length(&self) -> usize {
-        1
-    }
-}
-
 impl From<&[u8]> for WordPrefix {
     fn from(aml: &[u8]) -> Self {
         assert_eq!(*aml.first().unwrap(), WORD_PREFIX);
         Self
+    }
+}
+
+impl Reader<'_> for WordPrefix {
+    fn length(&self) -> usize {
+        1
     }
 }
 
