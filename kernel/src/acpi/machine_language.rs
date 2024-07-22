@@ -44,6 +44,7 @@ pub mod region_offset;
 pub mod region_space;
 pub mod root_char;
 pub mod scope_op;
+pub mod target;
 pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
@@ -126,6 +127,7 @@ pub use {
         SCOPE_OP,
         ScopeOp,
     },
+    target::Target,
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,

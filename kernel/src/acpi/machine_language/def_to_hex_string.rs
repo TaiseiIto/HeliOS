@@ -3,6 +3,7 @@ use {
     super::{
         Operand,
         Reader,
+        Target,
         ToHexStringOp,
     },
 };
@@ -13,6 +14,7 @@ use {
 pub struct DefToHexString {
     to_hex_string_op: ToHexStringOp,
     operand: Operand,
+    target: Target,
 }
 
 impl fmt::Debug for DefToHexString {
@@ -20,11 +22,13 @@ impl fmt::Debug for DefToHexString {
         let Self {
             to_hex_string_op,
             operand,
+            target,
         } = self;
         formatter
             .debug_tuple("DefToHexString")
             .field(to_hex_string_op)
             .field(operand)
+            .field(target)
             .finish()
     }
 }
@@ -33,7 +37,12 @@ impl From<&[u8]> for DefToHexString {
     fn from(aml: &[u8]) -> Self {
         let (to_hex_string_op, aml): (ToHexStringOp, &[u8]) = ToHexStringOp::read(aml);
         let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
-        unimplemented!()
+        let (target, aml): (Target, &[u8]) = Target::read(aml);
+        Self {
+            to_hex_string_op,
+            operand,
+            target,
+        }
     }
 }
 
@@ -42,9 +51,11 @@ impl Reader<'_> for DefToHexString {
         let Self {
             to_hex_string_op,
             operand,
+            target,
         } = self;
         to_hex_string_op.length()
         + operand.length()
+        + target.length()
     }
 }
 
