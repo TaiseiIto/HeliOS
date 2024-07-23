@@ -31,24 +31,22 @@ pub enum NameString {
 
 impl fmt::Debug for NameString {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("NameString");
         match self {
             Self::RootCharNamePath {
                 root_char,
                 name_path,
-            } => formatter
-                .debug_tuple("NameString")
+            } => debug_tuple
                 .field(root_char)
-                .field(name_path)
-                .finish(),
+                .field(name_path),
             Self::PrefixPathNamePath {
                 prefix_path,
                 name_path,
-            } => formatter
-                .debug_tuple("NameString")
+            } => debug_tuple
                 .field(prefix_path)
-                .field(name_path)
-                .finish(),
-        }
+                .field(name_path),
+        };
+        debug_tuple.finish()
     }
 }
 

@@ -23,28 +23,15 @@ pub enum ExpressionOpcode {
 
 impl fmt::Debug for ExpressionOpcode {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("ExpressionOpcode");
         match self {
-            Self::DefSizeOf(def_size_of) => formatter
-                .debug_tuple("ExpressionOpcode")
-                .field(def_size_of)
-                .finish(),
-            Self::DefStore(def_store) => formatter
-                .debug_tuple("ExpressionOpcode")
-                .field(def_store)
-                .finish(),
-            Self::DefSubtract(def_subtract) => formatter
-                .debug_tuple("ExpressionOpcode")
-                .field(def_subtract)
-                .finish(),
-            Self::DefToBuffer(def_to_buffer) => formatter
-                .debug_tuple("ExpressionOpcode")
-                .field(def_to_buffer)
-                .finish(),
-            Self::DefToHexString(def_to_hex_string) => formatter
-                .debug_tuple("ExpressionOpcode")
-                .field(def_to_hex_string)
-                .finish(),
-        }
+            Self::DefSizeOf(def_size_of) => debug_tuple.field(def_size_of),
+            Self::DefStore(def_store) => debug_tuple.field(def_store),
+            Self::DefSubtract(def_subtract) => debug_tuple.field(def_subtract),
+            Self::DefToBuffer(def_to_buffer) => debug_tuple.field(def_to_buffer),
+            Self::DefToHexString(def_to_hex_string) => debug_tuple.field(def_to_hex_string),
+        };
+        debug_tuple.finish()
     }
 }
 

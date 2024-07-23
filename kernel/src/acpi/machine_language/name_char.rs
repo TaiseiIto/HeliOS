@@ -17,16 +17,12 @@ pub enum NameChar {
 
 impl fmt::Debug for NameChar {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("NameChar");
         match self {
-            Self::DigitChar(digit_char) => formatter
-                .debug_tuple("NameChar")
-                .field(digit_char)
-                .finish(),
-            Self::LeadNameChar(lead_name_char) => formatter
-                .debug_tuple("NameChar")
-                .field(lead_name_char)
-                .finish(),
-        }
+            Self::DigitChar(digit_char) => debug_tuple.field(digit_char),
+            Self::LeadNameChar(lead_name_char) => debug_tuple.field(lead_name_char),
+        };
+        debug_tuple.finish()
     }
 }
 

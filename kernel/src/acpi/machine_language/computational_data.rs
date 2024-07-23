@@ -17,16 +17,12 @@ pub enum ComputationalData {
 
 impl fmt::Debug for ComputationalData {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("ComputationalData");
         match self {
-            Self::WordConst(word_const) => formatter
-                .debug_tuple("ComputationalData")
-                .field(word_const)
-                .finish(),
-            Self::ConstObj(const_obj) => formatter
-                .debug_tuple("ComputationalData")
-                .field(const_obj)
-                .finish(),
-        }
+            Self::WordConst(word_const) => debug_tuple.field(word_const),
+            Self::ConstObj(const_obj) => debug_tuple.field(const_obj),
+        };
+        debug_tuple.finish()
     }
 }
 

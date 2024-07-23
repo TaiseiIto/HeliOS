@@ -20,16 +20,12 @@ pub enum Object {
 
 impl fmt::Debug for Object {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("Object");
         match self {
-            Self::NameSpaceModifierObj(name_space_modifier_obj) => formatter
-                .debug_tuple("Object")
-                .field(name_space_modifier_obj)
-                .finish(),
-            Self::NamedObj(named_obj) => formatter
-                .debug_tuple("Object")
-                .field(named_obj)
-                .finish(),
-        }
+            Self::NameSpaceModifierObj(name_space_modifier_obj) => debug_tuple.field(name_space_modifier_obj),
+            Self::NamedObj(named_obj) => debug_tuple.field(named_obj),
+        };
+        debug_tuple.finish()
     }
 }
 

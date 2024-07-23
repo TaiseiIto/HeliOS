@@ -19,20 +19,13 @@ pub enum SimpleName {
 
 impl fmt::Debug for SimpleName {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("SimpleName");
         match self {
-            Self::NameString(name_string) => formatter
-                .debug_tuple("SimpleName")
-                .field(name_string)
-                .finish(),
-            Self::ArgObj(arg_obj) => formatter
-                .debug_tuple("SimpleName")
-                .field(arg_obj)
-                .finish(),
-            Self::LocalObj(local_obj) => formatter
-                .debug_tuple("SimpleName")
-                .field(local_obj)
-                .finish(),
-        }
+            Self::NameString(name_string) => debug_tuple.field(name_string),
+            Self::ArgObj(arg_obj) => debug_tuple.field(arg_obj),
+            Self::LocalObj(local_obj) => debug_tuple.field(local_obj),
+        };
+        debug_tuple.finish()
     }
 }
 

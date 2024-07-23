@@ -13,25 +13,17 @@ use {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 pub enum NamePath {
     NameSeg(NameSeg),
-    DualNamePath,
-    MultiNamePath,
     NullName(NullName),
 }
 
 impl fmt::Debug for NamePath {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("NameSeg");
         match self {
-            Self::NameSeg(name_seg) => formatter
-                .debug_tuple("NameSeg")
-                .field(name_seg)
-                .finish(),
-            Self::DualNamePath => write!(formatter, "NamePath::DualNamePath"),
-            Self::MultiNamePath => write!(formatter, "NamePath::MultiNamePath"),
-            Self::NullName(null_name) => formatter
-                .debug_tuple("NamePath")
-                .field(null_name)
-                .finish(),
-        }
+            Self::NameSeg(name_seg) => debug_tuple.field(name_seg),
+            Self::NullName(null_name) => debug_tuple.field(null_name),
+        };
+        debug_tuple.finish()
     }
 }
 
@@ -39,8 +31,6 @@ impl From<&NamePath> for String {
     fn from(name_path: &NamePath) -> Self {
         match name_path {
             NamePath::NameSeg(name_seg) => name_seg.into(),
-            NamePath::DualNamePath => unimplemented!(),
-            NamePath::MultiNamePath => unimplemented!(),
             NamePath::NullName(null_name) => Self::new(),
         }
     }
@@ -62,8 +52,6 @@ impl Reader<'_> for NamePath {
     fn length(&self) -> usize {
         match self {
             Self::NameSeg(name_seg) => name_seg.length(),
-            Self::DualNamePath => unimplemented!(),
-            Self::MultiNamePath => unimplemented!(),
             Self::NullName(null_name) => null_name.length(),
         }
     }

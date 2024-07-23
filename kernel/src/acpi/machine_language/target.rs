@@ -17,16 +17,12 @@ pub enum Target {
 
 impl fmt::Debug for Target {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("Target");
         match self {
-            Self::NullName(null_name) => formatter
-                .debug_tuple("Target")
-                .field(null_name)
-                .finish(),
-            Self::SuperName(super_name) => formatter
-                .debug_tuple("Target")
-                .field(super_name)
-                .finish(),
-        }
+            Self::NullName(null_name) => debug_tuple.field(null_name),
+            Self::SuperName(super_name) => debug_tuple.field(super_name),
+        };
+        debug_tuple.finish()
     }
 }
 

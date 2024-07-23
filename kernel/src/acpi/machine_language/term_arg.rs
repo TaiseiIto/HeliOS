@@ -21,24 +21,14 @@ pub enum TermArg {
 
 impl fmt::Debug for TermArg {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("TermArg");
         match self {
-            Self::ExpressionOpcode(expression_opcode) => formatter
-                .debug_tuple("TermArg")
-                .field(expression_opcode)
-                .finish(),
-            Self::DataObject(data_object) => formatter
-                .debug_tuple("TermArg")
-                .field(data_object)
-                .finish(),
-            Self::ArgObj(arg_obj) => formatter
-                .debug_tuple("TermArg")
-                .field(arg_obj)
-                .finish(),
-            Self::LocalObj(local_obj) => formatter
-                .debug_tuple("TermArg")
-                .field(local_obj)
-                .finish(),
-        }
+            Self::ExpressionOpcode(expression_opcode) => debug_tuple.field(expression_opcode),
+            Self::DataObject(data_object) => debug_tuple.field(data_object),
+            Self::ArgObj(arg_obj) => debug_tuple.field(arg_obj),
+            Self::LocalObj(local_obj) => debug_tuple.field(local_obj),
+        };
+        debug_tuple.finish()
     }
 }
 

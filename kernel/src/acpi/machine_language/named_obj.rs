@@ -22,20 +22,13 @@ pub enum NamedObj {
 
 impl fmt::Debug for NamedObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("NamedObj");
         match self {
-            Self::DefField(def_field) => formatter
-                .debug_tuple("NamedObj")
-                .field(def_field)
-                .finish(),
-            Self::DefMethod(def_method) => formatter
-                .debug_tuple("NamedObj")
-                .field(def_method)
-                .finish(),
-            Self::DefOpRegion(def_op_region) => formatter
-                .debug_tuple("NamedObj")
-                .field(def_op_region)
-                .finish(),
-        }
+            Self::DefField(def_field) => debug_tuple.field(def_field),
+            Self::DefMethod(def_method) => debug_tuple.field(def_method),
+            Self::DefOpRegion(def_op_region) => debug_tuple.field(def_op_region),
+        };
+        debug_tuple.finish()
     }
 }
 

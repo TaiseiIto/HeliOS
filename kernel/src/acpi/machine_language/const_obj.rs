@@ -17,16 +17,12 @@ pub enum ConstObj {
 
 impl fmt::Debug for ConstObj {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("ConstObj");
         match self {
-            Self::OneOp(one_op) => formatter
-                .debug_tuple("ConstObj")
-                .field(one_op)
-                .finish(),
-            Self::ZeroOp(zero_op) => formatter
-                .debug_tuple("ZeroOP")
-                .field(zero_op)
-                .finish(),
-        }
+            Self::OneOp(one_op) => debug_tuple.field(one_op),
+            Self::ZeroOp(zero_op) => debug_tuple.field(zero_op),
+        };
+        debug_tuple.finish()
     }
 }
 
