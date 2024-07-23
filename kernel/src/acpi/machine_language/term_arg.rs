@@ -1,21 +1,11 @@
 use {
     core::fmt,
     super::{
-        ARG_OBJ_MAX,
-        ARG_OBJ_MIN,
         ArgObj,
         DataObject,
         ExpressionOpcode,
-        LOCAL_OBJ_MAX,
-        LOCAL_OBJ_MIN,
         LocalObj,
-        ONE_OP,
         Reader,
-        SIZE_OF_OP,
-        SUBTRACT_OP,
-        TO_BUFFER_OP,
-        TO_HEX_STRING_OP,
-        WORD_PREFIX,
     },
 };
 

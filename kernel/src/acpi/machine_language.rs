@@ -63,6 +63,7 @@ pub mod to_hex_string_op;
 pub mod word_const;
 pub mod word_data;
 pub mod word_prefix;
+pub mod zero_op;
 
 pub use {
     arg_obj::{
@@ -84,31 +85,16 @@ pub use {
     def_to_buffer::DefToBuffer,
     def_to_hex_string::DefToHexString,
     digit_char::DigitChar,
-    dual_name_prefix::DUAL_NAME_PREFIX,
     expression_opcode::ExpressionOpcode,
-    ext_op_prefix::{
-        EXT_OP_PREFIX,
-        ExtOpPrefix,
-    },
+    ext_op_prefix::ExtOpPrefix,
     field_element::FieldElement,
     field_flags::FieldFlags,
     field_list::FieldList,
-    field_op::{
-        FIELD_OP,
-        FieldOp,
-    },
+    field_op::FieldOp,
     lead_name_char::LeadNameChar,
-    local_obj::{
-        LOCAL_OBJ_MAX,
-        LOCAL_OBJ_MIN,
-        LocalObj,
-    },
+    local_obj::LocalObj,
     method_flags::MethodFlags,
-    method_op::{
-        METHOD_OP,
-        MethodOp,
-    },
-    multi_name_prefix::MULTI_NAME_PREFIX,
+    method_op::MethodOp,
     name_char::NameChar,
     name_path::NamePath,
     name_seg::NameSeg,
@@ -116,69 +102,34 @@ pub use {
     name_string::NameString,
     named_field::NamedField,
     named_obj::NamedObj,
-    null_name::{
-        NULL_NAME,
-        NullName,
-    },
+    null_name::NullName,
     object::Object,
-    one_op::{
-        ONE_OP,
-        OneOp,
-    },
-    op_region_op::{
-        OP_REGION_OP,
-        OpRegionOp,
-    },
+    one_op::OneOp,
+    op_region_op::OpRegionOp,
     operand::Operand,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
-    prefix_path::{
-        PREFIX_PATH,
-        PrefixPath,
-    },
+    prefix_path::PrefixPath,
     region_len::RegionLen,
     region_offset::RegionOffset,
     region_space::RegionSpace,
-    root_char::{
-        ROOT_CHAR,
-        RootChar,
-    },
-    scope_op::{
-        SCOPE_OP,
-        ScopeOp,
-    },
+    root_char::RootChar,
+    scope_op::ScopeOp,
     simple_name::SimpleName,
-    size_of_op::{
-        SIZE_OF_OP,
-        SizeOfOp,
-    },
-    store_op::{
-        STORE_OP,
-        StoreOp,
-    },
-    subtract_op::{
-        SUBTRACT_OP,
-        SubtractOp,
-    },
+    size_of_op::SizeOfOp,
+    store_op::StoreOp,
+    subtract_op::SubtractOp,
     super_name::SuperName,
     target::Target,
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
-    to_buffer_op::{
-        TO_BUFFER_OP,
-        ToBufferOp,
-    },
-    to_hex_string_op::{
-        TO_HEX_STRING_OP,
-        ToHexStringOp,
-    },
+    to_buffer_op::ToBufferOp,
+    to_hex_string_op::ToHexStringOp,
     word_const::WordConst,
     word_data::WordData,
-    word_prefix::{
-        WORD_PREFIX,
-        WordPrefix,
-    },
+    word_prefix::WordPrefix,
+    zero_op::ZeroOp,
 };
 
 pub trait Reader<'a>: From<&'a [u8]> {

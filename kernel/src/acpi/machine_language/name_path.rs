@@ -2,9 +2,6 @@ use {
     alloc::string::String,
     core::fmt,
     super::{
-        DUAL_NAME_PREFIX,
-        MULTI_NAME_PREFIX,
-        NULL_NAME,
         NameSeg,
         NullName,
         Reader,

@@ -5,7 +5,6 @@ use {
         PkgLength,
         Reader,
         ScopeOp,
-        SCOPE_OP,
         TermList,
     },
 };
@@ -41,20 +40,15 @@ impl fmt::Debug for DefScope {
 impl From<&[u8]> for DefScope {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        match *aml.first().unwrap() {
-            SCOPE_OP => {
-                let (scope_op, aml): (ScopeOp, &[u8]) = ScopeOp::read(aml);
-                let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
-                let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
-                let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
-                Self {
-                    scope_op,
-                    pkg_length,
-                    name_string,
-                    term_list,
-                }
-            },
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        let (scope_op, aml): (ScopeOp, &[u8]) = ScopeOp::read(aml);
+        let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
+        let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+        let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
+        Self {
+            scope_op,
+            pkg_length,
+            name_string,
+            term_list,
         }
     }
 }

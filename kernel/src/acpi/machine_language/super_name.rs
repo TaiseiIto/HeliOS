@@ -1,10 +1,6 @@
 use {
     core::fmt,
     super::{
-        ARG_OBJ_MAX,
-        ARG_OBJ_MIN,
-        LOCAL_OBJ_MAX,
-        LOCAL_OBJ_MIN,
         Reader,
         SimpleName,
     },

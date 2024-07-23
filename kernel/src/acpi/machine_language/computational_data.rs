@@ -2,9 +2,7 @@ use {
     core::fmt,
     super::{
         ConstObj,
-        ONE_OP,
         Reader,
-        WORD_PREFIX,
         WordConst,
     },
 };

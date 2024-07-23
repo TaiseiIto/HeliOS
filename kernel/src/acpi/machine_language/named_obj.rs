@@ -7,9 +7,6 @@ use {
         DefField,
         DefMethod,
         DefOpRegion,
-        EXT_OP_PREFIX,
-        FIELD_OP,
-        OP_REGION_OP,
         Reader,
     },
 };

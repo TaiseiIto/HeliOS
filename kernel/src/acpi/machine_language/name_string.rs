@@ -9,9 +9,7 @@ use {
     },
     super::{
         NamePath,
-        PREFIX_PATH,
         PrefixPath,
-        ROOT_CHAR,
         Reader,
         RootChar,
     },
@@ -93,7 +91,7 @@ impl From<&[u8]> for NameString {
         } else if PrefixPath::matches(aml) || NamePath::matches(aml) {
             let mut aml: &[u8] = aml;
             let mut prefix_path: Vec<PrefixPath> = Vec::new();
-            while *aml.first().unwrap() == PREFIX_PATH {
+            while PrefixPath::matches(aml) {
                 let (new_prefix_path, remaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
                 aml = remaining_aml;
                 prefix_path.push(new_prefix_path);

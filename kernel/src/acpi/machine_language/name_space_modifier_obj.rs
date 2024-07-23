@@ -3,7 +3,6 @@ use {
     super::{
         DefScope,
         Reader,
-        SCOPE_OP,
     },
 };
 

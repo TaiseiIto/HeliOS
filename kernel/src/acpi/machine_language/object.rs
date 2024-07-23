@@ -4,14 +4,9 @@ use {
         slice,
     },
     super::{
-        EXT_OP_PREFIX,
-        FIELD_OP,
-        METHOD_OP,
         NameSpaceModifierObj,
         NamedObj,
-        OP_REGION_OP,
         Reader,
-        SCOPE_OP,
     },
 };
 

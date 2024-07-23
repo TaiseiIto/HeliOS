@@ -2,9 +2,7 @@ use {
     core::fmt,
     super::{
         ComputationalData,
-        ONE_OP,
         Reader,
-        WORD_PREFIX,
     },
 };
 

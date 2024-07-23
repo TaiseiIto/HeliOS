@@ -3,7 +3,6 @@ use {
     super::{
         Operand,
         Reader,
-        TO_BUFFER_OP,
         Target,
         ToBufferOp,
     },
