@@ -64,6 +64,7 @@ impl From<u8> for RegionSpace {
 
 impl From<&[u8]> for RegionSpace {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         (*aml.first().unwrap()).into()
     }
 }

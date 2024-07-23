@@ -14,8 +14,8 @@ impl From<&DigitChar> for char {
 
 impl From<&[u8]> for DigitChar {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let character: char = *aml.first().unwrap() as char;
-        assert!(('0'..='9').contains(&character));
         Self(character)
     }
 }

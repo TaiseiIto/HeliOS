@@ -10,7 +10,7 @@ pub struct ScopeOp;
 
 impl From<&[u8]> for ScopeOp {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), SCOPE_OP);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }
@@ -21,7 +21,9 @@ impl Reader<'_> for ScopeOp {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == SCOPE_OP)
     }
 }
 

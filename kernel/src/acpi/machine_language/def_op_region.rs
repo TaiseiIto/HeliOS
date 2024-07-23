@@ -43,6 +43,7 @@ impl fmt::Debug for DefOpRegion {
 
 impl From<&[u8]> for DefOpRegion {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (op_region_op, aml): (OpRegionOp, &[u8]) = OpRegionOp::read(aml);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
         let (region_space, aml): (RegionSpace, &[u8]) = RegionSpace::read(aml);

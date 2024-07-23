@@ -28,9 +28,10 @@ impl fmt::Debug for DataObject {
 
 impl From<&[u8]> for DataObject {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            ONE_OP | WORD_PREFIX => Self::ComputationalData(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if ComputationalData::matches(aml) {
+            Self::ComputationalData(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }

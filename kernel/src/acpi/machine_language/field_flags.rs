@@ -19,6 +19,7 @@ pub struct FieldFlags {
 
 impl From<&[u8]> for FieldFlags {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         (*aml.first().unwrap()).into()
     }
 }

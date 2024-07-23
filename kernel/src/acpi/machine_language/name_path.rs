@@ -51,11 +51,12 @@ impl From<&NamePath> for String {
 
 impl From<&[u8]> for NamePath {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            DUAL_NAME_PREFIX => unimplemented!(),
-            MULTI_NAME_PREFIX => unimplemented!(),
-            NULL_NAME => Self::NullName(aml.into()),
-            _ => Self::NameSeg(aml.into()),
+        if NameSeg::matches(aml) {
+            Self::NameSeg(aml.into())
+        } else if NullName::matches(aml) {
+            Self::NullName(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }

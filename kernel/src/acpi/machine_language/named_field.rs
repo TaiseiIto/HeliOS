@@ -31,6 +31,7 @@ impl fmt::Debug for NamedField {
 
 impl From<&[u8]> for NamedField {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (name_seg, aml): (NameSeg, &[u8]) = NameSeg::read(aml);
         let pkg_length: PkgLength = aml.into();
         Self {
@@ -50,7 +51,7 @@ impl Reader<'_> for NamedField {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        NameSeg::matches(aml)
     }
 }
 

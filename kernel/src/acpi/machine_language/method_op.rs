@@ -10,7 +10,7 @@ pub struct MethodOp;
 
 impl From<&[u8]> for MethodOp {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), METHOD_OP);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }

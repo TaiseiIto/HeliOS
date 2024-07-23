@@ -10,7 +10,7 @@ pub struct WordPrefix;
 
 impl From<&[u8]> for WordPrefix {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), WORD_PREFIX);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }
@@ -21,7 +21,9 @@ impl Reader<'_> for WordPrefix {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == WORD_PREFIX)
     }
 }
 

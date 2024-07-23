@@ -10,7 +10,7 @@ pub struct ExtOpPrefix;
 
 impl From<&[u8]> for ExtOpPrefix {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), EXT_OP_PREFIX);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }

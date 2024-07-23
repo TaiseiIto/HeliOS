@@ -31,6 +31,7 @@ impl fmt::Debug for WordConst {
 
 impl From<&[u8]> for WordConst {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (word_prefix, aml): (WordPrefix, &[u8]) = WordPrefix::read(aml);
         let (word_data, aml): (WordData, &[u8]) = WordData::read(aml);
         Self {
@@ -50,7 +51,7 @@ impl Reader<'_> for WordConst {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        WordPrefix::matches(aml)
     }
 }
 

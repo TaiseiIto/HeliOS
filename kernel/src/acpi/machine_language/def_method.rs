@@ -43,6 +43,7 @@ impl fmt::Debug for DefMethod {
 
 impl From<&[u8]> for DefMethod {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (method_op, aml): (MethodOp, &[u8]) = MethodOp::read(aml);
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);

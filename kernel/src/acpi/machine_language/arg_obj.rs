@@ -14,8 +14,8 @@ pub struct ArgObj(u8);
 
 impl From<&[u8]> for ArgObj {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let arg_obj: u8 = *aml.first().unwrap();
-        assert!((ARG_OBJ_MIN..=ARG_OBJ_MAX).contains(&arg_obj));
         let arg_obj: u8 = arg_obj - ARG_OBJ_MIN;
         Self(arg_obj)
     }

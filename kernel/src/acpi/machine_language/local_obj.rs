@@ -11,8 +11,8 @@ pub struct LocalObj(u8);
 
 impl From<&[u8]> for LocalObj {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let local_obj: u8 = *aml.first().unwrap();
-        assert!((LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX).contains(&local_obj));
         let local_obj: u8 = local_obj - LOCAL_OBJ_MIN;
         Self(local_obj)
     }

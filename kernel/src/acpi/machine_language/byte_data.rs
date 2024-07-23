@@ -15,6 +15,7 @@ impl ByteData {
 
 impl From<&[u8]> for ByteData {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self(*aml.first().unwrap())
     }
 }

@@ -29,8 +29,8 @@ impl fmt::Debug for OpRegionOp {
 
 impl From<&[u8]> for OpRegionOp {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        assert_eq!(*aml.first().unwrap(), OP_REGION_OP);
         Self {
             ext_op_prefix,
         }
@@ -43,7 +43,14 @@ impl Reader<'_> for OpRegionOp {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        if ExtOpPrefix::matches(aml) {
+            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            aml
+                .first()
+                .is_some_and(|head| *head == OP_REGION_OP)
+        } else {
+            false
+        }
     }
 }
 

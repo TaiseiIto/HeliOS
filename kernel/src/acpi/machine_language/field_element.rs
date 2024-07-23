@@ -13,11 +13,10 @@ pub enum FieldElement {
 
 impl From<&[u8]> for FieldElement {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() as char {
-            'A'..='Z' | '_' => Self::NamedField(aml.into()),
-            _ => match *aml.first().unwrap() {
-                unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
-            },
+        if NamedField::matches(aml) {
+            Self::NamedField(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -30,12 +29,7 @@ impl Reader<'_> for FieldElement {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        aml
-            .first()
-            .is_some_and(|head| {
-                let character: char = *head as char;
-                ('A'..='Z').contains(&character) || character == '_'
-            })
+        NamedField::matches(aml)
     }
 }
 

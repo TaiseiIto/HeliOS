@@ -36,6 +36,7 @@ impl fmt::Debug for DefToBuffer {
 
 impl From<&[u8]> for DefToBuffer {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (to_buffer_op, aml): (ToBufferOp, &[u8]) = ToBufferOp::read(aml);
         let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
         let (target, aml): (Target, &[u8]) = Target::read(aml);

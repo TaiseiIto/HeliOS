@@ -14,6 +14,7 @@ pub struct Operand(Box<TermArg>);
 
 impl From<&[u8]> for Operand {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self(Box::new(aml.into()))
     }
 }
@@ -24,7 +25,7 @@ impl Reader<'_> for Operand {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        TermArg::matches(aml)
     }
 }
 

@@ -31,9 +31,10 @@ impl fmt::Debug for NameSpaceModifierObj {
 
 impl From<&[u8]> for NameSpaceModifierObj {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            SCOPE_OP => Self::DefScope(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if DefScope::matches(aml) {
+            Self::DefScope(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -48,7 +49,7 @@ impl Reader<'_> for NameSpaceModifierObj {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        DefScope::matches(aml)
     }
 }
 

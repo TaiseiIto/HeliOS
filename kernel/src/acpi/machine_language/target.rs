@@ -37,10 +37,12 @@ impl fmt::Debug for Target {
 
 impl From<&[u8]> for Target {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            NULL_NAME => Self::NullName(aml.into()),
-            ARG_OBJ_MIN..=ARG_OBJ_MAX | LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX => Self::SuperName(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if NullName::matches(aml) {
+            Self::NullName(aml.into())
+        } else if SuperName::matches(aml) {
+            Self::SuperName(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -54,7 +56,7 @@ impl Reader<'_> for Target {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        NullName::matches(aml) || SuperName::matches(aml)
     }
 }
 

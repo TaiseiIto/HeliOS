@@ -11,6 +11,7 @@ pub struct WordData(u16);
 
 impl From<&[u8]> for WordData {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let mut aml_iterator: slice::Iter<u8> = aml.iter();
         let low: u8 = *aml_iterator.next().unwrap();
         let high: u8 = *aml_iterator.next().unwrap();

@@ -14,6 +14,7 @@ pub struct FieldList(Vec<FieldElement>);
 
 impl From<&[u8]> for FieldList {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let mut aml: &[u8] = aml;
         let mut field_list: Vec<FieldElement> = Vec::new();
         while !aml.is_empty() {

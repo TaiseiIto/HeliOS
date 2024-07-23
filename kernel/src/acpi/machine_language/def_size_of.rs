@@ -31,6 +31,7 @@ impl fmt::Debug for DefSizeOf {
 
 impl From<&[u8]> for DefSizeOf {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (size_of_op, aml): (SizeOfOp, &[u8]) = SizeOfOp::read(aml);
         let (super_name, aml): (SuperName, &[u8]) = SuperName::read(aml);
         Self {

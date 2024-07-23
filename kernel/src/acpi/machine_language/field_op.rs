@@ -29,8 +29,8 @@ impl fmt::Debug for FieldOp {
 
 impl From<&[u8]> for FieldOp {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        assert_eq!(*aml.first().unwrap(), FIELD_OP);
         Self {
             ext_op_prefix,
         }

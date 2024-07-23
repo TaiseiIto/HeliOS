@@ -35,6 +35,7 @@ impl fmt::Debug for DefToHexString {
 
 impl From<&[u8]> for DefToHexString {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (to_hex_string_op, aml): (ToHexStringOp, &[u8]) = ToHexStringOp::read(aml);
         let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
         let (target, aml): (Target, &[u8]) = Target::read(aml);

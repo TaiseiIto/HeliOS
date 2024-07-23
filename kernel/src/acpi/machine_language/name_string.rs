@@ -83,29 +83,28 @@ impl From<&NameString> for String {
 
 impl From<&[u8]> for NameString {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            ROOT_CHAR => {
-                let (root_char, aml): (RootChar, &[u8]) = RootChar::read(aml);
-                let name_path: NamePath = aml.into();
-                Self::RootCharNamePath {
-                    root_char,
-                    name_path,
-                }
-            },
-            _ => {
-                let mut aml: &[u8] = aml;
-                let mut prefix_path: Vec<PrefixPath> = Vec::new();
-                while *aml.first().unwrap() == PREFIX_PATH {
-                    let (new_prefix_path, remaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
-                    aml = remaining_aml;
-                    prefix_path.push(new_prefix_path);
-                }
-                let name_path: NamePath = aml.into();
-                Self::PrefixPathNamePath {
-                    prefix_path,
-                    name_path,
-                }
+        if RootChar::matches(aml) {
+            let (root_char, aml): (RootChar, &[u8]) = RootChar::read(aml);
+            let name_path: NamePath = aml.into();
+            Self::RootCharNamePath {
+                root_char,
+                name_path,
             }
+        } else if PrefixPath::matches(aml) || NamePath::matches(aml) {
+            let mut aml: &[u8] = aml;
+            let mut prefix_path: Vec<PrefixPath> = Vec::new();
+            while *aml.first().unwrap() == PREFIX_PATH {
+                let (new_prefix_path, remaining_aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
+                aml = remaining_aml;
+                prefix_path.push(new_prefix_path);
+            }
+            let name_path: NamePath = aml.into();
+            Self::PrefixPathNamePath {
+                prefix_path,
+                name_path,
+            }
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -128,7 +127,9 @@ impl Reader<'_> for NameString {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        RootChar::matches(aml)
+        || PrefixPath::matches(aml)
+        || NamePath::matches(aml)
     }
 }
 

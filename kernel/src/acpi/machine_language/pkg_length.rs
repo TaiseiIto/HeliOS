@@ -25,7 +25,7 @@ impl PkgLength {
     }
 
     pub fn matches(aml: &[u8]) -> bool {
-        true
+        PkgLeadByte::matches(aml)
     }
 
     pub fn pkg_length(&self) -> usize {
@@ -58,6 +58,7 @@ impl fmt::Debug for PkgLength {
 
 impl From<&[u8]> for PkgLength {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let pkg_lead_byte: PkgLeadByte = aml.into();
         let aml: &[u8] = &aml[pkg_lead_byte.length()..];
         let (aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())

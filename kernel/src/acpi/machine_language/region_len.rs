@@ -11,6 +11,7 @@ pub struct RegionLen(TermArg);
 
 impl From<&[u8]> for RegionLen {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self(aml.into())
     }
 }
@@ -21,7 +22,7 @@ impl Reader<'_> for RegionLen {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        TermArg::matches(aml)
     }
 }
 

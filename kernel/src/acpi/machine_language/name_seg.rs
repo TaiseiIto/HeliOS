@@ -56,6 +56,7 @@ impl From<&NameSeg> for String {
 
 impl From<&[u8]> for NameSeg {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (lead_name_char, aml): (LeadNameChar, &[u8]) = LeadNameChar::read(aml);
         let (aml, name_char): (&[u8], Vec<NameChar>) = (0..3)
             .fold((aml, Vec::new()), |(aml, mut name_char), _| {
@@ -87,7 +88,7 @@ impl Reader<'_> for NameSeg {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        LeadNameChar::matches(aml)
     }
 }
 

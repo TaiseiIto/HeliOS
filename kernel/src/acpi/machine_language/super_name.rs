@@ -30,9 +30,10 @@ impl fmt::Debug for SuperName {
 
 impl From<&[u8]> for SuperName {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            ARG_OBJ_MIN..=ARG_OBJ_MAX | LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX => Self::SimpleName(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if SimpleName::matches(aml) {
+            Self::SimpleName(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -45,7 +46,7 @@ impl Reader<'_> for SuperName {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        SimpleName::matches(aml)
     }
 }
 

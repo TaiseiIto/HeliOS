@@ -40,6 +40,7 @@ impl fmt::Debug for DefScope {
 
 impl From<&[u8]> for DefScope {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         match *aml.first().unwrap() {
             SCOPE_OP => {
                 let (scope_op, aml): (ScopeOp, &[u8]) = ScopeOp::read(aml);

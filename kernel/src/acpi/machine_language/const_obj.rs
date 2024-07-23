@@ -26,9 +26,10 @@ impl fmt::Debug for ConstObj {
 
 impl From<&[u8]> for ConstObj {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            ONE_OP => Self::OneOp(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if OneOp::matches(aml) {
+            Self::OneOp(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }

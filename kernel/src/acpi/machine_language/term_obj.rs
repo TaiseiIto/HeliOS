@@ -43,19 +43,12 @@ impl fmt::Debug for TermObj {
 
 impl From<&[u8]> for TermObj {
     fn from(aml: &[u8]) -> Self {
-        let mut aml_iterator: slice::Iter<u8> = aml.iter();
-        match *aml_iterator.next().unwrap() {
-            EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                FIELD_OP
-                | OP_REGION_OP => Self::Object(aml.into()),
-                unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
-            },
-            METHOD_OP
-            | SCOPE_OP => Self::Object(aml.into()),
-            SUBTRACT_OP
-            | TO_BUFFER_OP
-            | TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if ExpressionOpcode::matches(aml) {
+            Self::ExpressionOpcode(aml.into())
+        } else if Object::matches(aml) { 
+            Self::Object(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -69,7 +62,7 @@ impl Reader<'_> for TermObj {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ExpressionOpcode::matches(aml) || Object::matches(aml)
     }
 }
 

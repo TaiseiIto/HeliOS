@@ -41,11 +41,12 @@ impl From<&NameChar> for char {
 
 impl From<&[u8]> for NameChar {
     fn from(aml: &[u8]) -> Self {
-        let character: char = *aml.first().unwrap() as char;
-        match character {
-            '0'..='0' => Self::DigitChar(aml.into()),
-            'A'..='Z' | '_' => Self::LeadNameChar(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if DigitChar::matches(aml) {
+            Self::DigitChar(aml.into())
+        } else if LeadNameChar::matches(aml) {
+            Self::LeadNameChar(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }

@@ -17,6 +17,7 @@ pub struct MethodFlags {
 
 impl From<&[u8]> for MethodFlags {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         (*aml.first().unwrap()).into()
     }
 }

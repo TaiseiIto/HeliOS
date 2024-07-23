@@ -54,16 +54,16 @@ impl fmt::Debug for TermArg {
 
 impl From<&[u8]> for TermArg {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            SIZE_OF_OP
-            | SUBTRACT_OP
-            | TO_BUFFER_OP
-            | TO_HEX_STRING_OP => Self::ExpressionOpcode(aml.into()),
-            ONE_OP
-            | WORD_PREFIX => Self::DataObject(aml.into()),
-            ARG_OBJ_MIN..=ARG_OBJ_MAX => Self::ArgObj(aml.into()),
-            LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX => Self::LocalObj(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if ExpressionOpcode::matches(aml) {
+            Self::ExpressionOpcode(aml.into())
+        } else if DataObject::matches(aml) {
+            Self::DataObject(aml.into())
+        } else if ArgObj::matches(aml) {
+            Self::ArgObj(aml.into())
+        } else if LocalObj::matches(aml) {
+            Self::LocalObj(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -79,7 +79,10 @@ impl Reader<'_> for TermArg {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ExpressionOpcode::matches(aml)
+        || DataObject::matches(aml)
+        || ArgObj::matches(aml)
+        || LocalObj::matches(aml)
     }
 }
 

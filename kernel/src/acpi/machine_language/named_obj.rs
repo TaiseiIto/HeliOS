@@ -44,15 +44,14 @@ impl fmt::Debug for NamedObj {
 
 impl From<&[u8]> for NamedObj {
     fn from(aml: &[u8]) -> Self {
-        let mut aml_iterator: slice::Iter<u8> = aml.iter();
-        match *aml_iterator.next().unwrap() {
-            EXT_OP_PREFIX => match *aml_iterator.next().unwrap() {
-                FIELD_OP => Self::DefField(aml.into()),
-                OP_REGION_OP => Self::DefOpRegion(aml.into()),
-                unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
-            },
-            METHOD_OP => Self::DefMethod(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if DefField::matches(aml) {
+            Self::DefField(aml.into())
+        } else if DefMethod::matches(aml) {
+            Self::DefMethod(aml.into())
+        } else if DefOpRegion::matches(aml) {
+            Self::DefOpRegion(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -67,7 +66,9 @@ impl Reader<'_> for NamedObj {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        DefField::matches(aml)
+        || DefMethod::matches(aml)
+        || DefOpRegion::matches(aml)
     }
 }
 

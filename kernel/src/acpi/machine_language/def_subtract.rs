@@ -36,6 +36,7 @@ impl fmt::Debug for DefSubtract {
 
 impl From<&[u8]> for DefSubtract {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (subtract_op, aml): (SubtractOp, &[u8]) = SubtractOp::read(aml);
         let (operand0, aml): (Operand, &[u8]) = Operand::read(aml);
         let (operand1, aml): (Operand, &[u8]) = Operand::read(aml);

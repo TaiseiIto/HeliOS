@@ -42,10 +42,14 @@ impl fmt::Debug for SimpleName {
 
 impl From<&[u8]> for SimpleName {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            ARG_OBJ_MIN..=ARG_OBJ_MAX => Self::ArgObj(aml.into()),
-            LOCAL_OBJ_MIN..=LOCAL_OBJ_MAX => Self::LocalObj(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if NameString::matches(aml) {
+            Self::NameString(aml.into())
+        } else if ArgObj::matches(aml) {
+            Self::ArgObj(aml.into())
+        } else if LocalObj::matches(aml) {
+            Self::LocalObj(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
@@ -60,7 +64,9 @@ impl Reader<'_> for SimpleName {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        NameString::matches(aml)
+        || ArgObj::matches(aml)
+        || LocalObj::matches(aml)
     }
 }
 

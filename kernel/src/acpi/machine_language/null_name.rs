@@ -10,7 +10,7 @@ pub struct NullName;
 
 impl From<&[u8]> for NullName {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), NULL_NAME);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }
@@ -21,7 +21,9 @@ impl Reader<'_> for NullName {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == NULL_NAME)
     }
 }
 

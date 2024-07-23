@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const ROOT_CHAR: u8 = 0x5c;
+pub const ROOT_CHAR: u8 = '\\' as u8;
 
 /// # RootChar
 /// ## References
@@ -16,7 +16,7 @@ impl From<&RootChar> for char {
 
 impl From<&[u8]> for RootChar {
     fn from(aml: &[u8]) -> Self {
-        assert_eq!(*aml.first().unwrap(), ROOT_CHAR);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         Self
     }
 }
@@ -27,7 +27,9 @@ impl Reader<'_> for RootChar {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == ROOT_CHAR)
     }
 }
 

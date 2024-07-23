@@ -26,6 +26,7 @@ impl PkgLeadByte {
 
 impl From<&[u8]> for PkgLeadByte {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         (*aml.first().unwrap()).into()
     }
 }

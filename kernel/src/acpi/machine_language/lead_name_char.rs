@@ -14,6 +14,7 @@ impl From<&LeadNameChar> for char {
 
 impl From<&[u8]> for LeadNameChar {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let character: char = *aml.first().unwrap() as char;
         match character {
             'A'..='Z' | '_' => Self(character),

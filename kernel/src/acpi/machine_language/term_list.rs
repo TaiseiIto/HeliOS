@@ -14,6 +14,7 @@ pub struct TermList(Vec<TermObj>);
 
 impl From<&[u8]> for TermList {
     fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let mut aml: &[u8] = aml;
         let mut term_list: Vec<TermObj> = Vec::new();
         while !aml.is_empty() {
@@ -34,7 +35,11 @@ impl Reader<'_> for TermList {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        if aml.first().is_some() {
+            TermObj::matches(aml)
+        } else {
+            true
+        }
     }
 }
 

@@ -48,12 +48,16 @@ impl fmt::Debug for ExpressionOpcode {
 
 impl From<&[u8]> for ExpressionOpcode {
     fn from(aml: &[u8]) -> Self {
-        match *aml.first().unwrap() {
-            SIZE_OF_OP => Self::DefSizeOf(aml.into()),
-            SUBTRACT_OP => Self::DefSubtract(aml.into()),
-            TO_BUFFER_OP => Self::DefToBuffer(aml.into()),
-            TO_HEX_STRING_OP => Self::DefToHexString(aml.into()),
-            unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
+        if DefSizeOf::matches(aml) {
+            Self::DefSizeOf(aml.into())
+        } else if DefSubtract::matches(aml) {
+            Self::DefSubtract(aml.into())
+        } else if DefToBuffer::matches(aml) {
+            Self::DefToBuffer(aml.into())
+        } else if DefToHexString::matches(aml) {
+            Self::DefToHexString(aml.into())
+        } else {
+            panic!("aml = {:#x?}", aml)
         }
     }
 }
