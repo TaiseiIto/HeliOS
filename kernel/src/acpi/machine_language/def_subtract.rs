@@ -66,7 +66,7 @@ impl Reader<'_> for DefSubtract {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        SubtractOp::matches(aml)
     }
 }
 

@@ -69,7 +69,10 @@ impl Reader<'_> for ExpressionOpcode {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        DefSizeOf::matches(aml)
+        || DefSubtract::matches(aml)
+        || DefToBuffer::matches(aml)
+        || DefToHexString::matches(aml)
     }
 }
 

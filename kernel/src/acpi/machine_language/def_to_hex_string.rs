@@ -59,7 +59,7 @@ impl Reader<'_> for DefToHexString {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ToHexStringOp::matches(aml)
     }
 }
 

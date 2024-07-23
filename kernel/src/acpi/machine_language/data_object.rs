@@ -13,8 +13,6 @@ use {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 pub enum DataObject {
     ComputationalData(ComputationalData),
-    DefPackage,
-    DefVarPackage,
 }
 
 impl fmt::Debug for DataObject {
@@ -24,8 +22,6 @@ impl fmt::Debug for DataObject {
                 .debug_tuple("DataObject")
                 .field(computational_data)
                 .finish(),
-            Self::DefPackage => write!(formatter, "DataObject::DefPackage"),
-            Self::DefVarPackage => write!(formatter, "DataObject::DefVarPackage"),
         }
     }
 }
@@ -43,13 +39,11 @@ impl Reader<'_> for DataObject {
     fn length(&self) -> usize {
         match self {
             Self::ComputationalData(computational_data) => computational_data.length(),
-            Self::DefPackage => unimplemented!(),
-            Self::DefVarPackage => unimplemented!(),
         }
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ComputationalData::matches(aml)
     }
 }
 

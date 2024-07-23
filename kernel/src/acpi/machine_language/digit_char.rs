@@ -26,7 +26,12 @@ impl Reader<'_> for DigitChar {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| {
+                let character = *head as char;
+                ('0'..='9').contains(&character)
+            })
     }
 }
 

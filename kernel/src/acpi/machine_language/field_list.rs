@@ -34,7 +34,11 @@ impl Reader<'_> for FieldList {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        if aml.first().is_some() {
+            FieldElement::matches(aml)
+        } else {
+            true
+        }
     }
 }
 

@@ -60,7 +60,7 @@ impl Reader<'_> for DefToBuffer {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ToBufferOp::matches(aml)
     }
 }
 

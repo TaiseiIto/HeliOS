@@ -75,7 +75,7 @@ impl Reader<'_> for DefOpRegion {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        OpRegionOp::matches(aml)
     }
 }
 

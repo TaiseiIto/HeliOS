@@ -75,7 +75,7 @@ impl Reader<'_> for DefField {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        FieldOp::matches(aml)
     }
 }
 

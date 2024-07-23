@@ -30,7 +30,12 @@ impl Reader<'_> for FieldElement {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| {
+                let character: char = *head as char;
+                ('A'..='Z').contains(&character) || character == '_'
+            })
     }
 }
 

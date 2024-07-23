@@ -70,7 +70,7 @@ impl Reader<'_> for DefScope {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ScopeOp::matches(aml)
     }
 }
 

@@ -21,7 +21,9 @@ impl Reader<'_> for ExtOpPrefix {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == EXT_OP_PREFIX)
     }
 }
 

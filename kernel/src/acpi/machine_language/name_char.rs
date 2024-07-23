@@ -59,7 +59,7 @@ impl Reader<'_> for NameChar {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        DigitChar::matches(aml) || LeadNameChar::matches(aml)
     }
 }
 

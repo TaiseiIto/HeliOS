@@ -43,7 +43,12 @@ impl Reader<'_> for FieldOp {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        ExtOpPrefix::matches(aml) && {
+            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            aml
+                .first()
+                .is_some_and(|head| *head == FIELD_OP)
+        }
     }
 }
 

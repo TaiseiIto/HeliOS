@@ -50,7 +50,7 @@ impl Reader<'_> for DefSizeOf {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        SizeOfOp::matches(aml)
     }
 }
 

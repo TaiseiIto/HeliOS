@@ -75,7 +75,7 @@ impl Reader<'_> for DefMethod {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        MethodOp::matches(aml)
     }
 }
 

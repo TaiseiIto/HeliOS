@@ -21,7 +21,9 @@ impl Reader<'_> for MethodOp {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| *head == METHOD_OP)
     }
 }
 

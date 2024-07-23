@@ -27,7 +27,9 @@ impl Reader<'_> for ArgObj {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        aml
+            .first()
+            .is_some_and(|head| (ARG_OBJ_MIN..=ARG_OBJ_MAX).contains(head))
     }
 }
 

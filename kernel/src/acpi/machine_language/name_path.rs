@@ -71,7 +71,7 @@ impl Reader<'_> for NamePath {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        true
+        NameSeg::matches(aml) || NullName::matches(aml)
     }
 }
 
