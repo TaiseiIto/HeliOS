@@ -8,6 +8,7 @@ pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
 pub mod def_field;
+pub mod def_l_less;
 pub mod def_method;
 pub mod def_op_region;
 pub mod def_scope;
@@ -25,6 +26,7 @@ pub mod field_element;
 pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
+pub mod l_less_op;
 pub mod lead_name_char;
 pub mod local_obj;
 pub mod method_flags;
@@ -76,6 +78,7 @@ pub use {
     const_obj::ConstObj,
     data_object::DataObject,
     def_field::DefField,
+    def_l_less::DefLLess,
     def_method::DefMethod,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
@@ -92,6 +95,7 @@ pub use {
     field_flags::FieldFlags,
     field_list::FieldList,
     field_op::FieldOp,
+    l_less_op::LLessOp,
     lead_name_char::LeadNameChar,
     local_obj::LocalObj,
     method_flags::MethodFlags,
