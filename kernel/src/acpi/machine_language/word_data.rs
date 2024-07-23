@@ -23,5 +23,9 @@ impl Reader<'_> for WordData {
     fn length(&self) -> usize {
         2
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

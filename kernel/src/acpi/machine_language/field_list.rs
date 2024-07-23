@@ -32,5 +32,9 @@ impl Reader<'_> for FieldList {
             .map(|field_element| field_element.length())
             .sum::<usize>()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

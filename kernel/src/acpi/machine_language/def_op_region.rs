@@ -73,5 +73,9 @@ impl Reader<'_> for DefOpRegion {
         + region_offset.length()
         + region_len.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

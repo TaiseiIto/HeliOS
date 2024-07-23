@@ -25,5 +25,9 @@ impl Reader<'_> for ArgObj {
     fn length(&self) -> usize {
         1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

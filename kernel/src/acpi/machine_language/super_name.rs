@@ -43,5 +43,9 @@ impl Reader<'_> for SuperName {
             Self::SimpleName(simple_name) => simple_name.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

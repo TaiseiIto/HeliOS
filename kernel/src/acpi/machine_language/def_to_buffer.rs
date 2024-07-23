@@ -58,5 +58,9 @@ impl Reader<'_> for DefToBuffer {
         + operand.length()
         + target.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

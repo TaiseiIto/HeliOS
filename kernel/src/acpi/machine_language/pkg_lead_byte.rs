@@ -34,5 +34,9 @@ impl Reader<'_> for PkgLeadByte {
     fn length(&self) -> usize {
         1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

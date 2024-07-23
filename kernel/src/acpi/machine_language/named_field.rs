@@ -48,5 +48,9 @@ impl Reader<'_> for NamedField {
         } = self;
         name_seg.length() + pkg_length.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -26,5 +26,9 @@ impl Reader<'_> for LeadNameChar {
     fn length(&self) -> usize {
         1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

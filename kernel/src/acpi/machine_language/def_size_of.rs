@@ -48,5 +48,9 @@ impl Reader<'_> for DefSizeOf {
         } = self;
         size_of_op.length() + super_name.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

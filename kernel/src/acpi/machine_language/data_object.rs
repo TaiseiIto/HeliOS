@@ -17,16 +17,6 @@ pub enum DataObject {
     DefVarPackage,
 }
 
-impl Reader<'_> for DataObject {
-    fn length(&self) -> usize {
-        match self {
-            Self::ComputationalData(computational_data) => computational_data.length(),
-            Self::DefPackage => unimplemented!(),
-            Self::DefVarPackage => unimplemented!(),
-        }
-    }
-}
-
 impl fmt::Debug for DataObject {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -46,6 +36,20 @@ impl From<&[u8]> for DataObject {
             ONE_OP | WORD_PREFIX => Self::ComputationalData(aml.into()),
             unknown_byte => panic!("unknown_byte = {:#x?}", unknown_byte),
         }
+    }
+}
+
+impl Reader<'_> for DataObject {
+    fn length(&self) -> usize {
+        match self {
+            Self::ComputationalData(computational_data) => computational_data.length(),
+            Self::DefPackage => unimplemented!(),
+            Self::DefVarPackage => unimplemented!(),
+        }
+    }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
     }
 }
 

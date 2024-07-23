@@ -85,5 +85,9 @@ impl Reader<'_> for NameSeg {
             .map(|name_char| name_char.length())
             .sum::<usize>()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

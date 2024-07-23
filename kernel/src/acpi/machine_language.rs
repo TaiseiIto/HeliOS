@@ -176,6 +176,7 @@ pub use {
 
 pub trait Reader<'a>: From<&'a [u8]> {
     fn length(&self) -> usize;
+    fn matches(aml: &[u8]) -> bool;
 
     fn read(aml: &'a [u8]) -> (Self, &'a [u8]) {
         let symbol: Self = aml.into();

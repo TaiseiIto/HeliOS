@@ -126,5 +126,9 @@ impl Reader<'_> for NameString {
                 .sum::<usize>() + name_path.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

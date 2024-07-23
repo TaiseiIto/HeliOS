@@ -69,5 +69,9 @@ impl Reader<'_> for NamePath {
             Self::NullName(null_name) => null_name.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -45,5 +45,9 @@ impl Reader<'_> for ConstObj {
             Self::OnesOp => unimplemented!(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

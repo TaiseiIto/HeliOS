@@ -72,5 +72,9 @@ impl Reader<'_> for RegionSpace {
     fn length(&self) -> usize {
         1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

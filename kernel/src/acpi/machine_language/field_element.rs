@@ -28,5 +28,9 @@ impl Reader<'_> for FieldElement {
             Self::NamedField(named_field) => named_field.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

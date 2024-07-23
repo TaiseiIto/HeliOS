@@ -41,5 +41,9 @@ impl Reader<'_> for FieldOp {
     fn length(&self) -> usize {
         self.ext_op_prefix.length() + 1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

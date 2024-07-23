@@ -24,6 +24,10 @@ impl PkgLength {
             .sum::<usize>()
     }
 
+    pub fn matches(aml: &[u8]) -> bool {
+        true
+    }
+
     pub fn pkg_length(&self) -> usize {
         (self.byte_data
             .iter()

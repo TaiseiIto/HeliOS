@@ -77,5 +77,9 @@ impl Reader<'_> for TermArg {
             Self::LocalObj(local_obj) => local_obj.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -73,5 +73,9 @@ impl Reader<'_> for DefMethod {
         + method_flags.length()
         + term_list.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

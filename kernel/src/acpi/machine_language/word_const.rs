@@ -48,5 +48,9 @@ impl Reader<'_> for WordConst {
         } = self;
         word_prefix.length() + word_data.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

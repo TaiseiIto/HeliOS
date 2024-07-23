@@ -64,5 +64,9 @@ impl Reader<'_> for DefSubtract {
             .sum::<usize>()
         + target.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

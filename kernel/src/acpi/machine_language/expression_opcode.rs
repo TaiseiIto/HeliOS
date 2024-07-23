@@ -67,5 +67,9 @@ impl Reader<'_> for ExpressionOpcode {
             Self::DefToHexString(def_to_hex_string) => def_to_hex_string.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

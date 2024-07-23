@@ -19,5 +19,9 @@ impl Reader<'_> for ToBufferOp {
     fn length(&self) -> usize {
         1
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

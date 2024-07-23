@@ -19,5 +19,9 @@ impl Reader<'_> for RegionLen {
     fn length(&self) -> usize {
         self.0.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

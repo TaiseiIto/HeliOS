@@ -13,15 +13,19 @@ impl ByteData {
     }
 }
 
+impl From<&[u8]> for ByteData {
+    fn from(aml: &[u8]) -> Self {
+        Self(*aml.first().unwrap())
+    }
+}
+
 impl Reader<'_> for ByteData {
     fn length(&self) -> usize {
         1
     }
-}
 
-impl From<&[u8]> for ByteData {
-    fn from(aml: &[u8]) -> Self {
-        Self(*aml.first().unwrap())
+    fn matches(aml: &[u8]) -> bool {
+        true
     }
 }
 

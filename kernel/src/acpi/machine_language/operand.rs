@@ -22,5 +22,9 @@ impl Reader<'_> for Operand {
     fn length(&self) -> usize {
         self.0.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -65,5 +65,9 @@ impl Reader<'_> for NamedObj {
             Self::DefOpRegion(def_op_region) => def_op_region.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

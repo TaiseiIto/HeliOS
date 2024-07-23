@@ -67,5 +67,9 @@ impl Reader<'_> for TermObj {
             Self::Object(object) => object.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

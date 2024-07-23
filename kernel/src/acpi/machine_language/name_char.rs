@@ -57,5 +57,9 @@ impl Reader<'_> for NameChar {
             Self::LeadNameChar(lead_name_char) => lead_name_char.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

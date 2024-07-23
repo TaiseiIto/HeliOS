@@ -57,5 +57,9 @@ impl Reader<'_> for DefToHexString {
         + operand.length()
         + target.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

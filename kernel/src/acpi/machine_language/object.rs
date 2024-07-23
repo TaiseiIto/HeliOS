@@ -60,5 +60,9 @@ impl Reader<'_> for Object {
             Self::NamedObj(named_obj) => named_obj.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

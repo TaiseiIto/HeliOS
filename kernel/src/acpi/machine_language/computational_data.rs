@@ -67,5 +67,9 @@ impl Reader<'_> for ComputationalData {
             Self::DefBuffer => unimplemented!(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -32,5 +32,9 @@ impl Reader<'_> for TermList {
             .map(|term_obj| term_obj.length())
             .sum::<usize>()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

@@ -46,5 +46,9 @@ impl Reader<'_> for NameSpaceModifierObj {
             Self::DefScope(def_scope) => def_scope.length(),
         }
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 

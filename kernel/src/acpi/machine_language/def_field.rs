@@ -73,5 +73,9 @@ impl Reader<'_> for DefField {
         + field_flags.length()
         + field_list.length()
     }
+
+    fn matches(aml: &[u8]) -> bool {
+        true
+    }
 }
 
