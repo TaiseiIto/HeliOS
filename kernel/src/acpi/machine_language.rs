@@ -44,6 +44,7 @@ pub mod op_region_op;
 pub mod operand;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
+pub mod predicate;
 pub mod prefix_path;
 pub mod region_len;
 pub mod region_offset;
@@ -109,6 +110,7 @@ pub use {
     operand::Operand,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
+    predicate::Predicate,
     prefix_path::PrefixPath,
     region_len::RegionLen,
     region_offset::RegionOffset,
