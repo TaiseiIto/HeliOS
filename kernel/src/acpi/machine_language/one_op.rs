@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const ONE_OP: u8 = 0x01;
+const ONE_OP: u8 = 0x01;
 
 /// # OneOp
 /// ## References

@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const ZERO_OP: u8 = 0x00;
+const ZERO_OP: u8 = 0x00;
 
 /// # ZeroOp
 /// ## References

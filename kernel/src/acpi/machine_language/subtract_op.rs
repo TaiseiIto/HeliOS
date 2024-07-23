@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const SUBTRACT_OP: u8 = 0x74;
+const SUBTRACT_OP: u8 = 0x74;
 
 /// # SubtractOp
 /// ## References

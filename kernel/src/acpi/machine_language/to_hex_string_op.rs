@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const TO_HEX_STRING_OP: u8 = 0x98;
+const TO_HEX_STRING_OP: u8 = 0x98;
 
 /// # ToHexStringOp
 /// ## References

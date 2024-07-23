@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const EXT_OP_PREFIX: u8 = 0x5b;
+const EXT_OP_PREFIX: u8 = 0x5b;
 
 /// # ExtOpPrefix
 /// ## References

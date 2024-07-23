@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const PREFIX_PATH: u8 = '^' as u8;
+const PREFIX_PATH: u8 = '^' as u8;
 
 /// # PrefixPath
 /// ## References

@@ -3,8 +3,8 @@ use {
     super::Reader,
 };
 
-pub const ARG_OBJ_MIN: u8 = 0x68;
-pub const ARG_OBJ_MAX: u8 = 0x6e;
+const ARG_OBJ_MIN: u8 = 0x68;
+const ARG_OBJ_MAX: u8 = 0x6e;
 
 /// # Arg Objects Encoding
 /// ## References

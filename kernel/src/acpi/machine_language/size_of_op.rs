@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const SIZE_OF_OP: u8 = 0x87;
+const SIZE_OF_OP: u8 = 0x87;
 
 /// # SizeOfOp
 /// ## References

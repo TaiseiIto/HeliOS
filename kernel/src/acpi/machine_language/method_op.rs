@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const METHOD_OP: u8 = 0x14;
+const METHOD_OP: u8 = 0x14;
 
 /// # MethodOp
 /// ## References

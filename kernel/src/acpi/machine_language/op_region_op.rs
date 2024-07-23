@@ -6,7 +6,7 @@ use {
     },
 };
 
-pub const OP_REGION_OP: u8 = 0x80;
+const OP_REGION_OP: u8 = 0x80;
 
 /// # OpRegionOp
 /// ## References

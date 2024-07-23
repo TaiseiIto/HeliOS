@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const SCOPE_OP: u8 = 0x10;
+const SCOPE_OP: u8 = 0x10;
 
 /// # ScopeOp
 /// ## References

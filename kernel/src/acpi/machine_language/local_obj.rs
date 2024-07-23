@@ -1,7 +1,7 @@
 use super::Reader;
 
-pub const LOCAL_OBJ_MIN: u8 = 0x60;
-pub const LOCAL_OBJ_MAX: u8 = 0x67;
+const LOCAL_OBJ_MIN: u8 = 0x60;
+const LOCAL_OBJ_MAX: u8 = 0x67;
 
 /// # Local Objects Encoding
 /// ## References

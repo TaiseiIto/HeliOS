@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const STORE_OP: u8 = 0x70;
+const STORE_OP: u8 = 0x70;
 
 /// # StoreOp
 /// ## References

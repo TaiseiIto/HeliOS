@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const NULL_NAME: u8 = 0x00;
+const NULL_NAME: u8 = 0x00;
 
 /// # NullName
 /// ## References

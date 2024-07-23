@@ -6,7 +6,7 @@ use {
     },
 };
 
-pub const FIELD_OP: u8 = 0x81;
+const FIELD_OP: u8 = 0x81;
 
 /// # OpRegionOp
 /// ## References
