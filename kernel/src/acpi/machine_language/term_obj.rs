@@ -4,17 +4,9 @@ use {
         slice,
     },
     super::{
-        EXT_OP_PREFIX,
         ExpressionOpcode,
-        FIELD_OP,
-        METHOD_OP,
-        OP_REGION_OP,
         Object,
         Reader,
-        SCOPE_OP,
-        SUBTRACT_OP,
-        TO_BUFFER_OP,
-        TO_HEX_STRING_OP,
     },
 };
 
