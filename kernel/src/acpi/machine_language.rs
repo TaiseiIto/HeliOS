@@ -16,6 +16,7 @@ pub mod def_store;
 pub mod def_subtract;
 pub mod def_to_buffer;
 pub mod def_to_hex_string;
+pub mod def_while;
 pub mod digit_char;
 pub mod dual_name_prefix;
 pub mod expression_opcode;
@@ -51,6 +52,7 @@ pub mod root_char;
 pub mod scope_op;
 pub mod simple_name;
 pub mod size_of_op;
+pub mod statement_opcode;
 pub mod store_op;
 pub mod subtract_op;
 pub mod super_name;
@@ -60,17 +62,14 @@ pub mod term_list;
 pub mod term_obj;
 pub mod to_buffer_op;
 pub mod to_hex_string_op;
+pub mod while_op;
 pub mod word_const;
 pub mod word_data;
 pub mod word_prefix;
 pub mod zero_op;
 
 pub use {
-    arg_obj::{
-        ARG_OBJ_MAX,
-        ARG_OBJ_MIN,
-        ArgObj,
-    },
+    arg_obj::ArgObj,
     byte_data::ByteData,
     computational_data::ComputationalData,
     const_obj::ConstObj,
@@ -84,6 +83,7 @@ pub use {
     def_subtract::DefSubtract,
     def_to_buffer::DefToBuffer,
     def_to_hex_string::DefToHexString,
+    def_while::DefWhile,
     digit_char::DigitChar,
     expression_opcode::ExpressionOpcode,
     ext_op_prefix::ExtOpPrefix,
@@ -117,6 +117,7 @@ pub use {
     scope_op::ScopeOp,
     simple_name::SimpleName,
     size_of_op::SizeOfOp,
+    statement_opcode::StatementOpcode,
     store_op::StoreOp,
     subtract_op::SubtractOp,
     super_name::SuperName,
@@ -126,6 +127,7 @@ pub use {
     term_obj::TermObj,
     to_buffer_op::ToBufferOp,
     to_hex_string_op::ToHexStringOp,
+    while_op::WhileOp,
     word_const::WordConst,
     word_data::WordData,
     word_prefix::WordPrefix,

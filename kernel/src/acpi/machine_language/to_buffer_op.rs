@@ -1,6 +1,6 @@
 use super::Reader;
 
-pub const TO_BUFFER_OP: u8 = 0x96;
+const TO_BUFFER_OP: u8 = 0x96;
 
 /// # ToBufferOp
 /// ## References

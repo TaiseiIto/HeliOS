@@ -7,6 +7,7 @@ use {
         ExpressionOpcode,
         Object,
         Reader,
+        StatementOpcode,
     },
 };
 
@@ -16,6 +17,7 @@ use {
 pub enum TermObj {
     ExpressionOpcode(ExpressionOpcode),
     Object(Object),
+    StatementOpcode(StatementOpcode),
 }
 
 impl fmt::Debug for TermObj {
@@ -29,6 +31,10 @@ impl fmt::Debug for TermObj {
                 .debug_tuple("TermObj")
                 .field(object)
                 .finish(),
+            Self::StatementOpcode(statement_opcode) => formatter
+                .debug_tuple("TermObj")
+                .field(statement_opcode)
+                .finish(),
         }
     }
 }
@@ -39,6 +45,8 @@ impl From<&[u8]> for TermObj {
             Self::ExpressionOpcode(aml.into())
         } else if Object::matches(aml) { 
             Self::Object(aml.into())
+        } else if StatementOpcode::matches(aml) { 
+            Self::StatementOpcode(aml.into())
         } else {
             panic!("aml = {:#x?}", aml)
         }
@@ -50,11 +58,14 @@ impl Reader<'_> for TermObj {
         match self {
             Self::ExpressionOpcode(expression_opcode) => expression_opcode.length(),
             Self::Object(object) => object.length(),
+            Self::StatementOpcode(statement_opcode) => statement_opcode.length(),
         }
     }
 
     fn matches(aml: &[u8]) -> bool {
-        ExpressionOpcode::matches(aml) || Object::matches(aml)
+        ExpressionOpcode::matches(aml)
+        || Object::matches(aml)
+        || StatementOpcode::matches(aml)
     }
 }
 
