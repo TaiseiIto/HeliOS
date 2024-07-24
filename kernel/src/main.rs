@@ -279,7 +279,7 @@ fn main(argument: &'static mut Argument<'static>) {
         } else {
             0
         };
-        shutdown = 0x1000 <= loop_counter;
+        shutdown = 0x100 <= loop_counter;
     }
     // Stop RTC interruptions.
     timer::rtc::disable_periodic_interrupt();
