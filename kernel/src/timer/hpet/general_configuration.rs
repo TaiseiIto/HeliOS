@@ -12,6 +12,10 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn enable_legacy_replacement_route(self) -> Self {
+        self.with_leg_rt_cnf(true)
+    }
+
     pub fn is_counting(&self) -> bool {
         self.enable_cnf()
     }

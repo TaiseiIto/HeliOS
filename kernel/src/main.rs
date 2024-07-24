@@ -192,6 +192,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .xsdt_mut()
         .hpet_mut()
         .registers_mut();
+    hpet.enable_legacy_replacement_route();
     let hpet_interrupt_period_milliseconds: usize = 1000;
     let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
     com2_println!("hpet_irq = {:#x?}", hpet_irq);

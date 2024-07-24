@@ -44,6 +44,11 @@ impl Registers {
             .for_each(|timer| timer.disable_periodic_interrupt());
     }
 
+    pub fn enable_legacy_replacement_route(&mut self) {
+        let general_configuration: general_configuration::Register = self.general_configuration;
+        self.general_configuration = general_configuration.enable_legacy_replacement_route();
+    }
+
     pub fn enable_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
         self.stop();
         let main_counter_value: u64 = 0;
