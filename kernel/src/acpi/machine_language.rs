@@ -11,6 +11,7 @@ pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
 pub mod def_deref_of;
+pub mod def_device;
 pub mod def_field;
 pub mod def_increment;
 pub mod def_index;
@@ -25,6 +26,7 @@ pub mod def_to_buffer;
 pub mod def_to_hex_string;
 pub mod def_while;
 pub mod deref_of_op;
+pub mod device_op;
 pub mod digit_char;
 pub mod dual_name_prefix;
 pub mod expression_opcode;
@@ -92,6 +94,7 @@ pub use {
     const_obj::ConstObj,
     data_object::DataObject,
     def_deref_of::DefDerefOf,
+    def_device::DefDevice,
     def_field::DefField,
     def_increment::DefIncrement,
     def_index::DefIndex,
@@ -106,6 +109,7 @@ pub use {
     def_to_hex_string::DefToHexString,
     def_while::DefWhile,
     deref_of_op::DerefOfOp,
+    device_op::DeviceOp,
     digit_char::DigitChar,
     expression_opcode::ExpressionOpcode,
     ext_op_prefix::ExtOpPrefix,
