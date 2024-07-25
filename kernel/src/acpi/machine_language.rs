@@ -17,6 +17,7 @@ pub mod def_increment;
 pub mod def_index;
 pub mod def_l_less;
 pub mod def_method;
+pub mod def_name;
 pub mod def_op_region;
 pub mod def_scope;
 pub mod def_size_of;
@@ -45,6 +46,7 @@ pub mod method_flags;
 pub mod method_op;
 pub mod multi_name_prefix;
 pub mod name_char;
+pub mod name_op;
 pub mod name_path;
 pub mod name_seg;
 pub mod name_space_modifier_obj;
@@ -100,6 +102,7 @@ pub use {
     def_index::DefIndex,
     def_l_less::DefLLess,
     def_method::DefMethod,
+    def_name::DefName,
     def_op_region::DefOpRegion,
     def_scope::DefScope,
     def_size_of::DefSizeOf,
@@ -126,6 +129,7 @@ pub use {
     method_flags::MethodFlags,
     method_op::MethodOp,
     name_char::NameChar,
+    name_op::NameOp,
     name_path::NamePath,
     name_seg::NameSeg,
     name_space_modifier_obj::NameSpaceModifierObj,
