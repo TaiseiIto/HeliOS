@@ -10,6 +10,7 @@ pub mod const_obj;
 pub mod data_object;
 pub mod def_deref_of;
 pub mod def_field;
+pub mod def_increment;
 pub mod def_index;
 pub mod def_l_less;
 pub mod def_method;
@@ -30,6 +31,7 @@ pub mod field_element;
 pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
+pub mod increment_op;
 pub mod index_op;
 pub mod index_value;
 pub mod l_less_op;
@@ -87,6 +89,7 @@ pub use {
     data_object::DataObject,
     def_deref_of::DefDerefOf,
     def_field::DefField,
+    def_increment::DefIncrement,
     def_index::DefIndex,
     def_l_less::DefLLess,
     def_method::DefMethod,
@@ -106,6 +109,7 @@ pub use {
     field_flags::FieldFlags,
     field_list::FieldList,
     field_op::FieldOp,
+    increment_op::IncrementOp,
     index_op::IndexOp,
     index_value::IndexValue,
     l_less_op::LLessOp,
