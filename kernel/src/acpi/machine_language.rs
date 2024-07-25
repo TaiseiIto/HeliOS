@@ -3,6 +3,7 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 pub mod arg_obj;
+pub mod buff_pkg_str_obj;
 pub mod byte_data;
 pub mod computational_data;
 pub mod const_obj;
@@ -30,6 +31,7 @@ pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
 pub mod index_op;
+pub mod index_value;
 pub mod l_less_op;
 pub mod lead_name_char;
 pub mod local_obj;
@@ -78,6 +80,7 @@ pub mod zero_op;
 
 pub use {
     arg_obj::ArgObj,
+    buff_pkg_str_obj::BuffPkgStrObj,
     byte_data::ByteData,
     computational_data::ComputationalData,
     const_obj::ConstObj,
@@ -104,6 +107,7 @@ pub use {
     field_list::FieldList,
     field_op::FieldOp,
     index_op::IndexOp,
+    index_value::IndexValue,
     l_less_op::LLessOp,
     lead_name_char::LeadNameChar,
     local_obj::LocalObj,
