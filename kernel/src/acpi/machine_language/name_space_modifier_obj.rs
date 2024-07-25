@@ -21,7 +21,8 @@ impl fmt::Debug for NameSpaceModifierObj {
         match self {
             Self::DefName(def_name) => debug_tuple.field(def_name),
             Self::DefScope(def_scope) => debug_tuple.field(def_scope),
-        }
+        };
+        debug_tuple.finish()
     }
 }
 
