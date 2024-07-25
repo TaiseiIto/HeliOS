@@ -9,6 +9,7 @@ pub mod const_obj;
 pub mod data_object;
 pub mod def_deref_of;
 pub mod def_field;
+pub mod def_index;
 pub mod def_l_less;
 pub mod def_method;
 pub mod def_op_region;
@@ -28,6 +29,7 @@ pub mod field_element;
 pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
+pub mod index_op;
 pub mod l_less_op;
 pub mod lead_name_char;
 pub mod local_obj;
@@ -82,6 +84,7 @@ pub use {
     data_object::DataObject,
     def_deref_of::DefDerefOf,
     def_field::DefField,
+    def_index::DefIndex,
     def_l_less::DefLLess,
     def_method::DefMethod,
     def_op_region::DefOpRegion,
@@ -100,6 +103,7 @@ pub use {
     field_flags::FieldFlags,
     field_list::FieldList,
     field_op::FieldOp,
+    index_op::IndexOp,
     l_less_op::LLessOp,
     lead_name_char::LeadNameChar,
     local_obj::LocalObj,
