@@ -4,7 +4,9 @@
 
 pub mod arg_obj;
 pub mod buff_pkg_str_obj;
+pub mod byte_const;
 pub mod byte_data;
+pub mod byte_prefix;
 pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
@@ -83,7 +85,9 @@ pub mod zero_op;
 pub use {
     arg_obj::ArgObj,
     buff_pkg_str_obj::BuffPkgStrObj,
+    byte_const::ByteConst,
     byte_data::ByteData,
+    byte_prefix::BytePrefix,
     computational_data::ComputationalData,
     const_obj::ConstObj,
     data_object::DataObject,
