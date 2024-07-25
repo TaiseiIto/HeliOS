@@ -15,12 +15,11 @@ pub enum StatementOpcode {
 
 impl fmt::Debug for StatementOpcode {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("StatementOpcode");
         match self {
-            Self::DefWhile(def_while) => formatter
-                .debug_tuple("StatementOpcode")
-                .field(def_while)
-                .finish(),
-        }
+            Self::DefWhile(def_while) => debug_tuple.field(def_while),
+        };
+        debug_tuple.finish()
     }
 }
 

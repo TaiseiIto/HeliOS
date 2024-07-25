@@ -15,12 +15,11 @@ pub enum SuperName {
 
 impl fmt::Debug for SuperName {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("SuperName");
         match self {
-            Self::SimpleName(simple_name) => formatter
-                .debug_tuple("SuperName")
-                .field(simple_name)
-                .finish(),
-        }
+            Self::SimpleName(simple_name) => debug_tuple.field(simple_name),
+        };
+        debug_tuple.finish()
     }
 }
 

@@ -61,7 +61,10 @@ impl Reader<'_> for DefScope {
             name_string,
             term_list,
         } = self;
-        scope_op.length() + pkg_length.length() + name_string.length() + term_list.length()
+        scope_op.length()
+        + pkg_length.length()
+        + name_string.length()
+        + term_list.length()
     }
 
     fn matches(aml: &[u8]) -> bool {
