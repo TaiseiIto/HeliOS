@@ -38,7 +38,7 @@ impl From<&[u8]> for DefToHexString {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (to_hex_string_op, aml): (ToHexStringOp, &[u8]) = ToHexStringOp::read(aml);
         let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
-        let (target, aml): (Target, &[u8]) = Target::read(aml);
+        let (target, _aml): (Target, &[u8]) = Target::read(aml);
         Self {
             to_hex_string_op,
             operand,

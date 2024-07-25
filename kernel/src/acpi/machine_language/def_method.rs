@@ -48,7 +48,7 @@ impl From<&[u8]> for DefMethod {
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
         let (method_flags, aml): (MethodFlags, &[u8]) = MethodFlags::read(aml);
-        let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
+        let (term_list, _aml): (TermList, &[u8]) = TermList::read(aml);
         Self {
             method_op,
             pkg_length,

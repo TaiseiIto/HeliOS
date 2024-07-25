@@ -39,7 +39,7 @@ impl From<&[u8]> for DefStore {
         let (store_op, aml): (StoreOp, &[u8]) = StoreOp::read(aml);
         let (term_arg, aml): (TermArg, &[u8]) = TermArg::read(aml);
         let term_arg: Box<TermArg> = Box::new(term_arg);
-        let (super_name, aml): (SuperName, &[u8]) = SuperName::read(aml);
+        let (super_name, _aml): (SuperName, &[u8]) = SuperName::read(aml);
         Self {
             store_op,
             term_arg,

@@ -32,7 +32,7 @@ impl fmt::Debug for DefIncrement {
 impl From<&[u8]> for DefIncrement {
     fn from(aml: &[u8]) -> Self {
         let (increment_op, aml): (IncrementOp, &[u8]) = IncrementOp::read(aml);
-        let (super_name, aml): (SuperName, &[u8]) = SuperName::read(aml);
+        let (super_name, _aml): (SuperName, &[u8]) = SuperName::read(aml);
         Self {
             increment_op,
             super_name,

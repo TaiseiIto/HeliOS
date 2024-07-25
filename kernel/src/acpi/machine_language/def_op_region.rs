@@ -48,7 +48,7 @@ impl From<&[u8]> for DefOpRegion {
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
         let (region_space, aml): (RegionSpace, &[u8]) = RegionSpace::read(aml);
         let (region_offset, aml): (RegionOffset, &[u8]) = RegionOffset::read(aml);
-        let (region_len, aml): (RegionLen, &[u8]) = RegionLen::read(aml);
+        let (region_len, _aml): (RegionLen, &[u8]) = RegionLen::read(aml);
         Self {
             op_region_op,
             name_string,

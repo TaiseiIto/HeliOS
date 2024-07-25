@@ -48,7 +48,7 @@ impl From<&[u8]> for DefField {
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
         let (field_flags, aml): (FieldFlags, &[u8]) = FieldFlags::read(aml);
-        let (field_list, aml): (FieldList, &[u8]) = FieldList::read(aml);
+        let (field_list, _aml): (FieldList, &[u8]) = FieldList::read(aml);
         Self {
             field_op,
             pkg_length,

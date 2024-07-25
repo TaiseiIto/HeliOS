@@ -38,7 +38,7 @@ impl From<&[u8]> for DefToBuffer {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (to_buffer_op, aml): (ToBufferOp, &[u8]) = ToBufferOp::read(aml);
         let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
-        let (target, aml): (Target, &[u8]) = Target::read(aml);
+        let (target, _aml): (Target, &[u8]) = Target::read(aml);
         Self {
             to_buffer_op,
             operand,

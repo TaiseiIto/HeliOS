@@ -35,7 +35,7 @@ impl From<&[u8]> for DefLLess {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (l_less_op, aml): (LLessOp, &[u8]) = LLessOp::read(aml);
         let (operand0, aml): (Operand, &[u8]) = Operand::read(aml);
-        let (operand1, aml): (Operand, &[u8]) = Operand::read(aml);
+        let (operand1, _aml): (Operand, &[u8]) = Operand::read(aml);
         let operand: [Operand; 2] = [operand0, operand1];
         Self {
             l_less_op,

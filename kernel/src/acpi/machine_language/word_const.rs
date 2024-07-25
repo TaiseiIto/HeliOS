@@ -33,7 +33,7 @@ impl From<&[u8]> for WordConst {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (word_prefix, aml): (WordPrefix, &[u8]) = WordPrefix::read(aml);
-        let (word_data, aml): (WordData, &[u8]) = WordData::read(aml);
+        let (word_data, _aml): (WordData, &[u8]) = WordData::read(aml);
         Self {
             word_prefix,
             word_data,

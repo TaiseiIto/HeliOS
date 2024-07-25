@@ -41,7 +41,7 @@ impl From<&[u8]> for DefSubtract {
         let (operand0, aml): (Operand, &[u8]) = Operand::read(aml);
         let (operand1, aml): (Operand, &[u8]) = Operand::read(aml);
         let operands: [Operand; 2] = [operand0, operand1];
-        let (target, aml): (Target, &[u8]) = Target::read(aml);
+        let (target, _aml): (Target, &[u8]) = Target::read(aml);
         Self {
             subtract_op,
             operands,

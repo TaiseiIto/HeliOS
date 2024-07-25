@@ -30,7 +30,7 @@ impl fmt::Debug for OpRegionOp {
 impl From<&[u8]> for OpRegionOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+        let (ext_op_prefix, _aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
         Self {
             ext_op_prefix,
         }

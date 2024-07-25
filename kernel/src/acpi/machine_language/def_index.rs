@@ -42,7 +42,7 @@ impl From<&[u8]> for DefIndex {
         let (index_op, aml): (IndexOp, &[u8]) = IndexOp::read(aml);
         let (buff_pkg_str_obj, aml): (BuffPkgStrObj, &[u8]) = BuffPkgStrObj::read(aml);
         let (index_value, aml): (IndexValue, &[u8]) = IndexValue::read(aml);
-        let (target, aml): (Target, &[u8]) = Target::read(aml);
+        let (target, _aml): (Target, &[u8]) = Target::read(aml);
         Self {
             index_op,
             buff_pkg_str_obj,

@@ -33,7 +33,7 @@ impl From<&[u8]> for DefDerefOf {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (deref_of_op, aml): (DerefOfOp, &[u8]) = DerefOfOp::read(aml);
-        let (obj_reference, aml): (ObjReference, &[u8]) = ObjReference::read(aml);
+        let (obj_reference, _aml): (ObjReference, &[u8]) = ObjReference::read(aml);
         Self {
             deref_of_op,
             obj_reference,

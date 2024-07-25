@@ -43,7 +43,7 @@ impl From<&[u8]> for DefScope {
         let (scope_op, aml): (ScopeOp, &[u8]) = ScopeOp::read(aml);
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
-        let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
+        let (term_list, _aml): (TermList, &[u8]) = TermList::read(aml);
         Self {
             scope_op,
             pkg_length,

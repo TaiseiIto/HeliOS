@@ -43,7 +43,7 @@ impl From<&[u8]> for DefWhile {
         let (while_op, aml): (WhileOp, &[u8]) = WhileOp::read(aml);
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (predicate, aml): (Predicate, &[u8]) = Predicate::read(aml);
-        let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
+        let (term_list, _aml): (TermList, &[u8]) = TermList::read(aml);
         Self {
             while_op,
             pkg_length,

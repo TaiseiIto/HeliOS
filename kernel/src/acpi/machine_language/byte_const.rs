@@ -32,7 +32,7 @@ impl fmt::Debug for ByteConst {
 impl From<&[u8]> for ByteConst {
     fn from(aml: &[u8]) -> Self {
         let (byte_prefix, aml): (BytePrefix, &[u8]) = BytePrefix::read(aml);
-        let (byte_data, aml): (ByteData, &[u8]) = ByteData::read(aml);
+        let (byte_data, _aml): (ByteData, &[u8]) = ByteData::read(aml);
         Self {
             byte_prefix,
             byte_data,
