@@ -61,6 +61,9 @@ impl Reader<'_> for DefIndex {
             target,
         } = self;
         index_op.length()
+        + buff_pkg_str_obj.length()
+        + index_value.length()
+        + target.length()
     }
 
     fn matches(aml: &[u8]) -> bool {
