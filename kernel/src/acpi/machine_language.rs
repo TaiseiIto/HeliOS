@@ -10,6 +10,7 @@ pub mod byte_prefix;
 pub mod computational_data;
 pub mod const_obj;
 pub mod data_object;
+pub mod data_ref_object;
 pub mod def_deref_of;
 pub mod def_device;
 pub mod def_field;
@@ -95,6 +96,7 @@ pub use {
     computational_data::ComputationalData,
     const_obj::ConstObj,
     data_object::DataObject,
+    data_ref_object::DataRefObject,
     def_deref_of::DefDerefOf,
     def_device::DefDevice,
     def_field::DefField,
