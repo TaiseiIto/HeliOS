@@ -3,6 +3,7 @@ use {
     super::{
         ByteConst,
         ConstObj,
+        DWordConst,
         Reader,
         WordConst,
     },
@@ -14,6 +15,7 @@ use {
 pub enum ComputationalData {
     ByteConst(ByteConst),
     ConstObj(ConstObj),
+    DWordConst(DWordConst),
     WordConst(WordConst),
 }
 
@@ -23,6 +25,7 @@ impl fmt::Debug for ComputationalData {
         match self {
             Self::ByteConst(byte_const) => debug_tuple.field(byte_const),
             Self::ConstObj(const_obj) => debug_tuple.field(const_obj),
+            Self::DWordConst(d_word_const) => debug_tuple.field(d_word_const),
             Self::WordConst(word_const) => debug_tuple.field(word_const),
         };
         debug_tuple.finish()
@@ -35,6 +38,8 @@ impl From<&[u8]> for ComputationalData {
             Self::ByteConst(aml.into())
         } else if ConstObj::matches(aml) {
             Self::ConstObj(aml.into())
+        } else if DWordConst::matches(aml) {
+            Self::DWordConst(aml.into())
         } else if WordConst::matches(aml) {
             Self::WordConst(aml.into())
         } else {
@@ -48,6 +53,7 @@ impl Reader<'_> for ComputationalData {
         match self {
             Self::ByteConst(byte_const) => byte_const.length(),
             Self::ConstObj(const_obj) => const_obj.length(),
+            Self::DWordConst(d_word_const) => d_word_const.length(),
             Self::WordConst(word_const) => word_const.length(),
         }
     }
@@ -55,6 +61,7 @@ impl Reader<'_> for ComputationalData {
     fn matches(aml: &[u8]) -> bool {
         ByteConst::matches(aml)
         || ConstObj::matches(aml)
+        || DWordConst::matches(aml)
         || WordConst::matches(aml)
     }
 }
