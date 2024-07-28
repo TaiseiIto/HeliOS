@@ -4,6 +4,7 @@
 
 pub mod arg_obj;
 pub mod buff_pkg_str_obj;
+pub mod buffer_op;
 pub mod byte_const;
 pub mod byte_data;
 pub mod byte_prefix;
@@ -14,6 +15,7 @@ pub mod d_word_data;
 pub mod d_word_prefix;
 pub mod data_object;
 pub mod data_ref_object;
+pub mod def_buffer;
 pub mod def_deref_of;
 pub mod def_device;
 pub mod def_field;
@@ -97,6 +99,7 @@ pub mod zero_op;
 pub use {
     arg_obj::ArgObj,
     buff_pkg_str_obj::BuffPkgStrObj,
+    buffer_op::BufferOp,
     byte_const::ByteConst,
     byte_data::ByteData,
     byte_prefix::BytePrefix,
@@ -107,6 +110,7 @@ pub use {
     d_word_prefix::DWordPrefix,
     data_object::DataObject,
     data_ref_object::DataRefObject,
+    def_buffer::DefBuffer,
     def_deref_of::DefDerefOf,
     def_device::DefDevice,
     def_field::DefField,
