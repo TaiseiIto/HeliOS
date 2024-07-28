@@ -38,13 +38,13 @@ impl From<&[u8]> for DefLEqual {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (l_equal_op, aml): (LEqualOp, &[u8]) = LEqualOp::read(aml);
-        let operands: [Operand; 2] = (0..2)
-            .fold((Vec::<Operand>::new(), aml), |(mut operands, aml), _| {
+        let (operands, aml): (Vec<Operand>, &[u8]) = (0..2)
+            .fold((Vec::new(), aml), |(mut operands, aml), _| {
                 let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
                 operands.push(operand);
                 (operands, aml)
-            })
-            .0
+            });
+        let operands: [Operand; 2] = operands
             .try_into()
             .unwrap();
         Self {
