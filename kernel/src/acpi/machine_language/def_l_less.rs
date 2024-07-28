@@ -1,4 +1,5 @@
 use {
+    alloc::vec::Vec,
     core::fmt,
     super::{
         LLessOp,
@@ -12,21 +13,24 @@ use {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 pub struct DefLLess {
     l_less_op: LLessOp,
-    operand: [Operand; 2],
+    operands: [Operand; 2],
 }
 
 impl fmt::Debug for DefLLess {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("DefLLess");
         let Self {
             l_less_op,
-            operand,
+            operands,
         } = self;
-        formatter
-            .debug_tuple("DefLLess")
-            .field(l_less_op)
-            .field(&operand[0])
-            .field(&operand[1])
-            .finish()
+        debug_tuple.field(l_less_op);
+        operands
+            .as_slice()
+            .iter()
+            .for_each(|operand| {
+                debug_tuple.field(operand);
+            });
+        debug_tuple.finish()
     }
 }
 
@@ -34,12 +38,18 @@ impl From<&[u8]> for DefLLess {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (l_less_op, aml): (LLessOp, &[u8]) = LLessOp::read(aml);
-        let (operand0, aml): (Operand, &[u8]) = Operand::read(aml);
-        let (operand1, _aml): (Operand, &[u8]) = Operand::read(aml);
-        let operand: [Operand; 2] = [operand0, operand1];
+        let operands: [Operand; 2] = (0..2)
+            .fold((Vec::<Operand>::new(), aml), |(mut operands, aml), _| {
+                let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
+                operands.push(operand);
+                (operands, aml)
+            })
+            .0
+            .try_into()
+            .unwrap();
         Self {
             l_less_op,
-            operand,
+            operands,
         }
     }
 }
@@ -48,9 +58,9 @@ impl Reader<'_> for DefLLess {
     fn length(&self) -> usize {
         let Self {
             l_less_op,
-            operand,
+            operands,
         } = self;
-        l_less_op.length() + operand
+        l_less_op.length() + operands
             .as_slice()
             .iter()
             .map(|operand| operand.length())

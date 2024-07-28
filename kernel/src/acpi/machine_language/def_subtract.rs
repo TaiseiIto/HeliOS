@@ -1,4 +1,5 @@
 use {
+    alloc::vec::Vec,
     core::fmt,
     super::{
         Operand,
@@ -19,16 +20,20 @@ pub struct DefSubtract {
 
 impl fmt::Debug for DefSubtract {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("DefSubtract");
         let Self {
             subtract_op,
             operands,
             target,
         } = self;
-        formatter
-            .debug_tuple("DefSubtract")
-            .field(subtract_op)
-            .field(&operands[0])
-            .field(&operands[1])
+        debug_tuple.field(subtract_op);
+        operands
+            .as_slice()
+            .iter()
+            .for_each(|operand| {
+                debug_tuple.field(operand);
+            });
+        debug_tuple
             .field(target)
             .finish()
     }
@@ -38,9 +43,15 @@ impl From<&[u8]> for DefSubtract {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (subtract_op, aml): (SubtractOp, &[u8]) = SubtractOp::read(aml);
-        let (operand0, aml): (Operand, &[u8]) = Operand::read(aml);
-        let (operand1, aml): (Operand, &[u8]) = Operand::read(aml);
-        let operands: [Operand; 2] = [operand0, operand1];
+        let operands: [Operand; 2] = (0..2)
+            .fold((Vec::<Operand>::new(), aml), |(mut operands, aml), _| {
+                let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
+                operands.push(operand);
+                (operands, aml)
+            })
+            .0
+            .try_into()
+            .unwrap();
         let (target, _aml): (Target, &[u8]) = Target::read(aml);
         Self {
             subtract_op,
