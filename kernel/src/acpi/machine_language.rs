@@ -5,6 +5,7 @@
 pub mod arg_obj;
 pub mod buff_pkg_str_obj;
 pub mod buffer_op;
+pub mod buffer_size;
 pub mod byte_const;
 pub mod byte_data;
 pub mod byte_prefix;
@@ -100,6 +101,7 @@ pub use {
     arg_obj::ArgObj,
     buff_pkg_str_obj::BuffPkgStrObj,
     buffer_op::BufferOp,
+    buffer_size::BufferSize,
     byte_const::ByteConst,
     byte_data::ByteData,
     byte_prefix::BytePrefix,

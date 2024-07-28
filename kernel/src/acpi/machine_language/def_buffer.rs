@@ -2,6 +2,7 @@ use {
     core::fmt,
     super::{
         BufferOp,
+        BufferSize,
         PkgLength,
         Reader,
     },
@@ -13,6 +14,7 @@ use {
 pub struct DefBuffer {
     buffer_op: BufferOp,
     pkg_length: PkgLength,
+    buffer_size: BufferSize,
 }
 
 impl fmt::Debug for DefBuffer {
@@ -20,11 +22,13 @@ impl fmt::Debug for DefBuffer {
         let Self {
             buffer_op,
             pkg_length,
+            buffer_size,
         } = self;
         formatter
             .debug_tuple("DefBuffer")
             .field(buffer_op)
             .field(pkg_length)
+            .field(buffer_size)
             .finish()
     }
 }
@@ -33,6 +37,7 @@ impl From<&[u8]> for DefBuffer {
     fn from(aml: &[u8]) -> Self {
         let (buffer_op, aml) = BufferOp::read(aml);
         let (pkg_length, aml) = PkgLength::read(aml);
+        let (buffer_size, aml) = BufferSize::read(aml);
         unimplemented!()
     }
 }
@@ -42,9 +47,11 @@ impl Reader<'_> for DefBuffer {
         let Self {
             buffer_op,
             pkg_length,
+            buffer_size,
         } = self;
         buffer_op.length()
         + pkg_length.length()
+        + buffer_size.length()
     }
 
     fn matches(aml: &[u8]) -> bool {
