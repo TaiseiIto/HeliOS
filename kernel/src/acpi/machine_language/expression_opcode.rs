@@ -4,6 +4,7 @@ use {
         DefDerefOf,
         DefIncrement,
         DefIndex,
+        DefLEqual,
         DefLLess,
         DefSizeOf,
         DefStore,
@@ -21,6 +22,7 @@ pub enum ExpressionOpcode {
     DefDerefOf(DefDerefOf),
     DefIncrement(DefIncrement),
     DefIndex(DefIndex),
+    DefLEqual(DefLEqual),
     DefLLess(DefLLess),
     DefSizeOf(DefSizeOf),
     DefStore(DefStore),
@@ -36,6 +38,7 @@ impl fmt::Debug for ExpressionOpcode {
             Self::DefDerefOf(def_deref_of) => debug_tuple.field(def_deref_of),
             Self::DefIncrement(def_increment) => debug_tuple.field(def_increment),
             Self::DefIndex(def_index) => debug_tuple.field(def_index),
+            Self::DefLEqual(def_l_equal) => debug_tuple.field(def_l_equal),
             Self::DefLLess(def_l_less) => debug_tuple.field(def_l_less),
             Self::DefSizeOf(def_size_of) => debug_tuple.field(def_size_of),
             Self::DefStore(def_store) => debug_tuple.field(def_store),
@@ -55,6 +58,8 @@ impl From<&[u8]> for ExpressionOpcode {
             Self::DefIncrement(aml.into())
         } else if DefIndex::matches(aml) {
             Self::DefIndex(aml.into())
+        } else if DefLEqual::matches(aml) {
+            Self::DefLEqual(aml.into())
         } else if DefLLess::matches(aml) {
             Self::DefLLess(aml.into())
         } else if DefSizeOf::matches(aml) {
@@ -79,6 +84,7 @@ impl Reader<'_> for ExpressionOpcode {
             Self::DefDerefOf(def_deref_of) => def_deref_of.length(),
             Self::DefIncrement(def_increment) => def_increment.length(),
             Self::DefIndex(def_index) => def_index.length(),
+            Self::DefLEqual(def_l_equal) => def_l_equal.length(),
             Self::DefLLess(def_l_less) => def_l_less.length(),
             Self::DefSizeOf(def_size_of) => def_size_of.length(),
             Self::DefStore(def_store) => def_store.length(),
@@ -92,6 +98,7 @@ impl Reader<'_> for ExpressionOpcode {
         DefDerefOf::matches(aml)
         || DefIncrement::matches(aml)
         || DefIndex::matches(aml)
+        || DefLEqual::matches(aml)
         || DefLLess::matches(aml)
         || DefSizeOf::matches(aml)
         || DefStore::matches(aml)

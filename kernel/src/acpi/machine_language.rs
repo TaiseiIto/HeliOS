@@ -20,6 +20,7 @@ pub mod def_field;
 pub mod def_if_else;
 pub mod def_increment;
 pub mod def_index;
+pub mod def_l_equal;
 pub mod def_l_less;
 pub mod def_method;
 pub mod def_name;
@@ -45,6 +46,7 @@ pub mod if_op;
 pub mod increment_op;
 pub mod index_op;
 pub mod index_value;
+pub mod l_equal_op;
 pub mod l_less_op;
 pub mod lead_name_char;
 pub mod local_obj;
@@ -111,6 +113,7 @@ pub use {
     def_if_else::DefIfElse,
     def_increment::DefIncrement,
     def_index::DefIndex,
+    def_l_equal::DefLEqual,
     def_l_less::DefLLess,
     def_method::DefMethod,
     def_name::DefName,
@@ -135,6 +138,7 @@ pub use {
     increment_op::IncrementOp,
     index_op::IndexOp,
     index_value::IndexValue,
+    l_equal_op::LEqualOp,
     l_less_op::LLessOp,
     lead_name_char::LeadNameChar,
     local_obj::LocalObj,
