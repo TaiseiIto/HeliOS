@@ -41,9 +41,7 @@ impl fmt::Debug for DefElse {
 impl From<&[u8]> for DefElse {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        if aml.is_empty() {
-            Self::Nothing
-        } else {
+        if ElseOp::matches(aml) {
             let (else_op, aml): (ElseOp, &[u8]) = ElseOp::read(aml);
             let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
             let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
@@ -52,6 +50,8 @@ impl From<&[u8]> for DefElse {
                 pkg_length,
                 term_list,
             }
+        } else {
+            Self::Nothing
         }
     }
 }
@@ -71,11 +71,7 @@ impl Reader<'_> for DefElse {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        if aml.is_empty() {
-            true
-        } else {
-            ElseOp::matches(aml)
-        }
+        true
     }
 }
 

@@ -1,5 +1,9 @@
 use {
     alloc::vec::Vec,
+    crate::{
+        com2_print,
+        com2_println,
+    },
     super::{
         TermObj,
         Reader,
@@ -19,6 +23,7 @@ impl From<&[u8]> for TermList {
         let mut term_list: Vec<TermObj> = Vec::new();
         while !aml.is_empty() {
             let (term_obj, remaining_aml): (TermObj, &[u8]) = TermObj::read(aml);
+            com2_println!("term_obj = {:#x?}", term_obj);
             aml = remaining_aml;
             term_list.push(term_obj);
         }
