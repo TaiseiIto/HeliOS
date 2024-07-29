@@ -26,6 +26,7 @@ pub mod def_increment;
 pub mod def_index;
 pub mod def_l_equal;
 pub mod def_l_less;
+pub mod def_l_not;
 pub mod def_method;
 pub mod def_name;
 pub mod def_op_region;
@@ -52,6 +53,7 @@ pub mod index_op;
 pub mod index_value;
 pub mod l_equal_op;
 pub mod l_less_op;
+pub mod l_not_op;
 pub mod lead_name_char;
 pub mod local_obj;
 pub mod method_flags;
@@ -123,6 +125,7 @@ pub use {
     def_index::DefIndex,
     def_l_equal::DefLEqual,
     def_l_less::DefLLess,
+    def_l_not::DefLNot,
     def_method::DefMethod,
     def_name::DefName,
     def_op_region::DefOpRegion,
@@ -148,6 +151,7 @@ pub use {
     index_value::IndexValue,
     l_equal_op::LEqualOp,
     l_less_op::LLessOp,
+    l_not_op::LNotOp,
     lead_name_char::LeadNameChar,
     local_obj::LocalObj,
     method_flags::MethodFlags,

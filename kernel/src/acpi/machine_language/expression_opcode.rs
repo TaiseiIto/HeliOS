@@ -7,6 +7,7 @@ use {
         DefIndex,
         DefLEqual,
         DefLLess,
+        DefLNot,
         DefSizeOf,
         DefStore,
         DefSubtract,
@@ -26,6 +27,7 @@ pub enum ExpressionOpcode {
     DefIndex(DefIndex),
     DefLEqual(DefLEqual),
     DefLLess(DefLLess),
+    DefLNot(DefLNot),
     DefSizeOf(DefSizeOf),
     DefStore(DefStore),
     DefSubtract(DefSubtract),
@@ -43,6 +45,7 @@ impl fmt::Debug for ExpressionOpcode {
             Self::DefIndex(def_index) => debug_tuple.field(def_index),
             Self::DefLEqual(def_l_equal) => debug_tuple.field(def_l_equal),
             Self::DefLLess(def_l_less) => debug_tuple.field(def_l_less),
+            Self::DefLNot(def_l_not) => debug_tuple.field(def_l_not),
             Self::DefSizeOf(def_size_of) => debug_tuple.field(def_size_of),
             Self::DefStore(def_store) => debug_tuple.field(def_store),
             Self::DefSubtract(def_subtract) => debug_tuple.field(def_subtract),
@@ -67,6 +70,8 @@ impl From<&[u8]> for ExpressionOpcode {
             Self::DefLEqual(aml.into())
         } else if DefLLess::matches(aml) {
             Self::DefLLess(aml.into())
+        } else if DefLNot::matches(aml) {
+            Self::DefLNot(aml.into())
         } else if DefSizeOf::matches(aml) {
             Self::DefSizeOf(aml.into())
         } else if DefStore::matches(aml) {
@@ -92,6 +97,7 @@ impl Reader<'_> for ExpressionOpcode {
             Self::DefIndex(def_index) => def_index.length(),
             Self::DefLEqual(def_l_equal) => def_l_equal.length(),
             Self::DefLLess(def_l_less) => def_l_less.length(),
+            Self::DefLNot(def_l_not) => def_l_not.length(),
             Self::DefSizeOf(def_size_of) => def_size_of.length(),
             Self::DefStore(def_store) => def_store.length(),
             Self::DefSubtract(def_subtract) => def_subtract.length(),
@@ -107,6 +113,7 @@ impl Reader<'_> for ExpressionOpcode {
         || DefIndex::matches(aml)
         || DefLEqual::matches(aml)
         || DefLLess::matches(aml)
+        || DefLNot::matches(aml)
         || DefSizeOf::matches(aml)
         || DefStore::matches(aml)
         || DefSubtract::matches(aml)
