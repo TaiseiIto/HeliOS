@@ -3,6 +3,7 @@ use {
     super::{
         BufferOp,
         BufferSize,
+        ByteList,
         PkgLength,
         Reader,
     },
@@ -15,6 +16,7 @@ pub struct DefBuffer {
     buffer_op: BufferOp,
     pkg_length: PkgLength,
     buffer_size: BufferSize,
+    byte_list: ByteList,
 }
 
 impl fmt::Debug for DefBuffer {
@@ -23,12 +25,14 @@ impl fmt::Debug for DefBuffer {
             buffer_op,
             pkg_length,
             buffer_size,
+            byte_list,
         } = self;
         formatter
             .debug_tuple("DefBuffer")
             .field(buffer_op)
             .field(pkg_length)
             .field(buffer_size)
+            .field(byte_list)
             .finish()
     }
 }
@@ -38,7 +42,13 @@ impl From<&[u8]> for DefBuffer {
         let (buffer_op, aml) = BufferOp::read(aml);
         let (pkg_length, aml) = PkgLength::read(aml);
         let (buffer_size, aml) = BufferSize::read(aml);
-        unimplemented!()
+        let (byte_list, aml) = ByteList::read(aml);
+        Self {
+            buffer_op,
+            pkg_length,
+            buffer_size,
+            byte_list,
+        }
     }
 }
 
@@ -48,10 +58,12 @@ impl Reader<'_> for DefBuffer {
             buffer_op,
             pkg_length,
             buffer_size,
+            byte_list,
         } = self;
         buffer_op.length()
         + pkg_length.length()
         + buffer_size.length()
+        + byte_list.length()
     }
 
     fn matches(aml: &[u8]) -> bool {

@@ -6,7 +6,6 @@ use super::Reader;
 #[derive(Debug)]
 pub struct ByteData(u8);
 
-
 impl ByteData {
     pub fn pkg_length(&self) -> usize {
         self.0 as usize

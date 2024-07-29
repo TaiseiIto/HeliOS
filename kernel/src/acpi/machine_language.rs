@@ -8,6 +8,7 @@ pub mod buffer_op;
 pub mod buffer_size;
 pub mod byte_const;
 pub mod byte_data;
+pub mod byte_list;
 pub mod byte_prefix;
 pub mod computational_data;
 pub mod const_obj;
@@ -104,6 +105,7 @@ pub use {
     buffer_size::BufferSize,
     byte_const::ByteConst,
     byte_data::ByteData,
+    byte_list::ByteList,
     byte_prefix::BytePrefix,
     computational_data::ComputationalData,
     const_obj::ConstObj,
