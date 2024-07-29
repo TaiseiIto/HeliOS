@@ -1,6 +1,7 @@
 use {
     core::fmt,
     super::{
+        DefElse,
         IfOp,
         PkgLength,
         Predicate,
@@ -17,6 +18,7 @@ pub struct DefIfElse {
     pkg_length: PkgLength,
     predicate: Predicate,
     term_list: TermList,
+    def_else: DefElse,
 }
 
 impl fmt::Debug for DefIfElse {
@@ -26,6 +28,7 @@ impl fmt::Debug for DefIfElse {
             pkg_length,
             predicate,
             term_list,
+            def_else,
         } = self;
         formatter
             .debug_tuple("DefIfElse")
@@ -33,6 +36,7 @@ impl fmt::Debug for DefIfElse {
             .field(pkg_length)
             .field(predicate)
             .field(term_list)
+            .field(def_else)
             .finish()
     }
 }
@@ -43,7 +47,14 @@ impl From<&[u8]> for DefIfElse {
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (predicate, aml): (Predicate, &[u8]) = Predicate::read(aml);
         let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
-        unimplemented!()
+        let (def_else, aml): (DefElse, &[u8]) = DefElse::read(aml);
+        Self {
+            if_op,
+            pkg_length,
+            predicate,
+            term_list,
+            def_else,
+        }
     }
 }
 
@@ -54,11 +65,13 @@ impl Reader<'_> for DefIfElse {
             pkg_length,
             predicate,
             term_list,
+            def_else,
         } = self;
         if_op.length()
         + pkg_length.length()
         + predicate.length()
         + term_list.length()
+        + def_else.length()
     }
 
     fn matches(aml: &[u8]) -> bool {

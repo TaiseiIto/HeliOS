@@ -21,6 +21,7 @@ pub mod data_ref_object;
 pub mod def_buffer;
 pub mod def_deref_of;
 pub mod def_device;
+pub mod def_else;
 pub mod def_field;
 pub mod def_if_else;
 pub mod def_increment;
@@ -42,7 +43,7 @@ pub mod def_while;
 pub mod deref_of_op;
 pub mod device_op;
 pub mod digit_char;
-pub mod dual_name_prefix;
+pub mod else_op;
 pub mod expression_opcode;
 pub mod ext_op_prefix;
 pub mod field_element;
@@ -123,6 +124,7 @@ pub use {
     def_buffer::DefBuffer,
     def_deref_of::DefDerefOf,
     def_device::DefDevice,
+    def_else::DefElse,
     def_field::DefField,
     def_if_else::DefIfElse,
     def_increment::DefIncrement,
@@ -144,6 +146,7 @@ pub use {
     deref_of_op::DerefOfOp,
     device_op::DeviceOp,
     digit_char::DigitChar,
+    else_op::ElseOp,
     expression_opcode::ExpressionOpcode,
     ext_op_prefix::ExtOpPrefix,
     field_element::FieldElement,
