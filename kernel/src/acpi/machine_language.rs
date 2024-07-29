@@ -3,6 +3,7 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 pub mod arg_obj;
+pub mod arg_object;
 pub mod buff_pkg_str_obj;
 pub mod buffer_op;
 pub mod buffer_size;
@@ -30,6 +31,7 @@ pub mod def_l_not;
 pub mod def_method;
 pub mod def_name;
 pub mod def_op_region;
+pub mod def_return;
 pub mod def_scope;
 pub mod def_size_of;
 pub mod def_store;
@@ -80,6 +82,7 @@ pub mod prefix_path;
 pub mod region_len;
 pub mod region_offset;
 pub mod region_space;
+pub mod return_op;
 pub mod root_char;
 pub mod scope_op;
 pub mod simple_name;
@@ -102,6 +105,7 @@ pub mod zero_op;
 
 pub use {
     arg_obj::ArgObj,
+    arg_object::ArgObject,
     buff_pkg_str_obj::BuffPkgStrObj,
     buffer_op::BufferOp,
     buffer_size::BufferSize,
@@ -129,6 +133,7 @@ pub use {
     def_method::DefMethod,
     def_name::DefName,
     def_op_region::DefOpRegion,
+    def_return::DefReturn,
     def_scope::DefScope,
     def_size_of::DefSizeOf,
     def_store::DefStore,
@@ -177,6 +182,7 @@ pub use {
     region_len::RegionLen,
     region_offset::RegionOffset,
     region_space::RegionSpace,
+    return_op::ReturnOp,
     root_char::RootChar,
     scope_op::ScopeOp,
     simple_name::SimpleName,
