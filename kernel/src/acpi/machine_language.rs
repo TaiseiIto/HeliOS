@@ -4,6 +4,8 @@
 
 pub mod arg_obj;
 pub mod arg_object;
+pub mod ascii_char;
+pub mod ascii_char_list;
 pub mod buff_pkg_str_obj;
 pub mod buffer_op;
 pub mod buffer_size;
@@ -71,6 +73,7 @@ pub mod name_space_modifier_obj;
 pub mod name_string;
 pub mod named_field;
 pub mod named_obj;
+pub mod null_char;
 pub mod null_name;
 pub mod num_elements;
 pub mod obj_reference;
@@ -115,6 +118,8 @@ pub mod zero_op;
 pub use {
     arg_obj::ArgObj,
     arg_object::ArgObject,
+    ascii_char::AsciiChar,
+    ascii_char_list::AsciiCharList,
     buff_pkg_str_obj::BuffPkgStrObj,
     buffer_op::BufferOp,
     buffer_size::BufferSize,
@@ -181,6 +186,7 @@ pub use {
     name_string::NameString,
     named_field::NamedField,
     named_obj::NamedObj,
+    null_char::NullChar,
     null_name::NullName,
     num_elements::NumElements,
     obj_reference::ObjReference,
