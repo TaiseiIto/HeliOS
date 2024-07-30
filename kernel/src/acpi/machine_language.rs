@@ -72,6 +72,7 @@ pub mod name_string;
 pub mod named_field;
 pub mod named_obj;
 pub mod null_name;
+pub mod num_elements;
 pub mod obj_reference;
 pub mod object;
 pub mod one_op;
@@ -177,6 +178,7 @@ pub use {
     named_field::NamedField,
     named_obj::NamedObj,
     null_name::NullName,
+    num_elements::NumElements,
     obj_reference::ObjReference,
     object::Object,
     one_op::OneOp,
