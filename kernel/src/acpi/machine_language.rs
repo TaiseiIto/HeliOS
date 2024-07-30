@@ -80,6 +80,7 @@ pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod predicate;
 pub mod prefix_path;
+pub mod reference_type_opcode;
 pub mod region_len;
 pub mod region_offset;
 pub mod region_space;
@@ -182,6 +183,7 @@ pub use {
     pkg_length::PkgLength,
     predicate::Predicate,
     prefix_path::PrefixPath,
+    reference_type_opcode::ReferenceTypeOpcode,
     region_len::RegionLen,
     region_offset::RegionOffset,
     region_space::RegionSpace,

@@ -1,4 +1,5 @@
 use {
+    alloc::boxed::Box,
     core::fmt,
     super::{
         BuffPkgStrObj,
@@ -16,7 +17,7 @@ pub struct DefIndex {
     index_op: IndexOp,
     buff_pkg_str_obj: BuffPkgStrObj,
     index_value: IndexValue,
-    target: Target,
+    target: Box<Target>,
 }
 
 impl fmt::Debug for DefIndex {
@@ -43,6 +44,7 @@ impl From<&[u8]> for DefIndex {
         let (buff_pkg_str_obj, aml): (BuffPkgStrObj, &[u8]) = BuffPkgStrObj::read(aml);
         let (index_value, aml): (IndexValue, &[u8]) = IndexValue::read(aml);
         let (target, _aml): (Target, &[u8]) = Target::read(aml);
+        let target: Box<Target> = Box::new(target);
         Self {
             index_op,
             buff_pkg_str_obj,
