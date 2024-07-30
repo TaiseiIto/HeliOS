@@ -35,11 +35,7 @@ impl Reader<'_> for AsciiCharList {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        if aml.is_empty() {
-            true
-        } else {
-            AsciiChar::matches(aml)
-        }
+        true
     }
 }
 
