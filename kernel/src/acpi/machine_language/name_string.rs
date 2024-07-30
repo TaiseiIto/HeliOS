@@ -42,9 +42,12 @@ impl fmt::Debug for NameString {
             Self::PrefixPathNamePath {
                 prefix_path,
                 name_path,
-            } => debug_tuple
-                .field(prefix_path)
-                .field(name_path),
+            } => {
+                if !prefix_path.is_empty() {
+                    debug_tuple.field(prefix_path);
+                }
+                debug_tuple.field(name_path)
+            },
         };
         debug_tuple.finish()
     }

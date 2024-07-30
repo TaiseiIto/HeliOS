@@ -44,15 +44,16 @@ impl PkgLength {
 
 impl fmt::Debug for PkgLength {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("PkgLength");
         let Self {
             pkg_lead_byte,
             byte_data,
         } = self;
-        formatter
-            .debug_tuple("PkgLength")
-            .field(pkg_lead_byte)
-            .field(byte_data)
-            .finish()
+        debug_tuple.field(pkg_lead_byte);
+        if !byte_data.is_empty() {
+            debug_tuple.field(byte_data);
+        }
+        debug_tuple.finish()
     }
 }
 
