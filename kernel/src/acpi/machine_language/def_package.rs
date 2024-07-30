@@ -2,6 +2,7 @@ use {
     core::fmt,
     super::{
         NumElements,
+        PackageElementList,
         PackageOp,
         PkgLength,
         Reader,
@@ -15,6 +16,7 @@ pub struct DefPackage {
     package_op: PackageOp,
     pkg_length: PkgLength,
     num_elements: NumElements,
+    package_element_list: PackageElementList,
 }
 
 impl fmt::Debug for DefPackage {
@@ -23,12 +25,14 @@ impl fmt::Debug for DefPackage {
             package_op,
             pkg_length,
             num_elements,
+            package_element_list,
         } = self;
         formatter
             .debug_tuple("DefPackage")
             .field(package_op)
             .field(pkg_length)
             .field(num_elements)
+            .field(package_element_list)
             .finish()
     }
 }
@@ -39,7 +43,13 @@ impl From<&[u8]> for DefPackage {
         let (package_op, aml): (PackageOp, &[u8]) = PackageOp::read(aml);
         let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
         let (num_elements, aml): (NumElements, &[u8]) = NumElements::read(aml);
-        unimplemented!()
+        let (package_element_list, aml): (PackageElementList, &[u8]) = PackageElementList::read(aml);
+        Self {
+            package_op,
+            pkg_length,
+            num_elements,
+            package_element_list,
+        }
     }
 }
 
@@ -49,10 +59,12 @@ impl Reader<'_> for DefPackage {
             package_op,
             pkg_length,
             num_elements,
+            package_element_list,
         } = self;
         package_op.length()
         + pkg_length.length()
         + num_elements.length()
+        + package_element_list.length()
     }
 
     fn matches(aml: &[u8]) -> bool {

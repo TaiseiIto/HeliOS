@@ -78,6 +78,8 @@ pub mod object;
 pub mod one_op;
 pub mod op_region_op;
 pub mod operand;
+pub mod package_element;
+pub mod package_element_list;
 pub mod package_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
@@ -184,6 +186,8 @@ pub use {
     one_op::OneOp,
     op_region_op::OpRegionOp,
     operand::Operand,
+    package_element::PackageElement,
+    package_element_list::PackageElementList,
     package_op::PackageOp,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,

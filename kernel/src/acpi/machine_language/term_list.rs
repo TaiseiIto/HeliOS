@@ -40,10 +40,10 @@ impl Reader<'_> for TermList {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        if aml.first().is_some() {
-            TermObj::matches(aml)
-        } else {
+        if aml.is_empty() {
             true
+        } else {
+            TermObj::matches(aml)
         }
     }
 }
