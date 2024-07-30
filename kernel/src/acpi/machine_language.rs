@@ -96,6 +96,8 @@ pub mod simple_name;
 pub mod size_of_op;
 pub mod statement_opcode;
 pub mod store_op;
+pub mod string;
+pub mod string_prefix;
 pub mod subtract_op;
 pub mod super_name;
 pub mod target;
@@ -204,6 +206,8 @@ pub use {
     size_of_op::SizeOfOp,
     statement_opcode::StatementOpcode,
     store_op::StoreOp,
+    string::String,
+    string_prefix::StringPrefix,
     subtract_op::SubtractOp,
     super_name::SuperName,
     target::Target,

@@ -5,6 +5,7 @@ use {
         ConstObj,
         DWordConst,
         Reader,
+        String,
         WordConst,
     },
 };
@@ -16,6 +17,7 @@ pub enum ComputationalData {
     ByteConst(ByteConst),
     ConstObj(ConstObj),
     DWordConst(DWordConst),
+    String(String),
     WordConst(WordConst),
 }
 
@@ -26,6 +28,7 @@ impl fmt::Debug for ComputationalData {
             Self::ByteConst(byte_const) => debug_tuple.field(byte_const),
             Self::ConstObj(const_obj) => debug_tuple.field(const_obj),
             Self::DWordConst(d_word_const) => debug_tuple.field(d_word_const),
+            Self::String(string) => debug_tuple.field(string),
             Self::WordConst(word_const) => debug_tuple.field(word_const),
         };
         debug_tuple.finish()
@@ -40,6 +43,8 @@ impl From<&[u8]> for ComputationalData {
             Self::ConstObj(aml.into())
         } else if DWordConst::matches(aml) {
             Self::DWordConst(aml.into())
+        } else if String::matches(aml) {
+            Self::String(aml.into())
         } else if WordConst::matches(aml) {
             Self::WordConst(aml.into())
         } else {
@@ -54,6 +59,7 @@ impl Reader<'_> for ComputationalData {
             Self::ByteConst(byte_const) => byte_const.length(),
             Self::ConstObj(const_obj) => const_obj.length(),
             Self::DWordConst(d_word_const) => d_word_const.length(),
+            Self::String(string) => string.length(),
             Self::WordConst(word_const) => word_const.length(),
         }
     }
@@ -62,6 +68,7 @@ impl Reader<'_> for ComputationalData {
         ByteConst::matches(aml)
         || ConstObj::matches(aml)
         || DWordConst::matches(aml)
+        || String::matches(aml)
         || WordConst::matches(aml)
     }
 }
