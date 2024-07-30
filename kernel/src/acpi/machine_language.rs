@@ -46,6 +46,8 @@ pub mod def_while;
 pub mod deref_of_op;
 pub mod device_op;
 pub mod digit_char;
+pub mod dual_name_path;
+pub mod dual_name_prefix;
 pub mod else_op;
 pub mod expression_opcode;
 pub mod ext_op_prefix;
@@ -160,6 +162,8 @@ pub use {
     deref_of_op::DerefOfOp,
     device_op::DeviceOp,
     digit_char::DigitChar,
+    dual_name_path::DualNamePath,
+    dual_name_prefix::DualNamePrefix,
     else_op::ElseOp,
     expression_opcode::ExpressionOpcode,
     ext_op_prefix::ExtOpPrefix,

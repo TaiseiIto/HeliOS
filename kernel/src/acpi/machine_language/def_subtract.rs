@@ -44,7 +44,7 @@ impl From<&[u8]> for DefSubtract {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (subtract_op, aml): (SubtractOp, &[u8]) = SubtractOp::read(aml);
         let (operands, aml): (Vec<Operand>, &[u8]) = (0..2)
-            .fold((Vec::<Operand>::new(), aml), |(mut operands, aml), _| {
+            .fold((Vec::new(), aml), |(mut operands, aml), _| {
                 let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
                 operands.push(operand);
                 (operands, aml)
