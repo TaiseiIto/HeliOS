@@ -32,6 +32,7 @@ pub mod def_l_not;
 pub mod def_method;
 pub mod def_name;
 pub mod def_op_region;
+pub mod def_package;
 pub mod def_return;
 pub mod def_scope;
 pub mod def_size_of;
@@ -76,6 +77,7 @@ pub mod object;
 pub mod one_op;
 pub mod op_region_op;
 pub mod operand;
+pub mod package_op;
 pub mod pkg_lead_byte;
 pub mod pkg_length;
 pub mod predicate;
@@ -136,6 +138,7 @@ pub use {
     def_method::DefMethod,
     def_name::DefName,
     def_op_region::DefOpRegion,
+    def_package::DefPackage,
     def_return::DefReturn,
     def_scope::DefScope,
     def_size_of::DefSizeOf,
@@ -179,6 +182,7 @@ pub use {
     one_op::OneOp,
     op_region_op::OpRegionOp,
     operand::Operand,
+    package_op::PackageOp,
     pkg_lead_byte::PkgLeadByte,
     pkg_length::PkgLength,
     predicate::Predicate,
