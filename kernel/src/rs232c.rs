@@ -26,8 +26,8 @@ mod modem_control;
 /// Usage is the same as [println](https://doc.rust-lang.org/std/macro.println.html)
 #[macro_export]
 macro_rules! com2_println {
-    ($fmt:expr) => (com2_print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (com2_print!(concat!($fmt, "\n"), $($arg)*));
+    ($fmt:expr) => ($crate::com2_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => ($crate::com2_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
 /// # Print without a line feed to COM2

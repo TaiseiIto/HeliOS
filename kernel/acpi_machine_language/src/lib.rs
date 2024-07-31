@@ -17,13 +17,17 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader)]
+#[proc_macro_derive(Symbol)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
+    let use_statements: proc_macro2::TokenStream = quote! {
+        use crate::acpi::machine_language::Reader;
+    };
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
+        #use_statements
         #debug
         #from_slice_u8
         #reader
@@ -104,7 +108,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                 let mut term_list: Vec<TermObj> = Vec::new();
                 while !aml.is_empty() {
                     let (term_obj, remaining_aml): (TermObj, &[u8]) = TermObj::read(aml);
-                    com2_println!("term_obj = {:#x?}", term_obj);
+                    crate::com2_println!("term_obj = {:#x?}", term_obj);
                     aml = remaining_aml;
                     term_list.push(term_obj);
                 }
