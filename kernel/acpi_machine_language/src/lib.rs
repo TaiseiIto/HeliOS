@@ -1,80 +1,50 @@
 extern crate proc_macro;
 
 use {
-    proc_macro::TokenStream,
+    proc_macro2,
     quote::quote,
-    syn,
+    syn::{
+        DeriveInput,
+        parse,
+    },
 };
 
 #[proc_macro_derive(Symbol)]
-pub fn acpi_machine_language(input: TokenStream) -> TokenStream {
-    let syn::DeriveInput {
-        attrs,
-        vis,
-        ident, // Type name
-        generics,
-        data,
-    } = syn::parse(input).unwrap();
-    match data {
-        syn::Data::Struct(syn::DataStruct {
-            struct_token,
-            fields,
-            semi_token,
-        }) => match fields {
-            syn::Fields::Unnamed(syn::FieldsUnnamed {
-                paren_token,
-                unnamed,
-            }) => unnamed
-                .iter()
-                .for_each(|field| {
-                    let syn::Field {
-                        attrs,
-                        vis,
-                        ident,
-                        colon_token,
-                        ty,
-                        mutability,
-                    } = field;
-                    match ty {
-                        syn::Type::Path(syn::TypePath {
-                            qself,
-                            path,
-                        }) => {
-                            let syn::Path {
-                                leading_colon,
-                                segments,
-                            } = path;
-                            segments
-                                .iter()
-                                .for_each(|path_segment| {
-                                    let syn::PathSegment {
-                                        ident, // Vec
-                                        arguments,
-                                    } = path_segment;
-                                    match arguments {
-                                        syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
-                                            colon2_token,
-                                            lt_token,
-                                            args,
-                                            gt_token,
-                                        }) => args
-                                            .iter()
-                                            .for_each(|generic_argument| match generic_argument {
-                                                syn::GenericArgument::Type(child_type) => {}, // TermObj
-                                                _ => unimplemented!(),
-                                            }),
-                                        _ => unimplemented!(),
-                                    }
-                                });
-                        },
-                        _ => unimplemented!(),
-                    }
-                }),
-            _ => unimplemented!(),
-        },
-        _ => unimplemented!(),
-    }
+pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let derive_input: DeriveInput = parse(input).unwrap();
+    let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
+    let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
+    let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
-    }.into()
+        #debug
+        #from_slice_u8
+        #reader
+    }   .try_into()
+        .unwrap()
+}
+
+fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let type_name: proc_macro2::TokenStream = derive_input
+        .ident
+        .to_string()
+        .parse()
+        .unwrap();
+    quote! {
+        impl core::fmt::Debug for #type_name {
+            fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                write!(formatter, "This is a test.")
+            }
+        }
+    }
+}
+
+fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    quote! {
+    }
+}
+
+fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    quote! {
+    }
 }
 
