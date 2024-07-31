@@ -32,6 +32,7 @@ pub mod def_l_equal;
 pub mod def_l_less;
 pub mod def_l_not;
 pub mod def_method;
+pub mod def_mutex;
 pub mod def_name;
 pub mod def_op_region;
 pub mod def_package;
@@ -66,7 +67,7 @@ pub mod lead_name_char;
 pub mod local_obj;
 pub mod method_flags;
 pub mod method_op;
-pub mod multi_name_prefix;
+pub mod mutex_op;
 pub mod name_char;
 pub mod name_op;
 pub mod name_path;
@@ -148,6 +149,7 @@ pub use {
     def_l_less::DefLLess,
     def_l_not::DefLNot,
     def_method::DefMethod,
+    def_mutex::DefMutex,
     def_name::DefName,
     def_op_region::DefOpRegion,
     def_package::DefPackage,
@@ -182,6 +184,7 @@ pub use {
     local_obj::LocalObj,
     method_flags::MethodFlags,
     method_op::MethodOp,
+    mutex_op::MutexOp,
     name_char::NameChar,
     name_op::NameOp,
     name_path::NamePath,
