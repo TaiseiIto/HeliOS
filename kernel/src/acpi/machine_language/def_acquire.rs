@@ -18,7 +18,7 @@ impl fmt::Debug for DefAcquire {
         let Self {
             acquire_op,
         } = self;
-        formater
+        formatter
             .debug_tuple("DefAcquire")
             .field(acquire_op)
             .finish()
@@ -36,7 +36,7 @@ impl From<&[u8]> for DefAcquire {
 impl Reader<'_> for DefAcquire {
     fn length(&self) -> usize {
         let Self {
-            acuiqre_op,
+            acquire_op,
         } = self;
         acquire_op.length()
     }

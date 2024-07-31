@@ -27,8 +27,18 @@ impl fmt::Debug for AcquireOp {
     }
 }
 
+impl From<&[u8]> for AcquireOp {
+    fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+        Self {
+            ext_op_prefix,
+        }
+    }
+}
+
 impl Reader<'_> for AcquireOp {
-    fn length(aml: &[u8]) -> Self {
+    fn length(&self) -> usize {
         self.ext_op_prefix.length() + 1
     }
 
@@ -37,7 +47,7 @@ impl Reader<'_> for AcquireOp {
             let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
             aml
                 .first()
-                .is_some_and(|head| *head == ACQURIE_OP)
+                .is_some_and(|head| *head == ACQUIRE_OP)
         }
     }
 }
