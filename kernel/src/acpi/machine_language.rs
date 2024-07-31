@@ -69,6 +69,7 @@ pub mod lead_name_char;
 pub mod local_obj;
 pub mod method_flags;
 pub mod method_op;
+pub mod mutex_object;
 pub mod mutex_op;
 pub mod name_char;
 pub mod name_op;
@@ -189,6 +190,7 @@ pub use {
     local_obj::LocalObj,
     method_flags::MethodFlags,
     method_op::MethodOp,
+    mutex_object::MutexObject,
     mutex_op::MutexOp,
     name_char::NameChar,
     name_op::NameOp,
