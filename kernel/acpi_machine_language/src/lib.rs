@@ -2,9 +2,17 @@ extern crate proc_macro;
 
 use {
     proc_macro2,
-    quote::quote,
+    quote::{
+        format_ident,
+        quote,
+    },
     syn::{
+        Data,
+        DataStruct,
         DeriveInput,
+        Fields,
+        FieldsUnnamed,
+        Ident,
         parse,
     },
 };
@@ -24,18 +32,64 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
-    let type_name: proc_macro2::TokenStream = derive_input
-        .ident
-        .to_string()
-        .parse()
-        .unwrap();
-    quote! {
-        impl core::fmt::Debug for #type_name {
-            fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    let DeriveInput {
+        attrs,
+        vis,
+        ident,
+        generics,
+        data,
+    } = derive_input;
+    let format: proc_macro2::TokenStream = match data {
+        Data::Struct(DataStruct {
+            struct_token,
+            fields,
+            semi_token,
+        }) => {
+            let (unpack, format_fields): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token,
+                    unnamed,
+                }) => {
+                    let number_of_fields: usize = unnamed.len();
+                    let field_names: Vec<Ident> = (0..number_of_fields)
+                        .map(|index| format_ident!("field{}", index))
+                        .collect();
+                    let unpack: proc_macro2::TokenStream = quote! {
+                        (#(#field_names),*)
+                    };
+                    let format_fields: Vec<proc_macro2::TokenStream> = field_names
+                        .iter()
+                        .map(|field_name| quote!{
+                            .field(#field_name)
+                        })
+                        .collect();
+                    let format_fields = quote! {
+                        #(#format_fields)*
+                    };
+                    (unpack, format_fields)
+                },
+                _ => unimplemented!(),
+            };
+            let unpack: proc_macro2::TokenStream = quote! {
+                let Self #unpack = self;
+            };
+            let format: proc_macro2::TokenStream = quote! {
                 formatter
-                    .debug_tuple(stringify!(#type_name))
-                    .field(&self.0)
+                    .debug_tuple(stringify!(#ident))
+                    #format_fields
                     .finish()
+            };
+            quote! {
+                #unpack
+                #format
+            }
+        },
+        _ => unimplemented!(),
+    };
+    quote! {
+        impl core::fmt::Debug for #ident {
+            fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                #format
             }
         }
     }
