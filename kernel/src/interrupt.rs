@@ -8,7 +8,6 @@ use {
     alloc::collections::VecDeque,
     crate::{
         Argument,
-        com2_print,
         com2_println,
         memory,
         processor,

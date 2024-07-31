@@ -18,7 +18,6 @@ use {
         slice,
     },
     crate::{
-        com2_print,
         com2_println,
         memory,
         x64,

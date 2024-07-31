@@ -1,9 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    crate::{
-        com2_print,
-        com2_println,
-    },
+    crate::com2_println,
 };
 
 /// # Timer N Comparator Register
