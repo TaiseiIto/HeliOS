@@ -106,6 +106,7 @@ pub mod string;
 pub mod string_prefix;
 pub mod subtract_op;
 pub mod super_name;
+pub mod sync_flags;
 pub mod target;
 pub mod term_arg;
 pub mod term_list;
@@ -223,6 +224,7 @@ pub use {
     string_prefix::StringPrefix,
     subtract_op::SubtractOp,
     super_name::SuperName,
+    sync_flags::SyncFlags,
     target::Target,
     term_arg::TermArg,
     term_list::TermList,

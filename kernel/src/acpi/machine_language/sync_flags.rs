@@ -3,28 +3,25 @@ use {
     super::Reader,
 };
 
-/// # FieldFlags
+/// # SyncFlags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[bitfield(u8)]
-pub struct FieldFlags {
+pub struct SyncFlags {
     #[bits(4)]
-    access_type: u8,
-    lock_rule: bool,
-    #[bits(2)]
-    update_rule: u8,
-    #[bits(access = RO)]
-    reserved0: bool,
+    sync_level: u8,
+    #[bits(4, access = RO)]
+    reserved0: u8,
 }
 
-impl From<&[u8]> for FieldFlags {
+impl From<&[u8]> for SyncFlags {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         (*aml.first().unwrap()).into()
     }
 }
 
-impl Reader<'_> for FieldFlags {
+impl Reader<'_> for SyncFlags {
     fn length(&self) -> usize {
         1
     }
@@ -32,9 +29,9 @@ impl Reader<'_> for FieldFlags {
     fn matches(aml: &[u8]) -> bool {
         aml
             .first()
-            .is_some_and(|field_flags| {
-                let field_flags: FieldFlags = (*field_flags).into();
-                !field_flags.reserved0()
+            .is_some_and(|sync_flags| {
+                let sync_flags: SyncFlags = (*sync_flags).into();
+                sync_flags.reserved0() == 0
             })
     }
 }
