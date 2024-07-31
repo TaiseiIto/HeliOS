@@ -4,6 +4,7 @@ use {
         AcquireOp,
         MutexObject,
         Reader,
+        Timeout,
     },
 };
 
@@ -13,6 +14,7 @@ use {
 pub struct DefAcquire {
     acquire_op: AcquireOp,
     mutex_object: MutexObject,
+    timeout: Timeout,
 }
 
 impl fmt::Debug for DefAcquire {
@@ -20,11 +22,13 @@ impl fmt::Debug for DefAcquire {
         let Self {
             acquire_op,
             mutex_object,
+            timeout,
         } = self;
         formatter
             .debug_tuple("DefAcquire")
             .field(acquire_op)
             .field(mutex_object)
+            .field(timeout)
             .finish()
     }
 }
@@ -34,7 +38,12 @@ impl From<&[u8]> for DefAcquire {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (acquire_op, aml): (AcquireOp, &[u8]) = AcquireOp::read(aml);
         let (mutex_object, aml): (MutexObject, &[u8]) = MutexObject::read(aml);
-        unimplemented!()
+        let (timeout, aml): (Timeout, &[u8]) = Timeout::read(aml);
+        Self {
+            acquire_op,
+            mutex_object,
+            timeout,
+        }
     }
 }
 
@@ -43,9 +52,11 @@ impl Reader<'_> for DefAcquire {
         let Self {
             acquire_op,
             mutex_object,
+            timeout,
         } = self;
         acquire_op.length()
         + mutex_object.length()
+        + timeout.length()
     }
 
     fn matches(aml: &[u8]) -> bool {

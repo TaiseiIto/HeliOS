@@ -114,6 +114,7 @@ pub mod target;
 pub mod term_arg;
 pub mod term_list;
 pub mod term_obj;
+pub mod timeout;
 pub mod to_buffer_op;
 pub mod to_hex_string_op;
 pub mod while_op;
@@ -235,6 +236,7 @@ pub use {
     term_arg::TermArg,
     term_list::TermList,
     term_obj::TermObj,
+    timeout::Timeout,
     to_buffer_op::ToBufferOp,
     to_hex_string_op::ToHexStringOp,
     while_op::WhileOp,
