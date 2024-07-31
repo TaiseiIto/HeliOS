@@ -20,14 +20,11 @@ use {
 #[proc_macro_derive(Symbol)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
-    let use_statements: proc_macro2::TokenStream = quote! {
-        use crate::acpi::machine_language::Reader;
-    };
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
-        #use_statements
+        use crate::acpi::machine_language::Reader;
         #debug
         #from_slice_u8
         #reader
@@ -100,8 +97,15 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 }
 
 fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs,
+        vis,
+        ident,
+        generics,
+        data,
+    } = derive_input;
     quote! {
-        impl From<&[u8]> for TermList {
+        impl From<&[u8]> for #ident {
             fn from(aml: &[u8]) -> Self {
                 assert!(Self::matches(aml), "aml = {:#x?}", aml);
                 let mut aml: &[u8] = aml;
@@ -119,8 +123,15 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
 }
 
 fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs,
+        vis,
+        ident,
+        generics,
+        data,
+    } = derive_input;
     quote! {
-        impl Reader<'_> for TermList {
+        impl Reader<'_> for #ident {
             fn length(&self) -> usize {
                 self.0
                     .iter()
