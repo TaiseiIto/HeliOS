@@ -32,7 +32,10 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     quote! {
         impl core::fmt::Debug for #type_name {
             fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                write!(formatter, "This is a test.")
+                formatter
+                    .debug_tuple(stringify!(#type_name))
+                    .field(&self.0)
+                    .finish()
             }
         }
     }
