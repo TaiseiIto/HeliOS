@@ -1,6 +1,7 @@
 use {
     core::fmt,
     super::{
+        DefAcquire,
         DefBuffer,
         DefDerefOf,
         DefIncrement,
@@ -22,6 +23,7 @@ use {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 pub enum ExpressionOpcode {
+    DefAcquire(DefAcquire),
     DefBuffer(DefBuffer),
     DefDerefOf(DefDerefOf),
     DefIncrement(DefIncrement),
@@ -41,6 +43,7 @@ impl fmt::Debug for ExpressionOpcode {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("ExpressionOpcode");
         match self {
+            Self::DefAcquire(def_acquire) => debug_tuple.field(def_acquire),
             Self::DefBuffer(def_buffer) => debug_tuple.field(def_buffer),
             Self::DefDerefOf(def_deref_of) => debug_tuple.field(def_deref_of),
             Self::DefIncrement(def_increment) => debug_tuple.field(def_increment),
@@ -61,7 +64,9 @@ impl fmt::Debug for ExpressionOpcode {
 
 impl From<&[u8]> for ExpressionOpcode {
     fn from(aml: &[u8]) -> Self {
-        if DefBuffer::matches(aml) {
+        if DefAcquire::matches(aml) {
+            Self::DefAcquire(aml.into())
+        } else if DefBuffer::matches(aml) {
             Self::DefBuffer(aml.into())
         } else if DefDerefOf::matches(aml) {
             Self::DefDerefOf(aml.into())
@@ -96,6 +101,7 @@ impl From<&[u8]> for ExpressionOpcode {
 impl Reader<'_> for ExpressionOpcode {
     fn length(&self) -> usize {
         match self {
+            Self::DefAcquire(def_acquire) => def_acquire.length(),
             Self::DefBuffer(def_buffer) => def_buffer.length(),
             Self::DefDerefOf(def_deref_of) => def_deref_of.length(),
             Self::DefIncrement(def_increment) => def_increment.length(),
@@ -113,7 +119,8 @@ impl Reader<'_> for ExpressionOpcode {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        DefBuffer::matches(aml)
+        DefAcquire::matches(aml)
+        || DefBuffer::matches(aml)
         || DefDerefOf::matches(aml)
         || DefIncrement::matches(aml)
         || DefIndex::matches(aml)
