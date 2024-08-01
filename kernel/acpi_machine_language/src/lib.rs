@@ -51,16 +51,17 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     paren_token,
                     unnamed,
                 }) => {
-                    let number_of_fields: usize = unnamed.len();
-                    let field_names: Vec<Ident> = (0..number_of_fields)
-                        .map(|index| format_ident!("field{}", index))
+                    let field_names: Vec<Ident> = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, _field)| format_ident!("field{}", index))
                         .collect();
                     let unpack: proc_macro2::TokenStream = quote! {
                         (#(#field_names),*)
                     };
                     let format_fields: Vec<proc_macro2::TokenStream> = field_names
                         .iter()
-                        .map(|field_name| quote!{
+                        .map(|field_name| quote! {
                             .field(#field_name)
                         })
                         .collect();
