@@ -9,6 +9,7 @@ use {
     },
     syn::{
         AngleBracketedGenericArguments,
+        Attribute,
         Data,
         DataStruct,
         DeriveInput,
@@ -17,6 +18,7 @@ use {
         FieldsUnnamed,
         GenericArgument,
         Ident,
+        Meta,
         Path,
         PathArguments,
         PathSegment,
@@ -26,7 +28,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Symbol)]
+#[proc_macro_derive(Symbol, attributes(debug))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -138,6 +140,23 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             ty,
                             mutability,
                         } = field;
+                        let debug: bool = attrs
+                            .iter()
+                            .any(|attribute| {
+                                let Attribute {
+                                    pound_token,
+                                    style,
+                                    bracket_token,
+                                    meta,
+                                } = attribute;
+                                match meta {
+                                    Meta::Path(path) => matches!(path
+                                        .to_token_stream()
+                                        .to_string()
+                                        .as_str(), "debug"),
+                                    _ => false,
+                                }
+                            });
                         let convert: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
                                 qself,
@@ -165,15 +184,13 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             gt_token,
                                         }) => match args.first().unwrap() {
                                             GenericArgument::Type(element_type) => {
-                                                let debug: proc_macro2::TokenStream = match element_type
-                                                    .to_token_stream()
-                                                    .to_string()
-                                                    .as_str() {
-                                                    "TermObj" => quote! {
+                                                let debug: proc_macro2::TokenStream = if debug {
+                                                    quote! {
                                                         crate::com2_println!("element = {:#x?}", element);
-                                                    },
-                                                    _ => quote! {
-                                                    },
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                    }
                                                 };
                                                 quote! {
                                                     let mut aml: &[u8] = aml;
