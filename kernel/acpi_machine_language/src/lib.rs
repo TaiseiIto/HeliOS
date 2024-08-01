@@ -88,18 +88,12 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 },
                 _ => unimplemented!(),
             };
-            let unpack: proc_macro2::TokenStream = quote! {
+            quote! {
                 let Self #unpack = self;
-            };
-            let format: proc_macro2::TokenStream = quote! {
                 formatter
                     .debug_tuple(stringify!(#ident))
                     #format
                     .finish()
-            };
-            quote! {
-                #unpack
-                #format
             }
         },
         _ => unimplemented!(),
