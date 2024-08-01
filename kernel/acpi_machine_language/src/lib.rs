@@ -231,12 +231,38 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 }
 
 fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs,
+        vis,
+        ident,
+        generics,
+        data,
+    } = derive_input;
+    let length: proc_macro2::TokenStream = match data {
+        Data::Struct(DataStruct {
+            struct_token,
+            fields,
+            semi_token,
+        }) => {
+            let unpack: proc_macro2::TokenStream = quote! {
+                let Self(field0) = self;
+            };
+            let accumulate: proc_macro2::TokenStream = quote! {
+                field0
+                    .iter()
+                    .map(|element| element.length())
+                    .sum::<usize>()
+            };
+            quote! {
+                #unpack
+                #accumulate
+            }
+        },
+        _ => unimplemented!(),
+    };
     quote! {
         fn length(&self) -> usize {
-            self.0
-                .iter()
-                .map(|term_obj| term_obj.length())
-                .sum::<usize>()
+            #length
         }
     }
 }
