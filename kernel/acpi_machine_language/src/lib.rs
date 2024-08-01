@@ -115,7 +115,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics,
         data,
     } = derive_input;
-    let (convert, pack): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match data {
+    let convert: proc_macro2::TokenStream = match data {
         Data::Struct(DataStruct {
             struct_token,
             fields,
@@ -205,13 +205,10 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                         pack.push(new_pack);
                         (convert, pack)
                     });
-                let convert: proc_macro2::TokenStream = quote! {
+                quote! {
                     #(#convert)*
-                };
-                let pack: proc_macro2::TokenStream = quote! {
-                    (#(#pack),*)
-                };
-                (convert, pack)
+                    Self(#(#pack),*)
+                }
             },
             _ => unimplemented!(),
         },
@@ -222,7 +219,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             fn from(aml: &[u8]) -> Self {
                 assert!(Self::matches(aml), "aml = {:#x?}", aml);
                 #convert
-                Self #pack
             }
         }
     }
