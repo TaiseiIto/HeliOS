@@ -7,7 +7,6 @@ use {
         quote,
     },
     syn::{
-        AngleBracketed,
         AngleBracketedGenericArguments,
         Data,
         DataStruct,
@@ -18,6 +17,7 @@ use {
         GenericArgument,
         Ident,
         Path,
+        PathArguments,
         PathSegment,
         Type,
         TypePath,
@@ -113,7 +113,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics,
         data,
     } = derive_input;
-    let (convert, pack): (proc_macro2::TokenStream, proc_macro2::TokenStrem) = match data {
+    let (convert, pack): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match data {
         Data::Struct(DataStruct {
             struct_token,
             fields,
@@ -134,6 +134,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             ident,
                             colon_token,
                             ty,
+                            mutability,
                         } = field;
                         let convert: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
@@ -152,7 +153,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                     .last()
                                     .unwrap();
                                 match ident.to_string().as_str() {
-                                    "Vec" => match argument {
+                                    "Vec" => match arguments {
                                         PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                                             colon2_token,
                                             lt_token,
@@ -199,7 +200,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             _ => unimplemented!(),
         },
         _ => unimplemented!(),
-    }
+    };
     quote! {
         impl From<&[u8]> for #ident {
             fn from(aml: &[u8]) -> Self {
