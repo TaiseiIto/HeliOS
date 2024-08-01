@@ -220,21 +220,34 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics,
         data,
     } = derive_input;
+    let length: proc_macro2::TokenStream = derive_length(derive_input);
+    let matches: proc_macro2::TokenStream = derive_matches(derive_input);
     quote! {
         impl Reader<'_> for #ident {
-            fn length(&self) -> usize {
-                self.0
-                    .iter()
-                    .map(|term_obj| term_obj.length())
-                    .sum::<usize>()
-            }
-        
-            fn matches(aml: &[u8]) -> bool {
-                if aml.is_empty() {
-                    true
-                } else {
-                    TermObj::matches(aml)
-                }
+            #length
+            #matches
+        }
+    }
+}
+
+fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    quote! {
+        fn length(&self) -> usize {
+            self.0
+                .iter()
+                .map(|term_obj| term_obj.length())
+                .sum::<usize>()
+        }
+    }
+}
+
+fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    quote! {
+        fn matches(aml: &[u8]) -> bool {
+            if aml.is_empty() {
+                true
+            } else {
+                TermObj::matches(aml)
             }
         }
     }
