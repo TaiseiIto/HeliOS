@@ -54,29 +54,36 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             fields,
             semi_token,
         }) => {
-            let (unpack, format_fields): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
+            let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
                 Fields::Unnamed(FieldsUnnamed {
                     paren_token,
                     unnamed,
                 }) => {
-                    let field_names: Vec<Ident> = unnamed
+                    let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
                         .iter()
                         .enumerate()
-                        .map(|(index, _field)| format_ident!("field{}", index))
-                        .collect();
-                    let unpack: proc_macro2::TokenStream = quote! {
-                        (#(#field_names),*)
-                    };
-                    let format_fields: Vec<proc_macro2::TokenStream> = field_names
-                        .iter()
-                        .map(|field_name| quote! {
-                            .field(#field_name)
+                        .map(|(index, _field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let unpack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            let format: proc_macro2::TokenStream = quote! {
+                                .field(#field_name)
+                            };
+                            (unpack, format)
                         })
-                        .collect();
-                    let format_fields: proc_macro2::TokenStream = quote! {
-                        #(#format_fields)*
+                        .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (new_unpack, new_format)| {
+                            unpack.push(new_unpack);
+                            format.push(new_format);
+                            (unpack, format)
+                        });
+                    let unpack: proc_macro2::TokenStream = quote! {
+                        (#(#unpack),*)
                     };
-                    (unpack, format_fields)
+                    let format: proc_macro2::TokenStream = quote! {
+                        #(#format)*
+                    };
+                    (unpack, format)
                 },
                 _ => unimplemented!(),
             };
@@ -86,7 +93,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             let format: proc_macro2::TokenStream = quote! {
                 formatter
                     .debug_tuple(stringify!(#ident))
-                    #format_fields
+                    #format
                     .finish()
             };
             quote! {
