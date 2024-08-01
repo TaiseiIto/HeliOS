@@ -3,6 +3,7 @@ extern crate proc_macro;
 use {
     proc_macro2,
     quote::{
+        ToTokens,
         format_ident,
         quote,
     },
@@ -159,7 +160,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                     .iter()
                                     .last()
                                     .unwrap();
-                                match ident.to_string().as_str() {
+                                match ident
+                                    .to_string()
+                                    .as_str() {
                                     "Vec" => match arguments {
                                         PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                                             colon2_token,
@@ -167,14 +170,26 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             args,
                                             gt_token,
                                         }) => match args.first().unwrap() {
-                                            GenericArgument::Type(element_type) => quote! {
-                                                let mut aml: &[u8] = aml;
-                                                let mut #field_name: Vec<#element_type> = Vec::new();
-                                                while !aml.is_empty() {
-                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
-                                                    crate::com2_println!("element = {:#x?}", element);
-                                                    aml = remaining_aml;
-                                                    #field_name.push(element);
+                                            GenericArgument::Type(element_type) => {
+                                                let debug: proc_macro2::TokenStream = match element_type
+                                                    .to_token_stream()
+                                                    .to_string()
+                                                    .as_str() {
+                                                    "TermObj" => quote! {
+                                                        crate::com2_println!("element = {:#x?}", element);
+                                                    },
+                                                    _ => quote! {
+                                                    },
+                                                };
+                                                quote! {
+                                                    let mut aml: &[u8] = aml;
+                                                    let mut #field_name: Vec<#element_type> = Vec::new();
+                                                    while !aml.is_empty() {
+                                                        let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                        #debug
+                                                        aml = remaining_aml;
+                                                        #field_name.push(element);
+                                                    }
                                                 }
                                             },
                                             _ => unimplemented!(),
