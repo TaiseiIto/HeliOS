@@ -382,7 +382,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     mutability,
                 } = unnamed
                     .iter()
-                    .first()
+                    .next()
                     .unwrap();
                 match ty {
                     Type::Path(TypePath {
@@ -419,6 +419,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     },
                                     _ => unimplemented!(),
                                 },
+                                _ => unimplemented!(),
                             },
                             _ => unimplemented!(),
                         }
