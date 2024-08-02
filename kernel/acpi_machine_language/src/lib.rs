@@ -28,7 +28,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Symbol, attributes(debug))]
+#[proc_macro_derive(Reader, attributes(debug))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
