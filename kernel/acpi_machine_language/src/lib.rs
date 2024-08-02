@@ -273,17 +273,76 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             fields,
             semi_token,
         }) => {
-            let unpack: proc_macro2::TokenStream = quote! {
-                let Self(field0) = self;
-            };
-            let accumulate: proc_macro2::TokenStream = quote! {
-                field0
-                    .iter()
-                    .map(|element| element.length())
-                    .sum::<usize>()
+            let (unpack, accumulate): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token,
+                    unnamed,
+                }) => {
+                    let (unpack, accumulate): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs,
+                                vis,
+                                ident,
+                                colon_token,
+                                ty,
+                                mutability,
+                            } = field;
+                            let unpack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            let accumulate: proc_macro2::TokenStream = match ty {
+                                Type::Path(TypePath {
+                                    qself,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match ident
+                                        .to_string()
+                                        .as_str() {
+                                        "Vec" => quote! {
+                                            #field_name
+                                                .iter()
+                                                .map(|element| element.length())
+                                                .sum::<usize>()
+                                        },
+                                        _ => unimplemented!(),
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                            (unpack, accumulate)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut unpack, mut accumulate), (new_unpack, new_accumulate)| {
+                            unpack.push(new_unpack);
+                            accumulate.push(new_accumulate);
+                            (unpack, accumulate)
+                        });
+                    let unpack: proc_macro2::TokenStream = quote! {
+                        (#(#unpack),*)
+                    };
+                    let accumulate: proc_macro2::TokenStream = quote! {
+                        #(#accumulate)+*
+                    };
+                    (unpack, accumulate)
+                },
+                _ => unimplemented!(),
             };
             quote! {
-                #unpack
+                let Self #unpack = self;
                 #accumulate
             }
         },
