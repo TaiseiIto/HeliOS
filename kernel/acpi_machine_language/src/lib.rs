@@ -356,13 +356,83 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 }
 
 fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs,
+        vis,
+        ident,
+        generics,
+        data,
+    } = derive_input;
+    let matches: proc_macro2::TokenStream = match data {
+        Data::Struct(DataStruct {
+            struct_token,
+            fields,
+            semi_token,
+        }) => match fields {
+            Fields::Unnamed(FieldsUnnamed {
+                paren_token,
+                unnamed,
+            }) => {
+                let Field {
+                    attrs,
+                    vis,
+                    ident,
+                    colon_token,
+                    ty,
+                    mutability,
+                } = unnamed
+                    .iter()
+                    .first()
+                    .unwrap();
+                match ty {
+                    Type::Path(TypePath {
+                        qself,
+                        path,
+                    }) => {
+                        let Path {
+                            leading_colon,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "Vec" => match arguments {
+                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                    colon2_token,
+                                    lt_token,
+                                    args,
+                                    gt_token,
+                                }) => match args.first().unwrap() {
+                                    GenericArgument::Type(element_type) => quote! {
+                                        if aml.is_empty() {
+                                            true
+                                        } else {
+                                            #element_type::matches(aml)
+                                        }
+                                    },
+                                    _ => unimplemented!(),
+                                },
+                            },
+                            _ => unimplemented!(),
+                        }
+                    },
+                    _ => unimplemented!(),
+                }
+            },
+            _ => unimplemented!(),
+        },
+        _ => unimplemented!(),
+    };
     quote! {
         fn matches(aml: &[u8]) -> bool {
-            if aml.is_empty() {
-                true
-            } else {
-                TermObj::matches(aml)
-            }
+            #matches
         }
     }
 }
