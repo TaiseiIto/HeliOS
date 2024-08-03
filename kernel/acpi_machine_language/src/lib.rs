@@ -268,7 +268,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             ty,
                             mutability,
                         } = field;
-                        let field_attribute: FieldAttribute = field.into();
+                        let FieldAttribute {
+                            debug,
+                        } = field.into();
                         let convert: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
                                 qself,
@@ -299,7 +301,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 let continuation_condition: proc_macro2::TokenStream = quote! {
                                                     !aml.is_empty() && #element_type::matches(aml)
                                                 };
-                                                let debug: proc_macro2::TokenStream = if field_attribute.debug {
+                                                let debug: proc_macro2::TokenStream = if debug {
                                                     quote! {
                                                         crate::com2_println!("element = {:#x?}", element);
                                                     }
@@ -478,8 +480,11 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics,
         data,
     } = derive_input;
-    let type_attribute: TypeAttribute = derive_input.into();
-    let matches: proc_macro2::TokenStream = if type_attribute.always_matches {
+    let TypeAttribute {
+        always_matches,
+        encoding_value,
+    } = derive_input.into();
+    let matches: proc_macro2::TokenStream = if always_matches {
         quote! {
             true
         }
@@ -491,7 +496,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 semi_token,
             }) => match fields {
                 Fields::Unit => {
-                    let encoding_value: u8 = type_attribute.encoding_value.unwrap();
+                    let encoding_value: u8 = encoding_value.unwrap();
                     quote! {
                         aml
                             .first()
