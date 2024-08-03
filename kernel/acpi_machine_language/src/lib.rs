@@ -47,11 +47,11 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .unwrap()
 }
 
-struct Attributes {
+struct TypeAttribute {
     always_matches: bool,
 }
 
-impl From<&DeriveInput> for Attributes {
+impl From<&DeriveInput> for TypeAttribute {
     fn from(derive_input: &DeriveInput) -> Self {
         let DeriveInput {
             attrs,
@@ -172,7 +172,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics,
         data,
     } = derive_input;
-    let attributes: Attributes = derive_input.into();
+    let type_attribute: TypeAttribute = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
         Data::Struct(DataStruct {
             struct_token,
@@ -240,7 +240,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             gt_token,
                                         }) => match args.first().unwrap() {
                                             GenericArgument::Type(element_type) => {
-                                                let continuation_condition: proc_macro2::TokenStream = if attributes.always_matches {
+                                                let continuation_condition: proc_macro2::TokenStream = if type_attribute.always_matches {
                                                     quote! {
                                                         #element_type::matches(aml)
                                                     }
@@ -428,8 +428,8 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics,
         data,
     } = derive_input;
-    let attributes: Attributes = derive_input.into();
-    let matches: proc_macro2::TokenStream = if attributes.always_matches {
+    let type_attribute: TypeAttribute = derive_input.into();
+    let matches: proc_macro2::TokenStream = if type_attribute.always_matches {
         quote! {
             true
         }
