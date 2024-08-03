@@ -3,6 +3,7 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 pub mod acquire_op;
+pub mod acquire_op_suffix;
 pub mod arg_obj;
 pub mod arg_object;
 pub mod ascii_char;
@@ -125,6 +126,7 @@ pub mod zero_op;
 
 pub use {
     acquire_op::AcquireOp,
+    acquire_op_suffix::AcquireOpSuffix,
     arg_obj::ArgObj,
     arg_object::ArgObject,
     ascii_char::AsciiChar,
