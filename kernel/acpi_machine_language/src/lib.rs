@@ -60,6 +60,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics,
             data,
         } = derive_input;
+        dbg!(ident);
         let always_matches: bool = attrs
             .iter()
             .find(|attribute| {
@@ -70,20 +71,18 @@ impl From<&DeriveInput> for TypeAttribute {
                     meta,
                 } = attribute;
                 match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token,
-                        value,
-                    }) => matches!(path
+                    Meta::Path(path) => {
+                        dbg!(path);
+                        matches!(path
                             .to_token_stream()
                             .to_string()
-                            .as_str(), "always_matches"),
+                            .as_str(), "always_matches")
+                    },
                     _ => false,
                 }
             })
             .is_some();
         dbg!(always_matches);
-        unimplemented!();
         Self {
             always_matches,
         }
