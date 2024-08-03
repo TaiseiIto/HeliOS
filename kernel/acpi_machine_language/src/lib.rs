@@ -175,6 +175,14 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             semi_token,
         }) => {
             let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
+                Fields::Unit => {
+                    let unpack: proc_macro2::TokenStream = quote! {
+                    };
+                    let format: proc_macro2::TokenStream = quote! {
+                        formatter.write_str(stringify!(#ident))
+                    };
+                    (unpack, format)
+                },
                 Fields::Unnamed(FieldsUnnamed {
                     paren_token,
                     unnamed,
@@ -198,21 +206,21 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             (unpack, format)
                         });
                     let unpack: proc_macro2::TokenStream = quote! {
-                        (#(#unpack),*)
+                        let Self (#(#unpack),*) = self;
                     };
                     let format: proc_macro2::TokenStream = quote! {
-                        #(#format)*
+                        formatter
+                            .debug_tuple(stringify!(#ident))
+                            #(#format)*
+                            .finish()
                     };
                     (unpack, format)
                 },
                 _ => unimplemented!(),
             };
             quote! {
-                let Self #unpack = self;
-                formatter
-                    .debug_tuple(stringify!(#ident))
-                    #format
-                    .finish()
+                #unpack
+                #format
             }
         },
         _ => unimplemented!(),
@@ -240,6 +248,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             fields,
             semi_token,
         }) => match fields {
+            Fields::Unit => quote! {
+                Self
+            },
             Fields::Unnamed(FieldsUnnamed {
                 paren_token,
                 unnamed,
@@ -376,79 +387,79 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             struct_token,
             fields,
             semi_token,
-        }) => {
-            let (unpack, accumulate): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
-                Fields::Unnamed(FieldsUnnamed {
-                    paren_token,
-                    unnamed,
-                }) => {
-                    let (unpack, accumulate): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
-                        .iter()
-                        .enumerate()
-                        .map(|(index, field)| {
-                            let field_name: Ident = format_ident!("field{}", index);
-                            let Field {
-                                attrs,
-                                vis,
-                                ident,
-                                colon_token,
-                                ty,
-                                mutability,
-                            } = field;
-                            let unpack: proc_macro2::TokenStream = quote! {
-                                #field_name
-                            };
-                            let accumulate: proc_macro2::TokenStream = match ty {
-                                Type::Path(TypePath {
-                                    qself,
-                                    path,
-                                }) => {
-                                    let Path {
-                                        leading_colon,
-                                        segments,
-                                    } = path;
-                                    let PathSegment {
-                                        ident,
-                                        arguments,
-                                    } = segments
-                                        .iter()
-                                        .last()
-                                        .unwrap();
-                                    match ident
-                                        .to_string()
-                                        .as_str() {
-                                        "Vec" => quote! {
-                                            #field_name
-                                                .iter()
-                                                .map(|element| element.length())
-                                                .sum::<usize>()
-                                        },
-                                        _ => unimplemented!(),
-                                    }
-                                },
-                                _ => unimplemented!(),
-                            };
-                            (unpack, accumulate)
-                        })
-                        .fold((Vec::new(), Vec::new()), |(mut unpack, mut accumulate), (new_unpack, new_accumulate)| {
-                            unpack.push(new_unpack);
-                            accumulate.push(new_accumulate);
-                            (unpack, accumulate)
-                        });
-                    let unpack: proc_macro2::TokenStream = quote! {
-                        (#(#unpack),*)
-                    };
-                    let accumulate: proc_macro2::TokenStream = quote! {
-                        #(#accumulate)+*
-                    };
-                    (unpack, accumulate)
-                },
-                _ => unimplemented!(),
-            };
-            quote! {
-                let Self #unpack = self;
-                #accumulate
-            }
+        }) => match fields {
+            Fields::Unit => quote! {
+                1
+            },
+            Fields::Unnamed(FieldsUnnamed {
+                paren_token,
+                unnamed,
+            }) => {
+                let (unpack, accumulate): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                    .iter()
+                    .enumerate()
+                    .map(|(index, field)| {
+                        let field_name: Ident = format_ident!("field{}", index);
+                        let Field {
+                            attrs,
+                            vis,
+                            ident,
+                            colon_token,
+                            ty,
+                            mutability,
+                        } = field;
+                        let unpack: proc_macro2::TokenStream = quote! {
+                            #field_name
+                        };
+                        let accumulate: proc_macro2::TokenStream = match ty {
+                            Type::Path(TypePath {
+                                qself,
+                                path,
+                            }) => {
+                                let Path {
+                                    leading_colon,
+                                    segments,
+                                } = path;
+                                let PathSegment {
+                                    ident,
+                                    arguments,
+                                } = segments
+                                    .iter()
+                                    .last()
+                                    .unwrap();
+                                match ident
+                                    .to_string()
+                                    .as_str() {
+                                    "Vec" => quote! {
+                                        #field_name
+                                            .iter()
+                                            .map(|element| element.length())
+                                            .sum::<usize>()
+                                    },
+                                    _ => unimplemented!(),
+                                }
+                            },
+                            _ => unimplemented!(),
+                        };
+                        (unpack, accumulate)
+                    })
+                    .fold((Vec::new(), Vec::new()), |(mut unpack, mut accumulate), (new_unpack, new_accumulate)| {
+                        unpack.push(new_unpack);
+                        accumulate.push(new_accumulate);
+                        (unpack, accumulate)
+                    });
+                let unpack: proc_macro2::TokenStream = quote! {
+                    let Self (#(#unpack),*) = self;
+                };
+                let accumulate: proc_macro2::TokenStream = quote! {
+                    #(#accumulate)+*
+                };
+                quote! {
+                    #unpack
+                    #accumulate
+                }
+            },
+            _ => unimplemented!(),
         },
         _ => unimplemented!(),
     };
@@ -479,6 +490,14 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 fields,
                 semi_token,
             }) => match fields {
+                Fields::Unit => {
+                    let encoding_value: u8 = type_attribute.encoding_value.unwrap();
+                    quote! {
+                        aml
+                            .first()
+                            .is_some_and(|head| *head == #encoding_value)
+                    }
+                },
                 Fields::Unnamed(FieldsUnnamed {
                     paren_token,
                     unnamed,
