@@ -200,7 +200,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics,
         data,
     } = derive_input;
-    let type_attribute: TypeAttribute = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
         Data::Struct(DataStruct {
             struct_token,
@@ -252,14 +251,8 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             gt_token,
                                         }) => match args.first().unwrap() {
                                             GenericArgument::Type(element_type) => {
-                                                let continuation_condition: proc_macro2::TokenStream = if type_attribute.always_matches {
-                                                    quote! {
-                                                        #element_type::matches(aml)
-                                                    }
-                                                } else {
-                                                    quote! {
-                                                        !aml.is_empty()
-                                                    }
+                                                let continuation_condition: proc_macro2::TokenStream = quote! {
+                                                    !aml.is_empty() && #element_type::matches(aml)
                                                 };
                                                 let debug: proc_macro2::TokenStream = if field_attribute.debug {
                                                     quote! {
