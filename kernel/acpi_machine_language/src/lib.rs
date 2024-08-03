@@ -242,7 +242,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             GenericArgument::Type(element_type) => {
                                                 let continuation_condition: proc_macro2::TokenStream = if attributes.always_matches {
                                                     quote! {
-                                                        #element_type.matches(aml)
+                                                        #element_type::matches(aml)
                                                     }
                                                 } else {
                                                     quote! {
