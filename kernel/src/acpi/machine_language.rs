@@ -90,6 +90,7 @@ pub mod obj_reference;
 pub mod object;
 pub mod one_op;
 pub mod op_region_op;
+pub mod op_region_op_suffix;
 pub mod operand;
 pub mod package_element;
 pub mod package_element_list;
@@ -216,6 +217,7 @@ pub use {
     object::Object,
     one_op::OneOp,
     op_region_op::OpRegionOp,
+    op_region_op_suffix::OpRegionOpSuffix,
     operand::Operand,
     package_element::PackageElement,
     package_element_list::PackageElementList,
