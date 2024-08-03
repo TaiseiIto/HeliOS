@@ -74,6 +74,7 @@ pub mod method_flags;
 pub mod method_op;
 pub mod mutex_object;
 pub mod mutex_op;
+pub mod mutex_op_suffix;
 pub mod name_char;
 pub mod name_op;
 pub mod name_path;
@@ -199,6 +200,7 @@ pub use {
     method_op::MethodOp,
     mutex_object::MutexObject,
     mutex_op::MutexOp,
+    mutex_op_suffix::MutexOpSuffix,
     name_char::NameChar,
     name_op::NameOp,
     name_path::NamePath,
