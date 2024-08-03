@@ -19,6 +19,7 @@ use {
         GenericArgument,
         Ident,
         Meta,
+        MetaNameValue,
         Path,
         PathArguments,
         PathSegment,
@@ -28,7 +29,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug))]
+#[proc_macro_derive(Reader, attributes(debug, matches))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -363,73 +364,105 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics,
         data,
     } = derive_input;
-    let matches: proc_macro2::TokenStream = match data {
-        Data::Struct(DataStruct {
-            struct_token,
-            fields,
-            semi_token,
-        }) => match fields {
-            Fields::Unnamed(FieldsUnnamed {
-                paren_token,
-                unnamed,
-            }) => {
-                let Field {
-                    attrs,
-                    vis,
-                    ident,
-                    colon_token,
-                    ty,
-                    mutability,
-                } = unnamed
-                    .iter()
-                    .next()
-                    .unwrap();
-                match ty {
-                    Type::Path(TypePath {
-                        qself,
-                        path,
-                    }) => {
-                        let Path {
-                            leading_colon,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "Vec" => match arguments {
-                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                    colon2_token,
-                                    lt_token,
-                                    args,
-                                    gt_token,
-                                }) => match args.first().unwrap() {
-                                    GenericArgument::Type(element_type) => quote! {
-                                        if aml.is_empty() {
-                                            true
-                                        } else {
-                                            #element_type::matches(aml)
-                                        }
+    let always_true: bool = attrs
+        .iter()
+        .find_map(|attribute| {
+            let Attribute {
+                pound_token,
+                style,
+                bracket_token,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::NameValue(MetaNameValue {
+                    path,
+                    eq_token,
+                    value,
+                }) => matches!(path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str(), "matches")
+                    .then_some(value),
+                _ => None,
+            }
+        })
+        .map_or(false, |value| matches!(value
+            .to_token_stream()
+            .to_string()
+            .as_str(), "always_true"));
+    let matches: proc_macro2::TokenStream = if always_true {
+        quote! {
+            true
+        }
+    } else {
+        match data {
+            Data::Struct(DataStruct {
+                struct_token,
+                fields,
+                semi_token,
+            }) => match fields {
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token,
+                    unnamed,
+                }) => {
+                    let Field {
+                        attrs,
+                        vis,
+                        ident,
+                        colon_token,
+                        ty,
+                        mutability,
+                    } = unnamed
+                        .iter()
+                        .next()
+                        .unwrap();
+                    match ty {
+                        Type::Path(TypePath {
+                            qself,
+                            path,
+                        }) => {
+                            let Path {
+                                leading_colon,
+                                segments,
+                            } = path;
+                            let PathSegment {
+                                ident,
+                                arguments,
+                            } = segments
+                                .iter()
+                                .last()
+                                .unwrap();
+                            match ident
+                                .to_string()
+                                .as_str() {
+                                "Vec" => match arguments {
+                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                        colon2_token,
+                                        lt_token,
+                                        args,
+                                        gt_token,
+                                    }) => match args.first().unwrap() {
+                                        GenericArgument::Type(element_type) => quote! {
+                                            if aml.is_empty() {
+                                                true
+                                            } else {
+                                                #element_type::matches(aml)
+                                            }
+                                        },
+                                        _ => unimplemented!(),
                                     },
                                     _ => unimplemented!(),
                                 },
                                 _ => unimplemented!(),
-                            },
-                            _ => unimplemented!(),
-                        }
-                    },
-                    _ => unimplemented!(),
-                }
+                            }
+                        },
+                        _ => unimplemented!(),
+                    }
+                },
+                _ => unimplemented!(),
             },
             _ => unimplemented!(),
-        },
-        _ => unimplemented!(),
+        }
     };
     quote! {
         fn matches(aml: &[u8]) -> bool {
