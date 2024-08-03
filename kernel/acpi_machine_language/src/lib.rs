@@ -32,8 +32,9 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(always_matches, debug))]
+#[proc_macro_derive(Reader, attributes(always_matches, encoding_value, debug))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    dbg!(&input);
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
@@ -49,6 +50,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
 struct TypeAttribute {
     always_matches: bool,
+    encoding_value: Option<u8>,
 }
 
 impl From<&DeriveInput> for TypeAttribute {
@@ -60,7 +62,6 @@ impl From<&DeriveInput> for TypeAttribute {
             generics,
             data,
         } = derive_input;
-        dbg!(ident);
         let always_matches: bool = attrs
             .iter()
             .find(|attribute| {
@@ -72,7 +73,6 @@ impl From<&DeriveInput> for TypeAttribute {
                 } = attribute;
                 match meta {
                     Meta::Path(path) => {
-                        dbg!(path);
                         matches!(path
                             .to_token_stream()
                             .to_string()
@@ -82,9 +82,43 @@ impl From<&DeriveInput> for TypeAttribute {
                 }
             })
             .is_some();
-        dbg!(always_matches);
+        let encoding_value: Option<u8> = attrs
+            .iter()
+            .find_map(|attribute| {
+                let Attribute {
+                    pound_token,
+                    style,
+                    bracket_token,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::NameValue(MetaNameValue {
+                        path,
+                        eq_token,
+                        value,
+                    }) => match value {
+                        Expr::Lit(ExprLit {
+                            attrs,
+                            lit,
+                        }) => match lit {
+                            Lit::Int(lit_int) => Some({
+                                let lit_int: u8 = lit_int
+                                    .base10_digits()
+                                    .parse()
+                                    .unwrap();
+                                lit_int
+                            }),
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                }
+            });
+        dbg!(encoding_value);
         Self {
             always_matches,
+            encoding_value,
         }
     }
 }
