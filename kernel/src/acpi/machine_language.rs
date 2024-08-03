@@ -60,6 +60,7 @@ pub mod field_element;
 pub mod field_flags;
 pub mod field_list;
 pub mod field_op;
+pub mod field_op_suffix;
 pub mod if_op;
 pub mod increment_op;
 pub mod index_op;
@@ -184,6 +185,7 @@ pub use {
     field_flags::FieldFlags,
     field_list::FieldList,
     field_op::FieldOp,
+    field_op_suffix::FieldOpSuffix,
     if_op::IfOp,
     increment_op::IncrementOp,
     index_op::IndexOp,
