@@ -260,7 +260,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 quote! {
                                                     let mut aml: &[u8] = aml;
                                                     let mut #field_name: Vec<#element_type> = Vec::new();
-                                                    while !aml.is_empty() {
+                                                    while #continuation_condition {
                                                         let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
                                                         #debug
                                                         aml = remaining_aml;
