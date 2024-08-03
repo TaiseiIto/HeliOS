@@ -13,11 +13,15 @@ use {
         Data,
         DataStruct,
         DeriveInput,
+        Expr,
+        ExprLit,
         Field,
         Fields,
         FieldsUnnamed,
         GenericArgument,
         Ident,
+        Lit,
+        LitStr,
         Meta,
         MetaNameValue,
         Path,
@@ -386,10 +390,16 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 _ => None,
             }
         })
-        .map_or(false, |value| matches!(value
-            .to_token_stream()
-            .to_string()
-            .as_str(), "always_true"));
+        .map_or(false, |value| match value {
+            Expr::Lit(ExprLit {
+                attrs,
+                lit,
+            }) => match lit {
+                Lit::Str(lit_str) => matches!(lit_str.value().as_str(), "always_true"),
+                _ => false,
+            },
+            _ => false,
+        });
     let matches: proc_macro2::TokenStream = if always_true {
         quote! {
             true
