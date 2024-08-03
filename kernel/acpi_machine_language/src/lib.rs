@@ -32,7 +32,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, matches))]
+#[proc_macro_derive(Reader, attributes(always_matches, debug))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -62,7 +62,7 @@ impl From<&DeriveInput> for TypeAttribute {
         } = derive_input;
         let always_matches: bool = attrs
             .iter()
-            .find_map(|attribute| {
+            .find(|attribute| {
                 let Attribute {
                     pound_token,
                     style,
@@ -77,21 +77,13 @@ impl From<&DeriveInput> for TypeAttribute {
                     }) => matches!(path
                             .to_token_stream()
                             .to_string()
-                            .as_str(), "matches")
-                        .then_some(value),
-                    _ => None,
+                            .as_str(), "always_matches"),
+                    _ => false,
                 }
             })
-            .map_or(false, |value| match value {
-                Expr::Lit(ExprLit {
-                    attrs,
-                    lit,
-                }) => match lit {
-                    Lit::Str(lit_str) => matches!(lit_str.value().as_str(), "always_true"),
-                    _ => false,
-                },
-                _ => false,
-            });
+            .is_some();
+        dbg!(always_matches);
+        unimplemented!();
         Self {
             always_matches,
         }
