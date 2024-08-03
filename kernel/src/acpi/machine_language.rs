@@ -49,6 +49,7 @@ pub mod def_to_hex_string;
 pub mod def_while;
 pub mod deref_of_op;
 pub mod device_op;
+pub mod device_op_suffix;
 pub mod digit_char;
 pub mod dual_name_path;
 pub mod dual_name_prefix;
@@ -172,6 +173,7 @@ pub use {
     def_while::DefWhile,
     deref_of_op::DerefOfOp,
     device_op::DeviceOp,
+    device_op_suffix::DeviceOpSuffix,
     digit_char::DigitChar,
     dual_name_path::DualNamePath,
     dual_name_prefix::DualNamePrefix,
