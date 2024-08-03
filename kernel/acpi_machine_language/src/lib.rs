@@ -21,7 +21,6 @@ use {
         GenericArgument,
         Ident,
         Lit,
-        LitStr,
         Meta,
         MetaNameValue,
         Path,
@@ -46,6 +45,57 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #reader
     }   .try_into()
         .unwrap()
+}
+
+struct Attributes {
+    always_matches: bool,
+}
+
+impl From<&DeriveInput> for Attributes {
+    fn from(derive_input: &DeriveInput) -> Self {
+        let DeriveInput {
+            attrs,
+            vis,
+            ident,
+            generics,
+            data,
+        } = derive_input;
+        let always_matches: bool = attrs
+            .iter()
+            .find_map(|attribute| {
+                let Attribute {
+                    pound_token,
+                    style,
+                    bracket_token,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::NameValue(MetaNameValue {
+                        path,
+                        eq_token,
+                        value,
+                    }) => matches!(path
+                            .to_token_stream()
+                            .to_string()
+                            .as_str(), "matches")
+                        .then_some(value),
+                    _ => None,
+                }
+            })
+            .map_or(false, |value| match value {
+                Expr::Lit(ExprLit {
+                    attrs,
+                    lit,
+                }) => match lit {
+                    Lit::Str(lit_str) => matches!(lit_str.value().as_str(), "always_true"),
+                    _ => false,
+                },
+                _ => false,
+            });
+        Self {
+            always_matches,
+        }
+    }
 }
 
 fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
@@ -122,6 +172,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics,
         data,
     } = derive_input;
+    let attributes: Attributes = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
         Data::Struct(DataStruct {
             struct_token,
@@ -189,6 +240,15 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             gt_token,
                                         }) => match args.first().unwrap() {
                                             GenericArgument::Type(element_type) => {
+                                                let continuation_condition: proc_macro2::TokenStream = if attributes.always_matches {
+                                                    quote! {
+                                                        #element_type.matches(aml)
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                        !aml.is_empty()
+                                                    }
+                                                };
                                                 let debug: proc_macro2::TokenStream = if debug {
                                                     quote! {
                                                         crate::com2_println!("element = {:#x?}", element);
@@ -368,39 +428,8 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics,
         data,
     } = derive_input;
-    let always_true: bool = attrs
-        .iter()
-        .find_map(|attribute| {
-            let Attribute {
-                pound_token,
-                style,
-                bracket_token,
-                meta,
-            } = attribute;
-            match meta {
-                Meta::NameValue(MetaNameValue {
-                    path,
-                    eq_token,
-                    value,
-                }) => matches!(path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str(), "matches")
-                    .then_some(value),
-                _ => None,
-            }
-        })
-        .map_or(false, |value| match value {
-            Expr::Lit(ExprLit {
-                attrs,
-                lit,
-            }) => match lit {
-                Lit::Str(lit_str) => matches!(lit_str.value().as_str(), "always_true"),
-                _ => false,
-            },
-            _ => false,
-        });
-    let matches: proc_macro2::TokenStream = if always_true {
+    let attributes: Attributes = derive_input.into();
+    let matches: proc_macro2::TokenStream = if attributes.always_matches {
         quote! {
             true
         }
