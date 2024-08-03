@@ -98,6 +98,43 @@ impl From<&DeriveInput> for TypeAttribute {
     }
 }
 
+struct FieldAttribute {
+    debug: bool,
+}
+
+impl From<&Field> for FieldAttribute {
+    fn from(field: &Field) -> Self {
+        let Field {
+            attrs,
+            vis,
+            ident,
+            colon_token,
+            ty,
+            mutability,
+        } = field;
+        let debug: bool = attrs
+            .iter()
+            .any(|attribute| {
+                let Attribute {
+                    pound_token,
+                    style,
+                    bracket_token,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::Path(path) => matches!(path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str(), "debug"),
+                    _ => false,
+                }
+            });
+        Self {
+            debug,
+        }
+    }
+}
+
 fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs,
@@ -196,23 +233,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             ty,
                             mutability,
                         } = field;
-                        let debug: bool = attrs
-                            .iter()
-                            .any(|attribute| {
-                                let Attribute {
-                                    pound_token,
-                                    style,
-                                    bracket_token,
-                                    meta,
-                                } = attribute;
-                                match meta {
-                                    Meta::Path(path) => matches!(path
-                                        .to_token_stream()
-                                        .to_string()
-                                        .as_str(), "debug"),
-                                    _ => false,
-                                }
-                            });
+                        let field_attribute: FieldAttribute = field.into();
                         let convert: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
                                 qself,
@@ -249,7 +270,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                         !aml.is_empty()
                                                     }
                                                 };
-                                                let debug: proc_macro2::TokenStream = if debug {
+                                                let debug: proc_macro2::TokenStream = if field_attribute.debug {
                                                     quote! {
                                                         crate::com2_println!("element = {:#x?}", element);
                                                     }
