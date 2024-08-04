@@ -446,7 +446,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                         },
                                         _ => unimplemented!(),
                                     },
-                                    _ => unimplemented!(),
+                                    _ => {
+                                        quote! {
+                                            let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                        }
+                                    },
                                 }
                             },
                             _ => unimplemented!(),
@@ -567,7 +571,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 paren_token,
                 unnamed,
             }) => {
-                let (unpack, accumulate): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
                     .iter()
                     .enumerate()
                     .map(|(index, field)| {
@@ -583,7 +587,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         let unpack: proc_macro2::TokenStream = quote! {
                             #field_name
                         };
-                        let accumulate: proc_macro2::TokenStream = match ty {
+                        let field_length: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
                                 qself,
                                 path,
@@ -608,21 +612,23 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                             .map(|element| element.length())
                                             .sum::<usize>()
                                     },
-                                    _ => unimplemented!(),
+                                    _ => quote! {
+                                        #field_name.length()
+                                    },
                                 }
                             },
                             _ => unimplemented!(),
                         };
-                        (unpack, accumulate)
+                        (unpack, field_length)
                     })
-                    .fold((Vec::new(), Vec::new()), |(mut unpack, mut accumulate), (new_unpack, new_accumulate)| {
-                        unpack.push(new_unpack);
-                        accumulate.push(new_accumulate);
-                        (unpack, accumulate)
+                    .fold((Vec::new(), Vec::new()), |(mut unpacks, mut field_lengths), (unpack, field_length)| {
+                        unpacks.push(unpack);
+                        field_lengths.push(field_length);
+                        (unpacks, field_lengths)
                     });
                 quote! {
-                    let Self (#(#unpack),*) = self;
-                    #(#accumulate)+*
+                    let Self (#(#unpacks),*) = self;
+                    #(#field_lengths)+*
                 }
             },
             _ => unimplemented!(),
@@ -759,7 +765,9 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     },
                                     _ => unimplemented!(),
                                 },
-                                _ => unimplemented!(),
+                                _ => quote! {
+                                    #ty::matches(aml)
+                                },
                             }
                         },
                         _ => unimplemented!(),
