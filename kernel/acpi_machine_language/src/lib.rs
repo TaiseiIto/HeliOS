@@ -11,6 +11,7 @@ use {
         AngleBracketedGenericArguments,
         Attribute,
         Data,
+        DataEnum,
         DataStruct,
         DeriveInput,
         Expr,
@@ -28,6 +29,7 @@ use {
         PathSegment,
         Type,
         TypePath,
+        Variant,
         parse,
     },
 };
@@ -169,6 +171,52 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let format: proc_macro2::TokenStream = match data {
+        Data::Enum(DataEnum {
+            enum_token,
+            brace_token,
+            variants,
+        }) => {
+            let format_patterns: Vec<proc_macro2::TokenStream> = variants
+                .iter()
+                .map(|variant| {
+                    let Variant {
+                        attrs,
+                        ident,
+                        fields,
+                        discriminant,
+                    } = variant;
+                    match fields {
+                        Fields::Unnamed(FieldsUnnamed {
+                            paren_token,
+                            unnamed,
+                        }) => {
+                            let field_names: Vec<Ident> = unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(index, field)| format_ident!("field{}", index))
+                                .collect();
+                            let format_fields: Vec<proc_macro2::TokenStream> = field_names
+                                .iter()
+                                .map(|field_name| quote! {
+                                    field(#field_name)
+                                })
+                                .collect();
+                            quote! {
+                                Self::#ident(#(#field_names),*) => formatter.#(#format_fields).*
+                            }
+                        },
+                        _ => unimplemented!(),
+                    }
+                })
+                .collect();
+            quote! {
+                let mut debug_tuple: core::fmt::DebugTuple = formater.debug_tuple(stringify!(#ident));
+                match self {
+                    #(#format_patterns),*
+                }
+                debug_tuple.finish()
+            }
+        },
         Data::Struct(DataStruct {
             struct_token,
             fields,
