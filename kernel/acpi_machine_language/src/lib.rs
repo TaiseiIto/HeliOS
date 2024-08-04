@@ -507,6 +507,54 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let length: proc_macro2::TokenStream = match data {
+        Data::Enum(DataEnum {
+            enum_token,
+            brace_token,
+            variants,
+        }) => {
+            let accumulate: Vec<proc_macro2::TokenStream> = variants
+                .iter()
+                .map(|variant| {
+                    let Variant {
+                        attrs,
+                        ident,
+                        fields,
+                        discriminant,
+                    } = variant;
+                    match fields {
+                        Fields::Unnamed(FieldsUnnamed {
+                            paren_token,
+                            unnamed,
+                        }) => {
+                            let (field_names, field_lengths): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(index, field)| {
+                                    let field_name: Ident = format_ident!("field{}", index);
+                                    let field_length: proc_macro2::TokenStream = quote! {
+                                        #field_name.length()
+                                    };
+                                    (field_name, field_length)
+                                })
+                                .fold((Vec::new(), Vec::new()), |(mut field_names, mut field_lengths), (field_name, field_length)| {
+                                    field_names.push(field_name);
+                                    field_lengths.push(field_length);
+                                    (field_names, field_lengths)
+                                });
+                            quote! {
+                                Self::#ident(#(#field_names),*) => #(#field_lengths)+*
+                            }
+                        },
+                        _ => unimplemented!(),
+                    }
+                })
+                .collect();
+            quote! {
+                match self {
+                    #(#accumulate),*
+                }
+            }
+        },
         Data::Struct(DataStruct {
             struct_token,
             fields,
@@ -572,15 +620,9 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         accumulate.push(new_accumulate);
                         (unpack, accumulate)
                     });
-                let unpack: proc_macro2::TokenStream = quote! {
-                    let Self (#(#unpack),*) = self;
-                };
-                let accumulate: proc_macro2::TokenStream = quote! {
-                    #(#accumulate)+*
-                };
                 quote! {
-                    #unpack
-                    #accumulate
+                    let Self (#(#unpack),*) = self;
+                    #(#accumulate)+*
                 }
             },
             _ => unimplemented!(),
