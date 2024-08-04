@@ -134,10 +134,10 @@ impl From<&Field> for FieldAttribute {
         let Field {
             attrs,
             vis,
+            mutability,
             ident,
             colon_token,
             ty,
-            mutability,
         } = field;
         let debug: bool = attrs
             .iter()
@@ -198,11 +198,11 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             let format_fields: Vec<proc_macro2::TokenStream> = field_names
                                 .iter()
                                 .map(|field_name| quote! {
-                                    field(#field_name)
+                                    .field(#field_name)
                                 })
                                 .collect();
                             quote! {
-                                Self::#ident(#(#field_names),*) => formatter.#(#format_fields).*
+                                Self::#ident(#(#field_names),*) => formatter #(#format_fields)*
                             }
                         },
                         _ => unimplemented!(),
@@ -291,6 +291,80 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         data,
     } = derive_input;
     let convert: proc_macro2::TokenStream = match data {
+        Data::Enum(DataEnum {
+            enum_token,
+            brace_token,
+            variants,
+        }) => {
+            let convert_patterns: Vec<proc_macro2::TokenStream> = variants
+                .iter()
+                .map(|variant| {
+                    let Variant {
+                        attrs,
+                        ident,
+                        fields,
+                        discriminant,
+                    } = variant;
+                    match fields {
+                        Fields::Unnamed(FieldsUnnamed {
+                            paren_token,
+                            unnamed,
+                        }) => {
+                            let matches: proc_macro2::TokenStream = {
+                                let Field {
+                                    attrs,
+                                    vis,
+                                    mutability,
+                                    ident,
+                                    colon_token,
+                                    ty,
+                                } = unnamed
+                                    .first()
+                                    .unwrap();
+                                quote! {
+                                    #ty::matches(aml)
+                                }
+                            };
+                            let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(index, field)| {
+                                    let field_name: Ident = format_ident!("field{}", index);
+                                    let Field {
+                                        attrs,
+                                        vis,
+                                        mutability,
+                                        ident,
+                                        colon_token,
+                                        ty,
+                                    } = field;
+                                    let read: proc_macro2::TokenStream = quote! {
+                                        let (#field_name, aml): (#ty, $[u8]) = #ty::read(aml);
+                                    };
+                                    (field_name, read)
+                                })
+                                .fold((Vec::new(), Vec::new()), |(mut field_names, mut reads), (field_name, read)| {
+                                    field_names.push(field_name);
+                                    reads.push(read);
+                                    (field_names, reads)
+                                });
+                            quote! {
+                                if #matches {
+                                    #(#reads)*
+                                    Self::#ident(#(#field_names),*)
+                                }
+                            }
+                        },
+                        _ => unimplemented!(),
+                    }
+                })
+                .collect();
+            quote! {
+                #(#convert_patterns) else * else {
+                    panic!("aml = {:#x?}", aml)
+                }
+            }
+        },
         Data::Struct(DataStruct {
             struct_token,
             fields,
@@ -311,10 +385,10 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                         let Field {
                             attrs,
                             vis,
+                            mutability,
                             ident,
                             colon_token,
                             ty,
-                            mutability,
                         } = field;
                         let FieldAttribute {
                             debug,
@@ -388,6 +462,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                         (convert, pack)
                     });
                 quote! {
+                    assert!(Self::matches(aml), "aml = {:#x?}", aml);
                     #(#convert)*
                     Self(#(#pack),*)
                 }
@@ -399,7 +474,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
     quote! {
         impl From<&[u8]> for #ident {
             fn from(aml: &[u8]) -> Self {
-                assert!(Self::matches(aml), "aml = {:#x?}", aml);
                 #convert
             }
         }
@@ -453,10 +527,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         let Field {
                             attrs,
                             vis,
+                            mutability,
                             ident,
                             colon_token,
                             ty,
-                            mutability,
                         } = field;
                         let unpack: proc_macro2::TokenStream = quote! {
                             #field_name
@@ -558,13 +632,12 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     let Field {
                         attrs,
                         vis,
+                        mutability,
                         ident,
                         colon_token,
                         ty,
-                        mutability,
                     } = unnamed
-                        .iter()
-                        .next()
+                        .first()
                         .unwrap();
                     match ty {
                         Type::Path(TypePath {

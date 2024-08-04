@@ -35,7 +35,8 @@ impl fmt::Debug for TermObj {
 impl From<&[u8]> for TermObj {
     fn from(aml: &[u8]) -> Self {
         if ExpressionOpcode::matches(aml) {
-            Self::ExpressionOpcode(aml.into())
+            let (field0, aml): (ExpressionOpcode, &[u8]) = ExpressionOpcode::read(aml);
+            Self::ExpressionOpcode(field0)
         } else if Object::matches(aml) { 
             Self::Object(aml.into())
         } else if StatementOpcode::matches(aml) { 
