@@ -34,7 +34,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(always_matches, encoding_value, debug))]
+#[proc_macro_derive(Reader, attributes(debug, encoding_value, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     dbg!(&input);
     let derive_input: DeriveInput = parse(input).unwrap();
@@ -51,8 +51,8 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 struct TypeAttribute {
-    always_matches: bool,
     encoding_value: Option<u8>,
+    matching_elements: usize,
 }
 
 impl From<&DeriveInput> for TypeAttribute {
@@ -64,29 +64,9 @@ impl From<&DeriveInput> for TypeAttribute {
             generics,
             data,
         } = derive_input;
-        let always_matches: bool = attrs
+        let (encoding_value, matching_elements): (Option<u8>, Option<usize>) = attrs
             .iter()
-            .find(|attribute| {
-                let Attribute {
-                    pound_token,
-                    style,
-                    bracket_token,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::Path(path) => {
-                        matches!(path
-                            .to_token_stream()
-                            .to_string()
-                            .as_str(), "always_matches")
-                    },
-                    _ => false,
-                }
-            })
-            .is_some();
-        let encoding_value: Option<u8> = attrs
-            .iter()
-            .find_map(|attribute| {
+            .map(|attribute| {
                 let Attribute {
                     pound_token,
                     style,
@@ -98,29 +78,52 @@ impl From<&DeriveInput> for TypeAttribute {
                         path,
                         eq_token,
                         value,
-                    }) => match value {
-                        Expr::Lit(ExprLit {
-                            attrs,
-                            lit,
-                        }) => match lit {
-                            Lit::Int(lit_int) => Some({
-                                let lit_int: u8 = lit_int
-                                    .base10_digits()
-                                    .parse()
-                                    .unwrap();
-                                lit_int
-                            }),
-                            _ => None,
+                    }) => match path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                        "encoding_value" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs,
+                                lit,
+                            }) => match lit {
+                                Lit::Int(lit_int) => {
+                                    let encoding_value: u8 = lit_int
+                                        .base10_digits()
+                                        .parse()
+                                        .unwrap();
+                                    (Some(encoding_value), None)
+                                },
+                                _ => (None, None),
+                            },
+                            _ => (None, None),
                         },
-                        _ => None,
+                        "matching_elements" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs,
+                                lit,
+                            }) => match lit {
+                                Lit::Int(lit_int) => {
+                                    let matching_elements: usize = lit_int
+                                        .base10_digits()
+                                        .parse()
+                                        .unwrap();
+                                    (None, Some(matching_elements))
+                                },
+                                _ => (None, None),
+                            },
+                            _ => (None, None),
+                        },
+                        _ => (None, None),
                     },
-                    _ => None,
+                    _ => (None, None),
                 }
-            });
-        dbg!(encoding_value);
+            })
+            .fold((None, None), |(encoding_value, matching_elements), (new_encoding_value, new_matching_elements)| (encoding_value.or(new_encoding_value), matching_elements.or(new_matching_elements)));
+        let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
-            always_matches,
             encoding_value,
+            matching_elements,
         }
     }
 }
@@ -651,15 +654,14 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        always_matches,
         encoding_value,
+        matching_elements,
     } = derive_input.into();
-    let matches: proc_macro2::TokenStream = if always_matches {
-        quote! {
+    let matches: proc_macro2::TokenStream = match matching_elements {
+        0 => quote! {
             true
-        }
-    } else {
-        match data {
+        },
+        1 => match data {
             Data::Enum(DataEnum {
                 enum_token,
                 brace_token,
@@ -772,7 +774,8 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 _ => unimplemented!(),
             },
             _ => unimplemented!(),
-        }
+        },
+        _ => unimplemented!(),
     };
     quote! {
         fn matches(aml: &[u8]) -> bool {
