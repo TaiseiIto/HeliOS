@@ -27,7 +27,7 @@ impl Reader<'_> for MethodFlags {
         1
     }
 
-    fn matches(aml: &[u8]) -> bool {
+    fn matches(_aml: &[u8]) -> bool {
         true
     }
 }

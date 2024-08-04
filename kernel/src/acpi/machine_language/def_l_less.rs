@@ -38,7 +38,7 @@ impl From<&[u8]> for DefLLess {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (l_less_op, aml): (LLessOp, &[u8]) = LLessOp::read(aml);
-        let (operands, aml): (Vec<Operand>, &[u8]) = (0..2)
+        let (operands, _aml): (Vec<Operand>, &[u8]) = (0..2)
             .fold((Vec::<Operand>::new(), aml), |(mut operands, aml), _| {
                 let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
                 operands.push(operand);

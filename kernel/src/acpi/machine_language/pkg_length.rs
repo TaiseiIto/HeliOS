@@ -62,7 +62,7 @@ impl From<&[u8]> for PkgLength {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let pkg_lead_byte: PkgLeadByte = aml.into();
         let aml: &[u8] = &aml[pkg_lead_byte.length()..];
-        let (aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
+        let (_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
             .fold((aml, Vec::new()), |(aml, mut byte_data), _| {
                 let (new_byte_data, aml): (ByteData, &[u8]) = ByteData::read(aml);
                 byte_data.push(new_byte_data);

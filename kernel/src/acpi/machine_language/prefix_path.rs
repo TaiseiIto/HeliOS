@@ -9,7 +9,7 @@ const PREFIX_PATH: u8 = '^' as u8;
 pub struct PrefixPath;
 
 impl From<&PrefixPath> for char {
-    fn from(prefix_path: &PrefixPath) -> Self {
+    fn from(_prefix_path: &PrefixPath) -> Self {
         PREFIX_PATH as Self
     }
 }

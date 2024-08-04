@@ -1,7 +1,4 @@
-use {
-    core::ops::RangeInclusive,
-    super::Reader,
-};
+use super::Reader;
 
 const ARG_OBJ_MIN: u8 = 0x68;
 const ARG_OBJ_MAX: u8 = 0x6e;

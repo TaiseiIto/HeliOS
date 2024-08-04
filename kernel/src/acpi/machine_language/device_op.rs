@@ -33,7 +33,7 @@ impl From<&[u8]> for DeviceOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        let (device_op_suffix, aml): (DeviceOpSuffix, &[u8]) = DeviceOpSuffix::read(aml);
+        let (device_op_suffix, _aml): (DeviceOpSuffix, &[u8]) = DeviceOpSuffix::read(aml);
         Self {
             ext_op_prefix,
             device_op_suffix,
@@ -52,7 +52,7 @@ impl Reader<'_> for DeviceOp {
 
     fn matches(aml: &[u8]) -> bool {
         ExtOpPrefix::matches(aml) && {
-            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
             DeviceOpSuffix::matches(aml)
         }
     }

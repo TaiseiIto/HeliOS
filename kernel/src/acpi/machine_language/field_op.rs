@@ -33,7 +33,7 @@ impl From<&[u8]> for FieldOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        let (field_op_suffix, aml): (FieldOpSuffix, &[u8]) = FieldOpSuffix::read(aml);
+        let (field_op_suffix, _aml): (FieldOpSuffix, &[u8]) = FieldOpSuffix::read(aml);
         Self {
             ext_op_prefix,
             field_op_suffix,
@@ -52,7 +52,7 @@ impl Reader<'_> for FieldOp {
 
     fn matches(aml: &[u8]) -> bool {
         ExtOpPrefix::matches(aml) && {
-            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
             FieldOpSuffix::matches(aml)
         }
     }

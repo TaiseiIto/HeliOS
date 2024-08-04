@@ -33,7 +33,7 @@ impl From<&[u8]> for AcquireOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        let (acquire_op_suffix, aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
+        let (acquire_op_suffix, _aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
         Self {
             ext_op_prefix,
             acquire_op_suffix,
@@ -54,11 +54,11 @@ impl Reader<'_> for AcquireOp {
         if !ExtOpPrefix::matches(aml) {
             return false;
         }
-        let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+        let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
         if !AcquireOpSuffix::matches(aml) {
             return false;
         }
-        let (acquire_op_suffix, aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
+        let (_acquire_op_suffix, _aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
         true
     }
 }

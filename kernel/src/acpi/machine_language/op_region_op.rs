@@ -33,7 +33,7 @@ impl From<&[u8]> for OpRegionOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        let (op_region_op_suffix, aml): (OpRegionOpSuffix, &[u8]) = OpRegionOpSuffix::read(aml);
+        let (op_region_op_suffix, _aml): (OpRegionOpSuffix, &[u8]) = OpRegionOpSuffix::read(aml);
         Self {
             ext_op_prefix,
             op_region_op_suffix,
@@ -52,7 +52,7 @@ impl Reader<'_> for OpRegionOp {
 
     fn matches(aml: &[u8]) -> bool {
         ExtOpPrefix::matches(aml) && {
-            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
             OpRegionOpSuffix::matches(aml)
         }
     }

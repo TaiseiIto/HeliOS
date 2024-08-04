@@ -58,7 +58,7 @@ impl From<&[u8]> for NameSeg {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (lead_name_char, aml): (LeadNameChar, &[u8]) = LeadNameChar::read(aml);
-        let (aml, name_char): (&[u8], Vec<NameChar>) = (0..3)
+        let (_aml, name_char): (&[u8], Vec<NameChar>) = (0..3)
             .fold((aml, Vec::new()), |(aml, mut name_char), _| {
                 let (new_name_char, aml): (NameChar, &[u8]) = NameChar::read(aml);
                 name_char.push(new_name_char);

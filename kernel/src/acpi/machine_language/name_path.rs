@@ -22,7 +22,7 @@ impl From<&NamePath> for String {
         match name_path {
             NamePath::DualNamePath(dual_name_path) => dual_name_path.into(),
             NamePath::NameSeg(name_seg) => name_seg.into(),
-            NamePath::NullName(null_name) => Self::new(),
+            NamePath::NullName(_null_name) => Self::new(),
         }
     }
 }

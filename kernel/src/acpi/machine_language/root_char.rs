@@ -9,7 +9,7 @@ const ROOT_CHAR: u8 = '\\' as u8;
 pub struct RootChar;
 
 impl From<&RootChar> for char {
-    fn from(root_char: &RootChar) -> Self {
+    fn from(_root_char: &RootChar) -> Self {
         ROOT_CHAR as Self
     }
 }

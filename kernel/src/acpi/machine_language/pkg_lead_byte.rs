@@ -36,7 +36,7 @@ impl Reader<'_> for PkgLeadByte {
         1
     }
 
-    fn matches(aml: &[u8]) -> bool {
+    fn matches(_aml: &[u8]) -> bool {
         true
     }
 }

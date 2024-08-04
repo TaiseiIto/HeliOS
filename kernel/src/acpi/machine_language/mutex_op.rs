@@ -33,7 +33,7 @@ impl From<&[u8]> for MutexOp {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        let (mutex_op_suffix, aml): (MutexOpSuffix, &[u8]) = MutexOpSuffix::read(aml);
+        let (mutex_op_suffix, _aml): (MutexOpSuffix, &[u8]) = MutexOpSuffix::read(aml);
         Self {
             ext_op_prefix,
             mutex_op_suffix,
@@ -52,7 +52,7 @@ impl Reader<'_> for MutexOp {
 
     fn matches(aml: &[u8]) -> bool {
         ExtOpPrefix::matches(aml) && {
-            let (ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
             MutexOpSuffix::matches(aml)
         }
     }

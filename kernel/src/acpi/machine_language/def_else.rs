@@ -44,7 +44,7 @@ impl From<&[u8]> for DefElse {
         if ElseOp::matches(aml) {
             let (else_op, aml): (ElseOp, &[u8]) = ElseOp::read(aml);
             let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::read(aml);
-            let (term_list, aml): (TermList, &[u8]) = TermList::read(aml);
+            let (term_list, _aml): (TermList, &[u8]) = TermList::read(aml);
             Self::ElseOpPkgLengthTermList {
                 else_op,
                 pkg_length,
@@ -70,7 +70,7 @@ impl Reader<'_> for DefElse {
         }
     }
 
-    fn matches(aml: &[u8]) -> bool {
+    fn matches(_aml: &[u8]) -> bool {
         true
     }
 }
