@@ -198,11 +198,11 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             let format_fields: Vec<proc_macro2::TokenStream> = field_names
                                 .iter()
                                 .map(|field_name| quote! {
-                                    .field(#field_name)
+                                    field(#field_name)
                                 })
                                 .collect();
                             quote! {
-                                Self::#ident(#(#field_names),*) => formatter #(#format_fields)*
+                                Self::#ident(#(#field_names),*) => debug_tuple.#(#format_fields).*
                             }
                         },
                         _ => unimplemented!(),
@@ -210,10 +210,10 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 })
                 .collect();
             quote! {
-                let mut debug_tuple: core::fmt::DebugTuple = formater.debug_tuple(stringify!(#ident));
+                let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
                 match self {
                     #(#format_patterns),*
-                }
+                };
                 debug_tuple.finish()
             }
         },
@@ -339,7 +339,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                         ty,
                                     } = field;
                                     let read: proc_macro2::TokenStream = quote! {
-                                        let (#field_name, aml): (#ty, $[u8]) = #ty::read(aml);
+                                        let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
                                     };
                                     (field_name, read)
                                 })
