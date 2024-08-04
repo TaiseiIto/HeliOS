@@ -36,7 +36,6 @@ use {
 
 #[proc_macro_derive(Reader, attributes(debug, encoding_value, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    dbg!(&input);
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
@@ -59,24 +58,24 @@ impl From<&DeriveInput> for TypeAttribute {
     fn from(derive_input: &DeriveInput) -> Self {
         let DeriveInput {
             attrs,
-            vis,
-            ident,
-            generics,
-            data,
+            vis: _,
+            ident: _,
+            generics: _,
+            data: _,
         } = derive_input;
         let (encoding_value, matching_elements): (Option<u8>, Option<usize>) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
-                    pound_token,
-                    style,
-                    bracket_token,
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
                     meta,
                 } = attribute;
                 match meta {
                     Meta::NameValue(MetaNameValue {
                         path,
-                        eq_token,
+                        eq_token: _,
                         value,
                     }) => match path
                         .to_token_stream()
@@ -84,7 +83,7 @@ impl From<&DeriveInput> for TypeAttribute {
                         .as_str() {
                         "encoding_value" => match value {
                             Expr::Lit(ExprLit {
-                                attrs,
+                                attrs: _,
                                 lit,
                             }) => match lit {
                                 Lit::Int(lit_int) => {
@@ -100,7 +99,7 @@ impl From<&DeriveInput> for TypeAttribute {
                         },
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
-                                attrs,
+                                attrs: _,
                                 lit,
                             }) => match lit {
                                 Lit::Int(lit_int) => {
@@ -136,19 +135,19 @@ impl From<&Field> for FieldAttribute {
     fn from(field: &Field) -> Self {
         let Field {
             attrs,
-            vis,
-            mutability,
-            ident,
-            colon_token,
-            ty,
+            vis: _,
+            mutability: _,
+            ident: _,
+            colon_token: _,
+            ty: _,
         } = field;
         let debug: bool = attrs
             .iter()
             .any(|attribute| {
                 let Attribute {
-                    pound_token,
-                    style,
-                    bracket_token,
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
                     meta,
                 } = attribute;
                 match meta {
@@ -167,36 +166,36 @@ impl From<&Field> for FieldAttribute {
 
 fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
-        attrs,
-        vis,
+        attrs: _,
+        vis: _,
         ident,
-        generics,
+        generics: _,
         data,
     } = derive_input;
     let format: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
-            enum_token,
-            brace_token,
+            enum_token: _,
+            brace_token: _,
             variants,
         }) => {
             let format_patterns: Vec<proc_macro2::TokenStream> = variants
                 .iter()
                 .map(|variant| {
                     let Variant {
-                        attrs,
+                        attrs: _,
                         ident,
                         fields,
-                        discriminant,
+                        discriminant: _,
                     } = variant;
                     match fields {
                         Fields::Unnamed(FieldsUnnamed {
-                            paren_token,
+                            paren_token: _,
                             unnamed,
                         }) => {
                             let field_names: Vec<Ident> = unnamed
                                 .iter()
                                 .enumerate()
-                                .map(|(index, field)| format_ident!("field{}", index))
+                                .map(|(index, _field)| format_ident!("field{}", index))
                                 .collect();
                             let format_fields: Vec<proc_macro2::TokenStream> = field_names
                                 .iter()
@@ -221,9 +220,9 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         },
         Data::Struct(DataStruct {
-            struct_token,
+            struct_token: _,
             fields,
-            semi_token,
+            semi_token: _,
         }) => {
             let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
                 Fields::Unit => {
@@ -235,7 +234,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     (unpack, format)
                 },
                 Fields::Unnamed(FieldsUnnamed {
-                    paren_token,
+                    paren_token: _,
                     unnamed,
                 }) => {
                     let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -287,38 +286,38 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 
 fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
-        attrs,
-        vis,
+        attrs: _,
+        vis: _,
         ident,
-        generics,
+        generics: _,
         data,
     } = derive_input;
     let convert: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
-            enum_token,
-            brace_token,
+            enum_token: _,
+            brace_token: _,
             variants,
         }) => {
             let convert_patterns: Vec<proc_macro2::TokenStream> = variants
                 .iter()
                 .map(|variant| {
                     let Variant {
-                        attrs,
+                        attrs: _,
                         ident,
                         fields,
-                        discriminant,
+                        discriminant: _,
                     } = variant;
                     match fields {
                         Fields::Unnamed(FieldsUnnamed {
-                            paren_token,
+                            paren_token: _,
                             unnamed,
                         }) => {
                             let Field {
-                                attrs,
-                                vis,
-                                mutability,
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
                                 ident: _,
-                                colon_token,
+                                colon_token: _,
                                 ty,
                             } = unnamed
                                 .first()
@@ -332,11 +331,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 .map(|(index, field)| {
                                     let field_name: Ident = format_ident!("field{}", index);
                                     let Field {
-                                        attrs,
-                                        vis,
-                                        mutability,
-                                        ident,
-                                        colon_token,
+                                        attrs: _,
+                                        vis: _,
+                                        mutability: _,
+                                        ident: _,
+                                        colon_token: _,
                                         ty,
                                     } = field;
                                     let read: proc_macro2::TokenStream = quote! {
@@ -367,15 +366,15 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             }
         },
         Data::Struct(DataStruct {
-            struct_token,
+            struct_token: _,
             fields,
-            semi_token,
+            semi_token: _,
         }) => match fields {
             Fields::Unit => quote! {
                 Self
             },
             Fields::Unnamed(FieldsUnnamed {
-                paren_token,
+                paren_token: _,
                 unnamed,
             }) => {
                 let (convert, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -384,11 +383,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                     .map(|(index, field)| {
                         let field_name: Ident = format_ident!("field{}", index);
                         let Field {
-                            attrs,
-                            vis,
-                            mutability,
-                            ident,
-                            colon_token,
+                            attrs: _,
+                            vis: _,
+                            mutability: _,
+                            ident: _,
+                            colon_token: _,
                             ty,
                         } = field;
                         let FieldAttribute {
@@ -396,15 +395,15 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                         } = field.into();
                         let convert: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
-                                qself,
+                                qself: _,
                                 path,
                             }) => {
                                 let Path {
-                                    leading_colon,
+                                    leading_colon: _,
                                     segments,
                                 } = path;
                                 let PathSegment {
-                                    ident,
+                                    ident: _,
                                     arguments,
                                 } = segments
                                     .iter()
@@ -412,10 +411,10 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                     .unwrap();
                                 match arguments {
                                     PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token,
-                                        lt_token,
+                                        colon2_token: _,
+                                        lt_token: _,
                                         args,
-                                        gt_token,
+                                        gt_token: _,
                                     }) => match args.first().unwrap() {
                                         GenericArgument::Type(element_type) => {
                                             let continuation_condition: proc_macro2::TokenStream = quote! {
@@ -483,11 +482,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
 
 fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
-        attrs,
-        vis,
+        attrs: _,
+        vis: _,
         ident,
-        generics,
-        data,
+        generics: _,
+        data: _,
     } = derive_input;
     let length: proc_macro2::TokenStream = derive_length(derive_input);
     let matches: proc_macro2::TokenStream = derive_matches(derive_input);
@@ -501,36 +500,36 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 
 fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
-        attrs,
-        vis,
-        ident,
-        generics,
+        attrs: _,
+        vis: _,
+        ident: _,
+        generics: _,
         data,
     } = derive_input;
     let length: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
-            enum_token,
-            brace_token,
+            enum_token: _,
+            brace_token: _,
             variants,
         }) => {
             let accumulate: Vec<proc_macro2::TokenStream> = variants
                 .iter()
                 .map(|variant| {
                     let Variant {
-                        attrs,
+                        attrs: _,
                         ident,
                         fields,
-                        discriminant,
+                        discriminant: _,
                     } = variant;
                     match fields {
                         Fields::Unnamed(FieldsUnnamed {
-                            paren_token,
+                            paren_token: _,
                             unnamed,
                         }) => {
                             let (field_names, field_lengths): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                 .iter()
                                 .enumerate()
-                                .map(|(index, field)| {
+                                .map(|(index, _field)| {
                                     let field_name: Ident = format_ident!("field{}", index);
                                     let field_length: proc_macro2::TokenStream = quote! {
                                         #field_name.length()
@@ -557,15 +556,15 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         },
         Data::Struct(DataStruct {
-            struct_token,
+            struct_token: _,
             fields,
-            semi_token,
+            semi_token: _,
         }) => match fields {
             Fields::Unit => quote! {
                 1
             },
             Fields::Unnamed(FieldsUnnamed {
-                paren_token,
+                paren_token: _,
                 unnamed,
             }) => {
                 let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -574,11 +573,11 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     .map(|(index, field)| {
                         let field_name: Ident = format_ident!("field{}", index);
                         let Field {
-                            attrs,
-                            vis,
-                            mutability,
-                            ident,
-                            colon_token,
+                            attrs: _,
+                            vis: _,
+                            mutability: _,
+                            ident: _,
+                            colon_token: _,
                             ty,
                         } = field;
                         let unpack: proc_macro2::TokenStream = quote! {
@@ -586,15 +585,15 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         };
                         let field_length: proc_macro2::TokenStream = match ty {
                             Type::Path(TypePath {
-                                qself,
+                                qself: _,
                                 path,
                             }) => {
                                 let Path {
-                                    leading_colon,
+                                    leading_colon: _,
                                     segments,
                                 } = path;
                                 let PathSegment {
-                                    ident,
+                                    ident: _,
                                     arguments,
                                 } = segments
                                     .iter()
@@ -602,10 +601,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     .unwrap();
                                 match arguments {
                                     PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token,
-                                        lt_token,
-                                        args,
-                                        gt_token,
+                                        colon2_token: _,
+                                        lt_token: _,
+                                        args: _,
+                                        gt_token: _,
                                     }) => quote! {
                                         #field_name
                                             .iter()
@@ -645,10 +644,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
 
 fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
-        attrs,
-        vis,
-        ident,
-        generics,
+        attrs: _,
+        vis: _,
+        ident: _,
+        generics: _,
         data,
     } = derive_input;
     let TypeAttribute {
@@ -661,30 +660,30 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         },
         1 => match data {
             Data::Enum(DataEnum {
-                enum_token,
-                brace_token,
+                enum_token: _,
+                brace_token: _,
                 variants,
             }) => {
                 let matches: Vec<proc_macro2::TokenStream> = variants
                     .iter()
                     .map(|variant| {
                         let Variant {
-                            attrs,
-                            ident,
+                            attrs: _,
+                            ident: _,
                             fields,
-                            discriminant,
+                            discriminant: _,
                         } = variant;
                         match fields {
                             Fields::Unnamed(FieldsUnnamed {
-                                paren_token,
+                                paren_token: _,
                                 unnamed,
                             }) => {
                                 let Field {
-                                    attrs,
-                                    vis,
-                                    mutability,
-                                    ident,
-                                    colon_token,
+                                    attrs: _,
+                                    vis: _,
+                                    mutability: _,
+                                    ident: _,
+                                    colon_token: _,
                                     ty,
                                 } = unnamed
                                     .first()
@@ -702,9 +701,9 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 }
             },
             Data::Struct(DataStruct {
-                struct_token,
+                struct_token: _,
                 fields,
-                semi_token,
+                semi_token: _,
             }) => match fields {
                 Fields::Unit => {
                     let encoding_value: u8 = encoding_value.unwrap();
@@ -715,30 +714,30 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     }
                 },
                 Fields::Unnamed(FieldsUnnamed {
-                    paren_token,
+                    paren_token: _,
                     unnamed,
                 }) => {
                     let Field {
-                        attrs,
-                        vis,
-                        mutability,
-                        ident,
-                        colon_token,
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident: _,
+                        colon_token: _,
                         ty,
                     } = unnamed
                         .first()
                         .unwrap();
                     match ty {
                         Type::Path(TypePath {
-                            qself,
+                            qself: _,
                             path,
                         }) => {
                             let Path {
-                                leading_colon,
+                                leading_colon: _,
                                 segments,
                             } = path;
                             let PathSegment {
-                                ident,
+                                ident: _,
                                 arguments,
                             } = segments
                                 .iter()
@@ -746,10 +745,10 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 .unwrap();
                             match arguments {
                                 PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                    colon2_token,
-                                    lt_token,
+                                    colon2_token: _,
+                                    lt_token: _,
                                     args,
-                                    gt_token,
+                                    gt_token: _,
                                 }) => match args.first().unwrap() {
                                     GenericArgument::Type(element_type) => quote! {
                                         if aml.is_empty() {
