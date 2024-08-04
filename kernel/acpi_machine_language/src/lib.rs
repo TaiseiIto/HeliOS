@@ -313,20 +313,18 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             paren_token,
                             unnamed,
                         }) => {
-                            let matches: proc_macro2::TokenStream = {
-                                let Field {
-                                    attrs,
-                                    vis,
-                                    mutability,
-                                    ident,
-                                    colon_token,
-                                    ty,
-                                } = unnamed
-                                    .first()
-                                    .unwrap();
-                                quote! {
-                                    #ty::matches(aml)
-                                }
+                            let Field {
+                                attrs,
+                                vis,
+                                mutability,
+                                ident: _,
+                                colon_token,
+                                ty,
+                            } = unnamed
+                                .first()
+                                .unwrap();
+                            let matches: proc_macro2::TokenStream = quote! {
+                                #ty::matches(aml)
                             };
                             let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                 .iter()
