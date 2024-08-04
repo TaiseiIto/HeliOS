@@ -409,48 +409,44 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                     .iter()
                                     .last()
                                     .unwrap();
-                                match ident
-                                    .to_string()
-                                    .as_str() {
-                                    "Vec" => match arguments {
-                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                            colon2_token,
-                                            lt_token,
-                                            args,
-                                            gt_token,
-                                        }) => match args.first().unwrap() {
-                                            GenericArgument::Type(element_type) => {
-                                                let continuation_condition: proc_macro2::TokenStream = quote! {
-                                                    !aml.is_empty() && #element_type::matches(aml)
-                                                };
-                                                let debug: proc_macro2::TokenStream = if debug {
-                                                    quote! {
-                                                        crate::com2_println!("element = {:#x?}", element);
-                                                    }
-                                                } else {
-                                                    quote! {
-                                                    }
-                                                };
+                                match arguments {
+                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                        colon2_token,
+                                        lt_token,
+                                        args,
+                                        gt_token,
+                                    }) => match args.first().unwrap() {
+                                        GenericArgument::Type(element_type) => {
+                                            let continuation_condition: proc_macro2::TokenStream = quote! {
+                                                !aml.is_empty() && #element_type::matches(aml)
+                                            };
+                                            let debug: proc_macro2::TokenStream = if debug {
                                                 quote! {
-                                                    let mut aml: &[u8] = aml;
-                                                    let mut #field_name: Vec<#element_type> = Vec::new();
-                                                    while #continuation_condition {
-                                                        let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
-                                                        #debug
-                                                        aml = remaining_aml;
-                                                        #field_name.push(element);
-                                                    }
+                                                    crate::com2_println!("element = {:#x?}", element);
                                                 }
-                                            },
-                                            _ => unimplemented!(),
+                                            } else {
+                                                quote! {
+                                                }
+                                            };
+                                            quote! {
+                                                let mut aml: &[u8] = aml;
+                                                let mut #field_name: Vec<#element_type> = Vec::new();
+                                                while #continuation_condition {
+                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                    #debug
+                                                    aml = remaining_aml;
+                                                    #field_name.push(element);
+                                                }
+                                            }
                                         },
                                         _ => unimplemented!(),
                                     },
-                                    _ => {
+                                    PathArguments::None => {
                                         quote! {
                                             let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
                                         }
                                     },
+                                    _ => unimplemented!(),
                                 }
                             },
                             _ => unimplemented!(),
@@ -603,18 +599,22 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     .iter()
                                     .last()
                                     .unwrap();
-                                match ident
-                                    .to_string()
-                                    .as_str() {
-                                    "Vec" => quote! {
+                                match arguments {
+                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                        colon2_token,
+                                        lt_token,
+                                        args,
+                                        gt_token,
+                                    }) => quote! {
                                         #field_name
                                             .iter()
                                             .map(|element| element.length())
                                             .sum::<usize>()
                                     },
-                                    _ => quote! {
+                                    PathArguments::None => quote! {
                                         #field_name.length()
                                     },
+                                    _ => unimplemented!(),
                                 }
                             },
                             _ => unimplemented!(),
@@ -744,30 +744,26 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 .iter()
                                 .last()
                                 .unwrap();
-                            match ident
-                                .to_string()
-                                .as_str() {
-                                "Vec" => match arguments {
-                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token,
-                                        lt_token,
-                                        args,
-                                        gt_token,
-                                    }) => match args.first().unwrap() {
-                                        GenericArgument::Type(element_type) => quote! {
-                                            if aml.is_empty() {
-                                                true
-                                            } else {
-                                                #element_type::matches(aml)
-                                            }
-                                        },
-                                        _ => unimplemented!(),
+                            match arguments {
+                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                    colon2_token,
+                                    lt_token,
+                                    args,
+                                    gt_token,
+                                }) => match args.first().unwrap() {
+                                    GenericArgument::Type(element_type) => quote! {
+                                        if aml.is_empty() {
+                                            true
+                                        } else {
+                                            #element_type::matches(aml)
+                                        }
                                     },
                                     _ => unimplemented!(),
                                 },
-                                _ => quote! {
+                                PathArguments::None => quote! {
                                     #ty::matches(aml)
                                 },
+                                _ => unimplemented!(),
                             }
                         },
                         _ => unimplemented!(),
