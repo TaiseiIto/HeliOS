@@ -654,6 +654,47 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     } else {
         match data {
+            Data::Enum(DataEnum {
+                enum_token,
+                brace_token,
+                variants,
+            }) => {
+                let matches: Vec<proc_macro2::TokenStream> = variants
+                    .iter()
+                    .map(|variant| {
+                        let Variant {
+                            attrs,
+                            ident,
+                            fields,
+                            discriminant,
+                        } = variant;
+                        match fields {
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token,
+                                unnamed,
+                            }) => {
+                                let Field {
+                                    attrs,
+                                    vis,
+                                    mutability,
+                                    ident,
+                                    colon_token,
+                                    ty,
+                                } = unnamed
+                                    .first()
+                                    .unwrap();
+                                quote! {
+                                    #ty::matches(aml)
+                                }
+                            },
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect();
+                quote! {
+                    #(#matches) || *
+                }
+            },
             Data::Struct(DataStruct {
                 struct_token,
                 fields,
