@@ -1,7 +1,6 @@
 extern crate proc_macro;
 
 use {
-    proc_macro2,
     quote::{
         ToTokens,
         format_ident,
@@ -84,32 +83,26 @@ impl From<&DeriveInput> for TypeAttribute {
                         "encoding_value" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
-                                lit,
-                            }) => match lit {
-                                Lit::Int(lit_int) => {
-                                    let encoding_value: u8 = lit_int
-                                        .base10_digits()
-                                        .parse()
-                                        .unwrap();
-                                    (Some(encoding_value), None)
-                                },
-                                _ => (None, None),
+                                lit: Lit::Int(lit_int),
+                            }) => {
+                                let encoding_value: u8 = lit_int
+                                    .base10_digits()
+                                    .parse()
+                                    .unwrap();
+                                (Some(encoding_value), None)
                             },
                             _ => (None, None),
                         },
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
-                                lit,
-                            }) => match lit {
-                                Lit::Int(lit_int) => {
-                                    let matching_elements: usize = lit_int
-                                        .base10_digits()
-                                        .parse()
-                                        .unwrap();
-                                    (None, Some(matching_elements))
-                                },
-                                _ => (None, None),
+                                lit: Lit::Int(lit_int),
+                            }) => {
+                                let matching_elements: usize = lit_int
+                                    .base10_digits()
+                                    .parse()
+                                    .unwrap();
+                                (None, Some(matching_elements))
                             },
                             _ => (None, None),
                         },

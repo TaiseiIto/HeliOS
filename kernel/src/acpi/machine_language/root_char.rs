@@ -1,6 +1,6 @@
 use super::Reader;
 
-const ROOT_CHAR: u8 = '\\' as u8;
+const ROOT_CHAR: u8 = b'\\';
 
 /// # RootChar
 /// ## References

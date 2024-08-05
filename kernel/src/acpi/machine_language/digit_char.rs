@@ -30,7 +30,7 @@ impl Reader<'_> for DigitChar {
             .first()
             .is_some_and(|head| {
                 let character = *head as char;
-                ('0'..='9').contains(&character)
+                character.is_ascii_digit()
             })
     }
 }

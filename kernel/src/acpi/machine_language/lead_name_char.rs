@@ -33,7 +33,7 @@ impl Reader<'_> for LeadNameChar {
             .first()
             .is_some_and(|head| {
                 let character: char = *head as char;
-                ('A'..='Z').contains(&character) || character == '_'
+                character.is_ascii_uppercase() || character == '_'
             })
     }
 }

@@ -20,19 +20,19 @@ use super::{
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum ExpressionOpcode {
-    DefAcquire(DefAcquire),
-    DefBuffer(DefBuffer),
-    DefDerefOf(DefDerefOf),
-    DefIncrement(DefIncrement),
-    DefIndex(DefIndex),
-    DefLEqual(DefLEqual),
-    DefLLess(DefLLess),
-    DefLNot(DefLNot),
-    DefPackage(DefPackage),
-    DefSizeOf(DefSizeOf),
-    DefStore(DefStore),
-    DefSubtract(DefSubtract),
-    DefToBuffer(DefToBuffer),
-    DefToHexString(DefToHexString),
+    Acquire(DefAcquire),
+    Buffer(DefBuffer),
+    DerefOf(DefDerefOf),
+    Increment(DefIncrement),
+    Index(DefIndex),
+    LEqual(DefLEqual),
+    LLess(DefLLess),
+    LNot(DefLNot),
+    Package(DefPackage),
+    SizeOf(DefSizeOf),
+    Store(DefStore),
+    Subtract(DefSubtract),
+    ToBuffer(DefToBuffer),
+    ToHexString(DefToHexString),
 }
 
