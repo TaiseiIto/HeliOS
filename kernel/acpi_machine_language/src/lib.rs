@@ -55,8 +55,8 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 enum Encoding {
-    Value(u8),
     Range(RangeInclusive<u8>),
+    Value(u8),
 }
 
 impl From<u8> for Encoding {
@@ -345,6 +345,10 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         generics: _,
         data,
     } = derive_input;
+    let TypeAttribute {
+        encoding,
+        matching_elements,
+    } = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
             enum_token: _,
@@ -430,90 +434,112 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                 paren_token: _,
                 unnamed,
             }) => {
-                let (convert, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
-                    .iter()
-                    .enumerate()
-                    .map(|(index, field)| {
-                        let field_name: Ident = format_ident!("field{}", index);
-                        let Field {
-                            attrs: _,
-                            vis: _,
-                            mutability: _,
-                            ident: _,
-                            colon_token: _,
-                            ty,
-                        } = field;
-                        let FieldAttribute {
-                            debug,
-                        } = field.into();
-                        let convert: proc_macro2::TokenStream = match ty {
-                            Type::Path(TypePath {
-                                qself: _,
-                                path,
-                            }) => {
-                                let Path {
-                                    leading_colon: _,
-                                    segments,
-                                } = path;
-                                let PathSegment {
-                                    ident: _,
-                                    arguments,
-                                } = segments
-                                    .iter()
-                                    .last()
-                                    .unwrap();
-                                match arguments {
-                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token: _,
-                                        lt_token: _,
-                                        args,
-                                        gt_token: _,
-                                    }) => match args.first().unwrap() {
-                                        GenericArgument::Type(element_type) => {
-                                            let continuation_condition: proc_macro2::TokenStream = quote! {
-                                                !aml.is_empty() && #element_type::matches(aml)
-                                            };
-                                            let debug: proc_macro2::TokenStream = if debug {
+                let (convert, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
+                    Some(encoding) => match encoding {
+                        Encoding::Range(range) => {
+                            let field_type: proc_macro2::TokenStream = unnamed
+                                .first()
+                                .unwrap()
+                                .to_token_stream();
+                            assert_eq!(field_type.to_string().as_str(), "u8");
+                            let field_name: Ident = format_ident!("field");
+                            let start: u8 = *range.start();
+                            let convert: proc_macro2::TokenStream = quote! {
+                                let #field_name: #field_type = *aml.first().unwrap();
+                                let #field_name: #field_type = #field_name - #start;
+                            };
+                            let pack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            (vec![convert], vec![pack])
+                        },
+                        Encoding::Value(_value) => unimplemented!(),
+                    },
+                    None => unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
+                                ty,
+                            } = field;
+                            let FieldAttribute {
+                                debug,
+                            } = field.into();
+                            let convert: proc_macro2::TokenStream = match ty {
+                                Type::Path(TypePath {
+                                    qself: _,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon: _,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident: _,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match arguments {
+                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                            colon2_token: _,
+                                            lt_token: _,
+                                            args,
+                                            gt_token: _,
+                                        }) => match args.first().unwrap() {
+                                            GenericArgument::Type(element_type) => {
+                                                let continuation_condition: proc_macro2::TokenStream = quote! {
+                                                    !aml.is_empty() && #element_type::matches(aml)
+                                                };
+                                                let debug: proc_macro2::TokenStream = if debug {
+                                                    quote! {
+                                                        crate::com2_println!("element = {:#x?}", element);
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                    }
+                                                };
                                                 quote! {
-                                                    crate::com2_println!("element = {:#x?}", element);
+                                                    let mut aml: &[u8] = aml;
+                                                    let mut #field_name: Vec<#element_type> = Vec::new();
+                                                    while #continuation_condition {
+                                                        let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                        #debug
+                                                        aml = remaining_aml;
+                                                        #field_name.push(element);
+                                                    }
                                                 }
-                                            } else {
-                                                quote! {
-                                                }
-                                            };
+                                            },
+                                            _ => unimplemented!(),
+                                        },
+                                        PathArguments::None => {
                                             quote! {
-                                                let mut aml: &[u8] = aml;
-                                                let mut #field_name: Vec<#element_type> = Vec::new();
-                                                while #continuation_condition {
-                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
-                                                    #debug
-                                                    aml = remaining_aml;
-                                                    #field_name.push(element);
-                                                }
+                                                let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
                                             }
                                         },
                                         _ => unimplemented!(),
-                                    },
-                                    PathArguments::None => {
-                                        quote! {
-                                            let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
-                                        }
-                                    },
-                                    _ => unimplemented!(),
-                                }
-                            },
-                            _ => unimplemented!(),
-                        };
-                        let pack: proc_macro2::TokenStream = quote! {
-                            #field_name
-                        };
-                        (convert, pack)
-                    })
-                    .fold((Vec::new(), Vec::new()), |(mut convert, mut pack), (new_convert, new_pack)| {
-                        convert.push(new_convert);
-                        pack.push(new_pack);
-                        (convert, pack)
-                    });
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                            let pack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            (convert, pack)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut convert, mut pack), (new_convert, new_pack)| {
+                            convert.push(new_convert);
+                            pack.push(new_pack);
+                            (convert, pack)
+                        }),
+                };
                 quote! {
                     assert!(Self::matches(aml), "aml = {:#x?}", aml);
                     #(#convert)*
@@ -559,6 +585,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics: _,
         data,
     } = derive_input;
+    let TypeAttribute {
+        encoding,
+        matching_elements,
+    } = derive_input.into();
     let length: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
             enum_token: _,
@@ -619,70 +649,78 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             Fields::Unnamed(FieldsUnnamed {
                 paren_token: _,
                 unnamed,
-            }) => {
-                let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
-                    .iter()
-                    .enumerate()
-                    .map(|(index, field)| {
-                        let field_name: Ident = format_ident!("field{}", index);
-                        let Field {
-                            attrs: _,
-                            vis: _,
-                            mutability: _,
-                            ident: _,
-                            colon_token: _,
-                            ty,
-                        } = field;
-                        let unpack: proc_macro2::TokenStream = quote! {
-                            #field_name
-                        };
-                        let field_length: proc_macro2::TokenStream = match ty {
-                            Type::Path(TypePath {
-                                qself: _,
-                                path,
-                            }) => {
-                                let Path {
-                                    leading_colon: _,
-                                    segments,
-                                } = path;
-                                let PathSegment {
-                                    ident: _,
-                                    arguments,
-                                } = segments
-                                    .iter()
-                                    .last()
-                                    .unwrap();
-                                match arguments {
-                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token: _,
-                                        lt_token: _,
-                                        args: _,
-                                        gt_token: _,
-                                    }) => quote! {
-                                        #field_name
-                                            .iter()
-                                            .map(|element| element.length())
-                                            .sum::<usize>()
-                                    },
-                                    PathArguments::None => quote! {
-                                        #field_name.length()
-                                    },
-                                    _ => unimplemented!(),
-                                }
-                            },
-                            _ => unimplemented!(),
-                        };
-                        (unpack, field_length)
-                    })
-                    .fold((Vec::new(), Vec::new()), |(mut unpacks, mut field_lengths), (unpack, field_length)| {
-                        unpacks.push(unpack);
-                        field_lengths.push(field_length);
-                        (unpacks, field_lengths)
-                    });
-                quote! {
-                    let Self (#(#unpacks),*) = self;
-                    #(#field_lengths)+*
-                }
+            }) => match encoding {
+                Some(encoding) => match encoding {
+                    Encoding::Range(range) => quote! {
+                        1
+                    },
+                    Encoding::Value(value) => unimplemented!(),
+                },
+                None => {
+                    let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
+                                ty,
+                            } = field;
+                            let unpack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            let field_length: proc_macro2::TokenStream = match ty {
+                                Type::Path(TypePath {
+                                    qself: _,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon: _,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident: _,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match arguments {
+                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                            colon2_token: _,
+                                            lt_token: _,
+                                            args: _,
+                                            gt_token: _,
+                                        }) => quote! {
+                                            #field_name
+                                                .iter()
+                                                .map(|element| element.length())
+                                                .sum::<usize>()
+                                        },
+                                        PathArguments::None => quote! {
+                                            #field_name.length()
+                                        },
+                                        _ => unimplemented!(),
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                            (unpack, field_length)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut unpacks, mut field_lengths), (unpack, field_length)| {
+                            unpacks.push(unpack);
+                            field_lengths.push(field_length);
+                            (unpacks, field_lengths)
+                        });
+                    quote! {
+                        let Self (#(#unpacks),*) = self;
+                        #(#field_lengths)+*
+                    }
+                },
             },
             _ => unimplemented!(),
         },
