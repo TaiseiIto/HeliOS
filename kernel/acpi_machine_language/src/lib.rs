@@ -46,10 +46,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
-        use {
-            core::borrow::Borrow,
-            crate::acpi::machine_language::Reader,
-        };
+        use crate::acpi::machine_language::Reader;
         #debug
         #from_slice_u8
         #reader
@@ -501,7 +498,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 .unwrap() {
                                                 GenericArgument::Type(element_type) => quote! {
                                                     let (#field_name, aml): (#element_type, &[u8]) = #element_type::read(aml);
-                                                    let #field_name: #ty = Box::<#element_type>::new(#field_name);
+                                                    let #field_name: #ty = Box::new(#field_name);
                                                 },
                                                 _ => unimplemented!(),
                                             },
@@ -714,7 +711,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         .to_string()
                                         .as_str() {
                                         "Box" => quote! {
-                                            #field_name.borrow().length()
+                                            #field_name.length()
                                         },
                                         "Vec" => match arguments {
                                             PathArguments::AngleBracketed(AngleBracketedGenericArguments {
