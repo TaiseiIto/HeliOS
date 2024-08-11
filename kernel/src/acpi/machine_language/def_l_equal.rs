@@ -11,24 +11,21 @@ use {
 /// # DefLEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-pub struct DefLEqual {
-    l_equal_op: LEqualOp,
-    operands: [Operand; 2],
-}
+pub struct DefLEqual(
+    LEqualOp,
+    [Operand; 2],
+);
 
 impl fmt::Debug for DefLEqual {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("DefLEqual");
-        let Self {
-            l_equal_op,
-            operands,
-        } = self;
-        debug_tuple.field(l_equal_op);
-        operands
+        let Self(field0, field1) = self;
+        debug_tuple.field(field0);
+        field1
             .as_slice()
             .iter()
-            .for_each(|operand| {
-                debug_tuple.field(operand);
+            .for_each(|element| {
+                debug_tuple.field(element);
             });
         debug_tuple.finish()
     }
@@ -37,33 +34,27 @@ impl fmt::Debug for DefLEqual {
 impl From<&[u8]> for DefLEqual {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let (l_equal_op, aml): (LEqualOp, &[u8]) = LEqualOp::read(aml);
-        let (operands, _aml): (Vec<Operand>, &[u8]) = (0..2)
-            .fold((Vec::new(), aml), |(mut operands, aml), _| {
-                let (operand, aml): (Operand, &[u8]) = Operand::read(aml);
-                operands.push(operand);
-                (operands, aml)
+        let (field0, aml): (LEqualOp, &[u8]) = LEqualOp::read(aml);
+        let (elements, aml): (Vec<Operand>, &[u8]) = (0..2)
+            .fold((Vec::new(), aml), |(mut elements, aml), _| {
+                let (element, aml): (Operand, &[u8]) = Operand::read(aml);
+                elements.push(element);
+                (elements, aml)
             });
-        let operands: [Operand; 2] = operands
+        let field1: [Operand; 2] = elements
             .try_into()
             .unwrap();
-        Self {
-            l_equal_op,
-            operands,
-        }
+        Self(field0, field1)
     }
 }
 
 impl Reader<'_> for DefLEqual {
     fn length(&self) -> usize {
-        let Self {
-            l_equal_op,
-            operands,
-        } = self;
-        l_equal_op.length() + operands
+        let Self(field0, field1) = self;
+        field0.length() + field1
             .as_slice()
             .iter()
-            .map(|operand| operand.length())
+            .map(|element| element.length())
             .sum::<usize>()
     }
 
