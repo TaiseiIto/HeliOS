@@ -51,15 +51,17 @@ impl Reader<'_> for AcquireOp {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        if !ExtOpPrefix::matches(aml) {
-            return false;
+        if ExtOpPrefix::matches(aml) {
+            let (_, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
+            if AcquireOpSuffix::matches(aml) {
+                let (_, aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
+                true
+            } else {
+                false
+            }
+        } else {
+            false
         }
-        let (_ext_op_prefix, aml): (ExtOpPrefix, &[u8]) = ExtOpPrefix::read(aml);
-        if !AcquireOpSuffix::matches(aml) {
-            return false;
-        }
-        let (_acquire_op_suffix, _aml): (AcquireOpSuffix, &[u8]) = AcquireOpSuffix::read(aml);
-        true
     }
 }
 
