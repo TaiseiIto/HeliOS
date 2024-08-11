@@ -519,9 +519,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 .first()
                                                 .unwrap() {
                                                 GenericArgument::Type(element_type) => {
-                                                    let continuation_condition: proc_macro2::TokenStream = quote! {
-                                                        !aml.is_empty() && #element_type::matches(aml)
-                                                    };
                                                     let debug: proc_macro2::TokenStream = if debug {
                                                         quote! {
                                                             crate::com2_println!("element = {:#x?}", element);
@@ -533,7 +530,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                     quote! {
                                                         let mut aml: &[u8] = aml;
                                                         let mut #field_name: Vec<#element_type> = Vec::new();
-                                                        while #continuation_condition {
+                                                        while if aml.is_empty() {
+                                                            false
+                                                        } else {
+                                                            #element_type::matches(aml)
+                                                        } {
                                                             let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read(aml);
                                                             #debug
                                                             aml = remaining_aml;
