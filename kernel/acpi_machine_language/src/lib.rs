@@ -39,7 +39,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, encoding, matching_elements))]
+#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -85,7 +85,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (encoding, matching_elements): (Option<Encoding>, Option<usize>) = attrs
+        let (encoding_value, encoding_value_max, encoding_value_min, matching_elements): (Option<u8>, Option<u8>, Option<u8>, Option<usize>) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -103,55 +103,44 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "encoding" => match value {
+                        "encoding_value" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
                                 lit: Lit::Int(lit_int),
                             }) => {
-                                let encoding: u8 = lit_int
+                                let encoding_value: u8 = lit_int
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                let encoding: Encoding = encoding.into();
-                                (Some(encoding), None)
+                                (Some(encoding_value), None, None, None)
                             },
-                            Expr::Range(ExprRange {
-                                attrs,
-                                start,
-                                limits,
-                                end,
+                            _ => (None, None, None, None),
+                        },
+                        "encoding_value_max" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Int(lit_int),
                             }) => {
-                                assert!(matches!(limits, RangeLimits::Closed(_)));
-                                let start: u8 = match start
-                                    .as_ref()
-                                    .unwrap()
-                                    .borrow() {
-                                    Expr::Lit(ExprLit {
-                                        attrs,
-                                        lit: Lit::Int(lit_int),
-                                    }) => lit_int
-                                        .base10_digits()
-                                        .parse()
-                                        .unwrap(),
-                                    _ => unimplemented!(),
-                                };
-                                let end: u8 = match end
-                                    .as_ref()
-                                    .unwrap()
-                                    .borrow() {
-                                    Expr::Lit(ExprLit {
-                                        attrs,
-                                        lit: Lit::Int(lit_int),
-                                    }) => lit_int
-                                        .base10_digits()
-                                        .parse()
-                                        .unwrap(),
-                                    _ => unimplemented!(),
-                                };
-                                let encoding: Encoding = (start..=end).into();
-                                (Some(encoding), None)
+                                let encoding_value_max: u8 = lit_int
+                                    .base10_digits()
+                                    .parse()
+                                    .unwrap();
+                                (None, Some(encoding_value_max), None, None)
                             },
-                            _ => (None, None),
+                            _ => (None, None, None, None),
+                        },
+                        "encoding_value_min" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Int(lit_int),
+                            }) => {
+                                let encoding_value_min: u8 = lit_int
+                                    .base10_digits()
+                                    .parse()
+                                    .unwrap();
+                                (None, None, Some(encoding_value_min), None)
+                            },
+                            _ => (None, None, None, None),
                         },
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
@@ -162,16 +151,24 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, Some(matching_elements))
+                                (None, None, None, Some(matching_elements))
                             },
-                            _ => (None, None),
+                            _ => (None, None, None, None),
                         },
-                        _ => (None, None),
+                        _ => (None, None, None, None),
                     },
-                    _ => (None, None),
+                    _ => (None, None, None, None),
                 }
             })
-            .fold((None, None), |(encoding, matching_elements), (new_encoding, new_matching_elements)| (encoding.or(new_encoding), matching_elements.or(new_matching_elements)));
+            .fold((None, None, None, None), |(encoding_value, encoding_value_max, encoding_value_min, matching_elements), (new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_matching_elements)| (encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), matching_elements.or(new_matching_elements)));
+        let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
+            (Some(encoding_value), None, None) => Some(encoding_value.into()),
+            (None, Some(encoding_value_max), Some(encoding_value_min)) => {
+                assert!(encoding_value_min < encoding_value_max);
+                Some((encoding_value_min..=encoding_value_max).into())
+            },
+            _ => None,
+        };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
             encoding,
@@ -792,97 +789,100 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             fields,
             semi_token: _,
         }) => match fields {
-            Fields::Unit => {
-                let matches: proc_macro2::TokenStream = match encoding.unwrap() {
-                    Encoding::Range(range) => {
-                        let start: u8 = *range.start();
-                        let end: u8 = *range.end();
-                        quote! {
-                            (#start..=#end).contains(head)
-                        }
-                    },
-                    Encoding::Value(value) => quote! {
-                        *head == #value
-                    },
-                };
-                quote! {
+            Fields::Unit => match encoding.unwrap() {
+                Encoding::Value(value) => quote! {
                     aml
                         .first()
-                        .is_some_and(|head| #matches)
-                }
+                        .is_some_and(|head| *head == #value)
+                },
+                _ => unimplemented!(),
             },
             Fields::Unnamed(FieldsUnnamed {
                 paren_token: _,
                 unnamed,
-            }) => {
-                let mut matches: proc_macro2::TokenStream = quote! {
-                    true
-                };
-                unnamed
-                    .iter()
-                    .take(matching_elements)
-                    .rev()
-                    .for_each(|field| {
-                        let Field {
-                            attrs,
-                            vis,
-                            mutability,
-                            ident,
-                            colon_token,
-                            ty,
-                        } = field;
-                        match ty {
-                            Type::Path(TypePath {
-                                qself,
-                                path,
-                            }) => {
-                                let Path {
-                                    leading_colon,
-                                    segments,
-                                } = path;
-                                let PathSegment {
-                                    ident,
-                                    arguments,
-                                } = segments
-                                    .iter()
-                                    .last()
-                                    .unwrap();
-                                match arguments {
-                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                        colon2_token,
-                                        lt_token,
-                                        args,
-                                        gt_token,
-                                    }) => match args.first().unwrap() {
-                                        GenericArgument::Type(element_type) => {
-                                            assert_eq!(matching_elements, 1);
+            }) => match encoding {
+                Some(encoding) => match encoding {
+                    Encoding::Range(range) => {
+                        let start: u8 = *range.start();
+                        let end: u8 = *range.end();
+                        quote! {
+                            aml
+                                .first()
+                                .is_some_and(|head| (#start..=#end).contains(head))
+                        }
+                    },
+                    _ => unimplemented!(),
+                },
+                None => {
+                    let mut matches: proc_macro2::TokenStream = quote! {
+                        true
+                    };
+                    unnamed
+                        .iter()
+                        .take(matching_elements)
+                        .rev()
+                        .for_each(|field| {
+                            let Field {
+                                attrs,
+                                vis,
+                                mutability,
+                                ident,
+                                colon_token,
+                                ty,
+                            } = field;
+                            match ty {
+                                Type::Path(TypePath {
+                                    qself,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match arguments {
+                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                            colon2_token,
+                                            lt_token,
+                                            args,
+                                            gt_token,
+                                        }) => match args.first().unwrap() {
+                                            GenericArgument::Type(element_type) => {
+                                                assert_eq!(matching_elements, 1);
+                                                matches = quote! {
+                                                    if aml.is_empty() {
+                                                        true
+                                                    } else {
+                                                        #element_type::matches(aml)
+                                                    }
+                                                };
+                                            },
+                                            _ => unimplemented!(),
+                                        },
+                                        PathArguments::None => {
                                             matches = quote! {
-                                                if aml.is_empty() {
-                                                    true
+                                                if #field::matches(aml) {
+                                                    let (_, aml): (#field, &[u8]) = #field::read(aml);
+                                                    #matches
                                                 } else {
-                                                    #element_type::matches(aml)
+                                                    false
                                                 }
                                             };
                                         },
                                         _ => unimplemented!(),
-                                    },
-                                    PathArguments::None => {
-                                        matches = quote! {
-                                            if #field::matches(aml) {
-                                                let (_, aml): (#field, &[u8]) = #field::read(aml);
-                                                #matches
-                                            } else {
-                                                false
-                                            }
-                                        };
-                                    },
-                                    _ => unimplemented!(),
-                                }
-                            },
-                            _ => unimplemented!(),
-                        };
-                    });
-                matches
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                        });
+                    matches
+                },
             },
             _ => unimplemented!(),
         },
