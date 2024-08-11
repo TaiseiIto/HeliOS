@@ -257,7 +257,9 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 })
                                 .collect();
                             quote! {
-                                Self::#ident(#(#field_names),*) => debug_tuple.#(#format_fields).*
+                                Self::#ident(#(#field_names),*) => {
+                                    debug_tuple.#(#format_fields).*;
+                                }
                             }
                         },
                         _ => unimplemented!(),
