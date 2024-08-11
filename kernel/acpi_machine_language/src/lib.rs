@@ -6,10 +6,7 @@ use {
         format_ident,
         quote,
     },
-    std::{
-        borrow::Borrow,
-        ops::RangeInclusive,
-    },
+    std::ops::RangeInclusive,
     syn::{
         AngleBracketedGenericArguments,
         Attribute,
@@ -19,7 +16,6 @@ use {
         DeriveInput,
         Expr,
         ExprLit,
-        ExprRange,
         Field,
         Fields,
         FieldsUnnamed,
@@ -31,7 +27,6 @@ use {
         Path,
         PathArguments,
         PathSegment,
-        RangeLimits,
         Type,
         TypePath,
         Variant,
@@ -349,7 +344,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
     } = derive_input;
     let TypeAttribute {
         encoding,
-        matching_elements,
+        matching_elements: _,
     } = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
@@ -615,7 +610,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     let TypeAttribute {
         encoding,
-        matching_elements,
+        matching_elements: _,
     } = derive_input.into();
     let length: proc_macro2::TokenStream = match data {
         Data::Enum(DataEnum {
@@ -682,10 +677,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 unnamed,
             }) => match encoding {
                 Some(encoding) => match encoding {
-                    Encoding::Range(range) => quote! {
+                    Encoding::Range(_range) => quote! {
                         1
                     },
-                    Encoding::Value(value) => unimplemented!(),
+                    Encoding::Value(_value) => unimplemented!(),
                 },
                 None => {
                     let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -867,20 +862,20 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         .rev()
                         .for_each(|field| {
                             let Field {
-                                attrs,
-                                vis,
-                                mutability,
-                                ident,
-                                colon_token,
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
                                 ty,
                             } = field;
                             match ty {
                                 Type::Path(TypePath {
-                                    qself,
+                                    qself: _,
                                     path,
                                 }) => {
                                     let Path {
-                                        leading_colon,
+                                        leading_colon: _,
                                         segments,
                                     } = path;
                                     let PathSegment {
@@ -895,10 +890,10 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         .as_str() {
                                         "Box" => match arguments {
                                             PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                colon2_token,
-                                                lt_token,
+                                                colon2_token: _,
+                                                lt_token: _,
                                                 args,
-                                                gt_token,
+                                                gt_token: _,
                                             }) => match args
                                                 .first()
                                                 .unwrap() {
@@ -918,10 +913,10 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         },
                                         "Vec" => match arguments {
                                             PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                colon2_token,
-                                                lt_token,
+                                                colon2_token: _,
+                                                lt_token: _,
                                                 args,
-                                                gt_token,
+                                                gt_token: _,
                                             }) => match args
                                                 .first()
                                                 .unwrap() {
