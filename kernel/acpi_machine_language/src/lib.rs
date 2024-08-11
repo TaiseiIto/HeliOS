@@ -6,7 +6,10 @@ use {
         format_ident,
         quote,
     },
-    std::ops::RangeInclusive,
+    std::{
+        borrow::Borrow,
+        ops::RangeInclusive,
+    },
     syn::{
         AngleBracketedGenericArguments,
         Attribute,
@@ -16,6 +19,7 @@ use {
         DeriveInput,
         Expr,
         ExprLit,
+        ExprRange,
         Field,
         Fields,
         FieldsUnnamed,
@@ -27,6 +31,7 @@ use {
         Path,
         PathArguments,
         PathSegment,
+        RangeLimits,
         Type,
         TypePath,
         Variant,
@@ -108,6 +113,42 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .parse()
                                     .unwrap();
                                 let encoding: Encoding = encoding.into();
+                                (Some(encoding), None)
+                            },
+                            Expr::Range(ExprRange {
+                                attrs,
+                                start,
+                                limits,
+                                end,
+                            }) => {
+                                assert!(matches!(limits, RangeLimits::Closed(_)));
+                                let start: u8 = match start
+                                    .as_ref()
+                                    .unwrap()
+                                    .borrow() {
+                                    Expr::Lit(ExprLit {
+                                        attrs,
+                                        lit: Lit::Int(lit_int),
+                                    }) => lit_int
+                                        .base10_digits()
+                                        .parse()
+                                        .unwrap(),
+                                    _ => unimplemented!(),
+                                };
+                                let end: u8 = match end
+                                    .as_ref()
+                                    .unwrap()
+                                    .borrow() {
+                                    Expr::Lit(ExprLit {
+                                        attrs,
+                                        lit: Lit::Int(lit_int),
+                                    }) => lit_int
+                                        .base10_digits()
+                                        .parse()
+                                        .unwrap(),
+                                    _ => unimplemented!(),
+                                };
+                                let encoding: Encoding = (start..=end).into();
                                 (Some(encoding), None)
                             },
                             _ => (None, None),
