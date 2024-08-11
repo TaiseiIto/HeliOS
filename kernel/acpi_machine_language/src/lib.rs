@@ -34,7 +34,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, encoding_value, matching_elements))]
+#[proc_macro_derive(Reader, attributes(debug, encoding, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -98,7 +98,7 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "encoding_value" => match value {
+                        "encoding" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
                                 lit: Lit::Int(lit_int),
