@@ -238,6 +238,9 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         discriminant: _,
                     } = variant;
                     match fields {
+                        Fields::Unit => quote! {
+                            Self::#ident => {},
+                        },
                         Fields::Unnamed(FieldsUnnamed {
                             paren_token: _,
                             unnamed,
@@ -362,6 +365,11 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                         discriminant: _,
                     } = variant;
                     match fields {
+                        Fields::Unit => quote! {
+                            if true {
+                                Self::#ident
+                            }
+                        },
                         Fields::Unnamed(FieldsUnnamed {
                             paren_token: _,
                             unnamed,
@@ -623,6 +631,9 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         discriminant: _,
                     } = variant;
                     match fields {
+                        Fields::Unit => quote! {
+                            Self::#ident => 0
+                        },
                         Fields::Unnamed(FieldsUnnamed {
                             paren_token: _,
                             unnamed,
@@ -786,6 +797,9 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         discriminant: _,
                     } = variant;
                     match fields {
+                        Fields::Unit => quote! {
+                            true
+                        },
                         Fields::Unnamed(FieldsUnnamed {
                             paren_token: _,
                             unnamed,
