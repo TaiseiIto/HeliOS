@@ -6,6 +6,7 @@ use {
         format_ident,
         quote,
     },
+    std::ops::RangeInclusive,
     syn::{
         AngleBracketedGenericArguments,
         Attribute,
@@ -48,8 +49,25 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .unwrap()
 }
 
+enum Encoding {
+    Value(u8),
+    Range(RangeInclusive<u8>),
+}
+
+impl From<u8> for Encoding {
+    fn from(value: u8) -> Self {
+        Self::Value(value)
+    }
+}
+
+impl From<RangeInclusive<u8>> for Encoding {
+    fn from(range: RangeInclusive<u8>) -> Self {
+        Self::Range(range)
+    }
+}
+
 struct TypeAttribute {
-    encoding_value: Option<u8>,
+    encoding: Option<Encoding>,
     matching_elements: usize,
 }
 
@@ -62,7 +80,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (encoding_value, matching_elements): (Option<u8>, Option<usize>) = attrs
+        let (encoding, matching_elements): (Option<Encoding>, Option<usize>) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -85,11 +103,12 @@ impl From<&DeriveInput> for TypeAttribute {
                                 attrs: _,
                                 lit: Lit::Int(lit_int),
                             }) => {
-                                let encoding_value: u8 = lit_int
+                                let encoding: u8 = lit_int
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (Some(encoding_value), None)
+                                let encoding: Encoding = encoding.into();
+                                (Some(encoding), None)
                             },
                             _ => (None, None),
                         },
@@ -111,10 +130,10 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => (None, None),
                 }
             })
-            .fold((None, None), |(encoding_value, matching_elements), (new_encoding_value, new_matching_elements)| (encoding_value.or(new_encoding_value), matching_elements.or(new_matching_elements)));
+            .fold((None, None), |(encoding, matching_elements), (new_encoding, new_matching_elements)| (encoding.or(new_encoding), matching_elements.or(new_matching_elements)));
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
-            encoding_value,
+            encoding,
             matching_elements,
         }
     }
@@ -644,7 +663,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        encoding_value,
+        encoding,
         matching_elements,
     } = derive_input.into();
     let matches: proc_macro2::TokenStream = match data {
@@ -695,11 +714,22 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             semi_token: _,
         }) => match fields {
             Fields::Unit => {
-                let encoding_value: u8 = encoding_value.unwrap();
+                let matches: proc_macro2::TokenStream = match encoding.unwrap() {
+                    Encoding::Range(range) => {
+                        let start: u8 = *range.start();
+                        let end: u8 = *range.end();
+                        quote! {
+                            (#start..=#end).contains(head)
+                        }
+                    },
+                    Encoding::Value(value) => quote! {
+                        *head == #value
+                    },
+                };
                 quote! {
                     aml
                         .first()
-                        .is_some_and(|head| *head == #encoding_value)
+                        .is_some_and(|head| #matches)
                 }
             },
             Fields::Unnamed(FieldsUnnamed {
