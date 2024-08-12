@@ -290,13 +290,51 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
                         .iter()
                         .enumerate()
-                        .map(|(index, _field)| {
+                        .map(|(index, field)| {
+                            let Field {
+                                attrs,
+                                vis,
+                                mutability,
+                                ident,
+                                colon_token,
+                                ty,
+                            } = field;
                             let field_name: Ident = format_ident!("field{}", index);
                             let unpack: proc_macro2::TokenStream = quote! {
                                 #field_name
                             };
-                            let format: proc_macro2::TokenStream = quote! {
-                                debug_tuple.field(#field_name);
+                            let format: proc_macro2::TokenStream = match ty {
+                                Type::Path(TypePath {
+                                    qself: _,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon: _,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match ident
+                                        .to_string()
+                                        .as_str() {
+                                        "Vec" => quote! {
+                                            #field_name
+                                                .iter()
+                                                .for_each(|element| {
+                                                    debug_tuple.field(element);
+                                                });
+                                        },
+                                        _ => quote! {
+                                            debug_tuple.field(#field_name);
+                                        },
+                                    }
+                                },
+                                _ => unimplemented!(),
                             };
                             (unpack, format)
                         })
