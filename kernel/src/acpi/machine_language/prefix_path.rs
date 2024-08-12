@@ -1,35 +1,7 @@
-use super::Reader;
-
-const PREFIX_PATH: u8 = b'^';
-
 /// # PrefixPath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(Debug)]
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x5e]
 pub struct PrefixPath;
-
-impl From<&PrefixPath> for char {
-    fn from(_prefix_path: &PrefixPath) -> Self {
-        PREFIX_PATH as Self
-    }
-}
-
-impl From<&[u8]> for PrefixPath {
-    fn from(aml: &[u8]) -> Self {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        Self
-    }
-}
-
-impl Reader<'_> for PrefixPath {
-    fn length(&self) -> usize {
-        1
-    }
-
-    fn matches(aml: &[u8]) -> bool {
-        aml
-            .first()
-            .is_some_and(|head| *head == PREFIX_PATH)
-    }
-}
 
