@@ -1,8 +1,5 @@
 use {
-    alloc::{
-        vec::Vec,
-        string::String,
-    },
+    alloc::vec::Vec,
     core::{
         fmt,
         iter,
@@ -50,33 +47,6 @@ impl fmt::Debug for NameString {
             },
         };
         debug_tuple.finish()
-    }
-}
-
-impl From<&NameString> for String {
-    fn from(name_string: &NameString) -> Self {
-        match name_string {
-            NameString::RootCharNamePath {
-                root_char,
-                name_path,
-            } => {
-                let name_path: String = name_path.into();
-                iter::once(root_char.into())
-                .chain(name_path.chars())
-                .collect()
-            },
-            NameString::PrefixPathNamePath {
-                prefix_path,
-                name_path,
-            } => {
-                let name_path: String = name_path.into();
-                prefix_path
-                .iter()
-                .map(|prefix_path| prefix_path.into())
-                .chain(name_path.chars())
-                .collect()
-            },
-        }
     }
 }
 

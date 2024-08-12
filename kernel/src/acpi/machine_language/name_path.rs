@@ -1,10 +1,7 @@
-use {
-    alloc::string::String,
-    super::{
-        DualNamePath,
-        NameSeg,
-        NullName,
-    },
+use super::{
+    DualNamePath,
+    NameSeg,
+    NullName,
 };
 
 /// # NamePath
@@ -15,15 +12,5 @@ pub enum NamePath {
     Dual(DualNamePath),
     NameSeg(NameSeg),
     NullName(NullName),
-}
-
-impl From<&NamePath> for String {
-    fn from(name_path: &NamePath) -> Self {
-        match name_path {
-            NamePath::Dual(dual_name_path) => dual_name_path.into(),
-            NamePath::NameSeg(name_seg) => name_seg.into(),
-            NamePath::NullName(_null_name) => Self::new(),
-        }
-    }
 }
 
