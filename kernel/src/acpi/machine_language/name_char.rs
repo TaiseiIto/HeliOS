@@ -12,12 +12,3 @@ pub enum NameChar {
     LeadNameChar(LeadNameChar),
 }
 
-impl From<&NameChar> for char {
-    fn from(name_char: &NameChar) -> Self {
-        match name_char {
-            NameChar::DigitChar(digit_char) => digit_char.into(),
-            NameChar::LeadNameChar(lead_name_char) => lead_name_char.into(),
-        }
-    }
-}
-
