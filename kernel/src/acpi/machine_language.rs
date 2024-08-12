@@ -8,6 +8,7 @@ pub mod arg_obj;
 pub mod arg_object;
 pub mod ascii_char;
 pub mod ascii_char_list;
+pub mod ascii_uppercase;
 pub mod buff_pkg_str_obj;
 pub mod buffer_op;
 pub mod buffer_size;
@@ -122,6 +123,7 @@ pub mod term_obj;
 pub mod timeout;
 pub mod to_buffer_op;
 pub mod to_hex_string_op;
+pub mod underscore;
 pub mod while_op;
 pub mod word_const;
 pub mod word_data;
@@ -135,6 +137,7 @@ pub use {
     arg_object::ArgObject,
     ascii_char::AsciiChar,
     ascii_char_list::AsciiCharList,
+    ascii_uppercase::AsciiUppercase,
     buff_pkg_str_obj::BuffPkgStrObj,
     buffer_op::BufferOp,
     buffer_size::BufferSize,
@@ -249,6 +252,7 @@ pub use {
     timeout::Timeout,
     to_buffer_op::ToBufferOp,
     to_hex_string_op::ToHexStringOp,
+    underscore::Underscore,
     while_op::WhileOp,
     word_const::WordConst,
     word_data::WordData,
