@@ -1,11 +1,10 @@
-use {
-    bitfield_struct::bitfield,
-    super::Reader,
-};
+use bitfield_struct::bitfield;
 
 /// # FieldFlags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[flags]
 #[bitfield(u8)]
 pub struct FieldFlags {
     #[bits(4)]
@@ -15,27 +14,5 @@ pub struct FieldFlags {
     update_rule: u8,
     #[bits(access = RO)]
     reserved0: bool,
-}
-
-impl From<&[u8]> for FieldFlags {
-    fn from(aml: &[u8]) -> Self {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        (*aml.first().unwrap()).into()
-    }
-}
-
-impl Reader<'_> for FieldFlags {
-    fn length(&self) -> usize {
-        1
-    }
-
-    fn matches(aml: &[u8]) -> bool {
-        aml
-            .first()
-            .is_some_and(|field_flags| {
-                let field_flags: FieldFlags = (*field_flags).into();
-                !field_flags.reserved0()
-            })
-    }
 }
 
