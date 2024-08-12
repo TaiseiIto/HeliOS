@@ -17,28 +17,11 @@ pub struct PkgLength {
 }
 
 impl PkgLength {
-    pub fn length(&self) -> usize {
-        self.pkg_lead_byte.length() + self.byte_data
-            .iter()
-            .map(|byte_data| byte_data.length())
-            .sum::<usize>()
-    }
-
-    pub fn matches(aml: &[u8]) -> bool {
-        PkgLeadByte::matches(aml)
-    }
-
     pub fn pkg_length(&self) -> usize {
         (self.byte_data
             .iter()
             .rev()
             .fold(0, |length, byte_data| (length << u8::BITS) + byte_data.pkg_length()) << 4) + self.pkg_lead_byte.pkg_length()
-    }
-
-    pub fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let pkg_length: Self = aml.into();
-        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-        (pkg_length, aml)
     }
 }
 
@@ -72,6 +55,25 @@ impl From<&[u8]> for PkgLength {
             pkg_lead_byte,
             byte_data,
         }
+    }
+}
+
+impl Reader<'_> for PkgLength {
+    fn length(&self) -> usize {
+        self.pkg_lead_byte.length() + self.byte_data
+            .iter()
+            .map(|byte_data| byte_data.length())
+            .sum::<usize>()
+    }
+
+    fn matches(aml: &[u8]) -> bool {
+        PkgLeadByte::matches(aml)
+    }
+
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let pkg_length: Self = aml.into();
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
+        (pkg_length, aml)
     }
 }
 

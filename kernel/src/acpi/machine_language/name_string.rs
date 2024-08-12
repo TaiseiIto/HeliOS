@@ -97,5 +97,11 @@ impl Reader<'_> for NameString {
         || PrefixPath::matches(aml)
         || NamePath::matches(aml)
     }
+
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let symbol: Self = aml.into();
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
+    }
 }
 

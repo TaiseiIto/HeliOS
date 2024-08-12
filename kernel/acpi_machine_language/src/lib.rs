@@ -682,10 +682,12 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     let length: proc_macro2::TokenStream = derive_length(derive_input);
     let matches: proc_macro2::TokenStream = derive_matches(derive_input);
+    let read: proc_macro2::TokenStream = derive_read();
     quote! {
         impl Reader<'_> for #ident {
             #length
             #matches
+            #read
         }
     }
 }
@@ -1072,6 +1074,16 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     quote! {
         fn matches(aml: &[u8]) -> bool {
             #matches
+        }
+    }
+}
+
+fn derive_read() -> proc_macro2::TokenStream {
+    quote! {
+        fn read(aml: &[u8]) -> (Self, &[u8]) {
+            let symbol: Self = aml.into();
+            let aml: &[u8] = &aml[symbol.length()..];
+            (symbol, aml)
         }
     }
 }
