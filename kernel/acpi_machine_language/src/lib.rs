@@ -35,7 +35,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, matching_elements))]
+#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
@@ -69,6 +69,7 @@ impl From<RangeInclusive<u8>> for Encoding {
 
 struct TypeAttribute {
     encoding: Option<Encoding>,
+    flags: bool,
     matching_elements: usize,
 }
 
@@ -81,7 +82,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (encoding_value, encoding_value_max, encoding_value_min, matching_elements): (Option<u8>, Option<u8>, Option<u8>, Option<usize>) = attrs
+        let (encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements): (Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -108,9 +109,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (Some(encoding_value), None, None, None)
+                                (Some(encoding_value), None, None, false, None)
                             },
-                            _ => (None, None, None, None),
+                            _ => (None, None, None, false, None),
                         },
                         "encoding_value_max" => match value {
                             Expr::Lit(ExprLit {
@@ -121,9 +122,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, Some(encoding_value_max), None, None)
+                                (None, Some(encoding_value_max), None, false, None)
                             },
-                            _ => (None, None, None, None),
+                            _ => (None, None, None, false, None),
                         },
                         "encoding_value_min" => match value {
                             Expr::Lit(ExprLit {
@@ -134,10 +135,11 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, None, Some(encoding_value_min), None)
+                                (None, None, Some(encoding_value_min), false, None)
                             },
-                            _ => (None, None, None, None),
+                            _ => (None, None, None, false, None),
                         },
+                        "flags" => (None, None, None, true, None),
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
@@ -147,16 +149,16 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, None, None, Some(matching_elements))
+                                (None, None, None, false, Some(matching_elements))
                             },
-                            _ => (None, None, None, None),
+                            _ => (None, None, None, false, None),
                         },
-                        _ => (None, None, None, None),
+                        _ => (None, None, None, false, None),
                     },
-                    _ => (None, None, None, None),
+                    _ => (None, None, None, false, None),
                 }
             })
-            .fold((None, None, None, None), |(encoding_value, encoding_value_max, encoding_value_min, matching_elements), (new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_matching_elements)| (encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), matching_elements.or(new_matching_elements)));
+            .fold((None, None, None, false, None), |(encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements), (new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements)| (encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements)));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
@@ -168,6 +170,7 @@ impl From<&DeriveInput> for TypeAttribute {
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
             encoding,
+            flags,
             matching_elements,
         }
     }
@@ -390,6 +393,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
     } = derive_input;
     let TypeAttribute {
         encoding,
+        flags,
         matching_elements: _,
     } = derive_input.into();
     let convert: proc_macro2::TokenStream = match data {
@@ -673,6 +677,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     let TypeAttribute {
         encoding,
+        flags,
         matching_elements: _,
     } = derive_input.into();
     let length: proc_macro2::TokenStream = match data {
@@ -846,6 +851,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     let TypeAttribute {
         encoding,
+        flags,
         matching_elements,
     } = derive_input.into();
     let matches: proc_macro2::TokenStream = match data {
