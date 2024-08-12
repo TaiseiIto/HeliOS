@@ -304,6 +304,14 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 #field_name
                             };
                             let format: proc_macro2::TokenStream = match ty {
+                                Type::Array(_) => quote! {
+                                    #field_name
+                                        .as_slice()
+                                        .iter()
+                                        .for_each(|element| {
+                                            debug_tuple.field(element);
+                                        });
+                                },
                                 Type::Path(TypePath {
                                     qself: _,
                                     path,
