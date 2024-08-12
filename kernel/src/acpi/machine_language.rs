@@ -16,6 +16,7 @@ pub mod byte_const;
 pub mod byte_data;
 pub mod byte_list;
 pub mod byte_prefix;
+pub mod circumflex;
 pub mod computational_data;
 pub mod const_obj;
 pub mod d_word_const;
@@ -145,6 +146,7 @@ pub use {
     byte_data::ByteData,
     byte_list::ByteList,
     byte_prefix::BytePrefix,
+    circumflex::Circumflex,
     computational_data::ComputationalData,
     const_obj::ConstObj,
     d_word_const::DWordConst,
