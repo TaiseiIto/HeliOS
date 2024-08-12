@@ -28,6 +28,7 @@ use {
         PathArguments,
         PathSegment,
         Type,
+        TypeArray,
         TypePath,
         Variant,
         parse,
@@ -519,6 +520,22 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 debug,
                             } = field.into();
                             let convert: proc_macro2::TokenStream = match ty {
+                                Type::Array(TypeArray {
+                                    bracket_token,
+                                    elem,
+                                    semi_token,
+                                    len,
+                                }) => quote! {
+                                    let (elements, aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
+                                        .fold((alloc::vec::Vec::new(), aml), |(mut elements, aml), _| {
+                                            let (element, aml): (#elem, &[u8]) = #elem::read(aml);
+                                            elements.push(element);
+                                            (elements, aml)
+                                        });
+                                    let #field_name: #ty = elements
+                                        .try_into()
+                                        .unwrap();
+                                },
                                 Type::Path(TypePath {
                                     qself: _,
                                     path,
@@ -746,6 +763,18 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 #field_name
                             };
                             let field_length: proc_macro2::TokenStream = match ty {
+                                Type::Array(TypeArray {
+                                    bracket_token,
+                                    elem,
+                                    semi_token,
+                                    len,
+                                }) => quote! {
+                                    #field_name
+                                        .as_slice()
+                                        .iter()
+                                        .map(|element| element.length())
+                                        .sum::<usize>()
+                                },
                                 Type::Path(TypePath {
                                     qself: _,
                                     path,
