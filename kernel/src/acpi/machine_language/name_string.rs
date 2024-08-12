@@ -1,9 +1,6 @@
 use {
     alloc::vec::Vec,
-    core::{
-        fmt,
-        iter,
-    },
+    core::fmt,
     super::{
         NamePath,
         PrefixPath,

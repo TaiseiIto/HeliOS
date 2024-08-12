@@ -293,11 +293,11 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         .enumerate()
                         .map(|(index, field)| {
                             let Field {
-                                attrs,
-                                vis,
-                                mutability,
-                                ident,
-                                colon_token,
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
                                 ty,
                             } = field;
                             let field_name: Ident = format_ident!("field{}", index);
@@ -323,7 +323,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     } = path;
                                     let PathSegment {
                                         ident,
-                                        arguments,
+                                        arguments: _,
                                     } = segments
                                         .iter()
                                         .last()
@@ -521,9 +521,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             } = field.into();
                             let convert: proc_macro2::TokenStream = match ty {
                                 Type::Array(TypeArray {
-                                    bracket_token,
+                                    bracket_token: _,
                                     elem,
-                                    semi_token,
+                                    semi_token: _,
                                     len,
                                 }) => quote! {
                                     let (elements, aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
@@ -763,12 +763,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 #field_name
                             };
                             let field_length: proc_macro2::TokenStream = match ty {
-                                Type::Array(TypeArray {
-                                    bracket_token,
-                                    elem,
-                                    semi_token,
-                                    len,
-                                }) => quote! {
+                                Type::Array(_) => quote! {
                                     #field_name
                                         .as_slice()
                                         .iter()
