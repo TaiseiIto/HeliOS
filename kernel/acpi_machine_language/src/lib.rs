@@ -296,7 +296,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 #field_name
                             };
                             let format: proc_macro2::TokenStream = quote! {
-                                .field(#field_name)
+                                debug_tuple.field(#field_name);
                             };
                             (unpack, format)
                         })
@@ -309,10 +309,9 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         let Self (#(#unpack),*) = self;
                     };
                     let format: proc_macro2::TokenStream = quote! {
-                        formatter
-                            .debug_tuple(stringify!(#ident))
-                            #(#format)*
-                            .finish()
+                        let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
+                        #(#format)*
+                        debug_tuple.finish()
                     };
                     (unpack, format)
                 },
