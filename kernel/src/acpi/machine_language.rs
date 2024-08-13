@@ -52,6 +52,7 @@ pub struct ArgObject(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value_min = 0x01]
 #[encoding_value_max = 0x7f]
 pub struct AsciiChar(u8);
@@ -67,6 +68,7 @@ pub struct AsciiCharList(Vec<AsciiChar>);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value_min = 0x41]
 #[encoding_value_max = 0x5a]
 pub struct AsciiUppercase(u8);
@@ -130,6 +132,7 @@ pub struct BytePrefix;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value = 0x5e]
 pub struct Circumflex;
 
@@ -505,6 +508,7 @@ pub struct DeviceOpSuffix;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value_min = 0x30]
 #[encoding_value_max = 0x39]
 pub struct DigitChar(u8);
@@ -909,6 +913,7 @@ pub enum NamedObj {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value = 0x00]
 pub struct NullChar;
 
@@ -1150,6 +1155,7 @@ pub struct ReturnOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value = 0x5c]
 pub struct RootChar;
 
@@ -1318,6 +1324,7 @@ pub struct ToHexStringOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[character]
 #[encoding_value = 0x5f]
 pub struct Underscore;
 
