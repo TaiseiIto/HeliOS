@@ -919,7 +919,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 (unpacks, field_lengths)
                             });
                         quote! {
-                            let Self (#(#unpacks),*) = self;
+                            let Self(#(#unpacks),*) = self;
                             #(#field_lengths)+*
                         }
                     },
@@ -1168,46 +1168,154 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         generics: _,
         data,
     } = derive_input;
-    match data {
-        Data::Struct(DataStruct {
-            struct_token: _,
-            fields,
-            semi_token: _,
-        }) => match fields {
-            Fields::Unnamed(FieldsUnnamed {
-                paren_token: _,
-                unnamed,
-            }) => match unnamed.first() {
-                Some(Field {
-                    attrs: _,
-                    vis: _,
-                    mutability: _,
-                    ident: _,
-                    colon_token: _,
-                    ty,
-                }) => match ty
-                    .to_token_stream()
-                    .to_string()
-                    .as_str() {
-                    "char" => quote! {
-                        impl From<&#ident> for String {
-                            fn from(source: &#ident) -> Self {
-                                let character: char = source.into();
-                                character.into()
+    let TypeAttribute {
+        encoding: _,
+        flags: _,
+        matching_elements: _,
+        string,
+    } = derive_input.into();
+    if string {
+        let convert: proc_macro2::TokenStream = match data {
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields,
+                semi_token: _,
+            }) => match fields {
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token,
+                    unnamed,
+                }) => {
+                    let (field_names, convert_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
+                                ty,
+                            } = field;
+                            let convert_field: proc_macro2::TokenStream = match ty {
+                                Type::Path(TypePath {
+                                    qself: _,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon: _,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident,
+                                        arguments,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match ident
+                                        .to_string()
+                                        .as_str() {
+                                        "Vec" => match arguments {
+                                            PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                colon2_token: _,
+                                                lt_token: _,
+                                                args,
+                                                gt_token: _,
+                                            }) => match args
+                                                .first()
+                                                .unwrap() {
+                                                GenericArgument::Type(element_type) => quote! {
+                                                    let #field_name: String = #field_name
+                                                        .iter()
+                                                        .map(|element| {
+                                                            let element: String = element.into();
+                                                            element
+                                                        })
+                                                        .fold(String::new(), |#field_name, element| #field_name + &element);
+                                                },
+                                                _ => unimplemented!(),
+                                            },
+                                            _ => unimplemented!(),
+                                        },
+                                        _ => unimplemented!(),
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                            (field_name, convert_field)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut convert_fields), (field_name, convert_field)| {
+                            field_names.push(field_name);
+                            convert_fields.push(convert_field);
+                            (field_names, convert_fields)
+                        });
+                    let field_references: Vec<proc_macro2::TokenStream> = field_names
+                        .iter()
+                        .map(|field_name| quote! {
+                            &#field_name
+                        })
+                        .collect();
+                    quote! {
+                        let #ident(#(#field_names),*) = source;
+                        #(#convert_fields)*
+                        Self::new() + #(#field_references)+*
+                    }
+                },
+                _ => unimplemented!(),
+            },
+            _ => unimplemented!(),
+        };
+        quote! {
+            impl From<&#ident> for String {
+                fn from(source: &#ident) -> Self {
+                    #convert
+                }
+            }
+        }
+    } else {
+        match data {
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields,
+                semi_token: _,
+            }) => match fields {
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }) => match unnamed.first() {
+                    Some(Field {
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident: _,
+                        colon_token: _,
+                        ty,
+                    }) => match ty
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                        "char" => quote! {
+                            impl From<&#ident> for String {
+                                fn from(source: &#ident) -> Self {
+                                    let character: char = source.into();
+                                    character.into()
+                                }
                             }
-                        }
-                    },
+                        },
+                        _ => quote! {
+                        },
+                    }
                     _ => quote! {
                     },
-                }
+                },
                 _ => quote! {
                 },
             },
             _ => quote! {
             },
-        },
-        _ => quote! {
-        },
+        }
     }
 }
 
