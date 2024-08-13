@@ -35,7 +35,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(character, debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements))]
+#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
@@ -71,7 +71,6 @@ impl From<RangeInclusive<u8>> for Encoding {
 }
 
 struct TypeAttribute {
-    character: bool,
     encoding: Option<Encoding>,
     flags: bool,
     matching_elements: usize,
@@ -86,7 +85,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (character, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements): (bool, Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>) = attrs
+        let (encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements): (Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -100,8 +99,7 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "character" => (true, None, None, None, false, None),
-                            "flags" => (false, None, None, None, true, None),
+                            "flags" => (None, None, None, true, None),
                             _ => unimplemented!(),
                         },
                     Meta::NameValue(MetaNameValue {
@@ -121,7 +119,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (false, Some(encoding_value), None, None, false, None)
+                                (Some(encoding_value), None, None, false, None)
                             },
                             _ => unimplemented!(),
                         },
@@ -134,7 +132,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (false, None, Some(encoding_value_max), None, false, None)
+                                (None, Some(encoding_value_max), None, false, None)
                             },
                             _ => unimplemented!(),
                         },
@@ -147,7 +145,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (false, None, None, Some(encoding_value_min), false, None)
+                                (None, None, Some(encoding_value_min), false, None)
                             },
                             _ => unimplemented!(),
                         },
@@ -160,16 +158,16 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (false, None, None, None, false, Some(matching_elements))
+                                (None, None, None, false, Some(matching_elements))
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (false, None, None, None, false, None),
+                        _ => (None, None, None, false, None),
                     },
-                    _ => (false, None, None, None, false, None),
+                    _ => (None, None, None, false, None),
                 }
             })
-            .fold((false, None, None, None, false, None), |(character, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements), (new_character, new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements)| (character || new_character, encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements)));
+            .fold((None, None, None, false, None), |(encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements), (new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements)| (encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements)));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
@@ -180,7 +178,6 @@ impl From<&DeriveInput> for TypeAttribute {
         };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
-            character,
             encoding,
             flags,
             matching_elements,
@@ -231,25 +228,48 @@ fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
-    let TypeAttribute {
-        character,
-        encoding: _,
-        flags: _,
-        matching_elements: _,
-    } = derive_input.into();
-    if character {
-        quote! {
-            impl From<&#ident> for char {
-                fn from(source: &#ident) -> Self {
-                    source.0 as Self
-                }
-            }
-        }
-    } else {
-        quote! {
-        }
+    match data {
+        Data::Struct(DataStruct {
+            struct_token: _,
+            fields,
+            semi_token: _,
+        }) => match fields {
+            Fields::Unnamed(FieldsUnnamed {
+                paren_token: _,
+                unnamed,
+            }) => match unnamed.first() {
+                Some(Field {
+                    attrs: _,
+                    vis: _,
+                    mutability: _,
+                    ident: _,
+                    colon_token: _,
+                    ty,
+                }) => match ty
+                    .to_token_stream()
+                    .to_string()
+                    .as_str() {
+                    "char" => quote! {
+                        impl From<&#ident> for char {
+                            fn from(source: &#ident) -> Self {
+                                let #ident(character) = source;
+                                *character
+                            }
+                        }
+                    },
+                    _ => quote! {
+                    },
+                },
+                _ => quote! {
+                },
+            },
+            _ => quote! {
+            },
+        },
+        _ => quote! {
+        },
     }
 }
 
@@ -262,7 +282,6 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        character,
         encoding: _,
         flags,
         matching_elements: _,
@@ -391,15 +410,8 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         debug_tuple.field(element);
                                                     });
                                             },
-                                            _ => if character {
-                                                quote! {
-                                                    let character: char = *#field_name as char;
-                                                    debug_tuple.field(&character);
-                                                }
-                                            } else {
-                                                quote! {
-                                                    debug_tuple.field(#field_name);
-                                                }
+                                            _ => quote! {
+                                                debug_tuple.field(#field_name);
                                             },
                                         }
                                     },
@@ -450,7 +462,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         data,
     } = derive_input;
     let TypeAttribute {
-        character: _,
         encoding,
         flags,
         matching_elements: _,
@@ -557,10 +568,20 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 .first()
                                 .unwrap()
                                 .to_token_stream();
-                            assert_eq!(field_type.to_string().as_str(), "u8");
                             let field_name: Ident = format_ident!("field");
+                            let convert_field: proc_macro2::TokenStream = match field_type
+                                .to_string()
+                                .as_str() {
+                                "char" => quote! {
+                                    (*aml.first().unwrap()) as char
+                                },
+                                "u8" => quote! {
+                                    *aml.first().unwrap()
+                                },
+                                _ => unimplemented!(),
+                            };
                             let convert: proc_macro2::TokenStream = quote! {
-                                let #field_name: #field_type = *aml.first().unwrap();
+                                let #field_name: #field_type = #convert_field;
                                 let #field_name: #field_type = #field_name;
                             };
                             let pack: proc_macro2::TokenStream = quote! {
@@ -741,7 +762,6 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        character: _,
         encoding,
         flags,
         matching_elements: _,
@@ -919,7 +939,6 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        character: _,
         encoding,
         flags,
         matching_elements,
@@ -1140,26 +1159,48 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
-    let TypeAttribute {
-        character,
-        encoding: _,
-        flags: _,
-        matching_elements: _,
-    } = derive_input.into();
-    if character {
-        quote! {
-            impl From<&#ident> for String {
-                fn from(source: &#ident) -> Self {
-                    let character: char = source.into();
-                    character.to_string()
+    match data {
+        Data::Struct(DataStruct {
+            struct_token: _,
+            fields,
+            semi_token: _,
+        }) => match fields {
+            Fields::Unnamed(FieldsUnnamed {
+                paren_token: _,
+                unnamed,
+            }) => match unnamed.first() {
+                Some(Field {
+                    attrs: _,
+                    vis: _,
+                    mutability: _,
+                    ident: _,
+                    colon_token: _,
+                    ty,
+                }) => match ty
+                    .to_token_stream()
+                    .to_string()
+                    .as_str() {
+                    "char" => quote! {
+                        impl From<&#ident> for String {
+                            fn from(source: &#ident) -> Self {
+                                let character: char = source.into();
+                                character.into()
+                            }
+                        }
+                    },
+                    _ => quote! {
+                    },
                 }
-            }
-        }
-    } else {
-        quote! {
-        }
+                _ => quote! {
+                },
+            },
+            _ => quote! {
+            },
+        },
+        _ => quote! {
+        },
     }
 }
 
