@@ -517,7 +517,7 @@ pub struct DigitChar(char);
 #[derive(acpi_machine_language::Reader)]
 #[string]
 pub struct DualNamePath(
-    #[prefix]
+    #[not_string]
     DualNamePrefix,
     [NameSeg; 2],
 );
@@ -801,14 +801,14 @@ impl From<&[u8]> for NameString {
     fn from(aml: &[u8]) -> Self {
         if RootChar::matches(aml) {
             let (root_char, aml): (RootChar, &[u8]) = RootChar::read(aml);
-            let (name_path, aml): (NamePath, &[u8]) = NamePath::read(aml);
+            let (name_path, _aml): (NamePath, &[u8]) = NamePath::read(aml);
             Self::RootCharNamePath {
                 root_char,
                 name_path,
             }
         } else if Circumflex::matches(aml) || NamePath::matches(aml) {
             let (prefix_path, aml): (PrefixPath, &[u8]) = PrefixPath::read(aml);
-            let (name_path, aml): (NamePath, &[u8]) = NamePath::read(aml);
+            let (name_path, _aml): (NamePath, &[u8]) = NamePath::read(aml);
             Self::PrefixPathNamePath {
                 prefix_path,
                 name_path,

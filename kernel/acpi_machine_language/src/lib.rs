@@ -35,7 +35,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, prefix, string))]
+#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, not_string, string))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
@@ -190,7 +190,7 @@ impl From<&DeriveInput> for TypeAttribute {
 
 struct FieldAttribute {
     debug: bool,
-    prefix: bool,
+    not_string: bool,
 }
 
 impl From<&Field> for FieldAttribute {
@@ -203,7 +203,7 @@ impl From<&Field> for FieldAttribute {
             colon_token: _,
             ty: _,
         } = field;
-        let (debug, prefix): (bool, bool) = attrs
+        let (debug, not_string): (bool, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -218,16 +218,16 @@ impl From<&Field> for FieldAttribute {
                         .to_string()
                         .as_str() {
                         "debug" => (true, false),
-                        "prefix" => (false, true),
+                        "not_string" => (false, true),
                         _ => (false, false),
                     },
                     _ => (false, false),
                 }
             })
-            .fold((false, false), |(debug, prefix), (new_debug, new_prefix)| (debug || new_debug, prefix || new_prefix));
+            .fold((false, false), |(debug, not_string), (new_debug, new_not_string)| (debug || new_debug, not_string || new_not_string));
         Self {
             debug,
-            prefix,
+            not_string,
         }
     }
 }
@@ -628,7 +628,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 } = field;
                                 let FieldAttribute {
                                     debug,
-                                    prefix: _,
+                                    not_string: _,
                                 } = field.into();
                                 let convert: proc_macro2::TokenStream = match ty {
                                     Type::Array(TypeArray {
@@ -1220,7 +1220,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                 let (field_names, convert_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                     .iter()
                                     .enumerate()
-                                    .map(|(index, field)| {
+                                    .map(|(index, _field)| {
                                         let field_name: Ident = format_ident!("field{}", index);
                                         let convert_field: proc_macro2::TokenStream = quote! {
                                             let #field_name: String = #field_name.into();
@@ -1261,7 +1261,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                 semi_token: _,
             }) => match fields {
                 Fields::Unnamed(FieldsUnnamed {
-                    paren_token,
+                    paren_token: _,
                     unnamed,
                 }) => {
                     let (field_names, convert_fields, field_references): (Vec<Ident>, Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -1279,15 +1279,10 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             } = field;
                             let FieldAttribute {
                                 debug: _,
-                                prefix,
+                                not_string,
                             } = field.into();
-                            let convert_field: Option<proc_macro2::TokenStream> = (!prefix).then(|| match ty {
-                                Type::Array(TypeArray {
-                                    bracket_token: _,
-                                    elem: _,
-                                    semi_token: _,
-                                    len,
-                                }) => quote! {
+                            let convert_field: Option<proc_macro2::TokenStream> = (!not_string).then(|| match ty {
+                                Type::Array(_) => quote! {
                                     let #field_name: String = #field_name
                                         .as_slice()
                                         .iter()
@@ -1324,7 +1319,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                             }) => match args
                                                 .first()
                                                 .unwrap() {
-                                                GenericArgument::Type(element_type) => quote! {
+                                                GenericArgument::Type(_element_type) => quote! {
                                                     let #field_name: String = #field_name
                                                         .iter()
                                                         .map(|element| {
@@ -1344,7 +1339,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                 },
                                 _ => unimplemented!(),
                             });
-                            let field_reference: Option<proc_macro2::TokenStream> = (!prefix).then(|| quote! {
+                            let field_reference: Option<proc_macro2::TokenStream> = (!not_string).then(|| quote! {
                                 &#field_name
                             });
                             (field_name, convert_field, field_reference)
