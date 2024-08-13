@@ -293,169 +293,171 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     if flags {
         quote! {
         }
+    } else if string {
+        quote! {
+            impl core::fmt::Debug for #ident {
+                fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    let string: String = self.into();
+                    formatter
+                        .debug_tuple(stringify!(#ident))
+                        .field(&string)
+                        .finish()
+                }
+            }
+        }
     } else {
-        let format: proc_macro2::TokenStream = if string {
-            quote! {
-                let string: String = self.into();
-                formatter
-                    .debug_tuple(stringify!(#ident))
-                    .field(&string)
-                    .finish()
-            }
-        } else {
-            match data {
-                Data::Enum(DataEnum {
-                    enum_token: _,
-                    brace_token: _,
-                    variants,
-                }) => {
-                    let format_patterns: Vec<proc_macro2::TokenStream> = variants
-                        .iter()
-                        .map(|variant| {
-                            let Variant {
-                                attrs: _,
-                                ident,
-                                fields,
-                                discriminant: _,
-                            } = variant;
-                            match fields {
-                                Fields::Unit => quote! {
-                                    Self::#ident => {},
-                                },
-                                Fields::Unnamed(FieldsUnnamed {
-                                    paren_token: _,
-                                    unnamed,
-                                }) => {
-                                    let field_names: Vec<Ident> = unnamed
-                                        .iter()
-                                        .enumerate()
-                                        .map(|(index, _field)| format_ident!("field{}", index))
-                                        .collect();
-                                    let format_fields: Vec<proc_macro2::TokenStream> = field_names
-                                        .iter()
-                                        .map(|field_name| quote! {
-                                            field(#field_name)
-                                        })
-                                        .collect();
-                                    quote! {
-                                        Self::#ident(#(#field_names),*) => {
-                                            debug_tuple.#(#format_fields).*;
-                                        }
+        let format: proc_macro2::TokenStream = match data {
+            Data::Enum(DataEnum {
+                enum_token: _,
+                brace_token: _,
+                variants,
+            }) => {
+                let format_patterns: Vec<proc_macro2::TokenStream> = variants
+                    .iter()
+                    .map(|variant| {
+                        let Variant {
+                            attrs: _,
+                            ident,
+                            fields,
+                            discriminant: _,
+                        } = variant;
+                        match fields {
+                            Fields::Unit => quote! {
+                                Self::#ident => {},
+                            },
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token: _,
+                                unnamed,
+                            }) => {
+                                let field_names: Vec<Ident> = unnamed
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(index, _field)| format_ident!("field{}", index))
+                                    .collect();
+                                let format_fields: Vec<proc_macro2::TokenStream> = field_names
+                                    .iter()
+                                    .map(|field_name| quote! {
+                                        field(#field_name)
+                                    })
+                                    .collect();
+                                quote! {
+                                    Self::#ident(#(#field_names),*) => {
+                                        debug_tuple.#(#format_fields).*;
                                     }
-                                },
-                                _ => unimplemented!(),
-                            }
-                        })
-                        .collect();
-                    quote! {
-                        let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
-                        match self {
-                            #(#format_patterns),*
-                        };
-                        debug_tuple.finish()
-                    }
-                },
-                Data::Struct(DataStruct {
-                    struct_token: _,
-                    fields,
-                    semi_token: _,
-                }) => {
-                    let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
-                        Fields::Unit => {
-                            let unpack: proc_macro2::TokenStream = quote! {
-                            };
-                            let format: proc_macro2::TokenStream = quote! {
-                                formatter.write_str(stringify!(#ident))
-                            };
-                            (unpack, format)
-                        },
-                        Fields::Unnamed(FieldsUnnamed {
-                            paren_token: _,
-                            unnamed,
-                        }) => {
-                            let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
-                                .iter()
-                                .enumerate()
-                                .map(|(index, field)| {
-                                    let Field {
-                                        attrs: _,
-                                        vis: _,
-                                        mutability: _,
-                                        ident: _,
-                                        colon_token: _,
-                                        ty,
-                                    } = field;
-                                    let field_name: Ident = format_ident!("field{}", index);
-                                    let unpack: proc_macro2::TokenStream = quote! {
-                                        #field_name
-                                    };
-                                    let format: proc_macro2::TokenStream = match ty {
-                                        Type::Array(_) => quote! {
-                                            #field_name
-                                                .as_slice()
-                                                .iter()
-                                                .for_each(|element| {
-                                                    debug_tuple.field(element);
-                                                });
-                                        },
-                                        Type::Path(TypePath {
-                                            qself: _,
-                                            path,
-                                        }) => {
-                                            let Path {
-                                                leading_colon: _,
-                                                segments,
-                                            } = path;
-                                            let PathSegment {
-                                                ident,
-                                                arguments: _,
-                                            } = segments
-                                                .iter()
-                                                .last()
-                                                .unwrap();
-                                            match ident
-                                                .to_string()
-                                                .as_str() {
-                                                "Vec" => quote! {
-                                                    #field_name
-                                                        .iter()
-                                                        .for_each(|element| {
-                                                            debug_tuple.field(element);
-                                                        });
-                                                },
-                                                _ => quote! {
-                                                    debug_tuple.field(#field_name);
-                                                },
-                                            }
-                                        },
-                                        _ => unimplemented!(),
-                                    };
-                                    (unpack, format)
-                                })
-                                .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (new_unpack, new_format)| {
-                                    unpack.push(new_unpack);
-                                    format.push(new_format);
-                                    (unpack, format)
-                                });
-                            let unpack: proc_macro2::TokenStream = quote! {
-                                let Self (#(#unpack),*) = self;
-                            };
-                            let format: proc_macro2::TokenStream = quote! {
-                                let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
-                                #(#format)*
-                                debug_tuple.finish()
-                            };
-                            (unpack, format)
-                        },
-                        _ => unimplemented!(),
+                                }
+                            },
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect();
+                quote! {
+                    let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
+                    match self {
+                        #(#format_patterns),*
                     };
-                    quote! {
-                        #unpack
-                        #format
-                    }
-                },
-                _ => unimplemented!(),
-            }
+                    debug_tuple.finish()
+                }
+            },
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields,
+                semi_token: _,
+            }) => {
+                let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
+                    Fields::Unit => {
+                        let unpack: proc_macro2::TokenStream = quote! {
+                        };
+                        let format: proc_macro2::TokenStream = quote! {
+                            formatter.write_str(stringify!(#ident))
+                        };
+                        (unpack, format)
+                    },
+                    Fields::Unnamed(FieldsUnnamed {
+                        paren_token: _,
+                        unnamed,
+                    }) => {
+                        let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                            .iter()
+                            .enumerate()
+                            .map(|(index, field)| {
+                                let Field {
+                                    attrs: _,
+                                    vis: _,
+                                    mutability: _,
+                                    ident: _,
+                                    colon_token: _,
+                                    ty,
+                                } = field;
+                                let field_name: Ident = format_ident!("field{}", index);
+                                let unpack: proc_macro2::TokenStream = quote! {
+                                    #field_name
+                                };
+                                let format: proc_macro2::TokenStream = match ty {
+                                    Type::Array(_) => quote! {
+                                        #field_name
+                                            .as_slice()
+                                            .iter()
+                                            .for_each(|element| {
+                                                debug_tuple.field(element);
+                                            });
+                                    },
+                                    Type::Path(TypePath {
+                                        qself: _,
+                                        path,
+                                    }) => {
+                                        let Path {
+                                            leading_colon: _,
+                                            segments,
+                                        } = path;
+                                        let PathSegment {
+                                            ident,
+                                            arguments: _,
+                                        } = segments
+                                            .iter()
+                                            .last()
+                                            .unwrap();
+                                        match ident
+                                            .to_string()
+                                            .as_str() {
+                                            "Vec" => quote! {
+                                                #field_name
+                                                    .iter()
+                                                    .for_each(|element| {
+                                                        debug_tuple.field(element);
+                                                    });
+                                            },
+                                            _ => quote! {
+                                                debug_tuple.field(#field_name);
+                                            },
+                                        }
+                                    },
+                                    _ => unimplemented!(),
+                                };
+                                (unpack, format)
+                            })
+                            .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (new_unpack, new_format)| {
+                                unpack.push(new_unpack);
+                                format.push(new_format);
+                                (unpack, format)
+                            });
+                        let unpack: proc_macro2::TokenStream = quote! {
+                            let Self (#(#unpack),*) = self;
+                        };
+                        let format: proc_macro2::TokenStream = quote! {
+                            let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
+                            #(#format)*
+                            debug_tuple.finish()
+                        };
+                        (unpack, format)
+                    },
+                    _ => unimplemented!(),
+                };
+                quote! {
+                    #unpack
+                    #format
+                }
+            },
+            _ => unimplemented!(),
         };
         quote! {
             impl core::fmt::Debug for #ident {
