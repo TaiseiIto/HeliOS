@@ -134,7 +134,7 @@ pub struct BytePrefix;
 #[derive(acpi_machine_language::Reader)]
 #[character]
 #[encoding_value = 0x5e]
-pub struct Circumflex;
+pub struct Circumflex(u8);
 
 /// # ComputationalData
 /// ## References
@@ -915,7 +915,7 @@ pub enum NamedObj {
 #[derive(acpi_machine_language::Reader)]
 #[character]
 #[encoding_value = 0x00]
-pub struct NullChar;
+pub struct NullChar(u8);
 
 /// # NullName
 /// ## References
@@ -1157,7 +1157,7 @@ pub struct ReturnOp;
 #[derive(acpi_machine_language::Reader)]
 #[character]
 #[encoding_value = 0x5c]
-pub struct RootChar;
+pub struct RootChar(u8);
 
 /// # ScopeOp
 /// ## References
@@ -1326,7 +1326,7 @@ pub struct ToHexStringOp;
 #[derive(acpi_machine_language::Reader)]
 #[character]
 #[encoding_value = 0x5f]
-pub struct Underscore;
+pub struct Underscore(u8);
 
 /// # WhileOp
 /// ## References

@@ -38,10 +38,12 @@ use {
 #[proc_macro_derive(Reader, attributes(character, debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
+    let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
+        #char_from_self
         #debug
         #from_slice_u8
         #reader
@@ -221,6 +223,34 @@ impl From<&Field> for FieldAttribute {
     }
 }
 
+fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    let TypeAttribute {
+        character,
+        encoding: _,
+        flags: _,
+        matching_elements: _,
+    } = derive_input.into();
+    if character {
+        quote! {
+            impl From<&#ident> for char {
+                fn from(source: &#ident) -> Self {
+                    source.0 as Self
+                }
+            }
+        }
+    } else {
+        quote! {
+        }
+    }
+}
+
 fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
@@ -230,7 +260,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
-        character: _,
+        character,
         encoding: _,
         flags,
         matching_elements: _,
@@ -359,8 +389,15 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         debug_tuple.field(element);
                                                     });
                                             },
-                                            _ => quote! {
-                                                debug_tuple.field(#field_name);
+                                            _ => if character {
+                                                quote! {
+                                                    let character: char = *#field_name as char;
+                                                    debug_tuple.field(&character);
+                                                }
+                                            } else {
+                                                quote! {
+                                                    debug_tuple.field(#field_name);
+                                                }
                                             },
                                         }
                                     },
@@ -776,11 +813,8 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     paren_token: _,
                     unnamed,
                 }) => match encoding {
-                    Some(encoding) => match encoding {
-                        Encoding::Range(_range) => quote! {
-                            1
-                        },
-                        Encoding::Value(_value) => unimplemented!(),
+                    Some(_encoding) => quote! {
+                        1
                     },
                     None => {
                         let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
@@ -957,17 +991,24 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     paren_token: _,
                     unnamed,
                 }) => match encoding {
-                    Some(encoding) => match encoding {
-                        Encoding::Range(range) => {
-                            let start: u8 = *range.start();
-                            let end: u8 = *range.end();
-                            quote! {
-                                aml
-                                    .first()
-                                    .is_some_and(|head| (#start..=#end).contains(head))
-                            }
-                        },
-                        _ => unimplemented!(),
+                    Some(encoding) => {
+                        let matches: proc_macro2::TokenStream = match encoding {
+                            Encoding::Range(range) => {
+                                let start: u8 = *range.start();
+                                let end: u8 = *range.end();
+                                quote! {
+                                        (#start..=#end).contains(head)
+                                }
+                            },
+                            Encoding::Value(value) => quote! {
+                                *head == #value
+                            },
+                        };
+                        quote! {
+                            aml
+                                .first()
+                                .is_some_and(|head| #matches)
+                        }
                     },
                     None => {
                         let mut matches: proc_macro2::TokenStream = quote! {
