@@ -779,22 +779,34 @@ pub enum NameString {
 
 impl fmt::Debug for NameString {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("NameString");
-        match self {
-            Self::RootCharNamePath {
+        let name_string: String = self.into();
+        formatter
+            .debug_tuple("NameString")
+            .field(&name_string)
+            .finish()
+    }
+}
+
+impl From<&NameString> for String {
+    fn from(name_string: &NameString) -> String {
+        match name_string {
+            NameString::RootCharNamePath {
                 root_char,
                 name_path,
-            } => debug_tuple
-                .field(root_char)
-                .field(name_path),
-            Self::PrefixPathNamePath {
+            } => {
+                let root_char: String = root_char.into();
+                let name_path: String = name_path.into();
+                Self::new() + &root_char + &name_path
+            },
+            NameString::PrefixPathNamePath {
                 prefix_path,
                 name_path,
-            } => debug_tuple
-                .field(prefix_path)
-                .field(name_path),
-        };
-        debug_tuple.finish()
+            } => {
+                let prefix_path: String = prefix_path.into();
+                let name_path: String = name_path.into();
+                Self::new() + &prefix_path + &name_path
+            },
+        }
     }
 }
 
