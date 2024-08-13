@@ -42,7 +42,6 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     quote! {
-        use crate::acpi::machine_language::Reader;
         #debug
         #from_slice_u8
         #reader
