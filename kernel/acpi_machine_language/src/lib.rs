@@ -1270,6 +1270,21 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                 ty,
                             } = field;
                             let convert_field: proc_macro2::TokenStream = match ty {
+                                Type::Array(TypeArray {
+                                    bracket_token: _,
+                                    elem: _,
+                                    semi_token: _,
+                                    len,
+                                }) => quote! {
+                                    let #field_name: String = #field_name
+                                        .as_slice()
+                                        .iter()
+                                        .map(|element| {
+                                            let element: String = element.into();
+                                            element
+                                        })
+                                        .fold(String::new(), |#field_name, element| #field_name + &element);
+                                },
                                 Type::Path(TypePath {
                                     qself: _,
                                     path,
@@ -1310,7 +1325,9 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                             },
                                             _ => unimplemented!(),
                                         },
-                                        _ => unimplemented!(),
+                                        _ => quote! {
+                                            let #field_name: String = #field_name.into();
+                                        },
                                     }
                                 },
                                 _ => unimplemented!(),
