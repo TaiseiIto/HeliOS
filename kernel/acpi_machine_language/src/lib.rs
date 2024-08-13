@@ -508,25 +508,21 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                     unnamed,
                 }) => {
                     let (convert, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                        Some(encoding) => match encoding {
-                            Encoding::Range(range) => {
-                                let field_type: proc_macro2::TokenStream = unnamed
-                                    .first()
-                                    .unwrap()
-                                    .to_token_stream();
-                                assert_eq!(field_type.to_string().as_str(), "u8");
-                                let field_name: Ident = format_ident!("field");
-                                let start: u8 = *range.start();
-                                let convert: proc_macro2::TokenStream = quote! {
-                                    let #field_name: #field_type = *aml.first().unwrap();
-                                    let #field_name: #field_type = #field_name - #start;
-                                };
-                                let pack: proc_macro2::TokenStream = quote! {
-                                    #field_name
-                                };
-                                (vec![convert], vec![pack])
-                            },
-                            Encoding::Value(_value) => unimplemented!(),
+                        Some(_) => {
+                            let field_type: proc_macro2::TokenStream = unnamed
+                                .first()
+                                .unwrap()
+                                .to_token_stream();
+                            assert_eq!(field_type.to_string().as_str(), "u8");
+                            let field_name: Ident = format_ident!("field");
+                            let convert: proc_macro2::TokenStream = quote! {
+                                let #field_name: #field_type = *aml.first().unwrap();
+                                let #field_name: #field_type = #field_name;
+                            };
+                            let pack: proc_macro2::TokenStream = quote! {
+                                #field_name
+                            };
+                            (vec![convert], vec![pack])
                         },
                         None => unnamed
                             .iter()
