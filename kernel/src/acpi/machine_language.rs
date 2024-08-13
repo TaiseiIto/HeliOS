@@ -22,7 +22,10 @@ pub trait Reader<'a>: From<&'a [u8]> {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 #[matching_elements = 2]
-pub struct AcquireOp(ExtOpPrefix, AcquireOpSuffix);
+pub struct AcquireOp(
+    ExtOpPrefix,
+    AcquireOpSuffix,
+);
 
 /// # AcquireOpSuffix
 /// ## References
@@ -372,6 +375,15 @@ pub struct DefPackage(
     PkgLength,
     NumElements,
     PackageElementList,
+);
+
+/// # DefRelease
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefRelease(
+    ReleaseOp,
+    MutexObject,
 );
 
 /// # DefReturn
@@ -1110,6 +1122,23 @@ pub struct RegionOffset(TermArg);
 #[encoding_value_max = 0xff]
 pub struct RegionSpace(u8);
 
+/// # ReleaseOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct ReleaseOp(
+    ExtOpPrefix,
+    ReleaseOpSuffix,
+);
+
+/// # ReleaseOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x27]
+pub struct ReleaseOpSuffix;
+
 /// # ReturnOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -1167,6 +1196,7 @@ pub struct SizeOfOp;
 #[derive(acpi_machine_language::Reader)]
 pub enum StatementOpcode {
     IfElse(DefIfElse),
+    Release(DefRelease),
     Return(DefReturn),
     While(DefWhile),
 }
