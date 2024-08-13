@@ -394,6 +394,17 @@ pub struct DefScope(
     TermList,
 );
 
+/// # DefShiftLeft
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefShiftLeft(
+    ShiftLeftOp,
+    Operand,
+    ShiftCount,
+    Target,
+);
+
 /// # DefSizeOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -523,6 +534,7 @@ pub enum ExpressionOpcode {
     LLess(DefLLess),
     LNot(DefLNot),
     Package(DefPackage),
+    ShiftLeft(DefShiftLeft),
     SizeOf(DefSizeOf),
     Store(DefStore),
     Subtract(DefSubtract),
@@ -1118,6 +1130,19 @@ pub struct RootChar;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x10]
 pub struct ScopeOp;
+
+/// # ShiftCount
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct ShiftCount(Box<TermArg>);
+
+/// # ShiftLeftOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x79]
+pub struct ShiftLeftOp;
 
 /// # SimpleName
 /// ## References
