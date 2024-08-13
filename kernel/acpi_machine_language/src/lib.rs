@@ -1184,8 +1184,67 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         matching_elements: _,
         string,
     } = derive_input.into();
+    let source_type_name: &Ident = ident;
     if string {
         let convert: proc_macro2::TokenStream = match data {
+            Data::Enum(DataEnum {
+                enum_token: _,
+                brace_token: _,
+                variants,
+            }) => {
+                let convert_patterns: Vec<proc_macro2::TokenStream> = variants
+                    .iter()
+                    .map(|variant| {
+                        let Variant {
+                            attrs: _,
+                            ident,
+                            fields,
+                            discriminant: _,
+                        } = variant;
+                        let variant_name: &Ident = ident;
+                        match fields {
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token: _,
+                                unnamed,
+                            }) => {
+                                let (field_names, convert_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(index, field)| {
+                                        let field_name: Ident = format_ident!("field{}", index);
+                                        let convert_field: proc_macro2::TokenStream = quote! {
+                                            let #field_name: String = #field_name.into();
+                                        };
+                                        (field_name, convert_field)
+                                    })
+                                    .fold((Vec::new(), Vec::new()), |(mut field_names, mut convert_fields), (field_name, convert_field)| {
+                                        field_names.push(field_name);
+                                        convert_fields.push(convert_field);
+                                        (field_names, convert_fields)
+                                    });
+                                let field_references: Vec<proc_macro2::TokenStream> = field_names
+                                    .iter()
+                                    .map(|field_name| quote! {
+                                        &#field_name
+                                    })
+                                    .collect();
+                                quote! {
+                                    #source_type_name::#variant_name(#(#field_names),*) => {
+                                        #(#convert_fields)*
+                                        Self::new() + #(#field_references)+*
+                                    }
+                                }
+                            },
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect();
+                quote! {
+                    match source {
+                        #(#convert_patterns),*
+                    }
+                }
+            },
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
@@ -1268,7 +1327,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                         })
                         .collect();
                     quote! {
-                        let #ident(#(#field_names),*) = source;
+                        let #source_type_name(#(#field_names),*) = source;
                         #(#convert_fields)*
                         Self::new() + #(#field_references)+*
                     }
@@ -1278,8 +1337,8 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
             _ => unimplemented!(),
         };
         quote! {
-            impl From<&#ident> for String {
-                fn from(source: &#ident) -> Self {
+            impl From<&#source_type_name> for String {
+                fn from(source: &#source_type_name) -> Self {
                     #convert
                 }
             }
