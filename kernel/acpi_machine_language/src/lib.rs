@@ -42,11 +42,13 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
+    let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #char_from_self
         #debug
         #from_slice_u8
         #reader
+        #string_from_self
     }   .try_into()
         .unwrap()
 }
@@ -1128,6 +1130,35 @@ fn derive_read() -> proc_macro2::TokenStream {
             let symbol: Self = aml.into();
             let aml: &[u8] = &aml[symbol.length()..];
             (symbol, aml)
+        }
+    }
+}
+
+fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    let TypeAttribute {
+        character,
+        encoding: _,
+        flags: _,
+        matching_elements: _,
+    } = derive_input.into();
+    if character {
+        quote! {
+            impl From<&#ident> for String {
+                fn from(source: &#ident) -> Self {
+                    let character: char = source.into();
+                    character.to_string()
+                }
+            }
+        }
+    } else {
+        quote! {
         }
     }
 }

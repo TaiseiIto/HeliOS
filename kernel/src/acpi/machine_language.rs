@@ -5,6 +5,10 @@
 use {
     alloc::{
         boxed::Box,
+        string::{
+            String,
+            ToString,
+        },
         vec::Vec,
     },
     bitfield_struct::bitfield,
