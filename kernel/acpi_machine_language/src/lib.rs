@@ -25,6 +25,7 @@ use {
         GenericArgument,
         Ident,
         Lit,
+        LitStr,
         Meta,
         MetaNameValue,
         Path,
@@ -1431,19 +1432,23 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             } = field;
                             let FieldAttribute {
                                 debug: _,
-                                delimiter: _,
+                                delimiter,
                                 not_string,
                             } = field.into();
+                            let delimiter: String = delimiter.unwrap_or_default();
+                            let delimiter: LitStr = LitStr::new(&delimiter, proc_macro2::Span::call_site());
                             let convert_field: Option<proc_macro2::TokenStream> = (!not_string).then(|| match ty {
-                                Type::Array(_) => quote! {
-                                    let #field_name: String = #field_name
-                                        .as_slice()
-                                        .iter()
-                                        .map(|element| {
-                                            let element: String = element.into();
-                                            element
-                                        })
-                                        .fold(String::new(), |#field_name, element| #field_name + &element);
+                                Type::Array(_) => {
+                                    quote! {
+                                        let #field_name: String = #field_name
+                                            .as_slice()
+                                            .iter()
+                                            .map(|element| {
+                                                let element: String = element.into();
+                                                element
+                                            })
+                                            .fold(String::new(), |#field_name, element| #field_name + #delimiter + &element);
+                                    }
                                 },
                                 Type::Path(TypePath {
                                     qself: _,
@@ -1479,7 +1484,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                                             let element: String = element.into();
                                                             element
                                                         })
-                                                        .fold(String::new(), |#field_name, element| #field_name + &element);
+                                                        .fold(String::new(), |#field_name, element| #field_name + #delimiter + &element);
                                                 },
                                                 _ => unimplemented!(),
                                             },
