@@ -779,9 +779,40 @@ impl From<&[u8]> for MethodInvocation {
         let (name_string, mut aml): (NameString, &[u8]) = NameString::read(aml);
         let method_name: String = (&name_string).into();
         let number_of_term_args: usize = match method_name.as_str() {
-            "LNKD"
-            | "PIDX" => 0,
-            "AIDX" => 2,
+            "CSCN"
+            | "LNKA"
+            | "LNKB"
+            | "LNKC"
+            | "LNKD"
+            | "LNKS"
+            | "PCNT"
+            | "PIDX"
+            | "\\_GPE._E02"
+            | "_CRS"
+            | "_DIS"
+            | "_E01"
+            | "_INI"
+            | "_PRT"
+            | "_S1D"
+            | "_S2D"
+            | "_S3D"
+            | "_STA" => 0,
+            "CEJ0"
+            | "CSTA"
+            | "DBUG"
+            | "IQCR"
+            | "IQST"
+            | "_EJ0"
+            | "_SRS" => 1,
+            "AIDX"
+            | "CTFY"
+            | "DVNT"
+            | "PCEJ" => 2,
+            "_OST" => 3,
+            "COST"
+            | "_DSM" => 4,
+            "EDSM"
+            | "PDSM" => 5,
             unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
         };
         let mut term_args: Vec<TermArg> = Vec::new();
