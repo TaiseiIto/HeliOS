@@ -834,7 +834,6 @@ impl From<&[u8]> for MethodInvocation {
             | "WRDD"
             | "WRDS"
             | "XDBA"
-            | "\\_GPE._E02"
             | "^BN00"
             | "_AC0"
             | "_ADR"
@@ -848,6 +847,7 @@ impl From<&[u8]> for MethodInvocation {
             | "_DIS"
             | "_DOD"
             | "_E01"
+            | "_E02"
             | "_FIT"
             | "_GPE"
             | "_HID"
@@ -921,7 +921,7 @@ impl From<&[u8]> for MethodInvocation {
             | "BTNE"
             | "CALK"
             | "CALS"
-            | "CEJ0"
+            // "CEJ0" => 1,
             | "CGLD"
             | "CMAT"
             | "CPXM"
@@ -947,14 +947,14 @@ impl From<&[u8]> for MethodInvocation {
             | "GPOF"
             | "GUAM"
             | "HALL"
-            | "HDSM"
+            // "HDSM" => 1,
             | "HEX"
             | "HEX2"
             | "HEX4"
             | "HPEM"
             | "IQCR"
             | "IQST"
-            | "LCRS"
+            // "LCRS" => 1,
             | "LDIS"
             | "LSRS"
             | "LSTA"
@@ -966,7 +966,7 @@ impl From<&[u8]> for MethodInvocation {
             | "PSTA"
             | "PWAK"
             | "S2BF"
-            | "SCRS"
+            // "SCRS" => 1,
             | "SDIS"
             | "SIOS"
             | "SIOW"
@@ -994,7 +994,7 @@ impl From<&[u8]> for MethodInvocation {
             | "_WAK" => 1,
             "AIDX"
             | "BEJ0"
-            | "CEJ0"
+            // "CEJ0" => 2,
             | "CNOT"
             | "CPRS"
             | "CTFY"
@@ -1019,7 +1019,7 @@ impl From<&[u8]> for MethodInvocation {
             | "PCEJ"
             | "PCFG"
             | "PPEX"
-            | "PPHR"
+            // "PPHR" => 2,
             | "SCMP"
             | "SCPG"
             | "SGOV"
@@ -1035,9 +1035,9 @@ impl From<&[u8]> for MethodInvocation {
             "CRYF"
             | "DLSR"
             | "IPCM"
-            | "LCRS"
+            // "LCRS" => 3,
             | "PEJ0"
-            | "PPHR"
+            // "PPHR" => 3,
             | "RDMA"
             | "SCOM"
             | "STRD"
@@ -1049,7 +1049,7 @@ impl From<&[u8]> for MethodInvocation {
             | "LPRS"
             | "PCID"
             | "RRIO"
-            | "SCRS"
+            // "SCRS" => 4,
             | "SOSC"
             | "XPRS"
             | "_DSM"
@@ -1057,10 +1057,10 @@ impl From<&[u8]> for MethodInvocation {
             "BDSM"
             | "DDSM"
             | "EDSM"
-            | "HDSM"
-            | "MDSM"
-            | "PDSM" => 5,
-            "PDSM"
+            // "HDSM" => 5,
+            | "MDSM" => 5,
+            // "PDSM" => 5,
+            // "PDSM" => 6,
             | "XRES" => 6,
             unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
         };
