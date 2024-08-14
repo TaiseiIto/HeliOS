@@ -288,7 +288,7 @@ impl From<&Field> for FieldAttribute {
                         .as_str() {
                         "delimiter" => match value {
                             Expr::Lit(ExprLit {
-                                attrs,
+                                attrs: _,
                                 lit: Lit::Str(delimiter),
                             }) => (false, Some(delimiter.value()), false),
                             _ => (false, None, false),
@@ -1440,14 +1440,12 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             let convert_field: Option<proc_macro2::TokenStream> = (!not_string).then(|| match ty {
                                 Type::Array(_) => {
                                     quote! {
-                                        let #field_name: String = #field_name
+                                        let #field_name: Vec<String> = #field_name
                                             .as_slice()
                                             .iter()
-                                            .map(|element| {
-                                                let element: String = element.into();
-                                                element
-                                            })
-                                            .fold(String::new(), |#field_name, element| #field_name + #delimiter + &element);
+                                            .map(|element| element.into())
+                                            .collect();
+                                        let #field_name: String = #field_name.join(#delimiter);
                                     }
                                 },
                                 Type::Path(TypePath {
@@ -1478,13 +1476,11 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                                 .first()
                                                 .unwrap() {
                                                 GenericArgument::Type(_element_type) => quote! {
-                                                    let #field_name: String = #field_name
+                                                    let #field_name: Vec<String> = #field_name
                                                         .iter()
-                                                        .map(|element| {
-                                                            let element: String = element.into();
-                                                            element
-                                                        })
-                                                        .fold(String::new(), |#field_name, element| #field_name + #delimiter + &element);
+                                                        .map(|element| element.into())
+                                                        .collect();
+                                                    let #field_name: String = #field_name.join(#delimiter);
                                                 },
                                                 _ => unimplemented!(),
                                             },
