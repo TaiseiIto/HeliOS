@@ -1511,7 +1511,31 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                     quote! {
                         let #source_type_name(#(#field_names),*) = source;
                         #(#convert_fields)*
-                        Self::new() + #(#field_references)+*
+                        let string = Self::new() + #(#field_references)+*;
+                        let (string, underscores): (Self, Self) = string
+                            .chars()
+                            .rev()
+                            .fold((Self::new(), Self::new()), |(mut string, mut underscores), character| {
+                                match character {
+                                    '_' => if string.is_empty() {
+                                        underscores.push(character);
+                                    } else {
+                                        string.push(character);
+                                    },
+                                    character => {
+                                        string.push(character);
+                                    },
+                                };
+                                (string, underscores)
+                            });
+                        if string.is_empty() {
+                            underscores
+                        } else {
+                            string
+                                .chars()
+                                .rev()
+                                .collect()
+                        }
                     }
                 },
                 _ => unimplemented!(),
