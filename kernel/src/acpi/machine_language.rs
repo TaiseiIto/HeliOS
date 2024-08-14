@@ -35,6 +35,13 @@ pub struct AcquireOp(
 #[encoding_value = 0x23]
 pub struct AcquireOpSuffix;
 
+/// # AndOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x7b]
+pub struct AndOp;
+
 /// # Arg Objects Encoding
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.1 Arg Objects Encoding
@@ -206,6 +213,16 @@ pub struct DefAcquire(
     AcquireOp,
     MutexObject,
     Timeout,
+);
+
+/// # DefAnd
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefAnd(
+    AndOp,
+    [Operand; 2],
+    Target,
 );
 
 /// # DefBuffer
@@ -562,6 +579,7 @@ pub struct ElseOp;
 #[derive(acpi_machine_language::Reader)]
 pub enum ExpressionOpcode {
     Acquire(DefAcquire),
+    And(DefAnd),
     Buffer(DefBuffer),
     DerefOf(DefDerefOf),
     Increment(DefIncrement),
