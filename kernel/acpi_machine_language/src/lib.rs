@@ -224,11 +224,8 @@ impl From<&Variant> for VariantAttribute {
                         "matching_type" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
-                                lit,
-                            }) => match lit {
-                                Lit::Str(matching_type) => Some(matching_type.value()),
-                                _ => None,
-                            },
+                                lit: Lit::Str(matching_type),
+                            }) => Some(matching_type.value()),
                             _ => None,
                         },
                         _ => None,
@@ -298,34 +295,30 @@ fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream
     match data {
         Data::Struct(DataStruct {
             struct_token: _,
-            fields,
-            semi_token: _,
-        }) => match fields {
-            Fields::Unnamed(FieldsUnnamed {
+            fields: Fields::Unnamed(FieldsUnnamed {
                 paren_token: _,
                 unnamed,
-            }) => match unnamed.first() {
-                Some(Field {
-                    attrs: _,
-                    vis: _,
-                    mutability: _,
-                    ident: _,
-                    colon_token: _,
-                    ty,
-                }) => match ty
-                    .to_token_stream()
-                    .to_string()
-                    .as_str() {
-                    "char" => quote! {
-                        impl From<&#ident> for char {
-                            fn from(source: &#ident) -> Self {
-                                let #ident(character) = source;
-                                *character
-                            }
+            }),
+            semi_token: _,
+        }) => match unnamed.first() {
+            Some(Field {
+                attrs: _,
+                vis: _,
+                mutability: _,
+                ident: _,
+                colon_token: _,
+                ty,
+            }) => match ty
+                .to_token_stream()
+                .to_string()
+                .as_str() {
+                "char" => quote! {
+                    impl From<&#ident> for char {
+                        fn from(source: &#ident) -> Self {
+                            let #ident(character) = source;
+                            *character
                         }
-                    },
-                    _ => quote! {
-                    },
+                    }
                 },
                 _ => quote! {
                 },
@@ -1503,38 +1496,34 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         match data {
             Data::Struct(DataStruct {
                 struct_token: _,
-                fields,
-                semi_token: _,
-            }) => match fields {
-                Fields::Unnamed(FieldsUnnamed {
+                fields: Fields::Unnamed(FieldsUnnamed {
                     paren_token: _,
                     unnamed,
-                }) => match unnamed.first() {
-                    Some(Field {
-                        attrs: _,
-                        vis: _,
-                        mutability: _,
-                        ident: _,
-                        colon_token: _,
-                        ty,
-                    }) => match ty
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "char" => quote! {
-                            impl From<&#ident> for String {
-                                fn from(source: &#ident) -> Self {
-                                    let character: char = source.into();
-                                    character.into()
-                                }
+                }),
+                semi_token: _,
+            }) => match unnamed.first() {
+                Some(Field {
+                    attrs: _,
+                    vis: _,
+                    mutability: _,
+                    ident: _,
+                    colon_token: _,
+                    ty,
+                }) => match ty
+                    .to_token_stream()
+                    .to_string()
+                    .as_str() {
+                    "char" => quote! {
+                        impl From<&#ident> for String {
+                            fn from(source: &#ident) -> Self {
+                                let character: char = source.into();
+                                character.into()
                             }
-                        },
-                        _ => quote! {
-                        },
-                    }
+                        }
+                    },
                     _ => quote! {
                     },
-                },
+                }
                 _ => quote! {
                 },
             },
