@@ -793,8 +793,14 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 },
                                                 _ => unimplemented!(),
                                             },
-                                            _ => quote! {
-                                                let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                            _ => if index + 1 < unnamed.len() {
+                                                quote! {
+                                                    let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                                }
+                                            } else {
+                                                quote! {
+                                                    let #field_name: #ty = aml.into();
+                                                }
                                             },
                                         }
                                     },
@@ -1136,7 +1142,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 let start: u8 = *range.start();
                                 let end: u8 = *range.end();
                                 quote! {
-                                        (#start..=#end).contains(head)
+                                    (#start..=#end).contains(head)
                                 }
                             },
                             Encoding::Value(value) => quote! {
