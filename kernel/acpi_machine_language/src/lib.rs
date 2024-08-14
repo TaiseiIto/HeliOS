@@ -1167,6 +1167,37 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     ty,
                                 } = field;
                                 match ty {
+                                    Type::Array(TypeArray {
+                                        bracket_token: _,
+                                        elem,
+                                        semi_token: _,
+                                        len,
+                                    }) => match len {
+                                        Expr::Lit(ExprLit {
+                                            attrs: _,
+                                            lit,
+                                        }) => match lit {
+                                            Lit::Int(lit_int) => {
+                                                let len: usize = lit_int
+                                                    .base10_digits()
+                                                    .parse()
+                                                    .unwrap();
+                                                (0..len)
+                                                    .for_each(|_| {
+                                                        matches = quote! {
+                                                            if #elem::matches(aml) {
+                                                                let (_, aml): (#elem, &[u8]) = #elem::read(aml);
+                                                                #matches
+                                                            } else {
+                                                                false
+                                                            }
+                                                        };
+                                                    });
+                                            },
+                                            _ => unimplemented!(),
+                                        },
+                                        _ => unimplemented!(),
+                                    },
                                     Type::Path(TypePath {
                                         qself: _,
                                         path,
