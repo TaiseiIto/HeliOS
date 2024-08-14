@@ -573,6 +573,7 @@ pub struct DigitChar(char);
 pub struct DualNamePath(
     #[not_string]
     DualNamePrefix,
+    #[delimiter = "."]
     [NameSeg; 2],
 );
 

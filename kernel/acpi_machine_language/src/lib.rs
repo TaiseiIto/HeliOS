@@ -38,7 +38,18 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(debug, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, matching_type, not_string, string))]
+#[proc_macro_derive(Reader, attributes(
+    debug,
+    delimiter,
+    encoding_value,
+    encoding_value_max,
+    encoding_value_min,
+    flags,
+    matching_elements,
+    matching_type,
+    not_string,
+    string
+))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
@@ -242,6 +253,7 @@ impl From<&Variant> for VariantAttribute {
 
 struct FieldAttribute {
     debug: bool,
+    delimiter: Option<String>,
     not_string: bool,
 }
 
@@ -255,7 +267,7 @@ impl From<&Field> for FieldAttribute {
             colon_token: _,
             ty: _,
         } = field;
-        let (debug, not_string): (bool, bool) = attrs
+        let (debug, delimiter, not_string): (bool, Option<String>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -265,20 +277,38 @@ impl From<&Field> for FieldAttribute {
                     meta,
                 } = attribute;
                 match meta {
+                    Meta::NameValue(MetaNameValue {
+                        path,
+                        eq_token: _,
+                        value,
+                    }) => match path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                        "delimiter" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs,
+                                lit: Lit::Str(delimiter),
+                            }) => (false, Some(delimiter.value()), false),
+                            _ => (false, None, false),
+                        },
+                        _ => (false, None, false),
+                    },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "debug" => (true, false),
-                        "not_string" => (false, true),
-                        _ => (false, false),
+                        "debug" => (true, None, false),
+                        "not_string" => (false, None, true),
+                        _ => (false, None, false),
                     },
-                    _ => (false, false),
+                    _ => (false, None, false),
                 }
             })
-            .fold((false, false), |(debug, not_string), (new_debug, new_not_string)| (debug || new_debug, not_string || new_not_string));
+            .fold((false, None, false), |(debug, delimiter, not_string), (new_debug, new_delimiter, new_not_string)| (debug || new_debug, delimiter.or(new_delimiter), not_string || new_not_string));
         Self {
             debug,
+            delimiter,
             not_string,
         }
     }
@@ -694,6 +724,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 } = field;
                                 let FieldAttribute {
                                     debug,
+                                    delimiter: _,
                                     not_string: _,
                                 } = field.into();
                                 let convert: proc_macro2::TokenStream = match ty {
@@ -1400,6 +1431,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             } = field;
                             let FieldAttribute {
                                 debug: _,
+                                delimiter: _,
                                 not_string,
                             } = field.into();
                             let convert_field: Option<proc_macro2::TokenStream> = (!not_string).then(|| match ty {
