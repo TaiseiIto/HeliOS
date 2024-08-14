@@ -749,7 +749,7 @@ impl Reader<'_> for MethodInvocation {
     }
 
     fn matches(aml: &[u8]) -> bool {
-        NameString::matches(aml)
+        NameString::matches(aml) && !NullName::matches(aml)
     }
 
     fn read(aml: &[u8]) -> (Self, &[u8]) {
