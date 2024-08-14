@@ -449,7 +449,7 @@ pub struct DefSubtract(
 
 /// # DefToBuffer
 /// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 ExpressionOpcodes Encoding
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub struct DefToBuffer(
     ToBufferOp,
@@ -548,6 +548,7 @@ pub enum ExpressionOpcode {
     LEqual(DefLEqual),
     LLess(DefLLess),
     LNot(DefLNot),
+    MethodInvocation(MethodInvocation),
     Package(DefPackage),
     ShiftLeft(DefShiftLeft),
     SizeOf(DefSizeOf),
@@ -686,6 +687,76 @@ pub struct MethodFlags {
     serialize: bool,
     #[bits(4)]
     sync_level: u8,
+}
+
+/// # MethodInvocation
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
+pub struct MethodInvocation(
+    NameString,
+    Vec<TermArg>,
+);
+
+impl fmt::Debug for MethodInvocation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("MethodInvocation");
+        let Self(
+            name_string,
+            term_args,
+        ) = self;
+        debug_tuple.field(name_string);
+        term_args
+            .iter()
+            .for_each(|term_arg| {
+                debug_tuple.field(term_arg);
+            });
+        debug_tuple.finish()
+    }
+}
+
+impl From<&[u8]> for MethodInvocation {
+    fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let (name_string, mut aml): (NameString, &[u8]) = NameString::read(aml);
+        let method_name: String = (&name_string).into();
+        let number_of_term_args: usize = match method_name.as_str() {
+            unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
+        };
+        let mut term_args: Vec<TermArg> = Vec::new();
+        (0..number_of_term_args)
+            .for_each(|_| {
+                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::read(aml);
+                aml = remaining_aml;
+                term_args.push(term_arg);
+            });
+        Self(
+            name_string,
+            term_args,
+        )
+    }
+}
+
+impl Reader<'_> for MethodInvocation {
+    fn length(&self) -> usize {
+        let Self(
+            name_string,
+            term_args,
+        ) = self;
+        name_string.length() + term_args
+            .iter()
+            .map(|term_arg| term_arg.length())
+            .sum::<usize>()
+    }
+
+    fn matches(aml: &[u8]) -> bool {
+        NameString::matches(aml)
+    }
+
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let method_invocation: Self = aml.into();
+        let aml: &[u8] = &aml[method_invocation.length()..];
+        (method_invocation, aml)
+    }
 }
 
 /// # MethodOp
