@@ -883,6 +883,7 @@ impl From<&[u8]> for MethodInvocation {
             | "BTNC"
             | "BTNL"
             | "BTNS"
+            | "CDAT"
             | "CPEN"
             | "CSCN"
             | "DLSI"
