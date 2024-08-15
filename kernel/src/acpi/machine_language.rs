@@ -364,6 +364,15 @@ pub struct DefLEqual(
     [Operand; 2],
 );
 
+/// # DefLGreater
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLGreater(
+    LGreaterOp,
+    [Operand; 2],
+);
+
 /// # DefLLess
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -638,6 +647,7 @@ pub enum ExpressionOpcode {
     Increment(DefIncrement),
     Index(DefIndex),
     LEqual(DefLEqual),
+    LGreater(DefLGreater),
     LLess(DefLLess),
     LNot(DefLNot),
     LOr(DefLOr),
@@ -737,6 +747,13 @@ pub struct IndexValue(Box<TermArg>);
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x93]
 pub struct LEqualOp;
+
+/// # LGreaterOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x94]
+pub struct LGreaterOp;
 
 /// # LLessOp
 /// ## References
@@ -1398,16 +1415,10 @@ impl PkgLength {
 
 impl fmt::Debug for PkgLength {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("PkgLength");
-        let Self {
-            pkg_lead_byte,
-            byte_data,
-        } = self;
-        debug_tuple.field(pkg_lead_byte);
-        if !byte_data.is_empty() {
-            debug_tuple.field(byte_data);
-        }
-        debug_tuple.finish()
+        formatter
+            .debug_tuple("PkgLength")
+            .field(&self.pkg_length())
+            .finish()
     }
 }
 
