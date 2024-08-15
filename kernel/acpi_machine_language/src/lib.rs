@@ -576,7 +576,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
     } = derive_input.into();
     let convert: proc_macro2::TokenStream = if flags {
         quote! {
-            assert!(Self::matches(aml), "aml = {:#x?}", aml);
+            assert!(Self::matches(aml), "aml = {:02x?}", aml);
             (*aml.first().unwrap()).into()
         }
     } else {

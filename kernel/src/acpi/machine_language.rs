@@ -234,6 +234,28 @@ pub enum DataRefObject {
     ObjReference(ObjReference),
 }
 
+/// # DebugObj
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DebugObj(DebugOp);
+
+/// # DebugOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DebugOp(
+    ExtOpPrefix,
+    DebugOpSuffix,
+);
+
+/// # DebugOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x31]
+pub struct DebugOpSuffix;
+
 /// # DefAcquire
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1878,6 +1900,7 @@ pub struct SubtractOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum SuperName {
+    DebugObj(DebugObj),
     ReferenceTypeOpcode(ReferenceTypeOpcode),
     SimpleName(SimpleName),
 }
