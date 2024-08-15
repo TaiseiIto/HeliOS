@@ -1098,7 +1098,7 @@ impl From<&[u8]> for MethodInvocation {
             | "BTNE"
             | "CALK"
             | "CALS"
-            // "CEJ0" => 1,
+            | "CEJ0"
             | "CGLD"
             | "CMAT"
             | "CPXM"
@@ -1171,7 +1171,6 @@ impl From<&[u8]> for MethodInvocation {
             | "_WAK" => 1,
             "AIDX"
             | "BEJ0"
-            // "CEJ0" => 2,
             | "CNOT"
             | "CPRS"
             | "CTFY"
