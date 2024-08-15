@@ -981,6 +981,8 @@ impl From<&[u8]> for MethodInvocation {
             | "NHPG"
             | "NPME"
             | "OSHP"
+            | "PCID"
+            | "PCIU"
             | "PCNT"
             | "PCS"
             | "PIDX"
@@ -1226,7 +1228,6 @@ impl From<&[u8]> for MethodInvocation {
             | "_OST" => 3,
             "COST"
             | "LPRS"
-            | "PCID"
             | "RRIO"
             // "SCRS" => 4,
             | "SOSC"
