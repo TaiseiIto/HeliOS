@@ -357,6 +357,15 @@ pub struct DefIndex(
     Box<Target>,
 );
 
+/// # DefLAnd
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLAnd(
+    LAndOp,
+    [Operand; 2],
+);
+
 /// # DefLEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -658,6 +667,7 @@ pub enum ExpressionOpcode {
     DerefOf(DefDerefOf),
     Increment(DefIncrement),
     Index(DefIndex),
+    LAnd(DefLAnd),
     LEqual(DefLEqual),
     LGreater(DefLGreater),
     LLess(DefLLess),
@@ -754,6 +764,14 @@ pub struct IndexOp;
 #[derive(acpi_machine_language::Reader)]
 pub struct IndexValue(Box<TermArg>);
 
+/// # LAndOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x90]
+pub struct LAndOp;
+
+/// # LGreaterOp
 /// # LEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
