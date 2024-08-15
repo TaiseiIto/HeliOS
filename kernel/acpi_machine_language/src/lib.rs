@@ -505,6 +505,11 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         match ident
                                             .to_string()
                                             .as_str() {
+                                            "Option" => quote! {
+                                                if let Some(element) = #field_name {
+                                                    debug_tuple.field(element);
+                                                }
+                                            },
                                             "Vec" => quote! {
                                                 #field_name
                                                     .iter()
@@ -780,6 +785,27 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 },
                                                 _ => unimplemented!(),
                                             },
+                                            "Option" => match arguments {
+                                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                    colon2_token: _,
+                                                    lt_token: _,
+                                                    args,
+                                                    gt_token: _,
+                                                }) => match args
+                                                    .first()
+                                                    .unwrap() {
+                                                    GenericArgument::Type(element_type) => quote! {
+                                                        let (#field_name, aml): (Option<#element_type>, &[u8]) = if #element_type::matches(aml) {
+                                                            let (#field_name, aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                            (Some(#field_name), aml)
+                                                        } else {
+                                                            (None, aml)
+                                                        };
+                                                    },
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => unimplemented!(),
+                                            },
                                             "Vec" => match arguments {
                                                 PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                                                     colon2_token: _,
@@ -1013,6 +1039,9 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                             .as_str() {
                                             "Box" => quote! {
                                                 #field_name.length()
+                                            },
+                                            "Option" => quote! {
+                                                #field_name.map_or(0, |element| element.length())
                                             },
                                             "Vec" => match arguments {
                                                 PathArguments::AngleBracketed(AngleBracketedGenericArguments {
