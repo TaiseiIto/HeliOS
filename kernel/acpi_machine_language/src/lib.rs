@@ -819,7 +819,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                         let debug: proc_macro2::TokenStream = if debug {
                                                             quote! {
                                                                 crate::com2_println!("element = {:#x?}", element);
-                                                                crate::com2_println!("remaining_aml = {:#x?}", remaining_aml);
+                                                                crate::com2_println!("remaining_aml = {:02x?}", remaining_aml);
                                                             }
                                                         } else {
                                                             quote! {

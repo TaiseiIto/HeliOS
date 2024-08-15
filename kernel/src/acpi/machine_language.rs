@@ -905,6 +905,7 @@ impl From<&[u8]> for MethodInvocation {
             | "CINS"
             | "CNEW"
             | "CPEN"
+            | "CRMV"
             | "CSCN"
             | "DLSI"
             | "DLSW"
