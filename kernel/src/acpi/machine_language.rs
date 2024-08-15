@@ -842,6 +842,7 @@ impl From<&[u8]> for MethodInvocation {
             | "PPRT"
             | "PRQ0"
             | "PRR0"
+            | "PRRI"
             | "PWPR"
             | "PWRR"
             | "P_CS"
