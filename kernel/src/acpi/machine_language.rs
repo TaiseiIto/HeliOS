@@ -123,9 +123,10 @@ pub struct ByteConst(
 #[encoding_value_max = 0xff]
 pub struct ByteData(u8);
 
-impl ByteData {
-    pub fn pkg_length(&self) -> usize {
-        self.0 as usize
+impl From<&ByteData> for usize {
+    fn from(byte_data: &ByteData) -> Self {
+        let ByteData(byte_data) = byte_data;
+        *byte_data as Self
     }
 }
 
@@ -1175,6 +1176,92 @@ impl Reader<'_> for MethodInvocation {
 #[encoding_value = 0x14]
 pub struct MethodOp;
 
+/// # MultiNamePath
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+pub struct MultiNamePath(
+    MultiNamePrefix,
+    SegCount,
+    Vec<NameSeg>,
+);
+
+impl fmt::Debug for MultiNamePath {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let multi_name_path: String = self.into();
+        formatter
+            .debug_tuple("MultiNamePath")
+            .field(&multi_name_path)
+            .finish()
+    }
+}
+
+impl From<&MultiNamePath> for String {
+    fn from(multi_name_path: &MultiNamePath) -> Self {
+        let MultiNamePath(
+            _multi_name_prefix,
+            _seg_count,
+            name_segs,
+        ) = multi_name_path;
+        let name_segs: Vec<String> = name_segs
+            .iter()
+            .map(|name_seg| name_seg.into())
+            .collect();
+        name_segs.join(".")
+    }
+}
+
+impl From<&[u8]> for MultiNamePath {
+    fn from(aml: &[u8]) -> Self {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let (multi_name_prefix, aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(aml);
+        let (seg_count, mut aml): (SegCount, &[u8]) = SegCount::read(aml);
+        let number_of_name_segs: usize = (&seg_count).into();
+        let mut name_segs: Vec<NameSeg> = Vec::new();
+        (0..number_of_name_segs)
+            .for_each(|_| {
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read(aml);
+                aml = remaining_aml;
+                name_segs.push(name_seg);
+            });
+        Self(
+            multi_name_prefix,
+            seg_count,
+            name_segs,
+        )
+    }
+}
+
+impl Reader<'_> for MultiNamePath {
+    fn length(&self) -> usize {
+        let Self(
+            multi_name_prefix,
+            seg_count,
+            name_segs,
+        ) = self;
+        multi_name_prefix.length() + seg_count.length() + name_segs
+            .iter()
+            .map(|name_seg| name_seg.length())
+            .sum::<usize>()
+    }
+
+    fn matches(aml: &[u8]) -> bool {
+        MultiNamePrefix::matches(aml)
+    }
+
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let multi_name_prefix: Self = aml.into();
+        let aml: &[u8] = &aml[multi_name_prefix.length()..];
+        (multi_name_prefix, aml)
+    }
+}
+
+/// # MultiNamePrefix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x2f]
+pub struct MultiNamePrefix;
+
 /// # MutexObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1219,6 +1306,7 @@ pub struct NameOp;
 #[string]
 pub enum NamePath {
     Dual(DualNamePath),
+    Multi(MultiNamePath),
     NameSeg(NameSeg),
     NullName(NullName),
 }
@@ -1406,10 +1494,17 @@ pub struct PkgLength {
 
 impl PkgLength {
     pub fn pkg_length(&self) -> usize {
-        (self.byte_data
+        let Self {
+            pkg_lead_byte,
+            byte_data,
+        } = self;
+        (byte_data
             .iter()
             .rev()
-            .fold(0, |length, byte_data| (length << u8::BITS) + byte_data.pkg_length()) << 4) + self.pkg_lead_byte.pkg_length()
+            .fold(0, |length, byte_data| {
+                let byte_data: usize = byte_data.into();
+                (length << u8::BITS) + byte_data
+            }) << 4) + self.pkg_lead_byte.pkg_length()
     }
 }
 
@@ -1442,7 +1537,11 @@ impl From<&[u8]> for PkgLength {
 
 impl Reader<'_> for PkgLength {
     fn length(&self) -> usize {
-        self.pkg_lead_byte.length() + self.byte_data
+        let Self {
+            pkg_lead_byte,
+            byte_data
+        } = self;
+        pkg_lead_byte.length() + byte_data
             .iter()
             .map(|byte_data| byte_data.length())
             .sum::<usize>()
@@ -1538,6 +1637,19 @@ pub struct RootChar(char);
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x10]
 pub struct ScopeOp;
+
+/// # SegCount
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct SegCount(ByteData);
+
+impl From<&SegCount> for usize {
+    fn from(seg_count: &SegCount) -> Self {
+        let SegCount(byte_data) = seg_count;
+        byte_data.into()
+    }
+}
 
 /// # ShiftCount
 /// ## References
