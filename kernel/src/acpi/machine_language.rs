@@ -945,9 +945,11 @@ impl From<&[u8]> for MethodInvocation {
             .into();
         let number_of_term_args: usize = match method_name.as_str() {
             "ADDR"
+            | "ASUN"
             | "AWAK"
             | "BFEA"
             | "BRDS"
+            | "BSEL"
             | "BTNC"
             | "BTNL"
             | "BTNS"
