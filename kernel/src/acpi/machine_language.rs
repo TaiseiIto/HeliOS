@@ -317,13 +317,10 @@ pub struct DefDevice(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub enum DefElse {
-    ElseOpPkgLengthTermList(
-        ElseOp,
-        PkgLength,
-        TermList,
-    ),
-    Nothing,
+pub struct DefElse {
+    ElseOp,
+    PkgLength,
+    TermList,
 }
 
 /// # DefField
@@ -338,16 +335,24 @@ pub struct DefField(
     FieldList,
 );
 
+/// # DefIf
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefIf(
+    IfOp,
+    PkgLength,
+    Predicate,
+    TermList,
+);
+
 /// # DefIfElse
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub struct DefIfElse(
-    IfOp,
-    PkgLength,
-    Predicate,
-    TermList,
-    DefElse,
+    DefIf,
+    Option<DefElse>,
 );
 
 /// # DefIncrement
@@ -661,7 +666,7 @@ pub struct DualNamePath(
 #[encoding_value = 0x2e]
 pub struct DualNamePrefix;
 
-/// # DefElse
+/// # ElseOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
