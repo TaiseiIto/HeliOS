@@ -88,6 +88,13 @@ pub struct AsciiCharList(Vec<AsciiChar>);
 #[encoding_value_max = 0x5a]
 pub struct AsciiUppercase(char);
 
+/// # BreakOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0xa5]
+pub struct BreakOp;
+
 /// # BuffPkgStrObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -256,6 +263,12 @@ pub struct DefAnd(
     [Operand; 2],
     Target,
 );
+
+/// # DefBreak
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefBreak(BreakOp);
 
 /// # DefBuffer
 /// ## References
@@ -1810,6 +1823,7 @@ pub struct SourceBuff(TermArg);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum StatementOpcode {
+    Break(DefBreak),
     IfElse(DefIfElse),
     Notyfy(DefNotify),
     Release(DefRelease),
