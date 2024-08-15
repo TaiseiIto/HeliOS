@@ -840,6 +840,7 @@ impl From<&[u8]> for MethodInvocation {
             | "PIDX"
             | "PNOT"
             | "PPRT"
+            | "PRR0"
             | "PWPR"
             | "PWRR"
             | "P_CS"
