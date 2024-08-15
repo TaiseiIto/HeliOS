@@ -244,6 +244,7 @@ pub struct DebugObj(DebugOp);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
 pub struct DebugOp(
     ExtOpPrefix,
     DebugOpSuffix,
@@ -792,7 +793,10 @@ pub struct FieldList(Vec<FieldElement>);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 #[matching_elements = 2]
-pub struct FieldOp(ExtOpPrefix, FieldOpSuffix);
+pub struct FieldOp(
+    ExtOpPrefix,
+    FieldOpSuffix,
+);
 
 /// # FieldOpSuffix
 /// ## References
@@ -1378,7 +1382,10 @@ pub struct MutexObject(SuperName);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 #[matching_elements = 2]
-pub struct MutexOp(ExtOpPrefix, MutexOpSuffix);
+pub struct MutexOp(
+    ExtOpPrefix,
+    MutexOpSuffix,
+);
 
 /// # MutexOpSuffix
 /// ## References
@@ -1585,7 +1592,10 @@ pub struct OneOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 #[matching_elements = 2]
-pub struct OpRegionOp(ExtOpPrefix, OpRegionOpSuffix);
+pub struct OpRegionOp(
+    ExtOpPrefix,
+    OpRegionOpSuffix,
+);
 
 /// # OpRegionOpSuffix
 /// ## References
@@ -1756,6 +1766,7 @@ pub struct PrefixPath(Vec<Circumflex>);
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
 pub struct ProcessorOp(
     ExtOpPrefix,
     ProcessorOpSuffix,
