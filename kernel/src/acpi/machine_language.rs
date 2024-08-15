@@ -1087,6 +1087,7 @@ impl From<&[u8]> for MethodInvocation {
             | "_S4W"
             | "_STA"
             | "_STR"
+            | "_SUN"
             | "_SWS"
             | "_TC1"
             | "_TC2"
