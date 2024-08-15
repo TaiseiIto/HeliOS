@@ -1504,7 +1504,7 @@ impl PkgLength {
             .fold(0, |length, byte_data| {
                 let byte_data: usize = byte_data.into();
                 (length << u8::BITS) + byte_data
-            }) << 4) + self.pkg_lead_byte.pkg_length()
+            }) << 4) + pkg_lead_byte.pkg_length()
     }
 }
 
