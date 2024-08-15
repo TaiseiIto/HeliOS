@@ -300,6 +300,7 @@ pub struct DefBuffer(
     BufferOp,
     PkgLength,
     BufferSize,
+    #[no_leftover]
     ByteList,
 );
 
@@ -332,6 +333,7 @@ pub struct DefDevice(
     DeviceOp,
     PkgLength,
     NameString,
+    #[no_leftover]
     TermList,
 );
 
@@ -342,6 +344,7 @@ pub struct DefDevice(
 pub struct DefElse(
     ElseOp,
     PkgLength,
+    #[no_leftover]
     TermList,
 );
 
@@ -354,6 +357,7 @@ pub struct DefField(
     PkgLength,
     NameString,
     FieldFlags,
+    #[no_leftover]
     FieldList,
 );
 
@@ -365,6 +369,7 @@ pub struct DefIf(
     IfOp,
     PkgLength,
     Predicate,
+    #[no_leftover]
     TermList,
 );
 
@@ -460,6 +465,7 @@ pub struct DefMethod(
     PkgLength,
     NameString,
     MethodFlags,
+    #[no_leftover]
     TermList,
 );
 
@@ -523,6 +529,7 @@ pub struct DefPackage(
     PackageOp,
     PkgLength,
     NumElements,
+    #[no_leftover]
     PackageElementList,
 );
 
@@ -537,6 +544,7 @@ pub struct DefProcessor(
     ProcId,
     PblkAddr,
     PblkLen,
+    #[no_leftover]
     ObjectList,
 );
 
@@ -566,6 +574,7 @@ pub struct DefScope(
     ScopeOp,
     PkgLength,
     NameString,
+    #[no_leftover]
     TermList,
 );
 
@@ -648,6 +657,7 @@ pub struct DefWhile(
     WhileOp,
     PkgLength,
     Predicate,
+    #[no_leftover]
     TermList,
 );
 
@@ -2000,6 +2010,7 @@ pub enum TermArg {
 #[derive(acpi_machine_language::Reader)]
 pub struct TermList(
     #[debug]
+    #[no_leftover]
     Vec<TermObj>
 );
 

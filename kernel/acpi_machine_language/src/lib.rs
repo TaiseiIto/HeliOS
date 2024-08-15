@@ -48,8 +48,9 @@ use {
     flags,
     matching_elements,
     matching_type,
+    no_leftover,
     not_string,
-    string
+    string,
 ))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
@@ -255,6 +256,7 @@ impl From<&Variant> for VariantAttribute {
 struct FieldAttribute {
     debug: bool,
     delimiter: Option<String>,
+    no_leftover: bool,
     not_string: bool,
 }
 
@@ -268,7 +270,7 @@ impl From<&Field> for FieldAttribute {
             colon_token: _,
             ty: _,
         } = field;
-        let (debug, delimiter, not_string): (bool, Option<String>, bool) = attrs
+        let (debug, delimiter, no_leftover, not_string): (bool, Option<String>, bool, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -290,26 +292,28 @@ impl From<&Field> for FieldAttribute {
                             Expr::Lit(ExprLit {
                                 attrs: _,
                                 lit: Lit::Str(delimiter),
-                            }) => (false, Some(delimiter.value()), false),
-                            _ => (false, None, false),
+                            }) => (false, Some(delimiter.value()), false, false),
+                            _ => (false, None, false, false),
                         },
-                        _ => (false, None, false),
+                        _ => (false, None, false, false),
                     },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "debug" => (true, None, false),
-                        "not_string" => (false, None, true),
-                        _ => (false, None, false),
+                        "debug" => (true, None, false, false),
+                        "no_leftover" => (false, None, true, false),
+                        "not_string" => (false, None, false, true),
+                        _ => (false, None, false, false),
                     },
-                    _ => (false, None, false),
+                    _ => (false, None, false, false),
                 }
             })
-            .fold((false, None, false), |(debug, delimiter, not_string), (new_debug, new_delimiter, new_not_string)| (debug || new_debug, delimiter.or(new_delimiter), not_string || new_not_string));
+            .fold((false, None, false, false), |(debug, delimiter, no_leftover, not_string), (new_debug, new_delimiter, new_no_leftover, new_not_string)| (debug || new_debug, delimiter.or(new_delimiter), no_leftover || new_no_leftover, not_string || new_not_string));
         Self {
             debug,
             delimiter,
+            no_leftover,
             not_string,
         }
     }
@@ -731,6 +735,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 let FieldAttribute {
                                     debug,
                                     delimiter: _,
+                                    no_leftover,
                                     not_string: _,
                                 } = field.into();
                                 let convert: proc_macro2::TokenStream = match ty {
@@ -856,6 +861,14 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                         }
                                     },
                                     _ => unimplemented!(),
+                                };
+                                let convert: proc_macro2::TokenStream = if no_leftover {
+                                    quote! {
+                                        #convert
+                                        assert!(aml.is_empty(), "aml = {:02x?}", aml);
+                                    }
+                                } else {
+                                    convert
                                 };
                                 let pack: proc_macro2::TokenStream = quote! {
                                     #field_name
@@ -1464,6 +1477,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             let FieldAttribute {
                                 debug: _,
                                 delimiter,
+                                no_leftover: _,
                                 not_string,
                             } = field.into();
                             let delimiter: String = delimiter.unwrap_or_default();
