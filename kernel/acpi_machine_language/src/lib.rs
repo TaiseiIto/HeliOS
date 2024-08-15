@@ -1041,7 +1041,9 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 #field_name.length()
                                             },
                                             "Option" => quote! {
-                                                #field_name.map_or(0, |element| element.length())
+                                                #field_name
+                                                    .as_ref()
+                                                    .map_or(0, |element| element.length())
                                             },
                                             "Vec" => match arguments {
                                                 PathArguments::AngleBracketed(AngleBracketedGenericArguments {
