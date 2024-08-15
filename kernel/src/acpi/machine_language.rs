@@ -382,6 +382,15 @@ pub struct DefLNot(
     Operand,
 );
 
+/// # DefLOr
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLOr(
+    LOrOp,
+    [Operand; 2],
+);
+
 /// # DefMethod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -631,6 +640,7 @@ pub enum ExpressionOpcode {
     LEqual(DefLEqual),
     LLess(DefLLess),
     LNot(DefLNot),
+    LOr(DefLOr),
     MethodInvocation(MethodInvocation),
     Or(DefOr),
     Package(DefPackage),
@@ -741,6 +751,13 @@ pub struct LLessOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x92]
 pub struct LNotOp;
+
+/// # LOrOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x91]
+pub struct LOrOp;
 
 /// # LeadNameChar
 /// ## References
