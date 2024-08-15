@@ -1236,9 +1236,8 @@ impl From<&[u8]> for MethodInvocation {
             | "DDSM"
             | "EDSM"
             // "HDSM" => 5,
-            | "MDSM" => 5,
-            // "PDSM" => 5,
-            // "PDSM" => 6,
+            | "MDSM"
+            | "PDSM" => 5,
             | "XRES" => 6,
             unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
         };
