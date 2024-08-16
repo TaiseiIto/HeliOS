@@ -962,7 +962,7 @@ impl From<&[u8]> for MethodInvocation {
             | "PCIU"
             | "PCNT"
             | "PIDX"
-            | "PRD "
+            | "PRD"
             | "PRQ0"
             | "PRQ1"
             | "PRQ2"
