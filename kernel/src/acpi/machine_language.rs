@@ -230,6 +230,13 @@ pub struct CondRefOfOp(
 #[encoding_value = 0x12]
 pub struct CondRefOfOpSuffix;
 
+/// # CopyObjectOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x9d]
+pub struct CopyObjectOp;
+
 /// # ConstObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -403,6 +410,16 @@ pub struct DefConcatRes(
     ConcatResOp,
     [BufData; 2],
     Target,
+);
+
+/// # DefCopyObject
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefCopyObject(
+    CopyObjectOp,
+    TermArg,
+    SimpleName,
 );
 
 /// # DefCreateDWordField
