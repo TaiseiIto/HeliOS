@@ -309,6 +309,14 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
+    // Get SSDT
+    let ssdt: &acpi::secondary_system_description::Table = Argument::get()
+        .efi_system_table()
+        .rsdp()
+        .xsdt()
+        .ssdt();
+    com2_println!("ssdt = {:#x?}", ssdt);
+    unimplemented!();
     // Shutdown.
     Argument::get()
         .efi_system_table()
