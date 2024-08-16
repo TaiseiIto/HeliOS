@@ -693,6 +693,20 @@ pub struct DefLoadTable(
     [TermArg; 6],
 );
 
+/// # DefMatch
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefMatch(
+    MatchOp,
+    SearchPkg,
+    MatchOpcode,
+    Operand,
+    MatchOpcode,
+    Operand,
+    StartIndex,
+);
+
 /// # DefMethod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1289,6 +1303,19 @@ pub enum LeadNameChar {
 #[encoding_value_min = 0x60]
 #[encoding_value_max = 0x67]
 pub struct LocalObj(u8);
+
+/// # MatchOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x89]
+pub struct MatchOp;
+
+/// # MatchOpcode
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct MatchOpcode(ByteData);
 
 /// # MethodFlags
 /// ## References
@@ -2061,6 +2088,12 @@ pub struct RootChar(char);
 #[encoding_value = 0x10]
 pub struct ScopeOp;
 
+/// # SearchPkg
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct SearchPkg(TermArg);
+
 /// # SegCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -2130,6 +2163,12 @@ pub enum StatementOpcode {
     Return(DefReturn),
     While(DefWhile),
 }
+
+/// # StartIndex
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct StartIndex(TermArg);
 
 /// # StoreOp
 /// ## References
