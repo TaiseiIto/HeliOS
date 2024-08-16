@@ -177,10 +177,11 @@ pub struct Circumflex(char);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum ComputationalData {
+    AmlString(AmlString),
     ByteConst(ByteConst),
     ConstObj(ConstObj),
     DWordConst(DWordConst),
-    AmlString(AmlString),
+    QWordConst(QWordConst),
     WordConst(WordConst),
 }
 
@@ -1546,6 +1547,29 @@ pub struct ProcessorOpSuffix;
 #[derive(acpi_machine_language::Reader)]
 pub struct ProcId(ByteData);
 
+/// # QWordConst
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct QWordConst(
+    QWordPrefix,
+    QWordData,
+);
+
+/// # QWordData
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct QWordData(
+    [DWordData; 2],
+);
+
+/// # QWordPrefix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x0e]
+pub struct QWordPrefix;
 
 /// # ReferenceTypeOpcode
 /// ## References
