@@ -232,6 +232,7 @@ pub struct DWordPrefix;
 pub enum DataObject {
     ComputationalData(ComputationalData),
     DefPackage(DefPackage),
+    DefVarPackage(DefVarPackage),
 }
 
 /// # DataRefObject
@@ -668,6 +669,17 @@ pub struct DefToHexString(
     Target,
 );
 
+/// # DefVarPackage
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefVarPackage(
+    VarPackageOp,
+    PkgLength,
+    VarNumElements,
+    PackageElementList,
+);
+
 /// # DefWhile
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -766,6 +778,7 @@ pub enum ExpressionOpcode {
     Subtract(DefSubtract),
     ToBuffer(DefToBuffer),
     ToHexString(DefToHexString),
+    VarPackage(DefVarPackage),
 }
 
 /// # ExtOpPrefix
@@ -1845,6 +1858,19 @@ pub struct ToHexStringOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x5f]
 pub struct Underscore(char);
+
+/// # VarPackageOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x13]
+pub struct VarPackageOp;
+
+/// # VarNumElements
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct VarNumElements(Box<TermArg>);
 
 /// # WhileOp
 /// ## References
