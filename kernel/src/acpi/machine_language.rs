@@ -325,6 +325,13 @@ pub struct DebugOp(
 #[encoding_value = 0x31]
 pub struct DebugOpSuffix;
 
+/// # DecrementOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x76]
+pub struct DecrementOp;
+
 /// # DefAcquire
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -433,6 +440,14 @@ pub struct DefCreateDWordField(
     NameString,
 );
 
+/// # DefDecrement
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefDecrement(
+    DecrementOp,
+    SuperName,
+);
 
 /// # DefDerefOf
 /// ## References
