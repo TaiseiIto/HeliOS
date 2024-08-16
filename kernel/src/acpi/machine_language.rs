@@ -470,6 +470,18 @@ pub struct DefDevice(
     TermList,
 );
 
+/// # DefDivide
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefDivide(
+    DivideOp,
+    Dividend,
+    Divisor,
+    Remainder,
+    Quotient,
+);
+
 /// # DefElse
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -856,6 +868,25 @@ pub struct DeviceOpSuffix;
 #[encoding_value_min = 0x30]
 #[encoding_value_max = 0x39]
 pub struct DigitChar(char);
+
+/// # DivideOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x78]
+pub struct DivideOp;
+
+/// # Dividend
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct Dividend(TermArg);
+
+/// # Divisor
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct Divisor(TermArg);
 
 /// # DualNamePath
 /// ## References
@@ -1787,6 +1818,12 @@ pub struct QWordData(
 #[encoding_value = 0x0e]
 pub struct QWordPrefix;
 
+/// # Quotient
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct Quotient(Target);
+
 /// # ReferenceTypeOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1831,6 +1868,12 @@ pub struct ReleaseOp(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x27]
 pub struct ReleaseOpSuffix;
+
+/// # Remainder
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct Remainder(Target);
 
 /// # ReservedField
 /// ## References
