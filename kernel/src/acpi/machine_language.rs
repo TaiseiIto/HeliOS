@@ -742,6 +742,16 @@ pub struct DefMod(
     Target,
 );
 
+/// # DefMultiply
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefMultiply(
+    MultiplyOp,
+    [Operand; 2],
+    Target,
+);
+
 /// # DefMutex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1589,6 +1599,13 @@ impl Reader<'_> for MultiNamePath {
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x2f]
 pub struct MultiNamePrefix;
+
+/// # MultiplyOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x77]
+pub struct MultiplyOp;
 
 /// # MutexObject
 /// ## References
