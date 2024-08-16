@@ -194,6 +194,13 @@ pub enum ComputationalData {
     WordConst(WordConst),
 }
 
+/// # ConcatOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x73]
+pub struct ConcatOp;
+
 /// # ConstObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -233,6 +240,12 @@ pub struct DWordData(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x0c]
 pub struct DWordPrefix;
+
+/// # Data
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct Data(TermArg);
 
 /// # DataObject
 /// ## References
@@ -331,6 +344,16 @@ pub struct DefBuffer(
     BufferSize,
     #[no_leftover]
     ByteList,
+);
+
+/// # DefConcat
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefConcat(
+    ConcatOp,
+    [Data; 2],
+    Target,
 );
 
 /// # DefCreateDWordField
