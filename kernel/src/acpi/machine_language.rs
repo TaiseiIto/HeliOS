@@ -11,7 +11,10 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
-    crate::com2_println,
+    crate::{
+        Argument,
+        com2_println,
+    },
 };
 
 pub trait Reader<'a>: From<&'a [u8]> {
@@ -998,45 +1001,54 @@ impl From<&[u8]> for MethodInvocation {
             .last()
             .unwrap()
             .into();
-        let number_of_term_args: usize = match method_name.as_str() {
-              "ASUN"
-            | "BSEL"
-            | "CDAT"
-            | "CINS"
-            | "CNEW"
-            | "CPEN"
-            | "CRMV"
-            | "CSCN"
-            | "LNKA"
-            | "LNKB"
-            | "LNKC"
-            | "LNKD"
-            | "LNKS"
-            | "PCID"
-            | "PCIU"
-            | "PCNT"
-            | "PIDX"
-            | "PRD"
-            | "PRQ0"
-            | "PRQ1"
-            | "PRQ2"
-            | "PRQ3"
-            | "PRR0"
-            | "PRRI"
-            | "VEND"
-            | "_PRS"
-            | "_SUN" => 0,
-              "CEJ0"
-            | "CSTA"
-            | "IQCR"
-            | "IQST" => 1,
-              "AIDX"
-            | "CTFY"
-            | "DVNT"
-            | "PCEJ" => 2,
-              "COST" => 4,
-              "PDSM" => 5,
-            unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
+        let number_of_term_args: usize = match Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .oemid() {
+            "BOCHS " => match method_name.as_str() { // QEMU
+                  "ASUN"
+                | "BSEL"
+                | "CDAT"
+                | "CINS"
+                | "CNEW"
+                | "CPEN"
+                | "CRMV"
+                | "CSCN"
+                | "LNKA"
+                | "LNKB"
+                | "LNKC"
+                | "LNKD"
+                | "LNKS"
+                | "PCID"
+                | "PCIU"
+                | "PCNT"
+                | "PIDX"
+                | "PRD"
+                | "PRQ0"
+                | "PRQ1"
+                | "PRQ2"
+                | "PRQ3"
+                | "PRR0"
+                | "PRRI"
+                | "VEND"
+                | "_PRS"
+                | "_SUN" => 0,
+                  "CEJ0"
+                | "CSTA"
+                | "IQCR"
+                | "IQST" => 1,
+                  "AIDX"
+                | "CTFY"
+                | "DVNT"
+                | "PCEJ" => 2,
+                  "COST" => 4,
+                  "PDSM" => 5,
+                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
+            },
+            "VBOX  " => unimplemented!(), // VirtualBox
+            "PTLTD " => unimplemented!(), // VMware
+            "ALASKA" => unimplemented!(), // GPD MicroPC
+            unknown_oemid => panic!("Unknown OEM {:#x?}", unknown_oemid),
         };
         com2_println!("METHOD INVOCATION!!! {} {}", number_of_term_args, method_name);
         let mut term_args: Vec<TermArg> = Vec::new();
