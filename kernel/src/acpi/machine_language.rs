@@ -684,6 +684,15 @@ pub struct DefLOr(
     [Operand; 2],
 );
 
+/// # DefLoadTable
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLoadTable(
+    LoadTableOp,
+    [TermArg; 6],
+);
+
 /// # DefMethod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1245,6 +1254,23 @@ pub struct LNotOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x91]
 pub struct LOrOp;
+
+/// # LoadTableOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct LoadTableOp(
+    ExtOpPrefix,
+    LoadTableOpSuffix,
+);
+
+/// # LoadTableOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x1f]
+pub struct LoadTableOpSuffix;
 
 /// # LeadNameChar
 /// ## References
