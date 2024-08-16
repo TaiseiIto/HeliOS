@@ -666,6 +666,15 @@ pub struct DefLNot(
     Operand,
 );
 
+/// # DefLNotEqual
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLNotEqual(
+    LNotEqualOp,
+    [Operand; 2],
+);
+
 /// # DefLOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1212,6 +1221,16 @@ pub struct LLessEqualOp(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x95]
 pub struct LLessOp;
+
+/// # LNotEqualOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct LNotEqualOp(
+    LNotOp,
+    LEqualOp,
+);
 
 /// # LNotOp
 /// ## References
