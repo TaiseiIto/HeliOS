@@ -105,6 +105,12 @@ pub struct AsciiCharList(Vec<AsciiChar>);
 #[encoding_value_max = 0x5a]
 pub struct AsciiUppercase(char);
 
+/// # BcdValue
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct BcdValue(TermArg);
+
 /// # BreakOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -546,6 +552,16 @@ pub struct DefFindSetRightBit(
     Target,
 );
 
+/// # DefFromBcd
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefFromBcd(
+    FromBcdOp,
+    BcdValue,
+    Target,
+);
+
 /// # DefIf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -969,7 +985,7 @@ pub enum ExpressionOpcode {
     Divide(DefDivide),
     FindSetLeftBit(DefFindSetLeftBit),
     FindSetRightBit(DefFindSetRightBit),
-    FromBCD(DefFromBCD),
+    FromBcd(DefFromBcd),
     Increment(DefIncrement),
     Index(DefIndex),
     LAnd(DefLAnd),
@@ -1086,6 +1102,23 @@ pub struct FindSefLeftBitOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x82]
 pub struct FindSefRightBitOp;
+
+/// # FromBcdOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct FromBcdOp(
+    ExtOpPrefix,
+    FromBcdOpSuffix,
+);
+
+/// # FromBcdOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x28]
+pub struct FromBcdOpSuffix;
 
 /// # IfOp
 /// ## References
