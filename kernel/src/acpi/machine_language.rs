@@ -44,6 +44,13 @@ pub struct AcquireOpSuffix;
 #[encoding_value = 0x72]
 pub struct AddOp;
 
+/// # AliasOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x06]
+pub struct AliasOp;
+
 /// # AndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -276,6 +283,15 @@ pub struct DefAdd(
     AddOp,
     [Operand; 2],
     Target,
+);
+
+/// # DefAlias
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefAlias(
+    AliasOp,
+    [NameString; 2],
 );
 
 /// # DefAnd
@@ -1204,8 +1220,9 @@ pub struct NameSeg(
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum NameSpaceModifierObj {
-    DefName(DefName),
-    DefScope(DefScope),
+    Alias(DefAlias),
+    Name(DefName),
+    Scope(DefScope),
 }
 
 /// # NameString
