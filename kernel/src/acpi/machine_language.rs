@@ -648,6 +648,15 @@ pub struct DefLLess(
     [Operand; 2],
 );
 
+/// # DefLLessEqual
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLLessEqual(
+    LLessEqualOp,
+    [Operand; 2],
+);
+
 /// # DefLNot
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1170,13 +1179,6 @@ pub struct LAndOp;
 #[encoding_value = 0x93]
 pub struct LEqualOp;
 
-/// # LGreaterOp
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Reader)]
-#[encoding_value = 0x94]
-pub struct LGreaterOp;
-
 /// # LGreaterEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1185,6 +1187,23 @@ pub struct LGreaterOp;
 pub struct LGreaterEqualOp(
     LNotOp,
     LLessOp,
+);
+
+/// # LGreaterOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x94]
+pub struct LGreaterOp;
+
+/// # LLessEqualOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct LLessEqualOp(
+    LNotOp,
+    LGreaterOp,
 );
 
 /// # LLessOp
