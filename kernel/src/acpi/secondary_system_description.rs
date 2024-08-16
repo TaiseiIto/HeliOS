@@ -42,3 +42,9 @@ impl fmt::Debug for Table {
     }
 }
 
+impl<'a> From<&'a Table> for &'a [u8] {
+    fn from(table: &'a Table) -> Self {
+        (&table.header).into()
+    }
+}
+
