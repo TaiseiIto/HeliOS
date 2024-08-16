@@ -720,6 +720,17 @@ pub struct DefMethod(
     TermList,
 );
 
+/// # DefMid
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefMid(
+    MidOp,
+    MidObj,
+    [TermArg; 2],
+    Target,
+);
+
 /// # DefMutex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1460,6 +1471,20 @@ impl Reader<'_> for MethodInvocation {
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x14]
 pub struct MethodOp;
+
+/// # MidObj
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x9e]
+pub struct MidObj(TermArg);
+
+/// # MidOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x9e]
+pub struct MidOp;
 
 /// # MultiNamePath
 /// ## References
