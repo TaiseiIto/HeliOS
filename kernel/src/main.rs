@@ -309,6 +309,10 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
+    com2_println!("cpuid = {:#x?}", Argument::get().cpuid());
+    com2_println!("efi_system_table = {:#x?}", Argument::get().efi_system_table());
+    com2_println!("rsdp = {:#x?}", Argument::get().efi_system_table().rsdp());
+    unimplemented!();
     // Shutdown.
     Argument::get()
         .efi_system_table()
@@ -316,7 +320,6 @@ fn main(argument: &'static mut Argument<'static>) {
         .xsdt()
         .fadt()
         .shutdown();
-    unimplemented!();
 }
 
 /// # A panic handler of the kernel
