@@ -922,6 +922,16 @@ pub struct DefToBuffer(
     Target,
 );
 
+/// # DefToDecimalString
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefToDecimalString(
+    ToDecimalStringOp,
+    Operand,
+    Target,
+);
+
 /// # DefToHexString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2385,6 +2395,13 @@ pub struct Timeout(WordData);
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x96]
 pub struct ToBufferOp;
+
+/// # ToDecimalStringOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x97]
+pub struct ToDecimalStringOp;
 
 /// # ToHexStringOp
 /// ## References
