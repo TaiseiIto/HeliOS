@@ -1891,7 +1891,14 @@ pub struct NamedField(
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum NamedObj {
+    BankField(DefBankField),
+    CreateBitField(DefCreateBitField),
+    CreateByteField(DefCreateByteField),
     CreateDWordField(DefCreateDWordField),
+    CreateField(DefCreateField),
+    CreateQWordField(DefCreateQWordField),
+    CreateWordField(DefCreateWrodField),
+    DataRegion(DefDataRegion),
     Device(DefDevice),
     Event(DefEvent),
     External(DefExternal),
@@ -1899,7 +1906,9 @@ pub enum NamedObj {
     Method(DefMethod),
     Mutex(DefMutex),
     OpRegion(DefOpRegion),
+    PowerRes(DefPowerRes),
     Processor(DefProcessor),
+    ThermalZone(DefThermalZone),
 }
 
 /// # NotOp
