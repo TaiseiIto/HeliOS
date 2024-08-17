@@ -147,6 +147,13 @@ pub struct BitIndex(TermArg);
 #[encoding_value = 0xa5]
 pub struct BreakOp;
 
+/// # BreakPointOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0xcc]
+pub struct BreakPointOp;
+
 /// # BufData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -488,6 +495,12 @@ pub struct DefBankField(
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub struct DefBreak(BreakOp);
+
+/// # DefBreakPoint
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefBreakPoint(BreakPointOp);
 
 /// # DefBuffer
 /// ## References
