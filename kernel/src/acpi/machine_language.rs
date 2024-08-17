@@ -1136,7 +1136,7 @@ pub struct DefProcessor(
 #[derive(acpi_machine_language::Reader)]
 pub struct DefRefOf(
     RefOfOp,
-    SuperName,
+    Box<SuperName>,
 );
 
 /// # DefRelease
@@ -2673,6 +2673,8 @@ pub struct Quotient(Target);
 #[derive(acpi_machine_language::Reader)]
 pub enum ReferenceTypeOpcode {
     DefIndex(DefIndex),
+    DerefOf(DefDerefOf),
+    RefOf(DefRefOf),
 }
 
 /// # RefOfOp
@@ -2962,7 +2964,6 @@ pub struct StringPrefix;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x74]
 pub struct SubtractOp;
-
 
 /// # SuperName
 /// ## References
