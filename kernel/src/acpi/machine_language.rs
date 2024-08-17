@@ -1027,6 +1027,20 @@ pub struct DefPackage(
     PackageElementList,
 );
 
+/// # DefPowerRes
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefPowerRes(
+    PowerResOp,
+    PkgLength,
+    NameString,
+    SystemLevel,
+    ResourceOrder,
+    #[no_leftover]
+    TermList,
+);
+
 /// # DefProcessor
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
@@ -2349,6 +2363,23 @@ impl Reader<'_> for PkgLength {
     }
 }
 
+/// # PowerResOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct PowerResOp(
+    ExtOpPrefix,
+    PowerResOpSuffix,
+);
+
+/// # PowerResOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x84]
+pub struct PowerResOpSuffix;
+
 /// # Predicate
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2489,6 +2520,12 @@ pub struct ReservedField(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x00]
 pub struct ReservedFieldOp;
+
+/// # ResourceOrder
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct ResourceOrder(WordData);
 
 /// # ReturnOp
 /// ## References
@@ -2649,6 +2686,12 @@ pub struct SyncFlags {
     #[bits(4, access = RO)]
     reserved0: u8,
 }
+
+/// # SystemLevel
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct SystemLevel(ByteData);
 
 /// # Target
 /// ## References
