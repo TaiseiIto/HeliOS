@@ -623,8 +623,47 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                     .first()
                                     .unwrap();
                                 let matches: proc_macro2::TokenStream = if matching_types.is_empty() {
-                                    quote! {
-                                        #ty::matches(aml)
+                                    match ty {
+                                        Type::Path(TypePath {
+                                            qself: _,
+                                            path,
+                                        }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments,
+                                            } = segments
+                                                .iter()
+                                                .last()
+                                                .unwrap();
+                                            match ident
+                                                .to_string()
+                                                .as_str() {
+                                                "Box" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            #element_type::matches(aml)
+                                                        },
+                                                        _ => unimplemented!(),
+                                                    }
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => quote! {
+                                                    #ty::matches(aml)
+                                                },
+                                            }
+                                        }
+                                        _ => unimplemented!(),
                                     }
                                 } else {
                                     let matches: Vec<proc_macro2::TokenStream> = matching_types
