@@ -134,6 +134,12 @@ pub struct BankValue(TermArg);
 #[derive(acpi_machine_language::Reader)]
 pub struct BcdValue(TermArg);
 
+/// # BitIndex
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct BitIndex(TermArg);
+
 /// # BreakOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -275,6 +281,13 @@ pub enum ConstObj {
     OneOp(OneOp),
     ZeroOp(ZeroOp),
 }
+
+/// # CreateBitFieldOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x8d]
+pub struct CreateBitFieldOp;
 
 /// # CreateDWordFieldOp
 /// ## References
@@ -471,6 +484,17 @@ pub struct DefCopyObject(
     CopyObjectOp,
     TermArg,
     SimpleName,
+);
+
+/// # DefCreateBitField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefCreateBitField(
+    CreateBitFieldOp,
+    SourceBuff,
+    BitIndex,
+    NameString,
 );
 
 /// # DefCreateDWordField
