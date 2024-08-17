@@ -1953,7 +1953,8 @@ impl From<&[u8]> for MethodInvocation {
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "BUFF"
-                | "MSWV" => 0,
+                | "MSWV"
+                | "_OS" => 0,
                   "DBG"
                 | "S2BF"
                 | "SLEN" => 1,
@@ -1965,6 +1966,7 @@ impl From<&[u8]> for MethodInvocation {
                   "BUF0"
                 | "BUF1"
                 | "FLAG"
+                | "GPIC"
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
