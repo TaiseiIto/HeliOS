@@ -1206,6 +1206,15 @@ pub struct DefSleep(
     MsecTime,
 );
 
+/// # DefStall
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefStall(
+    StallOp,
+    UsecTime,
+);
+
 /// # DefStore
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2840,6 +2849,23 @@ pub enum StatementOpcode {
     While(DefWhile),
 }
 
+/// # StallOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct StallOp(
+    ExtOpPrefix,
+    StallOpSuffix,
+);
+
+/// # StallOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x21]
+pub struct StallOpSuffix;
+
 /// # StartIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -3046,6 +3072,12 @@ pub struct ToStringOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x5f]
 pub struct Underscore(char);
+
+/// # UsecTime
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct UsecTime(TermArg);
 
 /// # VarPackageOp
 /// ## References
