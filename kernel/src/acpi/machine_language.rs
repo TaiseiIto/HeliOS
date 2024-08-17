@@ -122,13 +122,13 @@ pub struct BreakOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct BufData(Box<TermArg>);
+pub struct BufData(TermArg);
 
 /// # BuffPkgStrObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct BuffPkgStrObj(Box<TermArg>);
+pub struct BuffPkgStrObj(TermArg);
 
 /// # BufferOp
 /// ## References
@@ -141,7 +141,7 @@ pub struct BufferOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct BufferSize(Box<TermArg>);
+pub struct BufferSize(TermArg);
 
 /// # ByteConst
 /// ## References
@@ -287,7 +287,7 @@ pub struct DWordPrefix;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct Data(Box<TermArg>);
+pub struct Data(TermArg);
 
 /// # DataObject
 /// ## References
@@ -600,7 +600,7 @@ pub struct DefIndex(
     IndexOp,
     BuffPkgStrObj,
     IndexValue,
-    Box<Target>,
+    Target,
 );
 
 /// # DefLAnd
@@ -946,7 +946,7 @@ pub struct DefSizeOf(
 #[derive(acpi_machine_language::Reader)]
 pub struct DefStore(
     StoreOp,
-    Box<TermArg>,
+    TermArg,
     SuperName,
 );
 
@@ -1350,7 +1350,7 @@ pub struct IndexOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct IndexValue(Box<TermArg>);
+pub struct IndexValue(TermArg);
 
 /// # LAndOp
 /// ## References
@@ -1952,7 +1952,7 @@ pub struct NumElements(ByteData);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct ObjReference(Box<TermArg>);
+pub struct ObjReference(TermArg);
 
 /// # Object
 /// ## References
@@ -2022,7 +2022,7 @@ pub struct OpRegionOpSuffix;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct Operand(Box<TermArg>);
+pub struct Operand(TermArg);
 
 /// # OrOp
 /// ## References
@@ -2347,7 +2347,7 @@ impl From<&SegCount> for usize {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct ShiftCount(Box<TermArg>);
+pub struct ShiftCount(TermArg);
 
 /// # ShiftLeftOp
 /// ## References
@@ -2469,7 +2469,7 @@ pub struct SyncFlags {
 #[derive(acpi_machine_language::Reader)]
 pub enum Target {
     NullName(NullName),
-    SuperName(SuperName),
+    SuperName(Box::<SuperName>),
 }
 
 /// # TermArg
@@ -2477,8 +2477,8 @@ pub enum Target {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum TermArg {
-    ExpressionOpcode(ExpressionOpcode),
-    DataObject(DataObject),
+    ExpressionOpcode(Box::<ExpressionOpcode>),
+    DataObject(Box::<DataObject>),
     ArgObj(ArgObj),
     LocalObj(LocalObj),
 }
@@ -2595,7 +2595,7 @@ pub struct VarPackageOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
-pub struct VarNumElements(Box<TermArg>);
+pub struct VarNumElements(TermArg);
 
 /// # WaitOp
 /// ## References
