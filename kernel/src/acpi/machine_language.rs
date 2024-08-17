@@ -383,6 +383,23 @@ pub enum DataRefObject {
     ObjReference(ObjReference),
 }
 
+/// # DataRegionOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct DataRegionOp(
+    ExtOpPrefix,
+    DataRegionOpSuffix,
+);
+
+/// # DataRegionOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x88]
+pub struct DataRegionOpSuffix;
+
 /// # DebugObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Objects Encoding
@@ -589,6 +606,16 @@ pub struct DefCreateWordField(
     SourceBuff,
     ByteIndex,
     NameString,
+);
+
+/// # DefDataRegion
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefDataRegion(
+    DataRegionOp,
+    NameString,
+    [TermArg; 3],
 );
 
 /// # DefDecrement
