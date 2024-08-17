@@ -932,6 +932,16 @@ pub struct DefToHexString(
     Target,
 );
 
+/// # DefToInteger
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefToInteger(
+    ToIntegerOp,
+    Operand,
+    Target,
+);
+
 /// # DefToString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2382,6 +2392,13 @@ pub struct ToBufferOp;
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x98]
 pub struct ToHexStringOp;
+
+/// # ToIntegerOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x99]
+pub struct ToIntegerOp;
 
 /// # ToStringOp
 /// ## References
