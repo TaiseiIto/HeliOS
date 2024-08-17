@@ -1954,7 +1954,8 @@ impl From<&[u8]> for MethodInvocation {
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "BUFF"
                 | "MSWV" => 0,
-                  "S2BF"
+                  "DBG"
+                | "S2BF"
                 | "SLEN" => 1,
                   "MIN"
                 | "SCMP" => 2,
@@ -1963,7 +1964,8 @@ impl From<&[u8]> for MethodInvocation {
             "VMWARE" => match method_name.as_str() { // VMware
                   "BUF0"
                 | "BUF1"
-                | "FLAG" => 0,
+                | "FLAG"
+                | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
