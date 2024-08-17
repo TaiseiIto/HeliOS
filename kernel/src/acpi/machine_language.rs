@@ -814,6 +814,19 @@ pub struct DefIndex(
     Target,
 );
 
+/// # DefIndexField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefIndexField(
+    IndexFieldOp,
+    PkgLength,
+    [NameString; 2],
+    FieldFlags,
+    #[no_leftover]
+    FieldList,
+);
+
 /// # DefLAnd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1665,6 +1678,23 @@ pub struct IfOp;
 #[encoding_value = 0x75]
 pub struct IncrementOp;
 
+/// # IndexFieldOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct IndexFieldOp(
+    ExtOpPrefix,
+    IndexFieldOpSuffix,
+);
+
+/// # IndexFieldOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x86]
+pub struct IndexFieldOpSuffix;
+
 /// # IndexOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2251,6 +2281,7 @@ pub enum NamedObj {
     Event(DefEvent),
     External(DefExternal),
     Field(DefField),
+    IndexField(DefIndexField),
     Method(DefMethod),
     Mutex(DefMutex),
     OpRegion(DefOpRegion),
