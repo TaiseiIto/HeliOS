@@ -831,6 +831,15 @@ pub struct DefProcessor(
     ObjectList,
 );
 
+/// # DefRefOf
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefRefOf(
+    RefOfOp,
+    SuperName,
+);
+
 /// # DefRelease
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2143,6 +2152,13 @@ pub enum ReferenceTypeOpcode {
     DefIndex(DefIndex),
 }
 
+/// # RefOfOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x71]
+pub struct RefOfOp;
+
 /// # RegionLen
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2417,12 +2433,12 @@ pub struct TimerOp(
     TimerOpSuffix,
 );
 
-/// # TimerOp
+/// # TimerOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x33]
-pub struct TimerOp;
+pub struct TimerOpSuffix;
 
 /// # ToBcdOp
 /// ## References
