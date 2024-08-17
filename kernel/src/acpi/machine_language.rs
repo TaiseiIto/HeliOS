@@ -794,6 +794,15 @@ pub struct DefOpRegion(
     RegionLen,
 );
 
+/// # DefObjectType
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefObjectType(
+    ObjectTypeOp,
+    ObjectTypeEnum,
+);
+
 /// # DefOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1166,7 +1175,7 @@ pub enum ExpressionOpcode {
     NAnd(DefNAnd),
     NOr(DefNOr),
     Not(DefNot),
-    ObjectType(DefObjectTyp),
+    ObjectType(DefObjectType),
     Or(DefOr),
     Package(DefPackage),
     RefOf(DefRefOf),
@@ -1888,12 +1897,6 @@ pub struct NumElements(ByteData);
 #[derive(acpi_machine_language::Reader)]
 pub struct ObjReference(Box<TermArg>);
 
-/// # ObjectType
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Reader)]
-pub struct ObjectType(ByteData);
-
 /// # Object
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
@@ -1908,6 +1911,31 @@ pub enum Object {
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub struct ObjectList(Vec<Object>);
+
+/// # ObjectType
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct ObjectType(ByteData);
+
+/// # ObjectTypeEnum
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub enum ObjectTypeEnum {
+    SimpleName(SimpleName),
+    DebugObj(DebugObj),
+    DefRefOf(DefRefOf),
+    DefDerefOf(DefDerefOf),
+    DefIndex(DefIndex),
+};
+
+/// # ObjectTypeOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x8e]
+pub struct ObjectTypeOp;
 
 /// # OneOp
 /// ## References
