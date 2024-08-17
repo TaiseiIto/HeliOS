@@ -1011,6 +1011,12 @@ pub struct DefName(
     DataRefObject,
 );
 
+/// # DefNoop
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefNoop(NoopOp);
+
 /// # DefNot
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2209,6 +2215,13 @@ pub enum NamedObj {
     ThermalZone(DefThermalZone),
 }
 
+/// # NoopOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0xa3]
+pub struct NoopOp;
+
 /// # NotOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2722,7 +2735,6 @@ pub struct SizeOfOp;
 #[derive(acpi_machine_language::Reader)]
 pub struct SourceBuff(TermArg);
 
-
 /// # StatementOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2734,7 +2746,7 @@ pub enum StatementOpcode {
     Fatal(DefFatal),
     IfElse(DefIfElse),
     Noop(DefNoop),
-    Notyfy(DefNotify),
+    Notify(DefNotify),
     Release(DefRelease),
     Reset(DefReset),
     Return(DefReturn),
