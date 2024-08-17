@@ -1149,6 +1149,12 @@ pub struct DualNamePrefix;
 #[encoding_value = 0xa1]
 pub struct ElseOp;
 
+/// # EventObject
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct EventObject(SuperName);
+
 /// # EventOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1293,14 +1299,14 @@ pub struct FieldOpSuffix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x81]
-pub struct FindSefLeftBitOp;
+pub struct FindSetLeftBitOp;
 
 /// # FindSetRightBitOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x82]
-pub struct FindSefRightBitOp;
+pub struct FindSetRightBitOp;
 
 /// # FromBcdOp
 /// ## References
@@ -1979,7 +1985,7 @@ pub enum ObjectTypeEnum {
     DefRefOf(DefRefOf),
     DefDerefOf(DefDerefOf),
     DefIndex(DefIndex),
-};
+}
 
 /// # ObjectTypeOp
 /// ## References
