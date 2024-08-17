@@ -856,6 +856,16 @@ pub struct DefLOr(
     [Operand; 2],
 );
 
+/// # DefLoad
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefLoad(
+    LoadOp,
+    NameString,
+    Target,
+);
+
 /// # DefLoadTable
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1401,6 +1411,7 @@ pub enum ExpressionOpcode {
     LNot(DefLNot),
     LNotEqual(DefLNotEqual),
     LOr(DefLOr),
+    Load(DefLoad),
     LoadTable(DefLoadTable),
     Match(DefMatch),
     MethodInvocation(MethodInvocation),
@@ -1628,6 +1639,23 @@ pub struct LOrOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Reader)]
 pub struct LengthArg(TermArg);
+
+/// # LoadOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct LoadOp(
+    ExtOpPrefix,
+    LoadOpSuffix,
+);
+
+/// # LoadOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x20]
+pub struct LoadOpSuffix;
 
 /// # LoadTableOp
 /// ## References
