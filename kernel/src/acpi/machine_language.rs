@@ -955,6 +955,16 @@ pub struct DefWhile(
     TermList,
 );
 
+/// # DefXOr
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefXOr(
+    XOrOp,
+    [Operand; 2],
+    Target,
+);
+
 /// # DerefOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2396,6 +2406,13 @@ pub struct WordData(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x0b]
 pub struct WordPrefix;
+
+/// # XOrOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x7f]
+pub struct XOrOp;
 
 /// # ZeroOp
 /// ## References
