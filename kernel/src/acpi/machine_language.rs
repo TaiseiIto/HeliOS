@@ -1951,8 +1951,12 @@ impl From<&[u8]> for MethodInvocation {
                   "PDSM" => 5,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
-            "VBOX  " => unimplemented!(), // VirtualBox
-            "PTLTD " => unimplemented!(), // VMware
+            "VBOX  " => match method_name.as_str() { // VirtualBox
+                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
+            },
+            "VMWARE " => match method_name.as_str() { // VMware
+                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
+            },
             "ALASKA" => unimplemented!(), // GPD MicroPC
             unknown_oemid => panic!("Unknown OEM {:#x?}", unknown_oemid),
         };
