@@ -320,6 +320,13 @@ pub struct CreateFieldOp(
 #[encoding_value = 0x13]
 pub struct CreateFieldOpSuffix;
 
+/// # CreateQWordFieldOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x8f]
+pub struct CreateQWordFieldOp;
+
 /// # DWordConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -552,6 +559,17 @@ pub struct DefCreateField(
     SourceBuff,
     BitIndex,
     NumBits,
+    NameString,
+);
+
+/// # DefCreateQWordField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefCreateQWordField(
+    CreateQWordFieldOp,
+    SourceBuff,
+    ByteIndex,
     NameString,
 );
 
