@@ -105,6 +105,29 @@ pub struct AsciiCharList(Vec<AsciiChar>);
 #[encoding_value_max = 0x5a]
 pub struct AsciiUppercase(char);
 
+/// # BankFieldOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[matching_elements = 2]
+pub struct BankFieldOp(
+    ExtOpPrefix,
+    BankFieldOpSuffix,
+);
+
+/// # BankFieldOpSuffix
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x87]
+pub struct BankFieldOpSuffix;
+
+/// # BankValue
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct BankValue(TermArg);
+
 /// # BcdValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -376,6 +399,20 @@ pub struct DefAnd(
     AndOp,
     [Operand; 2],
     Target,
+);
+
+/// # DefBankField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefBankField(
+    BankFieldOp,
+    PkgLength,
+    [NameString; 2],
+    BankValue,
+    FieldFlags,
+    #[no_leftover]
+    FieldList,
 );
 
 /// # DefBreak
@@ -1038,6 +1075,7 @@ pub struct DefVarPackage(
     VarPackageOp,
     PkgLength,
     VarNumElements,
+    #[no_leftover]
     PackageElementList,
 );
 
