@@ -54,6 +54,18 @@ pub struct AddOp;
 #[encoding_value = 0x06]
 pub struct AliasOp;
 
+/// # AmlString
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[string]
+pub struct AmlString(
+    #[not_string]
+    StringPrefix,
+    AsciiCharList,
+    NullChar,
+);
+
 /// # AndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -221,13 +233,6 @@ pub struct ByteList(Vec<ByteData>);
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x0a]
 pub struct BytePrefix;
-
-/// # Circumflex
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Reader)]
-#[encoding_value = 0x5e]
-pub struct Circumflex(char);
 
 /// # ComputationalData
 /// ## References
@@ -2232,7 +2237,7 @@ pub enum NameString {
         RootChar,
         NamePath,
     ),
-    #[matching_type = "Circumflex"]
+    #[matching_type = "ParentPrefixChar"]
     #[matching_type = "NamePath"]
     PrefixPathNamePath(
         PrefixPath,
@@ -2454,6 +2459,13 @@ pub struct PackageElementList(Vec<PackageElement>);
 #[encoding_value = 0x12]
 pub struct PackageOp;
 
+/// # ParentPrefixChar
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x5e]
+pub struct ParentPrefixChar(char);
+
 /// # PblkAddr
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
@@ -2592,7 +2604,7 @@ pub struct Predicate(TermArg);
 #[derive(acpi_machine_language::Reader)]
 #[matching_elements = 0]
 #[string]
-pub struct PrefixPath(Vec<Circumflex>);
+pub struct PrefixPath(Vec<ParentPrefixChar>);
 
 /// # ProcessorOp
 /// ## References
@@ -2928,18 +2940,6 @@ pub struct StartIndex(TermArg);
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x70]
 pub struct StoreOp;
-
-/// # String
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Reader)]
-#[string]
-pub struct AmlString(
-    #[not_string]
-    StringPrefix,
-    AsciiCharList,
-    NullChar,
-);
 
 /// # StringPrefix
 /// ## References
