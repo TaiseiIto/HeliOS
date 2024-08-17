@@ -653,8 +653,47 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                             colon_token: _,
                                             ty,
                                         } = field;
-                                        let read: proc_macro2::TokenStream = quote! {
-                                            let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                        let read: proc_macro2::TokenStream = match ty {
+                                            Type::Path(TypePath {
+                                                qself: _,
+                                                path,
+                                            }) => {
+                                                let Path {
+                                                    leading_colon: _,
+                                                    segments,
+                                                } = path;
+                                                let PathSegment {
+                                                    ident,
+                                                    arguments,
+                                                } = segments
+                                                    .iter()
+                                                    .last()
+                                                    .unwrap();
+                                                match ident
+                                                    .to_string()
+                                                    .as_str() {
+                                                    "Box" => match arguments {
+                                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                            colon2_token: _,
+                                                            lt_token: _,
+                                                            args,
+                                                            gt_token: _,
+                                                        }) => match args
+                                                            .first()
+                                                            .unwrap() {
+                                                            GenericArgument::Type(element_type) => quote! {
+                                                                let (#field_name, aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                                let #field_name: #ty = Box::new(#field_name);
+                                                            },
+                                                            _ => unimplemented!(),
+                                                        },
+                                                        _ => unimplemented!(),
+                                                    },
+                                                    _ => quote! {
+                                                        let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                                    },
+                                                }
+                                            },
                                         };
                                         (field_name, read)
                                     })
