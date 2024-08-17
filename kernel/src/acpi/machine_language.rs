@@ -762,6 +762,16 @@ pub struct DefMutex(
     SyncFlags,
 );
 
+/// # DefNAnd
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct DefNAnd(
+    NAndOp,
+    [Operand; 2],
+    Target,
+);
+
 /// # DefNOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1742,6 +1752,13 @@ pub struct MutexOp(
 #[derive(acpi_machine_language::Reader)]
 #[encoding_value = 0x01]
 pub struct MutexOpSuffix;
+
+/// # NAndOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x7c]
+pub struct NAndOp;
 
 /// # NOrOp
 /// ## References
