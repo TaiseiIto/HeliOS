@@ -2657,10 +2657,18 @@ pub struct SourceBuff(TermArg);
 #[derive(acpi_machine_language::Reader)]
 pub enum StatementOpcode {
     Break(DefBreak),
+    BreakPoint(DefBreakPoint),
+    Continue(DefContinue),
+    Fatal(DefFatal),
     IfElse(DefIfElse),
+    Noop(DefNoop),
     Notyfy(DefNotify),
     Release(DefRelease),
+    Reset(DefReset),
     Return(DefReturn),
+    Signal(DefSignal),
+    Sleep(DefSleep),
+    Stall(DefStall),
     While(DefWhile),
 }
 
