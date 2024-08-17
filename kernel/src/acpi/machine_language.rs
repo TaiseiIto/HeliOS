@@ -1952,12 +1952,14 @@ impl From<&[u8]> for MethodInvocation {
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
-                "BUFF" => 0,
-                "SLEN" => 1,
+                  "BUFF" => 0,
+                  "S2BF"
+                | "SLEN" => 1,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "VMWARE" => match method_name.as_str() { // VMware
-                "BUF0" => 0,
+                  "BUF0"
+                | "BUF1" => 0,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "ALASKA" => unimplemented!(), // GPD MicroPC
