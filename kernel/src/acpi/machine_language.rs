@@ -1953,12 +1953,15 @@ impl From<&[u8]> for MethodInvocation {
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "BUFF"
+                | "LNKA"
+                | "LNKB"
+                | "LNKC"
+                | "LNKD"
                 | "MEML"
                 | "MSWV"
                 | "PMNN"
                 | "UFDC"
                 | "UHPT"
-                | "UIOA"
                 | "UIOA"
                 | "USMC"
                 | "_OS"
@@ -1995,6 +1998,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PME8"
                 | "PMEC"
                 | "TOOS"
+                | "XCRS"
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
