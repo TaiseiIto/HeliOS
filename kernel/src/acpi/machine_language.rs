@@ -1960,6 +1960,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "LNKD"
                 | "MEML"
                 | "MSWV"
+                | "PICM"
                 | "PMNN"
                 | "UFDC"
                 | "UHPT"
@@ -1999,6 +2000,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PME8"
                 | "PMEC"
                 | "PPRT"
+                | "RSRC"
                 | "TOOS"
                 | "XCRS"
                 | "_OS" => 0,
