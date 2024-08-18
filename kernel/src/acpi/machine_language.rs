@@ -383,9 +383,9 @@ pub struct CopyObjectOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum ConstObj {
-    OneOp(OneOp),
-    OnesOp(OnesOp),
-    ZeroOp(ZeroOp),
+    One(OneOp),
+    Ones(OnesOp),
+    Zero(ZeroOp),
 }
 
 /// # CreateBitFieldOp
@@ -1638,9 +1638,9 @@ pub struct ExtOpPrefix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum ExtendedAccessField {
-    AttribBytes(AttribBytes),
-    AttribRawBytes(AttribRawBytes),
-    AttribRawProcess(AttribRawProcess),
+    Bytes(AttribBytes),
+    RawBytes(AttribRawBytes),
+    RawProcess(AttribRawProcess),
 }
 
 /// # ExternalOp
