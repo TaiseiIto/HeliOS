@@ -2059,6 +2059,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "LNKC"
                 | "LNKD"
                 | "MEML"
+                | "MSWN"
                 | "MSWV"
                 | "NICA"
                 | "NVMA"
