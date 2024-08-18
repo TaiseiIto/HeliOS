@@ -2057,6 +2057,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "HDAA"
                 | "IOCA"
                 | "IOMA"
+                | "LFCP"
                 | "LNKA"
                 | "LNKB"
                 | "LNKC"
@@ -2156,6 +2157,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
+                  "LCRS" => 3,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "ALASKA" => unimplemented!(), // GPD MicroPC
