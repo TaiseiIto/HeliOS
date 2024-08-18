@@ -2064,8 +2064,9 @@ impl From<&[u8]> for MethodInvocation {
                 | "PICM"
                 | "PMNN"
                 | "PP0B"
-                | "PP1B"
                 | "PP0I"
+                | "PP1B"
+                | "PP1I"
                 | "PR00"
                 | "PR01"
                 | "UFDC"
@@ -2087,6 +2088,7 @@ impl From<&[u8]> for MethodInvocation {
             "VMWARE" => match method_name.as_str() { // VMware
                   "BUF0"
                 | "BUF1"
+                | "ECFG"
                 | "FLAG"
                 | "GPIC"
                 | "IRQ0"
