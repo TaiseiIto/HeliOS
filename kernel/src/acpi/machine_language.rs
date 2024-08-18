@@ -2080,6 +2080,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "UFDC"
                 | "UHPT"
                 | "UIOA"
+                | "URTC"
                 | "USMC"
                 | "_OS"
                 | "_REV" => 0,
@@ -2129,6 +2130,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "RSRC"
                 | "SBBA"
                 | "SL1B"
+                | "SMEN"
                 | "SMMN"
                 | "SMVR"
                 | "TMPL"
