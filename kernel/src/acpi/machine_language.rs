@@ -318,6 +318,31 @@ pub struct CondRefOfOp(
 #[encoding_value = 0x12]
 pub struct CondRefOfOpSuffix;
 
+/// # ConnectField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct ConnectField(
+    ConnectFieldOp,
+    ConnectFieldEnum,
+);
+
+/// # ConnectFieldEnum
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub enum ConnectFieldEnum {
+    BufferData(BufferData),
+    NameString(NameString),
+}
+
+/// # ConnectFieldOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x02]
+pub struct ConnectFieldOp;
+
 /// # ContinueOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
