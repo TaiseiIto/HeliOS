@@ -2072,6 +2072,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SL0B"
                 | "SL0I"
                 | "SL1B"
+                | "SL1I"
                 | "UFDC"
                 | "UHPT"
                 | "UIOA"
@@ -2125,6 +2126,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SBBA"
                 | "SL1B"
                 | "SMMN"
+                | "TMPL"
                 | "TOOS"
                 | "XCRS"
                 | "_OS" => 0,
