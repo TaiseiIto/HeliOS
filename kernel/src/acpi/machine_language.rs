@@ -1960,6 +1960,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "S2BF"
                 | "SLEN" => 1,
                   "MIN"
+                | "MTCH"
                 | "SCMP" => 2,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
@@ -1968,7 +1969,10 @@ impl From<&[u8]> for MethodInvocation {
                 | "BUF1"
                 | "FLAG"
                 | "GPIC"
+                | "LNKA"
                 | "LNKB"
+                | "LNKC"
+                | "LNKD"
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
