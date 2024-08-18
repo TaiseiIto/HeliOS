@@ -1956,9 +1956,10 @@ impl From<&[u8]> for MethodInvocation {
                 | "MSWV"
                 | "_OS" => 0,
                   "DBG"
-                | "_OSI"
+                | "HEX4"
                 | "S2BF"
-                | "SLEN" => 1,
+                | "SLEN"
+                | "_OSI" => 1,
                   "MIN"
                 | "MTCH"
                 | "SCMP" => 2,
