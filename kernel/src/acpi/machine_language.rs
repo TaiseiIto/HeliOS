@@ -2069,6 +2069,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PP1I"
                 | "PR00"
                 | "PR01"
+                | "SL0B"
                 | "UFDC"
                 | "UHPT"
                 | "UIOA"
@@ -2086,7 +2087,8 @@ impl From<&[u8]> for MethodInvocation {
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "VMWARE" => match method_name.as_str() { // VMware
-                  "BUF0"
+                  "AE"
+                | "BUF0"
                 | "BUF1"
                 | "ECFG"
                 | "FLAG"
