@@ -1561,6 +1561,9 @@ pub struct ExternalOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Reader)]
 pub enum FieldElement {
+    AccessField(AccessField),
+    ConnectField(ConnectField),
+    ExtendedAccessField(ExtendedAccessField),
     Named(NamedField),
     Reserved(ReservedField),
 }
@@ -1967,6 +1970,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PICM"
                 | "PMNN"
                 | "PP0B"
+                | "PP1B"
                 | "PP0I"
                 | "PR00"
                 | "PR01"
