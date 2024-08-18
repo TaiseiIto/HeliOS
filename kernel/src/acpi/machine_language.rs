@@ -23,6 +23,44 @@ pub trait Reader<'a>: From<&'a [u8]> {
     fn read(aml: &'a [u8]) -> (Self, &'a [u8]);
 }
 
+/// # AccessAttrib
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct AccessAttrib(ByteData);
+
+/// # AccessField
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+pub struct AccessField(
+    AccessFieldOp,
+    AccessType,
+    AccessAttrib,
+);
+
+/// # AccessOp
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[encoding_value = 0x01]
+pub struct AccessOp;
+
+/// # AccessType
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Reader)]
+#[flags]
+#[bitfield(u8)]
+pub struct AccessType {
+    #[bits(4)]
+    access_type: u8,
+    #[bits(2, access = RO)]
+    reserved0: u8,
+    #[bits(2)]
+    access_attrib: u8,
+}
+
 /// # AcquireOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
