@@ -2052,6 +2052,7 @@ impl From<&[u8]> for MethodInvocation {
                   "BUFF"
                 | "CRS"
                 | "HBCA"
+                | "HDAA"
                 | "IOCA"
                 | "IOMA"
                 | "LNKA"
@@ -2142,6 +2143,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SMVR"
                 | "TMPL"
                 | "TOOS"
+                | "VALD"
                 | "XCRS"
                 | "_OS" => 0,
                   "_OSI" => 1,
