@@ -5,7 +5,7 @@
  * 
  * Disassembling to symbolic ASL+ operators
  *
- * Disassembly of vmware.dsdt.aml, Fri Jul 12 14:58:57 2024
+ * Disassembly of vmware.dsdt.aml.bin, Sun Aug 18 11:57:00 2024
  *
  * Original Table Header:
  *     Signature        "DSDT"
