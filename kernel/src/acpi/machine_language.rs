@@ -1956,6 +1956,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "MSWV"
                 | "_OS" => 0,
                   "DBG"
+                | "_OSI"
                 | "S2BF"
                 | "SLEN" => 1,
                   "MIN"
@@ -1967,6 +1968,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "BUF1"
                 | "FLAG"
                 | "GPIC"
+                | "LNKB"
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
