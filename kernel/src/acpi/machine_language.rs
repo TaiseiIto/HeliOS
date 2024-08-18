@@ -2050,6 +2050,7 @@ impl From<&[u8]> for MethodInvocation {
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "BUFF"
+                | "BSTA"
                 | "CRS"
                 | "HBCA"
                 | "HDAA"
@@ -2132,6 +2133,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PMEC"
                 | "PMMN"
                 | "PPRT"
+                | "PRES"
                 | "RSRC"
                 | "SBBA"
                 | "SL1B"
