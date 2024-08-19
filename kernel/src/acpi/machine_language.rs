@@ -2099,6 +2099,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SL3B"
                 | "SL3I"
                 | "STAT"
+                | "TOM"
                 | "UFDC"
                 | "UHPT"
                 | "UIOA"
@@ -2183,7 +2184,8 @@ impl From<&[u8]> for MethodInvocation {
                 | "STRC" => 2,
                   "LCRS"
                 | "SCOM" => 3,
-                  "LPRS" => 4,
+                  "LPRS"
+                | "XPRS" => 4,
                   "XRES" => 6,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
