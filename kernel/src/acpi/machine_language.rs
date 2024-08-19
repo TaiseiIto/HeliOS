@@ -2093,6 +2093,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SL2I"
                 | "SL3B"
                 | "SL3I"
+                | "STAT"
                 | "UFDC"
                 | "UHPT"
                 | "UIOA"
@@ -2168,6 +2169,7 @@ impl From<&[u8]> for MethodInvocation {
                   "_OSI" => 1,
                   "STRC" => 2,
                   "LCRS" => 3,
+                  "LPRS" => 4,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "ALASKA" => unimplemented!(), // GPD MicroPC
