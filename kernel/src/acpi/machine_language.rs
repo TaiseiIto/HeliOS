@@ -2105,7 +2105,8 @@ impl From<&[u8]> for MethodInvocation {
                 | "URTC"
                 | "USMC"
                 | "_OS"
-                | "_REV" => 0,
+                | "_REV"
+                | "_SB" => 0,
                   "DBG"
                 | "HEX4"
                 | "S2BF"
@@ -2164,6 +2165,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SMMM"
                 | "SMMN"
                 | "SMVR"
+                | "SPRS"
                 | "SRSR"
                 | "STAV"
                 | "TMPL"
