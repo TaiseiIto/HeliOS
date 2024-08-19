@@ -2123,6 +2123,8 @@ impl From<&[u8]> for MethodInvocation {
                 | "_REV"
                 | "_SB" => 0,
                   "DBG"
+                | "HEX"
+                | "HEX2"
                 | "HEX4"
                 | "LCRS"
                 | "LDIS"
