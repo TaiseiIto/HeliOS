@@ -2088,6 +2088,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PR01"
                 | "PRAT"
                 | "PVOL"
+                | "RAMT"
                 | "RCAP"
                 | "SL0B"
                 | "SL0I"
@@ -2183,6 +2184,7 @@ impl From<&[u8]> for MethodInvocation {
                   "LCRS"
                 | "SCOM" => 3,
                   "LPRS" => 4,
+                  "XRES" => 6,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "ALASKA" => unimplemented!(), // GPD MicroPC
