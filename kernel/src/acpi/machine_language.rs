@@ -2087,6 +2087,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PR00"
                 | "PR01"
                 | "PRAT"
+                | "RCAP"
                 | "SL0B"
                 | "SL0I"
                 | "SL1B"
@@ -2172,7 +2173,8 @@ impl From<&[u8]> for MethodInvocation {
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
-                  "LCRS" => 3,
+                  "LCRS"
+                | "SCOM" => 3,
                   "LPRS" => 4,
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
