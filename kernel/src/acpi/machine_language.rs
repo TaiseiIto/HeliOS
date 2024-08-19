@@ -2085,6 +2085,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PCIB"
                 | "PCIL"
                 | "PICM"
+                | "PIRA"
                 | "PMNN"
                 | "PMNX"
                 | "PP0B"
