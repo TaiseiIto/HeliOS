@@ -2050,9 +2050,9 @@ impl From<&[u8]> for MethodInvocation {
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "APSR"
-                | "BUFF"
                 | "BSTA" 
                 | "BTEC"
+                | "BUFF"
                 | "CRS"
                 | "DCAP"
                 | "DLOW" 
@@ -2086,6 +2086,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PP1I"
                 | "PR00"
                 | "PR01"
+                | "PRAT"
                 | "SL0B"
                 | "SL0I"
                 | "SL1B"
@@ -2161,6 +2162,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "SMMM"
                 | "SMMN"
                 | "SMVR"
+                | "SRSR"
                 | "STAV"
                 | "TMPL"
                 | "TOOS"
