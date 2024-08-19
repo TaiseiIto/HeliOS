@@ -2128,6 +2128,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "HEX4"
                 | "LCRS"
                 | "LDIS"
+                | "LSRS"
                 | "LSTA"
                 | "S2BF"
                 | "SLEN"
