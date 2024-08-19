@@ -2087,6 +2087,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PR00"
                 | "PR01"
                 | "PRAT"
+                | "PVOL"
                 | "RCAP"
                 | "SL0B"
                 | "SL0I"
@@ -2171,8 +2172,12 @@ impl From<&[u8]> for MethodInvocation {
                 | "XCRS"
                 | "XTRA"
                 | "_OS" => 0,
-                  "_OSI" => 1,
-                  "STRC" => 2,
+                  "SCRS"
+                | "SDIS"
+                | "SSTA"
+                | "_OSI" => 1,
+                  "SSRS"
+                | "STRC" => 2,
                   "LCRS"
                 | "SCOM" => 3,
                   "LPRS" => 4,
