@@ -2095,6 +2095,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "PR00"
                 | "PR01"
                 | "PRAT"
+                | "PRSA"
                 | "PVOL"
                 | "RAMT"
                 | "RCAP"
