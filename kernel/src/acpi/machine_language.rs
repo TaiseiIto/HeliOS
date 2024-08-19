@@ -2049,12 +2049,18 @@ impl From<&[u8]> for MethodInvocation {
                 unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
             },
             "VBOX  " => match method_name.as_str() { // VirtualBox
-                  "BUFF"
+                  "APSR"
+                | "BUFF"
                 | "BSTA"
+                | "BSTA" 
                 | "BTEC"
                 | "CRS"
                 | "DCAP"
+                | "DLOW" 
                 | "DVOL"
+                | "DWRN" 
+                | "GRN1" 
+                | "GRN2" 
                 | "HBCA"
                 | "HDAA"
                 | "IOCA"
@@ -2158,6 +2164,7 @@ impl From<&[u8]> for MethodInvocation {
                 | "TOOS"
                 | "VALD"
                 | "XCRS"
+                | "XTRA"
                 | "_OS" => 0,
                   "_OSI" => 1,
                   "STRC" => 2,
