@@ -2051,7 +2051,6 @@ impl From<&[u8]> for MethodInvocation {
             "VBOX  " => match method_name.as_str() { // VirtualBox
                   "APSR"
                 | "BUFF"
-                | "BSTA"
                 | "BSTA" 
                 | "BTEC"
                 | "CRS"
