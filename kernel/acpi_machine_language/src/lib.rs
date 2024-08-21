@@ -1042,10 +1042,69 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 let (field_names, push_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                     .iter()
                                     .enumerate()
-                                    .map(|(index, _field)| {
+                                    .map(|(index, field)| {
                                         let field_name: Ident = format_ident!("field{}", index);
-                                        let push_field: proc_macro2::TokenStream = quote! {
-                                            symbols.push_back(#field_name);
+                                        let Field {
+                                            attrs: _,
+                                            vis: _,
+                                            mutability: _,
+                                            ident: _,
+                                            colon_token: _,
+                                            ty,
+                                        } = field;
+                                        let push_field: proc_macro2::TokenStream = match ty {
+                                            Type::Array(TypeArray {
+                                                bracket_token: _,
+                                                elem,
+                                                semi_token: _,
+                                                len: _,
+                                            }) => quote! {
+                                                #field_name
+                                                    .as_slice()
+                                                    .iter()
+                                                    .for_each(|element| {
+                                                        symbols.push_back(element);
+                                                    });
+                                            },
+                                            Type::Path(TypePath {
+                                                qself: _,
+                                                path,
+                                            }) => {
+                                                let Path {
+                                                    leading_colon: _,
+                                                    segments,
+                                                } = path;
+                                                let PathSegment {
+                                                    ident,
+                                                    arguments,
+                                                } = segments
+                                                    .iter()
+                                                    .last()
+                                                    .unwrap();
+                                                match ident
+                                                    .to_string()
+                                                    .as_str() {
+                                                    "Box" => quote! {
+                                                        symbols.push_back(&**#field_name);
+                                                    },
+                                                    "Option" => quote! {
+                                                        if let Some(element) = #field_name {
+                                                            symbols.push_back(element);
+                                                        }
+                                                    },
+                                                    "Vec" => quote! {
+                                                        #field_name
+                                                            .iter()
+                                                            .for_each(|element| {
+                                                                symbols.push_back(element);
+                                                            });
+                                                    },
+                                                    _ => quote! {
+                                                        symbols.push_back(#field_name);
+                                                    },
+                                                }
+                                            },
+                                            _ => unimplemented!(),
                                         };
                                         (field_name, push_field)
                                     })
@@ -1126,6 +1185,9 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     match ident
                                         .to_string()
                                         .as_str() {
+                                        "Box" => quote! {
+                                            symbols.push_back(&**#field_name);
+                                        },
                                         "Option" => quote! {
                                             if let Some(element) = #field_name {
                                                 symbols.push_back(element);
