@@ -57,12 +57,14 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
+    let self_impl: proc_macro2::TokenStream = derive_self_impl(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #char_from_self
         #debug
         #from_slice_u8
+        #self_impl
         #reader
         #string_from_self
     }   .try_into()
@@ -975,6 +977,141 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         impl From<&[u8]> for #ident {
             fn from(aml: &[u8]) -> Self {
                 #convert
+            }
+        }
+    }
+}
+
+fn derive_self_impl(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    let iter: proc_macro2::TokenStream = derive_iter(derive_input);
+    quote! {
+        impl<'a> #ident {
+            #iter
+        }
+    }
+}
+
+fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident: _,
+        generics: _,
+        data,
+    } = derive_input;
+    let TypeAttribyte {
+        encoding,
+        flags,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    let push_symbols: proc_macro2::TokenStream = if encoding.is_some() || flags {
+        quote! {
+        }
+    } else {
+        match data {
+            Data::Enum(DataEnum {
+                enum_token: _,
+                brace_token: _,
+                variants,
+            }) => {
+                let push_patterns: Vec<proc_macro2::TokenStream> = variants
+                    .iter()
+                    .map(|variant| {
+                        let Variant {
+                            attrs: _,
+                            ident,
+                            fields,
+                            discriminant: _,
+                        } = variant;
+                        match fields {
+                            Fields::Unit => quote! {
+                                Self::#ident => {},
+                            },
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token: _,
+                                unnamed,
+                            }) => {
+                                let (field_names, push_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(index, _field)| {
+                                        let field_name: Ident = format_idnet!("field{}", index);
+                                        let push_field: proc_macro2::TokenStrema = quote! {
+                                            symbols.push_back(#field_name);
+                                        };
+                                        (field_name, push_field)
+                                    })
+                                    .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (new_field_name, push_new_field)| {
+                                        field_names.push(new_field_name);
+                                        push_fields.push(push_new_field);
+                                        (field_names, push_fields)
+                                    });
+                                quote! {
+                                    Self::#ident(#(#field_names),*) => {
+                                        #(#push_fields)*
+                                    }
+                                }
+                            },
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect();
+                quote! {
+                    match self {
+                        #(#push_patterns),*
+                    }
+                }
+            },
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields,
+                semi_token: _,
+            }) => match fields {
+                Fields::Unit => quote! {
+                },
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }) => {
+                    let (field_names, push_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, _field)| {
+                            let field_name: Ident = format_idnet!("field{}", index);
+                            let push_field: proc_macro2::TokenStrema = quote! {
+                                symbols.push_back(#field_name);
+                            };
+                            (field_name, push_field)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (new_field_name, push_new_field)| {
+                            field_names.push(new_field_name);
+                            push_fields.push(push_new_field);
+                            (field_names, push_fields)
+                        });
+                    quote! {
+                        let Self(#(#field_names),*) = self;
+                        #(#push_fields)*
+                    }
+                },
+                _ => unimplemented!(),
+            },
+            _ => unimplemented!(),
+        }
+    };
+    quote! {
+        pub fn iter(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
+            let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
+            #push_symbols
+            SymbolIterator {
+                symbols,
             }
         }
     }

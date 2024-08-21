@@ -49,38 +49,12 @@ pub struct AccessField(
     AccessAttrib,
 );
 
-impl<'a> AccessField {
-    pub fn iter(&'a self) -> SymbolIterator<'a> {
-        let Self(
-            field0,
-            field1,
-            field2,
-        ) = self;
-        let mut symbols: VecDeque<&dyn Analyzer> = VecDeque::new();
-        symbols.push_back(field0);
-        symbols.push_back(field1);
-        symbols.push_back(field2);
-        SymbolIterator {
-            symbols,
-        }
-    }
-}
-
 /// # AccessFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
 #[encoding_value = 0x01]
 pub struct AccessFieldOp;
-
-impl<'a> AccessFieldOp {
-    pub fn iter(&'a self) -> SymbolIterator<'a> {
-        let symbols: VecDeque<&dyn Analyzer> = VecDeque::new();
-        SymbolIterator {
-            symbols,
-        }
-    }
-}
 
 /// # AccessType
 /// ## References
