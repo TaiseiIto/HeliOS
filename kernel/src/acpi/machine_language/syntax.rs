@@ -2008,15 +2008,7 @@ impl From<&[u8]> for MethodInvocation {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (name_string, mut aml): (NameString, &[u8]) = NameString::read(aml);
-        let method_name: String = name_string
-            .name_path()
-            .name_segs()
-            .into_iter()
-            .last()
-            .unwrap()
-            .into();
         let number_of_term_args: usize = 0;
-        com2_println!("METHOD INVOCATION!!! {} {}", number_of_term_args, method_name);
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_term_args)
             .for_each(|_| {
@@ -2032,6 +2024,23 @@ impl From<&[u8]> for MethodInvocation {
 }
 
 impl Analyzer for MethodInvocation {
+    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
+        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
+        let Self(
+            name_string,
+            term_arg_list,
+        ) = self;
+        symbols.push_back(name_string);
+        term_arg_list
+            .iter()
+            .for_each(|term_arg| {
+                symbols.push_back(term_arg);
+            });
+        SymbolIterator {
+            symbols,
+        }
+    }
+
     fn length(&self) -> usize {
         let Self(
             name_string,
@@ -2080,6 +2089,24 @@ impl From<&[u8]> for MethodTermList {
 }
 
 impl Analyzer for MethodTermList {
+    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
+        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
+        match self {
+            Self::Binary(binary) => {
+            },
+            Self::SyntaxTree(term_list) => {
+                term_list
+                    .iter()
+                    .for_each(|term_obj| {
+                        symbols.push_back(term_obj);
+                    });
+            },
+        }
+        SymbolIterator {
+            symbols,
+        }
+    }
+
     fn length(&self) -> usize {
         match self {
             Self::Binary(binary) => binary.len(),
@@ -2187,6 +2214,25 @@ impl From<&[u8]> for MultiNamePath {
 }
 
 impl Analyzer for MultiNamePath {
+    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
+        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
+        let Self(
+            multi_name_prefix,
+            seg_count,
+            name_segs,
+        ) = self;
+        symbols.push_back(multi_name_prefix);
+        symbols.push_back(seg_count);
+        name_segs
+            .iter()
+            .for_each(|name_seg| {
+                symbols.push_back(name_seg);
+            });
+        SymbolIterator {
+            symbols,
+        }
+    }
+
     fn length(&self) -> usize {
         let Self(
             multi_name_prefix,
@@ -2665,6 +2711,23 @@ impl From<&[u8]> for PkgLength {
 }
 
 impl Analyzer for PkgLength {
+    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
+        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
+        let Self {
+            pkg_lead_byte,
+            byte_data,
+        } = self;
+        symbols.push_back(pkg_lead_byte);
+        byte_data
+            .iter()
+            .for_each(|byte_data| {
+                symbols.push_back(byte_data);
+            });
+        SymbolIterator {
+            symbols,
+        }
+    }
+
     fn length(&self) -> usize {
         let Self {
             pkg_lead_byte,
