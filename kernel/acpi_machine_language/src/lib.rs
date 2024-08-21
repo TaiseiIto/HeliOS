@@ -992,7 +992,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let matches: proc_macro2::TokenStream = derive_matches(derive_input);
     let read: proc_macro2::TokenStream = derive_read();
     quote! {
-        impl crate::acpi::machine_language::syntax::Analyzer<'_> for #ident {
+        impl crate::acpi::machine_language::syntax::Analyzer for #ident {
             #length
             #matches
             #read

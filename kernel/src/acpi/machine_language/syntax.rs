@@ -14,10 +14,10 @@ use {
     crate::com2_println,
 };
 
-pub trait Analyzer<'a>: From<&'a [u8]> {
+pub trait Analyzer {
     fn length(&self) -> usize;
     fn matches(aml: &[u8]) -> bool;
-    fn read(aml: &'a [u8]) -> (Self, &'a [u8]);
+    fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
 }
 
 /// # AccessAttrib
@@ -2017,7 +2017,7 @@ impl From<&[u8]> for MethodInvocation {
     }
 }
 
-impl Analyzer<'_> for MethodInvocation {
+impl Analyzer for MethodInvocation {
     fn length(&self) -> usize {
         let Self(
             name_string,
@@ -2065,7 +2065,7 @@ impl From<&[u8]> for MethodTermList {
     }
 }
 
-impl Analyzer<'_> for MethodTermList {
+impl Analyzer for MethodTermList {
     fn length(&self) -> usize {
         match self {
             Self::Binary(binary) => binary.len(),
@@ -2172,7 +2172,7 @@ impl From<&[u8]> for MultiNamePath {
     }
 }
 
-impl Analyzer<'_> for MultiNamePath {
+impl Analyzer for MultiNamePath {
     fn length(&self) -> usize {
         let Self(
             multi_name_prefix,
@@ -2650,7 +2650,7 @@ impl From<&[u8]> for PkgLength {
     }
 }
 
-impl Analyzer<'_> for PkgLength {
+impl Analyzer for PkgLength {
     fn length(&self) -> usize {
         let Self {
             pkg_lead_byte,
