@@ -11,10 +11,7 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
-    crate::{
-        Argument,
-        com2_println,
-    },
+    crate::com2_println,
 };
 
 pub trait Reader<'a>: From<&'a [u8]> {
