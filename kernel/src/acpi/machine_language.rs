@@ -1041,7 +1041,7 @@ pub struct DefMethod(
     NameString,
     MethodFlags,
     #[no_leftover]
-    TermList,
+    MethodTermList,
 );
 
 /// # DefMid
@@ -2004,229 +2004,7 @@ impl From<&[u8]> for MethodInvocation {
             .last()
             .unwrap()
             .into();
-        let number_of_term_args: usize = match Argument::get()
-            .efi_system_table()
-            .rsdp()
-            .oemid() {
-            "BOCHS " => match method_name.as_str() { // QEMU
-                  "ASUN"
-                | "BSEL"
-                | "CDAT"
-                | "CINS"
-                | "CNEW"
-                | "CPEN"
-                | "CRMV"
-                | "CSCN"
-                | "LNKA"
-                | "LNKB"
-                | "LNKC"
-                | "LNKD"
-                | "LNKS"
-                | "PCID"
-                | "PCIU"
-                | "PCNT"
-                | "PIDX"
-                | "PRD"
-                | "PRQ0"
-                | "PRQ1"
-                | "PRQ2"
-                | "PRQ3"
-                | "PRR0"
-                | "PRRI"
-                | "VEND"
-                | "_PRS"
-                | "_SUN" => 0,
-                  "CEJ0"
-                | "CSTA"
-                | "IQCR"
-                | "IQST" => 1,
-                  "AIDX"
-                | "CTFY"
-                | "DVNT"
-                | "PCEJ" => 2,
-                  "COST" => 4,
-                  "PDSM" => 5,
-                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
-            },
-            "VBOX  " => match method_name.as_str() { // VirtualBox
-                  "APSR"
-                | "BSTA" 
-                | "BTEC"
-                | "BUFA"
-                | "BUFF"
-                | "CDW1"
-                | "CDW2"
-                | "CDW3"
-                | "CRS"
-                | "CTRL"
-                | "DCAP"
-                | "DLOW" 
-                | "DVOL"
-                | "DWRN" 
-                | "GRN1" 
-                | "GRN2" 
-                | "HBCA"
-                | "HDAA"
-                | "IOCA"
-                | "IOMA"
-                | "ISRS"
-                | "LFCP"
-                | "LNKA"
-                | "LNKB"
-                | "LNKC"
-                | "LNKD"
-                | "MEML"
-                | "MSWN"
-                | "MSWV"
-                | "NICA"
-                | "NVMA"
-                | "PBIF"
-                | "PBST"
-                | "PCIB"
-                | "PCIL"
-                | "PICM"
-                | "PIRA"
-                | "PIRB"
-                | "PIRC"
-                | "PIRD"
-                | "PMNN"
-                | "PMNX"
-                | "PP0B"
-                | "PP0I"
-                | "PP1B"
-                | "PP1I"
-                | "PR00"
-                | "PR01"
-                | "PRAT"
-                | "PRSA"
-                | "PRSB"
-                | "PRSC"
-                | "PRSD"
-                | "PVOL"
-                | "PWRS"
-                | "RAMT"
-                | "RCAP"
-                | "SL0B"
-                | "SL0I"
-                | "SL1B"
-                | "SL1I"
-                | "SL2B"
-                | "SL2I"
-                | "SL3B"
-                | "SL3I"
-                | "STAT"
-                | "SUPP"
-                | "TM4L"
-                | "TM4N"
-                | "TM4X"
-                | "TOM"
-                | "UFDC"
-                | "UHPT"
-                | "UIOA"
-                | "UNIT"
-                | "URTC"
-                | "USMC"
-                | "_OS"
-                | "_REV"
-                | "_SB" => 0,
-                  "DBG"
-                | "HEX"
-                | "HEX2"
-                | "HEX4"
-                | "LCRS"
-                | "LDIS"
-                | "LSRS"
-                | "LSTA"
-                | "S2BF"
-                | "SLEN"
-                | "_OSI" => 1,
-                  "MIN"
-                | "MTCH"
-                | "SCMP" => 2,
-                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
-            },
-            "VMWARE" => match method_name.as_str() { // VMware
-                  "AE"
-                | "BUF0"
-                | "BUF1"
-                | "CAIR"
-                | "ECFG"
-                | "ENAB"
-                | "FLAG"
-                | "FLPT"
-                | "GPIC"
-                | "HBAS"
-                | "IOAL"
-                | "IOBA"
-                | "IRQ0"
-                | "IRQL"
-                | "IRQW"
-                | "LNKA"
-                | "LNKB"
-                | "LNKC"
-                | "LNKD"
-                | "MSHD"
-                | "PBAH"
-                | "PBAL"
-                | "PEPP"
-                | "PIRA"
-                | "PIRB"
-                | "PIRC"
-                | "PIRD"
-                | "PMBA"
-                | "PMC0"
-                | "PMC4"
-                | "PMC8"
-                | "PMCC"
-                | "PMD0"
-                | "PMD4"
-                | "PMD8"
-                | "PMDC"
-                | "PME0"
-                | "PME4"
-                | "PME8"
-                | "PMEC"
-                | "PMMN"
-                | "PPIR"
-                | "PPRT"
-                | "PRES"
-                | "RSRC"
-                | "S1BH"
-                | "S1BL"
-                | "SBBA"
-                | "SIOC"
-                | "SL1B"
-                | "SMEN"
-                | "SMIO"
-                | "SMIR"
-                | "SMMM"
-                | "SMMN"
-                | "SMVR"
-                | "SPRS"
-                | "SRSR"
-                | "STAV"
-                | "TMPL"
-                | "TOOS"
-                | "VALD"
-                | "XCRS"
-                | "XTRA"
-                | "_OS" => 0,
-                  "SCRS"
-                | "SDIS"
-                | "SSTA"
-                | "_OSI" => 1,
-                  "SSRS"
-                | "STRC" => 2,
-                  "LCRS"
-                | "SCOM" => 3,
-                  "LPRS"
-                | "XPRS" => 4,
-                  "XRES" => 6,
-                unknown_method_name => panic!("Unknown method {:#x?}", unknown_method_name),
-            },
-            "ALASKA" => unimplemented!(), // GPD MicroPC
-            unknown_oemid => panic!("Unknown OEM {:#x?}", unknown_oemid),
-        };
+        let number_of_term_args: usize = 0;
         com2_println!("METHOD INVOCATION!!! {} {}", number_of_term_args, method_name);
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_term_args)
@@ -2262,6 +2040,58 @@ impl Reader<'_> for MethodInvocation {
         let method_invocation: Self = aml.into();
         let aml: &[u8] = &aml[method_invocation.length()..];
         (method_invocation, aml)
+    }
+}
+
+/// # MethodTermList
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+pub enum MethodTermList {
+    Binary(Vec<u8>),
+    SyntaxTree(TermList),
+}
+
+impl fmt::Debug for MethodTermList {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("MethodTermList");
+        match self {
+            Self::Binary(binary) => binary
+                .iter()
+                .for_each(|byte| {
+                    debug_tuple.field(byte);
+                }),
+            Self::SyntaxTree(term_list) => term_list
+                .iter()
+                .for_each(|term_obj| {
+                    debug_tuple.field(term_obj);
+                }),
+        };
+        debug_tuple.finish()
+    }
+}
+
+impl From<&[u8]> for MethodTermList {
+    fn from(aml: &[u8]) -> Self {
+        Self::Binary(aml.to_vec())
+    }
+}
+
+impl Reader<'_> for MethodTermList {
+    fn length(&self) -> usize {
+        match self {
+            Self::Binary(binary) => binary.len(),
+            Self::SyntaxTree(term_list) => term_list.length(),
+        }
+    }
+
+    fn matches(aml: &[u8]) -> bool {
+        TermList::matches(aml)
+    }
+
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let method_term_list: Self = aml.into();
+        let aml: &[u8] = &aml[method_term_list.length()..];
+        (method_term_list, aml)
     }
 }
 
