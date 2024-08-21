@@ -1006,7 +1006,7 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics: _,
         data,
     } = derive_input;
-    let TypeAttribyte {
+    let TypeAttribute {
         encoding,
         flags,
         matching_elements: _,
@@ -1043,8 +1043,8 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     .iter()
                                     .enumerate()
                                     .map(|(index, _field)| {
-                                        let field_name: Ident = format_idnet!("field{}", index);
-                                        let push_field: proc_macro2::TokenStrema = quote! {
+                                        let field_name: Ident = format_ident!("field{}", index);
+                                        let push_field: proc_macro2::TokenStream = quote! {
                                             symbols.push_back(#field_name);
                                         };
                                         (field_name, push_field)
@@ -1085,8 +1085,8 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         .iter()
                         .enumerate()
                         .map(|(index, _field)| {
-                            let field_name: Ident = format_idnet!("field{}", index);
-                            let push_field: proc_macro2::TokenStrema = quote! {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let push_field: proc_macro2::TokenStream = quote! {
                                 symbols.push_back(#field_name);
                             };
                             (field_name, push_field)
