@@ -2060,11 +2060,7 @@ impl fmt::Debug for MethodTermList {
                 .for_each(|byte| {
                     debug_tuple.field(byte);
                 }),
-            Self::SyntaxTree(term_list) => term_list
-                .iter()
-                .for_each(|term_obj| {
-                    debug_tuple.field(term_obj);
-                }),
+            Self::SyntaxTree(term_list) => debug_tuple.field(term_list),
         };
         debug_tuple.finish()
     }
