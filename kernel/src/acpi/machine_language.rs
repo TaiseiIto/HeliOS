@@ -2055,11 +2055,7 @@ impl fmt::Debug for MethodTermList {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("MethodTermList");
         match self {
-            Self::Binary(binary) => binary
-                .iter()
-                .for_each(|byte| {
-                    debug_tuple.field(byte);
-                }),
+            Self::Binary(binary) => debug_tuple.field(binary),
             Self::SyntaxTree(term_list) => debug_tuple.field(term_list),
         };
         debug_tuple.finish()
