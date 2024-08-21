@@ -39,7 +39,7 @@ use {
     },
 };
 
-#[proc_macro_derive(Reader, attributes(
+#[proc_macro_derive(Analyzer, attributes(
     debug,
     delimiter,
     encoding_value,
@@ -992,7 +992,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let matches: proc_macro2::TokenStream = derive_matches(derive_input);
     let read: proc_macro2::TokenStream = derive_read();
     quote! {
-        impl Reader<'_> for #ident {
+        impl crate::acpi::machine_language::syntax::Analyzer<'_> for #ident {
             #length
             #matches
             #read
