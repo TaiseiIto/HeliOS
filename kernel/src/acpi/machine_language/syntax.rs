@@ -16,6 +16,7 @@ use {
 };
 
 pub trait Analyzer {
+    fn iter<'a>(&'a self) -> SymbolIterator<'a>;
     fn length(&self) -> usize;
     fn matches(aml: &[u8]) -> bool where Self: Sized;
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;

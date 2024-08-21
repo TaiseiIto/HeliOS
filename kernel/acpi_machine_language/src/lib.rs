@@ -54,18 +54,16 @@ use {
 ))]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
+    let analyzer: proc_macro2::TokenStream = derive_analyzer(&derive_input);
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
-    let self_impl: proc_macro2::TokenStream = derive_self_impl(&derive_input);
-    let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
+        #analyzer
         #char_from_self
         #debug
         #from_slice_u8
-        #self_impl
-        #reader
         #string_from_self
     }   .try_into()
         .unwrap()
@@ -982,7 +980,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
     }
 }
 
-fn derive_self_impl(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
@@ -991,9 +989,15 @@ fn derive_self_impl(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data: _,
     } = derive_input;
     let iter: proc_macro2::TokenStream = derive_iter(derive_input);
+    let length: proc_macro2::TokenStream = derive_length(derive_input);
+    let matches: proc_macro2::TokenStream = derive_matches(derive_input);
+    let read: proc_macro2::TokenStream = derive_read();
     quote! {
-        impl<'a> #ident {
+        impl crate::acpi::machine_language::syntax::Analyzer for #ident {
             #iter
+            #length
+            #matches
+            #read
         }
     }
 }
@@ -1225,32 +1229,12 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
     quote! {
-        pub fn iter(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
+        fn iter<'a>(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
             let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
             #push_symbols
             SymbolIterator {
                 symbols,
             }
-        }
-    }
-}
-
-fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
-    let DeriveInput {
-        attrs: _,
-        vis: _,
-        ident,
-        generics: _,
-        data: _,
-    } = derive_input;
-    let length: proc_macro2::TokenStream = derive_length(derive_input);
-    let matches: proc_macro2::TokenStream = derive_matches(derive_input);
-    let read: proc_macro2::TokenStream = derive_read();
-    quote! {
-        impl crate::acpi::machine_language::syntax::Analyzer for #ident {
-            #length
-            #matches
-            #read
         }
     }
 }
