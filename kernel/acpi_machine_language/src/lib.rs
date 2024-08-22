@@ -27,7 +27,9 @@ use {
         Lit,
         LitStr,
         Meta,
+        MetaList,
         MetaNameValue,
+        ParenthesizedGenericArguments,
         Path,
         PathArguments,
         PathSegment,
@@ -115,14 +117,27 @@ impl From<&DeriveInput> for TypeAttribute {
                     meta,
                 } = attribute;
                 match meta {
-                    Meta::Path(path) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                            "flags" => (true, true, None, None, None, true, None, false),
-                            "string" => (true, true, None, None, None, false, None, true),
-                            _ => unimplemented!(),
-                        },
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        dbg!(ident);
+                        dbg!(arguments);
+                        dbg!(tokens);
+                        (true, true, None, None, None, false, None, false)
+                    },
                     Meta::NameValue(MetaNameValue {
                         path,
                         eq_token: _,
@@ -185,6 +200,14 @@ impl From<&DeriveInput> for TypeAttribute {
                         },
                         _ => (true, true, None, None, None, false, None, false),
                     },
+                    Meta::Path(path) => match path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                            "flags" => (true, true, None, None, None, true, None, false),
+                            "string" => (true, true, None, None, None, false, None, true),
+                            _ => unimplemented!(),
+                        },
                     _ => (true, true, None, None, None, false, None, false),
                 }
             })
