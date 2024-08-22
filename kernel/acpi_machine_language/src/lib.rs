@@ -46,6 +46,7 @@ use {
     encoding_value_max,
     encoding_value_min,
     flags,
+    manual,
     matching_elements,
     matching_type,
     no_leftover,
@@ -87,6 +88,8 @@ impl From<RangeInclusive<u8>> for Encoding {
 }
 
 struct TypeAttribute {
+    derive_from_slice_u8: bool,
+    derive_matches: bool,
     encoding: Option<Encoding>,
     flags: bool,
     matching_elements: usize,
@@ -102,7 +105,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
+        let (derive_from_slice_u8, derive_matches, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (bool, bool, Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -116,8 +119,8 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "flags" => (None, None, None, true, None, false),
-                            "string" => (None, None, None, false, None, true),
+                            "flags" => (true, true, None, None, None, true, None, false),
+                            "string" => (true, true, None, None, None, false, None, true),
                             _ => unimplemented!(),
                         },
                     Meta::NameValue(MetaNameValue {
@@ -137,7 +140,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (Some(encoding_value), None, None, false, None, false)
+                                (true, true, Some(encoding_value), None, None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -150,7 +153,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, Some(encoding_value_max), None, false, None, false)
+                                (true, true, None, Some(encoding_value_max), None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -163,7 +166,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, None, Some(encoding_value_min), false, None, false)
+                                (true, true, None, None, Some(encoding_value_min), false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -176,16 +179,16 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, None, None, false, Some(matching_elements), false)
+                                (true, true, None, None, None, false, Some(matching_elements), false)
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (None, None, None, false, None, false),
+                        _ => (true, true, None, None, None, false, None, false),
                     },
-                    _ => (None, None, None, false, None, false),
+                    _ => (true, true, None, None, None, false, None, false),
                 }
             })
-            .fold((None, None, None, false, None, false), |(encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements, new_string)| (encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements), string || new_string));
+            .fold((true, true, None, None, None, false, None, false), |(derive_from_slice_u8, derive_matches, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (new_derive_from_slice_u8, new_derive_matches, new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements, new_string)| (derive_from_slice_u8 && new_derive_from_slice_u8, derive_matches && new_derive_matches, encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements), string || new_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
@@ -196,6 +199,8 @@ impl From<&DeriveInput> for TypeAttribute {
         };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
+            derive_from_slice_u8,
+            derive_matches,
             encoding,
             flags,
             matching_elements,
@@ -375,6 +380,8 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding: _,
         flags,
         matching_elements: _,
@@ -573,6 +580,8 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding,
         flags,
         matching_elements: _,
@@ -1011,6 +1020,8 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding,
         flags,
         matching_elements: _,
@@ -1248,6 +1259,8 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding,
         flags,
         matching_elements: _,
@@ -1431,6 +1444,8 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding,
         flags,
         matching_elements,
@@ -1743,6 +1758,8 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_from_slice_u8: _,
+        derive_matches: _,
         encoding: _,
         flags: _,
         matching_elements: _,
