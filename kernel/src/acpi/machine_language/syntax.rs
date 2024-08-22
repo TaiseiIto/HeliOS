@@ -2517,17 +2517,19 @@ impl PkgLeadByte {
 /// # PkgLength
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
-pub struct PkgLength {
-    pkg_lead_byte: PkgLeadByte,
-    byte_data: Vec<ByteData>,
-}
+#[derive(acpi_machine_language::Analyzer)]
+#[manual(debug, from_slice_u8, reader)]
+pub struct PkgLength(
+    PkgLeadByte,
+    Vec<ByteData>,
+);
 
 impl PkgLength {
     pub fn pkg_length(&self) -> usize {
-        let Self {
+        let Self(
             pkg_lead_byte,
             byte_data,
-        } = self;
+        ) = self;
         (byte_data
             .iter()
             .rev()
@@ -2558,51 +2560,10 @@ impl From<&[u8]> for PkgLength {
                 byte_data.push(new_byte_data);
                 (aml, byte_data)
             });
-        Self {
+        Self(
             pkg_lead_byte,
             byte_data,
-        }
-    }
-}
-
-impl Analyzer for PkgLength {
-}
-
-impl ReferenceToSymbolIterator for PkgLength {
-    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
-        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
-        let Self {
-            pkg_lead_byte,
-            byte_data,
-        } = self;
-        symbols.push_back(pkg_lead_byte);
-        byte_data
-            .iter()
-            .for_each(|byte_data| {
-                symbols.push_back(byte_data);
-            });
-        SymbolIterator {
-            symbols,
-        }
-    }
-}
-
-impl WithLength for PkgLength {
-    fn length(&self) -> usize {
-        let Self {
-            pkg_lead_byte,
-            byte_data
-        } = self;
-        pkg_lead_byte.length() + byte_data
-            .iter()
-            .map(|byte_data| byte_data.length())
-            .sum::<usize>()
-    }
-}
-
-impl Matcher for PkgLength {
-    fn matches(aml: &[u8]) -> bool {
-        PkgLeadByte::matches(aml)
+        )
     }
 }
 

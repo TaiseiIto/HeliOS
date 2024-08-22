@@ -98,8 +98,10 @@ impl From<RangeInclusive<u8>> for Encoding {
 }
 
 struct TypeAttribute {
+    derive_debug: bool,
     derive_from_slice_u8: bool,
     derive_matches: bool,
+    derive_reader: bool,
     derive_string_from_self: bool,
     encoding: Option<Encoding>,
     flags: bool,
@@ -116,7 +118,7 @@ impl From<&DeriveInput> for TypeAttribute {
             generics: _,
             data: _,
         } = derive_input;
-        let (derive_from_slice_u8, derive_matches, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (bool, bool, bool, Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
+        let (derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (bool, bool, bool, bool, bool, Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -148,24 +150,26 @@ impl From<&DeriveInput> for TypeAttribute {
                         match ident
                             .to_string()
                             .as_str() {
-                            "bitfield" => (true, true, true, None, None, None, true, None, false),
+                            "bitfield" => (true, true, true, true, true, None, None, None, true, None, false),
                             "manual" => {
-                                let (derive_from_slice_u8, derive_matches, derive_string_from_self): (bool, bool, bool) = tokens
+                                let (derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self): (bool, bool, bool, bool, bool) = tokens
                                     .clone()
                                     .into_iter()
                                     .map(|token_tree| match token_tree {
                                         TokenTree::Ident(manual_arg) => match manual_arg
                                             .to_string()
                                             .as_str() {
-                                            "from_slice_u8" => (false, true, true),
-                                            "matches" => (true, false, true),
-                                            "string_from_self" => (true, true, false),
+                                            "debug" => (false, true, true, true, true),
+                                            "from_slice_u8" => (true, false, true, true, true),
+                                            "matches" => (true, true, false, true, true),
+                                            "reader" => (true, true, true, false, true),
+                                            "string_from_self" => (true, true, true, true, false),
                                             _ => unimplemented!(),
                                         },
-                                        _ => (true, true, true),
+                                        _ => (true, true, true, true, true),
                                     })
-                                    .fold((true, true, true), |(derive_from_slice_u8, derive_matches, derive_string_from_self), (next_derive_from_slice_u8, next_derive_matches, next_derive_string_from_self)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_string_from_self && next_derive_string_from_self));
-                                (derive_from_slice_u8, derive_matches, derive_string_from_self, None, None, None, false, None, false)
+                                    .fold((true, true, true, true, true), |(derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self), (next_derive_debug, next_derive_from_slice_u8, next_derive_matches, next_derive_reader, next_derive_string_from_self)| (derive_debug && next_derive_debug, derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_reader && next_derive_reader, derive_string_from_self && next_derive_string_from_self));
+                                (derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self, None, None, None, false, None, false)
                             },
                             _ => unimplemented!(),
                         }
@@ -187,7 +191,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, Some(encoding_value), None, None, false, None, false)
+                                (true, true, true, true, true, Some(encoding_value), None, None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -200,7 +204,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, None, Some(encoding_value_max), None, false, None, false)
+                                (true, true, true, true, true, None, Some(encoding_value_max), None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -213,7 +217,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, None, None, Some(encoding_value_min), false, None, false)
+                                (true, true, true, true, true, None, None, Some(encoding_value_min), false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -226,23 +230,23 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, None, None, None, false, Some(matching_elements), false)
+                                (true, true, true, true, true, None, None, None, false, Some(matching_elements), false)
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (true, true, true, None, None, None, false, None, false),
+                        _ => (true, true, true, true, true, None, None, None, false, None, false),
                     },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "string" => (true, true, true, None, None, None, false, None, true),
+                            "string" => (true, true, true, true, true, None, None, None, false, None, true),
                             _ => unimplemented!(),
                         },
-                    _ => (true, true, true, None, None, None, false, None, false),
+                    _ => (true, true, true, true, true, None, None, None, false, None, false),
                 }
             })
-            .fold((true, true, true, None, None, None, false, None, false), |(derive_from_slice_u8, derive_matches, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_derive_from_slice_u8, next_derive_matches, next_derive_string_from_self, next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_string_from_self && next_derive_string_from_self, encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
+            .fold((true, true, true, true, true, None, None, None, false, None, false), |(derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_derive_debug, next_derive_from_slice_u8, next_derive_matches, next_derive_reader, next_derive_string_from_self, next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (derive_debug && next_derive_debug, derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_reader && next_derive_reader, derive_string_from_self && next_derive_string_from_self, encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
@@ -253,8 +257,10 @@ impl From<&DeriveInput> for TypeAttribute {
         };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
+            derive_debug,
             derive_from_slice_u8,
             derive_matches,
+            derive_reader,
             derive_string_from_self,
             encoding,
             flags,
@@ -435,15 +441,20 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_reader: _,
         derive_string_from_self: _,
         encoding: _,
         flags,
         matching_elements: _,
         string,
     } = derive_input.into();
-    if flags {
+    if !derive_debug {
+        quote! {
+        }
+    } else if flags {
         quote! {
         }
     } else if string {
@@ -636,8 +647,10 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug: _,
         derive_from_slice_u8,
         derive_matches: _,
+        derive_reader: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1074,8 +1087,10 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_reader: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1316,8 +1331,10 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_reader: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1504,8 +1521,10 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches,
+        derive_reader: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1815,13 +1834,29 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics: _,
         data,
     } = derive_input;
-    quote! {
-        impl crate::acpi::machine_language::syntax::Reader for #ident {
-            fn read(aml: &[u8]) -> (Self, &[u8]) {
-                let symbol: Self = aml.into();
-                let aml: &[u8] = &aml[symbol.length()..];
-                (symbol, aml)
+    let TypeAttribute {
+        derive_debug: _,
+        derive_from_slice_u8: _,
+        derive_matches: _,
+        derive_reader,
+        derive_string_from_self,
+        encoding: _,
+        flags: _,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    if derive_reader {
+        quote! {
+            impl crate::acpi::machine_language::syntax::Reader for #ident {
+                fn read(aml: &[u8]) -> (Self, &[u8]) {
+                    let symbol: Self = aml.into();
+                    let aml: &[u8] = &aml[symbol.length()..];
+                    (symbol, aml)
+                }
             }
+        }
+    } else {
+        quote! {
         }
     }
 }
@@ -1835,8 +1870,10 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         data,
     } = derive_input;
     let TypeAttribute {
+        derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_reader: _,
         derive_string_from_self,
         encoding: _,
         flags: _,
