@@ -2068,21 +2068,13 @@ pub struct MsecTime(TermArg);
 /// # MultiNamePath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
+#[derive(acpi_machine_language::Analyzer)]
+#[manual(string_from_self, from_slice_u8)]
 pub struct MultiNamePath(
     MultiNamePrefix,
     SegCount,
     Vec<NameSeg>,
 );
-
-impl fmt::Debug for MultiNamePath {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let multi_name_path: String = self.into();
-        formatter
-            .debug_tuple("MultiNamePath")
-            .field(&multi_name_path)
-            .finish()
-    }
-}
 
 impl From<&MultiNamePath> for String {
     fn from(multi_name_path: &MultiNamePath) -> Self {
@@ -2117,58 +2109,6 @@ impl From<&[u8]> for MultiNamePath {
             seg_count,
             name_segs,
         )
-    }
-}
-
-impl Analyzer for MultiNamePath {
-}
-
-impl ReferenceToSymbolIterator for MultiNamePath {
-    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
-        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
-        let Self(
-            multi_name_prefix,
-            seg_count,
-            name_segs,
-        ) = self;
-        symbols.push_back(multi_name_prefix);
-        symbols.push_back(seg_count);
-        name_segs
-            .iter()
-            .for_each(|name_seg| {
-                symbols.push_back(name_seg);
-            });
-        SymbolIterator {
-            symbols,
-        }
-    }
-}
-
-impl WithLength for MultiNamePath {
-    fn length(&self) -> usize {
-        let Self(
-            multi_name_prefix,
-            seg_count,
-            name_segs,
-        ) = self;
-        multi_name_prefix.length() + seg_count.length() + name_segs
-            .iter()
-            .map(|name_seg| name_seg.length())
-            .sum::<usize>()
-    }
-}
-
-impl Matcher for MultiNamePath {
-    fn matches(aml: &[u8]) -> bool {
-        MultiNamePrefix::matches(aml)
-    }
-}
-
-impl Reader for MultiNamePath {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let multi_name_prefix: Self = aml.into();
-        let aml: &[u8] = &aml[multi_name_prefix.length()..];
-        (multi_name_prefix, aml)
     }
 }
 
