@@ -12,7 +12,6 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
-    crate::com2_println,
 };
 
 pub trait Analyzer: ReferenceToSymbolIterator + WithLength + Matcher + Reader {
@@ -2181,28 +2180,6 @@ pub enum NamePath {
     NullName(NullName),
 }
 
-impl NamePath {
-    fn name_segs(&self) -> Vec<&NameSeg> {
-        match self {
-            Self::Dual(DualNamePath(
-                _dual_name_path,
-                name_segs,
-            )) => name_segs
-                .iter()
-                .collect(),
-            Self::Multi(MultiNamePath(
-                _multi_name_prefix,
-                _seg_count,
-                name_segs,
-            )) => name_segs
-                .iter()
-                .collect(),
-            Self::NameSeg(name_seg) => vec![name_seg],
-            Self::NullName(_) => Vec::new(),
-        }
-    }
-}
-
 /// # NameSeg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -2239,21 +2216,6 @@ pub enum NameString {
         PrefixPath,
         NamePath,
     ),
-}
-
-impl NameString {
-    fn name_path(&self) -> &NamePath {
-        match self {
-            Self::RootCharNamePath(
-                _root_char,
-                name_path,
-            ) => name_path,
-            Self::PrefixPathNamePath(
-                _prefix_path,
-                name_path,
-            ) => name_path,
-        }
-    }
 }
 
 /// # NamedField

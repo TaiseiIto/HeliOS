@@ -139,7 +139,7 @@ impl From<&DeriveInput> for TypeAttribute {
                         } = path;
                         let PathSegment {
                             ident,
-                            arguments,
+                            arguments: _,
                         } = segments
                             .iter()
                             .last()
@@ -448,10 +448,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         matching_elements: _,
         string,
     } = derive_input.into();
-    if !derive_debug {
-        quote! {
-        }
-    } else if flags {
+    if !derive_debug || flags {
         quote! {
         }
     } else if string {
@@ -1137,7 +1134,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                                         let push_field: proc_macro2::TokenStream = match ty {
                                             Type::Array(TypeArray {
                                                 bracket_token: _,
-                                                elem,
+                                                elem: _,
                                                 semi_token: _,
                                                 len: _,
                                             }) => quote! {
@@ -1158,7 +1155,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                                                 } = path;
                                                 let PathSegment {
                                                     ident,
-                                                    arguments,
+                                                    arguments: _,
                                                 } = segments
                                                     .iter()
                                                     .last()
@@ -1238,7 +1235,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                             let push_field: proc_macro2::TokenStream = match ty {
                                 Type::Array(TypeArray {
                                     bracket_token: _,
-                                    elem,
+                                    elem: _,
                                     semi_token: _,
                                     len: _,
                                 }) => quote! {
@@ -1259,7 +1256,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                                     } = path;
                                     let PathSegment {
                                         ident,
-                                        arguments,
+                                        arguments: _,
                                     } = segments
                                         .iter()
                                         .last()
@@ -1829,14 +1826,14 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         vis: _,
         ident,
         generics: _,
-        data,
+        data: _,
     } = derive_input;
     let TypeAttribute {
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
         derive_reader,
-        derive_string_from_self,
+        derive_string_from_self: _,
         encoding: _,
         flags: _,
         matching_elements: _,
