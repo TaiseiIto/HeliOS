@@ -15,10 +15,22 @@ use {
     crate::com2_println,
 };
 
-pub trait Analyzer {
+pub trait Analyzer: RefToIterator + Length + Matches + Read {
+}
+
+pub trait RefToIterator {
     fn iter<'a>(&'a self) -> SymbolIterator<'a>;
+}
+
+pub trait Length {
     fn length(&self) -> usize;
+}
+
+pub trait Matches {
     fn matches(aml: &[u8]) -> bool where Self: Sized;
+}
+
+pub trait Read {
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
 }
 
@@ -2005,7 +2017,7 @@ impl From<&[u8]> for MethodInvocation {
     }
 }
 
-impl Analyzer for MethodInvocation {
+impl Matches for MethodInvocation {
     fn matches(aml: &[u8]) -> bool {
         NameString::matches(aml) && !NullName::matches(aml)
     }
@@ -2037,6 +2049,9 @@ impl From<&[u8]> for MethodTermList {
 }
 
 impl Analyzer for MethodTermList {
+}
+
+impl RefToIterator for MethodTermList {
     fn iter<'a>(&'a self) -> SymbolIterator<'a> {
         let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
         match self {
@@ -2054,18 +2069,24 @@ impl Analyzer for MethodTermList {
             symbols,
         }
     }
+}
 
+impl Length for MethodTermList {
     fn length(&self) -> usize {
         match self {
             Self::Binary(binary) => binary.len(),
             Self::SyntaxTree(term_list) => term_list.length(),
         }
     }
+}
 
+impl Matches for MethodTermList {
     fn matches(aml: &[u8]) -> bool {
         TermList::matches(aml)
     }
+}
 
+impl Read for MethodTermList {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
         let method_term_list: Self = aml.into();
         let aml: &[u8] = &aml[method_term_list.length()..];
@@ -2162,6 +2183,9 @@ impl From<&[u8]> for MultiNamePath {
 }
 
 impl Analyzer for MultiNamePath {
+}
+
+impl RefToIterator for MultiNamePath {
     fn iter<'a>(&'a self) -> SymbolIterator<'a> {
         let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
         let Self(
@@ -2180,7 +2204,9 @@ impl Analyzer for MultiNamePath {
             symbols,
         }
     }
+}
 
+impl Length for MultiNamePath {
     fn length(&self) -> usize {
         let Self(
             multi_name_prefix,
@@ -2192,11 +2218,15 @@ impl Analyzer for MultiNamePath {
             .map(|name_seg| name_seg.length())
             .sum::<usize>()
     }
+}
 
+impl Matches for MultiNamePath {
     fn matches(aml: &[u8]) -> bool {
         MultiNamePrefix::matches(aml)
     }
+}
 
+impl Read for MultiNamePath {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
         let multi_name_prefix: Self = aml.into();
         let aml: &[u8] = &aml[multi_name_prefix.length()..];
@@ -2658,6 +2688,9 @@ impl From<&[u8]> for PkgLength {
 }
 
 impl Analyzer for PkgLength {
+}
+
+impl RefToIterator for PkgLength {
     fn iter<'a>(&'a self) -> SymbolIterator<'a> {
         let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
         let Self {
@@ -2674,7 +2707,9 @@ impl Analyzer for PkgLength {
             symbols,
         }
     }
+}
 
+impl Length for PkgLength {
     fn length(&self) -> usize {
         let Self {
             pkg_lead_byte,
@@ -2685,11 +2720,15 @@ impl Analyzer for PkgLength {
             .map(|byte_data| byte_data.length())
             .sum::<usize>()
     }
+}
 
+impl Matches for PkgLength {
     fn matches(aml: &[u8]) -> bool {
         PkgLeadByte::matches(aml)
     }
+}
 
+impl Read for PkgLength {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];

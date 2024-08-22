@@ -61,12 +61,20 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
+    let iter: proc_macro2::TokenStream = derive_iter(&derive_input);
+    let length: proc_macro2::TokenStream = derive_length(&derive_input);
+    let matches: proc_macro2::TokenStream = derive_matches(&derive_input);
+    let read: proc_macro2::TokenStream = derive_read(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
         #char_from_self
         #debug
         #from_slice_u8
+        #iter
+        #length
+        #matches
+        #read
         #string_from_self
     }   .try_into()
         .unwrap()
@@ -1046,16 +1054,8 @@ fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics: _,
         data: _,
     } = derive_input;
-    let iter: proc_macro2::TokenStream = derive_iter(derive_input);
-    let length: proc_macro2::TokenStream = derive_length(derive_input);
-    let matches: proc_macro2::TokenStream = derive_matches(derive_input);
-    let read: proc_macro2::TokenStream = derive_read();
     quote! {
         impl crate::acpi::machine_language::syntax::Analyzer for #ident {
-            #iter
-            #length
-            #matches
-            #read
         }
     }
 }
@@ -1064,7 +1064,7 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
-        ident: _,
+        ident,
         generics: _,
         data,
     } = derive_input;
@@ -1289,11 +1289,13 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
     quote! {
-        fn iter<'a>(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
-            let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
-            #push_symbols
-            SymbolIterator {
-                symbols,
+        impl crate::acpi::machine_language::syntax::RefToIterator for #ident {
+            fn iter<'a>(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
+                let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
+                #push_symbols
+                SymbolIterator {
+                    symbols,
+                }
             }
         }
     }
@@ -1303,7 +1305,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
-        ident: _,
+        ident,
         generics: _,
         data,
     } = derive_input;
@@ -1478,8 +1480,10 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
     quote! {
-        fn length(&self) -> usize {
-            #length
+        impl crate::acpi::machine_language::syntax::Length for #ident {
+            fn length(&self) -> usize {
+                #length
+            }
         }
     }
 }
@@ -1488,7 +1492,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
-        ident: _,
+        ident,
         generics: _,
         data,
     } = derive_input;
@@ -1783,8 +1787,10 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     };
     if derive_matches {
         quote! {
-            fn matches(aml: &[u8]) -> bool {
-                #matches
+            impl crate::acpi::machine_language::syntax::Matches for #ident {
+                fn matches(aml: &[u8]) -> bool {
+                    #matches
+                }
             }
         }
     } else {
@@ -1793,12 +1799,21 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_read() -> proc_macro2::TokenStream {
+fn derive_read(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data,
+    } = derive_input;
     quote! {
-        fn read(aml: &[u8]) -> (Self, &[u8]) {
-            let symbol: Self = aml.into();
-            let aml: &[u8] = &aml[symbol.length()..];
-            (symbol, aml)
+        impl crate::acpi::machine_language::syntax::Read for #ident {
+            fn read(aml: &[u8]) -> (Self, &[u8]) {
+                let symbol: Self = aml.into();
+                let aml: &[u8] = &aml[symbol.length()..];
+                (symbol, aml)
+            }
         }
     }
 }
