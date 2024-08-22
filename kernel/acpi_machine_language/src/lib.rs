@@ -1,6 +1,7 @@
 extern crate proc_macro;
 
 use {
+    proc_macro2::TokenTree,
     quote::{
         ToTokens,
         format_ident,
@@ -139,6 +140,23 @@ impl From<&DeriveInput> for TypeAttribute {
                             .to_string()
                             .as_str() {
                             "bitfield" => (true, true, None, None, None, true, None, false),
+                            "manual" => {
+                                let (derive_from_slice_u8, derive_matches): (bool, bool) = tokens
+                                    .clone()
+                                    .into_iter()
+                                    .map(|token_tree| match token_tree {
+                                        TokenTree::Ident(manual_arg) => match manual_arg
+                                            .to_string()
+                                            .as_str() {
+                                            "from_slice_u8" => (false, true),
+                                            "matches" => (true, false),
+                                            _ => unimplemented!(),
+                                        },
+                                        _ => (true, true),
+                                    })
+                                    .fold((true, true), |(derive_from_slice_u8, derive_matches), (next_derive_from_slice_u8, next_derive_matches)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches));
+                                (derive_from_slice_u8, derive_matches, None, None, None, false, None, false)
+                            },
                             _ => unimplemented!(),
                         }
                     },
@@ -214,7 +232,7 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => (true, true, None, None, None, false, None, false),
                 }
             })
-            .fold((true, true, None, None, None, false, None, false), |(derive_from_slice_u8, derive_matches, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (new_derive_from_slice_u8, new_derive_matches, new_encoding_value, new_encoding_value_max, new_encoding_value_min, new_flags, new_matching_elements, new_string)| (derive_from_slice_u8 && new_derive_from_slice_u8, derive_matches && new_derive_matches, encoding_value.or(new_encoding_value), encoding_value_max.or(new_encoding_value_max), encoding_value_min.or(new_encoding_value_min), flags || new_flags, matching_elements.or(new_matching_elements), string || new_string));
+            .fold((true, true, None, None, None, false, None, false), |(derive_from_slice_u8, derive_matches, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_derive_from_slice_u8, next_derive_matches, next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
@@ -340,7 +358,7 @@ impl From<&Field> for FieldAttribute {
                     _ => (false, None, false, false),
                 }
             })
-            .fold((false, None, false, false), |(debug, delimiter, no_leftover, not_string), (new_debug, new_delimiter, new_no_leftover, new_not_string)| (debug || new_debug, delimiter.or(new_delimiter), no_leftover || new_no_leftover, not_string || new_not_string));
+            .fold((false, None, false, false), |(debug, delimiter, no_leftover, not_string), (next_debug, next_delimiter, next_no_leftover, next_not_string)| (debug || next_debug, delimiter.or(next_delimiter), no_leftover || next_no_leftover, not_string || next_not_string));
         Self {
             debug,
             delimiter,
@@ -563,9 +581,9 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 };
                                 (unpack, format)
                             })
-                            .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (new_unpack, new_format)| {
-                                unpack.push(new_unpack);
-                                format.push(new_format);
+                            .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (next_unpack, next_format)| {
+                                unpack.push(next_unpack);
+                                format.push(next_format);
                                 (unpack, format)
                             });
                         let unpack: proc_macro2::TokenStream = quote! {
@@ -989,9 +1007,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                 };
                                 (convert, pack)
                             })
-                            .fold((Vec::new(), Vec::new()), |(mut convert, mut pack), (new_convert, new_pack)| {
-                                convert.push(new_convert);
-                                pack.push(new_pack);
+                            .fold((Vec::new(), Vec::new()), |(mut convert, mut pack), (next_convert, next_pack)| {
+                                convert.push(next_convert);
+                                pack.push(next_pack);
                                 (convert, pack)
                             }),
                     };
@@ -1149,9 +1167,9 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         };
                                         (field_name, push_field)
                                     })
-                                    .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (new_field_name, push_new_field)| {
-                                        field_names.push(new_field_name);
-                                        push_fields.push(push_new_field);
+                                    .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (next_field_name, push_next_field)| {
+                                        field_names.push(next_field_name);
+                                        push_fields.push(push_next_field);
                                         (field_names, push_fields)
                                     });
                                 quote! {
@@ -1250,9 +1268,9 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             };
                             (field_name, push_field)
                         })
-                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (new_field_name, push_new_field)| {
-                            field_names.push(new_field_name);
-                            push_fields.push(push_new_field);
+                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (next_field_name, push_next_field)| {
+                            field_names.push(next_field_name);
+                            push_fields.push(push_next_field);
                             (field_names, push_fields)
                         });
                     quote! {
