@@ -1289,7 +1289,7 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
     quote! {
-        impl crate::acpi::machine_language::syntax::RefToIterator for #ident {
+        impl crate::acpi::machine_language::syntax::ReferenceToSymbolIterator for #ident {
             fn iter<'a>(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
                 let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
                 #push_symbols
@@ -1480,7 +1480,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
     quote! {
-        impl crate::acpi::machine_language::syntax::Length for #ident {
+        impl crate::acpi::machine_language::syntax::WithLength for #ident {
             fn length(&self) -> usize {
                 #length
             }
@@ -1787,7 +1787,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     };
     if derive_matches {
         quote! {
-            impl crate::acpi::machine_language::syntax::Matches for #ident {
+            impl crate::acpi::machine_language::syntax::Matcher for #ident {
                 fn matches(aml: &[u8]) -> bool {
                     #matches
                 }
@@ -1808,7 +1808,7 @@ fn derive_read(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     quote! {
-        impl crate::acpi::machine_language::syntax::Read for #ident {
+        impl crate::acpi::machine_language::syntax::Reader for #ident {
             fn read(aml: &[u8]) -> (Self, &[u8]) {
                 let symbol: Self = aml.into();
                 let aml: &[u8] = &aml[symbol.length()..];
