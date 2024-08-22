@@ -2069,27 +2069,16 @@ pub struct MsecTime(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[manual(string_from_self, from_slice_u8)]
+#[manual(from_slice_u8)]
+#[string]
 pub struct MultiNamePath(
+    #[not_string]
     MultiNamePrefix,
+    #[not_string]
     SegCount,
+    #[delimiter = "."]
     Vec<NameSeg>,
 );
-
-impl From<&MultiNamePath> for String {
-    fn from(multi_name_path: &MultiNamePath) -> Self {
-        let MultiNamePath(
-            _multi_name_prefix,
-            _seg_count,
-            name_segs,
-        ) = multi_name_path;
-        let name_segs: Vec<String> = name_segs
-            .iter()
-            .map(|name_seg| name_seg.into())
-            .collect();
-        name_segs.join(".")
-    }
-}
 
 impl From<&[u8]> for MultiNamePath {
     fn from(aml: &[u8]) -> Self {
