@@ -19,7 +19,7 @@ pub trait Analyzer: ReferenceToSymbolIterator + WithLength + Matcher + Reader {
 }
 
 pub trait ReferenceToSymbolIterator {
-    fn iter<'a>(&'a self) -> SymbolIterator<'a>;
+    fn iter(&self) -> SymbolIterator<'_>;
 }
 
 pub trait WithLength {

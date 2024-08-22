@@ -1308,7 +1308,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
     };
     quote! {
         impl crate::acpi::machine_language::syntax::ReferenceToSymbolIterator for #ident {
-            fn iter<'a>(&'a self) -> crate::acpi::machine_language::syntax::SymbolIterator<'a> {
+            fn iter(&self) -> crate::acpi::machine_language::syntax::SymbolIterator<'_> {
                 let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
                 #push_symbols
                 SymbolIterator {
