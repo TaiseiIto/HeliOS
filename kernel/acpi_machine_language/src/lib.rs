@@ -61,10 +61,10 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let from_slice_u8: proc_macro2::TokenStream = derive_from_slice_u8(&derive_input);
-    let iter: proc_macro2::TokenStream = derive_iter(&derive_input);
-    let length: proc_macro2::TokenStream = derive_length(&derive_input);
-    let matches: proc_macro2::TokenStream = derive_matches(&derive_input);
-    let read: proc_macro2::TokenStream = derive_read(&derive_input);
+    let iter: proc_macro2::TokenStream = derive_reference_to_symbol_iterator(&derive_input);
+    let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
+    let matches: proc_macro2::TokenStream = derive_matcher(&derive_input);
+    let read: proc_macro2::TokenStream = derive_reader(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
@@ -1060,7 +1060,7 @@ fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
@@ -1301,7 +1301,7 @@ fn derive_iter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
@@ -1488,7 +1488,7 @@ fn derive_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
@@ -1799,7 +1799,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_read(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
