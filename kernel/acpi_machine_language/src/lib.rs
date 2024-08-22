@@ -144,9 +144,6 @@ impl From<&DeriveInput> for TypeAttribute {
                             .iter()
                             .last()
                             .unwrap();
-                        dbg!(ident);
-                        dbg!(arguments);
-                        dbg!(tokens);
                         match ident
                             .to_string()
                             .as_str() {
