@@ -30,7 +30,6 @@ use {
         Meta,
         MetaList,
         MetaNameValue,
-        ParenthesizedGenericArguments,
         Path,
         PathArguments,
         PathSegment,
@@ -240,7 +239,6 @@ impl From<&DeriveInput> for TypeAttribute {
                             "string" => (true, true, true, true, true, None, None, None, false, None, true),
                             _ => unimplemented!(),
                         },
-                    _ => (true, true, true, true, true, None, None, None, false, None, false),
                 }
             })
             .fold((true, true, true, true, true, None, None, None, false, None, false), |(derive_debug, derive_from_slice_u8, derive_matches, derive_reader, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_derive_debug, next_derive_from_slice_u8, next_derive_matches, next_derive_reader, next_derive_string_from_self, next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (derive_debug && next_derive_debug, derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_reader && next_derive_reader, derive_string_from_self && next_derive_string_from_self, encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));

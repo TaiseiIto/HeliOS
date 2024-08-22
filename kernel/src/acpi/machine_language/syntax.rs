@@ -7,7 +7,6 @@ use {
         boxed::Box,
         collections::vec_deque::VecDeque,
         string::String,
-        vec,
         vec::Vec,
     },
     bitfield_struct::bitfield,
