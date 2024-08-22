@@ -61,7 +61,6 @@ pub struct AccessFieldOp;
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[flags]
 #[bitfield(u8)]
 pub struct AccessType {
     #[bits(4)]
@@ -1712,7 +1711,6 @@ pub struct FatalType(ByteData);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[flags]
 #[bitfield(u8)]
 pub struct FieldFlags {
     #[bits(4)]
@@ -1969,7 +1967,6 @@ pub struct MatchOpcode(ByteData);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[flags]
 #[bitfield(u8)]
 pub struct MethodFlags {
     #[bits(3)]
@@ -2640,7 +2637,6 @@ pub struct PblkLen(ByteData);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[flags]
 #[bitfield(u8)]
 pub struct PkgLeadByte {
     #[bits(6)]
@@ -3146,7 +3142,6 @@ pub enum SuperName {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[flags]
 #[bitfield(u8)]
 pub struct SyncFlags {
     #[bits(4)]

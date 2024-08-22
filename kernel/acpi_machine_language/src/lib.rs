@@ -47,7 +47,6 @@ use {
     encoding_value,
     encoding_value_max,
     encoding_value_min,
-    flags,
     manual,
     matching_elements,
     matching_type,
@@ -136,7 +135,12 @@ impl From<&DeriveInput> for TypeAttribute {
                         dbg!(ident);
                         dbg!(arguments);
                         dbg!(tokens);
-                        (true, true, None, None, None, false, None, false)
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "bitfield" => (true, true, None, None, None, true, None, false),
+                            _ => unimplemented!(),
+                        }
                     },
                     Meta::NameValue(MetaNameValue {
                         path,
@@ -204,7 +208,6 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "flags" => (true, true, None, None, None, true, None, false),
                             "string" => (true, true, None, None, None, false, None, true),
                             _ => unimplemented!(),
                         },
