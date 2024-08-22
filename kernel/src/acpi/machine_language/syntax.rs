@@ -2026,72 +2026,10 @@ impl Matcher for MethodInvocation {
 /// # MethodTermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(acpi_machine_language::Analyzer)]
 pub enum MethodTermList {
-    Binary(Vec<u8>),
+    Binary(ByteList),
     SyntaxTree(TermList),
-}
-
-impl fmt::Debug for MethodTermList {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("MethodTermList");
-        match self {
-            Self::Binary(binary) => debug_tuple.field(binary),
-            Self::SyntaxTree(term_list) => debug_tuple.field(term_list),
-        };
-        debug_tuple.finish()
-    }
-}
-
-impl From<&[u8]> for MethodTermList {
-    fn from(aml: &[u8]) -> Self {
-        Self::Binary(aml.to_vec())
-    }
-}
-
-impl Analyzer for MethodTermList {
-}
-
-impl ReferenceToSymbolIterator for MethodTermList {
-    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
-        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
-        match self {
-            Self::Binary(binary) => {
-            },
-            Self::SyntaxTree(term_list) => {
-                term_list
-                    .iter()
-                    .for_each(|term_obj| {
-                        symbols.push_back(term_obj);
-                    });
-            },
-        }
-        SymbolIterator {
-            symbols,
-        }
-    }
-}
-
-impl WithLength for MethodTermList {
-    fn length(&self) -> usize {
-        match self {
-            Self::Binary(binary) => binary.len(),
-            Self::SyntaxTree(term_list) => term_list.length(),
-        }
-    }
-}
-
-impl Matcher for MethodTermList {
-    fn matches(aml: &[u8]) -> bool {
-        TermList::matches(aml)
-    }
-}
-
-impl Reader for MethodTermList {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let method_term_list: Self = aml.into();
-        let aml: &[u8] = &aml[method_term_list.length()..];
-        (method_term_list, aml)
-    }
 }
 
 /// # MethodOp
