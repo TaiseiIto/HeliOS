@@ -1979,27 +1979,12 @@ pub struct MethodFlags {
 /// # MethodInvocation
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
+#[derive(acpi_machine_language::Analyzer)]
+#[manual(from_slice_u8, matches)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
 );
-
-impl fmt::Debug for MethodInvocation {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple("MethodInvocation");
-        let Self(
-            name_string,
-            term_args,
-        ) = self;
-        debug_tuple.field(name_string);
-        term_args
-            .iter()
-            .for_each(|term_arg| {
-                debug_tuple.field(term_arg);
-            });
-        debug_tuple.finish()
-    }
-}
 
 impl From<&[u8]> for MethodInvocation {
     fn from(aml: &[u8]) -> Self {
@@ -2021,42 +2006,8 @@ impl From<&[u8]> for MethodInvocation {
 }
 
 impl Analyzer for MethodInvocation {
-    fn iter<'a>(&'a self) -> SymbolIterator<'a> {
-        let mut symbols: VecDeque<&'a dyn Analyzer> = VecDeque::new();
-        let Self(
-            name_string,
-            term_arg_list,
-        ) = self;
-        symbols.push_back(name_string);
-        term_arg_list
-            .iter()
-            .for_each(|term_arg| {
-                symbols.push_back(term_arg);
-            });
-        SymbolIterator {
-            symbols,
-        }
-    }
-
-    fn length(&self) -> usize {
-        let Self(
-            name_string,
-            term_args,
-        ) = self;
-        name_string.length() + term_args
-            .iter()
-            .map(|term_arg| term_arg.length())
-            .sum::<usize>()
-    }
-
     fn matches(aml: &[u8]) -> bool {
         NameString::matches(aml) && !NullName::matches(aml)
-    }
-
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let method_invocation: Self = aml.into();
-        let aml: &[u8] = &aml[method_invocation.length()..];
-        (method_invocation, aml)
     }
 }
 

@@ -624,7 +624,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         data,
     } = derive_input;
     let TypeAttribute {
-        derive_from_slice_u8: _,
+        derive_from_slice_u8,
         derive_matches: _,
         encoding,
         flags,
@@ -1024,11 +1024,16 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             _ => unimplemented!(),
         }
     };
-    quote! {
-        impl From<&[u8]> for #ident {
-            fn from(aml: &[u8]) -> Self {
-                #convert
+    if derive_from_slice_u8 {
+        quote! {
+            impl From<&[u8]> for #ident {
+                fn from(aml: &[u8]) -> Self {
+                    #convert
+                }
             }
+        }
+    } else {
+        quote! {
         }
     }
 }
@@ -1489,7 +1494,7 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     let TypeAttribute {
         derive_from_slice_u8: _,
-        derive_matches: _,
+        derive_matches,
         encoding,
         flags,
         matching_elements,
@@ -1776,9 +1781,14 @@ fn derive_matches(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             _ => unimplemented!(),
         }
     };
-    quote! {
-        fn matches(aml: &[u8]) -> bool {
-            #matches
+    if derive_matches {
+        quote! {
+            fn matches(aml: &[u8]) -> bool {
+                #matches
+            }
+        }
+    } else {
+        quote! {
         }
     }
 }
