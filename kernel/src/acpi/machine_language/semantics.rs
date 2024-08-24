@@ -30,19 +30,20 @@ impl Node {
             if name == Segment::Root {
                 assert_eq!(self.name, Segment::Root);
                 self.add_path(path.clone());
-            }
-            match self
-                .children
-                .iter_mut()
-                .find(|child| child.name == name) {
-                Some(child) => {
-                    child.add_path(path.clone());
-                },
-                None => {
-                    let child: Self = (&name).into();
-                    self.children.push(child);
-                    self.add_path(path.clone());
-                },
+            } else {
+                match self
+                    .children
+                    .iter_mut()
+                    .find(|child| child.name == name) {
+                    Some(child) => {
+                        child.add_path(path.clone());
+                    },
+                    None => {
+                        let child: Self = (&name).into();
+                        self.children.push(child);
+                        self.add_path(path.clone());
+                    },
+                }
             }
         }
     }
