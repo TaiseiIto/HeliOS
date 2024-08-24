@@ -1304,6 +1304,8 @@ impl SemanticAnalyzer for DefScope {
         com2_println!("name_string = {:#x?}", name_string);
         let current: semantics::Path = current + name_string;
         com2_println!("current = {:#x?}", current);
+        root.add_path(current.clone());
+        com2_println!("root = {:#x?}", root);
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());

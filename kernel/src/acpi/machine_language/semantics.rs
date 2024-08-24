@@ -24,10 +24,45 @@ pub struct Node {
     children: Vec<Self>,
 }
 
+impl Node {
+    pub fn add_path(&mut self, mut path: Path) {
+        if let Some(name) = path.pop_first_segment() {
+            if name == Segment::Root {
+                assert_eq!(self.name, Segment::Root);
+                self.add_path(path.clone());
+            }
+            match self
+                .children
+                .iter_mut()
+                .find(|child| child.name == name) {
+                Some(child) => {
+                    child.add_path(path.clone());
+                },
+                None => {
+                    let child: Self = (&name).into();
+                    self.children.push(child);
+                    self.add_path(path.clone());
+                },
+            }
+        }
+    }
+}
+
 impl Default for Node {
     fn default() -> Self {
         let name: Segment = Segment::Root;
         let children: Vec<Self> = Vec::default();
+        Self {
+            name,
+            children,
+        }
+    }
+}
+
+impl From<&Segment> for Node {
+    fn from(name: &Segment) -> Self {
+        let name: Segment = name.clone();
+        let children: Vec<Self> = Vec::new();
         Self {
             name,
             children,
@@ -64,6 +99,12 @@ impl fmt::Debug for Node {
 #[derive(Clone)]
 pub struct Path {
     segments: VecDeque<Segment>,
+}
+
+impl Path {
+    pub fn pop_first_segment(&mut self) -> Option<Segment> {
+        self.segments.pop_front()
+    }
 }
 
 impl From<&Node> for Path {
@@ -190,7 +231,7 @@ impl fmt::Debug for Path {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Segment {
     Child {
         name: String,
