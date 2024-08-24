@@ -29,19 +29,19 @@ impl Node {
         if let Some(name) = path.pop_first_segment() {
             if name == Segment::Root {
                 assert_eq!(self.name, Segment::Root);
-                self.add_path(path.clone());
+                self.add_path(path);
             } else {
                 match self
                     .children
                     .iter_mut()
                     .find(|child| child.name == name) {
                     Some(child) => {
-                        child.add_path(path.clone());
+                        child.add_path(path);
                     },
                     None => {
                         let child: Self = (&name).into();
                         self.children.push(child);
-                        self.add_path(path.clone());
+                        self.add_path(path);
                     },
                 }
             }
