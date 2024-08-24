@@ -8,17 +8,32 @@ use {
         vec::Vec,
     },
     core::fmt,
+    super::syntax::TermList,
 };
 
-/// Namespace
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.4 AML Encoding of Names in the Namespace
-pub struct Namespace {
+pub struct Node {
     name: String,
     children: Vec<Self>,
 }
 
-impl fmt::Debug for Namespace {
+impl Default for Node {
+    fn default() -> Self {
+        let name: String = String::from("\\");
+        let children: Vec<Self> = Vec::default();
+        Self {
+            name,
+            children,
+        }
+    }
+}
+
+impl From<&TermList> for Node {
+    fn from(term_list: &TermList) -> Self {
+        Self::default()
+    }
+}
+
+impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             name,
