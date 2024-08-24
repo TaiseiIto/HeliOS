@@ -4,6 +4,7 @@
 
 use {
     alloc::{
+        collections::vec_deque::VecDeque,
         string::String,
         vec,
         vec::Vec,
@@ -62,7 +63,7 @@ impl fmt::Debug for Node {
 
 #[derive(Clone)]
 pub struct Path {
-    segments: Vec<Segment>,
+    segments: VecDeque<Segment>,
 }
 
 impl From<&Node> for Path {
@@ -79,7 +80,7 @@ impl Add for Path {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        let mut segments: Vec<Segment> = Vec::new();
+        let mut segments: VecDeque<Segment> = VecDeque::new();
         self.segments
             .iter()
             .chain(other
@@ -89,17 +90,17 @@ impl Add for Path {
                 segment @ Segment::Child {
                     name: _,
                 } => {
-                    segments.push(segment.clone());
+                    segments.push_back(segment.clone());
                 },
                 segment @ Segment::Parent => {
                     if segments.is_empty() {
-                        segments.push(segment.clone());
+                        segments.push_back(segment.clone());
                     } else {
-                        segments.pop();
+                        segments.pop_back();
                     }
                 },
                 segment @ Segment::Root => {
-                    segments = vec![segment.clone()];
+                    segments = VecDeque::from([segment.clone()]);
                 },
             });
         Self::Output {
@@ -110,7 +111,7 @@ impl Add for Path {
 
 impl From<&Segment> for Path {
     fn from(segment: &Segment) -> Self {
-        let segments: Vec<Segment> = vec![segment.clone()];
+        let segments: VecDeque<Segment> = VecDeque::from([segment.clone()]);
         Self {
             segments,
         }
@@ -119,19 +120,19 @@ impl From<&Segment> for Path {
 
 impl From<&str> for Path {
     fn from(path: &str) -> Self {
-        let mut segments: Vec<Segment> = Vec::new();
+        let mut segments: VecDeque<Segment> = VecDeque::new();
         let mut name: String = String::new();
         path.chars()
             .for_each(|character| match character {
                 '\\' => {
-                    segments = vec![Segment::Root];
+                    segments = VecDeque::from([Segment::Root]);
                     name = String::new();
                 },
                 '^' => {
                     if segments.is_empty() {
-                        segments.push(Segment::Parent);
+                        segments.push_back(Segment::Parent);
                     } else {
-                        segments.pop();
+                        segments.pop_back();
                     }
                     name = String::new();
                 },
@@ -139,7 +140,7 @@ impl From<&str> for Path {
                     let segment: Segment = name
                         .as_str()
                         .into();
-                    segments.push(segment);
+                    segments.push_back(segment);
                     name = String::new();
                 },
                 character => {
@@ -150,7 +151,7 @@ impl From<&str> for Path {
             let segment: Segment = name
                 .as_str()
                 .into();
-            segments.push(segment);
+            segments.push_back(segment);
         }
         Self {
             segments,
