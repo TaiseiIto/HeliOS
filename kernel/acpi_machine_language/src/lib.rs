@@ -64,6 +64,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
     let matches: proc_macro2::TokenStream = derive_matcher(&derive_input);
     let read: proc_macro2::TokenStream = derive_reader(&derive_input);
+    let semantic_analyzer: proc_macro2::TokenStream = derive_semantic_analyzer(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
@@ -74,6 +75,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #length
         #matches
         #read
+        #semantic_analyzer
         #string_from_self
     }   .try_into()
         .unwrap()
@@ -1849,6 +1851,26 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     } else {
         quote! {
+        }
+    }
+}
+
+fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::SemanticAnalyzer for #ident {
+            fn analyze_semantics(&self, root: &mut crate::acpi::machine_language::semantics::Node, current: &mut crate::acpi::machine_language::semantics::Path) {
+                self.iter()
+                    .for_each(|child| {
+                        child.analyze_semantics(root, current);
+                    });
+            }
         }
     }
 }

@@ -9,7 +9,10 @@ use {
         vec::Vec,
     },
     core::fmt,
-    super::syntax::TermList,
+    super::{
+        syntax,
+        syntax::SemanticAnalyzer,
+    },
 };
 
 pub struct Node {
@@ -28,10 +31,11 @@ impl Default for Node {
     }
 }
 
-impl From<&TermList> for Node {
-    fn from(term_list: &TermList) -> Self {
-        let root: Self = Self::default();
-        let current: Path = (&root).into();
+impl From<&syntax::TermList> for Node {
+    fn from(term_list: &syntax::TermList) -> Self {
+        let mut root: Self = Self::default();
+        let mut current: Path = (&root).into();
+        term_list.analyze_semantics(&mut root, &mut current);
         root
     }
 }

@@ -11,9 +11,10 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
+    super::semantics,
 };
 
-pub trait Analyzer: ReferenceToSymbolIterator + WithLength + Matcher + Reader {
+pub trait Analyzer: ReferenceToSymbolIterator + WithLength + Matcher + Reader + SemanticAnalyzer {
 }
 
 pub trait ReferenceToSymbolIterator {
@@ -30,6 +31,10 @@ pub trait Matcher {
 
 pub trait Reader {
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
+}
+
+pub trait SemanticAnalyzer {
+    fn analyze_semantics(&self, root: &mut semantics::Node, current: &mut semantics::Path);
 }
 
 pub struct SymbolIterator<'a> {
