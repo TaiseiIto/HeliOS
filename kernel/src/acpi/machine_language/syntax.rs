@@ -34,7 +34,7 @@ pub trait Reader {
 }
 
 pub trait SemanticAnalyzer {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: &mut semantics::Path);
+    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path);
 }
 
 pub struct SymbolIterator<'a> {

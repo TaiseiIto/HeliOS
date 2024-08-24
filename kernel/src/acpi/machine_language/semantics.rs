@@ -9,9 +9,9 @@ use {
         vec::Vec,
     },
     core::fmt,
-    super::{
-        syntax,
-        syntax::SemanticAnalyzer,
+    super::syntax::{
+        SemanticAnalyzer,
+        self,
     },
 };
 
@@ -34,8 +34,8 @@ impl Default for Node {
 impl From<&syntax::TermList> for Node {
     fn from(term_list: &syntax::TermList) -> Self {
         let mut root: Self = Self::default();
-        let mut current: Path = (&root).into();
-        term_list.analyze_semantics(&mut root, &mut current);
+        let current: Path = (&root).into();
+        term_list.analyze_semantics(&mut root, current);
         root
     }
 }
@@ -57,6 +57,7 @@ impl fmt::Debug for Node {
     }
 }
 
+#[derive(Clone)]
 pub struct Path {
     segments: Vec<Segment>,
 }

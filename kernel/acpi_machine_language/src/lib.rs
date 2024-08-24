@@ -1865,10 +1865,10 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
     } = derive_input;
     quote! {
         impl crate::acpi::machine_language::syntax::SemanticAnalyzer for #ident {
-            fn analyze_semantics(&self, root: &mut crate::acpi::machine_language::semantics::Node, current: &mut crate::acpi::machine_language::semantics::Path) {
+            fn analyze_semantics(&self, root: &mut crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) {
                 self.iter()
                     .for_each(|child| {
-                        child.analyze_semantics(root, current);
+                        child.analyze_semantics(root, current.clone());
                     });
             }
         }
