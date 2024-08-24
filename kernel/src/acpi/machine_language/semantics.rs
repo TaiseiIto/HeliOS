@@ -12,13 +12,13 @@ use {
 };
 
 pub struct Node {
-    name: String,
+    name: Segment,
     children: Vec<Self>,
 }
 
 impl Default for Node {
     fn default() -> Self {
-        let name: String = String::from("\\");
+        let name: Segment = Segment::Root;
         let children: Vec<Self> = Vec::default();
         Self {
             name,
@@ -39,13 +39,34 @@ impl fmt::Debug for Node {
             name,
             children,
         } = self;
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name);
+        let name: String = name.into();
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(&name);
         children
             .iter()
             .for_each(|child| {
                 debug_tuple.field(child);
             });
         debug_tuple.finish()
+    }
+}
+
+pub enum Segment {
+    Child {
+        name: String,
+    },
+    Parent,
+    Root,
+}
+
+impl From<&Segment> for String {
+    fn from(segment: &Segment) -> Self {
+        match segment {
+            Segment::Child {
+                name,
+            } => name.clone(),
+            Segment::Parent => Self::from("^"),
+            Segment::Root => Self::from("\\"),
+        }
     }
 }
 
