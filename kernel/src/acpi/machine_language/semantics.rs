@@ -5,6 +5,7 @@
 use {
     alloc::{
         string::String,
+        vec,
         vec::Vec,
     },
     core::fmt,
@@ -29,7 +30,9 @@ impl Default for Node {
 
 impl From<&TermList> for Node {
     fn from(term_list: &TermList) -> Self {
-        Self::default()
+        let root: Self = Self::default();
+        let current: Path = (&root).into();
+        root
     }
 }
 
@@ -50,6 +53,30 @@ impl fmt::Debug for Node {
     }
 }
 
+pub struct Path {
+    segments: Vec<Segment>,
+}
+
+impl From<&Node> for Path {
+    fn from(node: &Node) -> Self {
+        let Node {
+            name,
+            children: _,
+        } = node;
+        name.into()
+    }
+}
+
+impl From<&Segment> for Path {
+    fn from(segment: &Segment) -> Self {
+        let segments: Vec<Segment> = vec![segment.clone()];
+        Self {
+            segments,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum Segment {
     Child {
         name: String,
