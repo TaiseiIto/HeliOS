@@ -88,11 +88,11 @@ impl From<&str> for Path {
         path.chars()
             .for_each(|character| match character {
                 '\\' => {
-                    segments = vec![Segment::Root];
+                    segments.push(Segment::Root);
                     name = String::new();
                 },
                 '^' => {
-                    segments.pop();
+                    segments.push(Segment::Parent);
                     name = String::new();
                 },
                 '.' => {
@@ -106,6 +106,12 @@ impl From<&str> for Path {
                     name.push(character);
                 },
             });
+        if !name.is_empty() {
+            let segment: Segment = name
+                .as_str()
+                .into();
+            segments.push(segment);
+        }
         Self {
             segments,
         }
