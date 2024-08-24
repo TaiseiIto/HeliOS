@@ -1298,11 +1298,12 @@ impl SemanticAnalyzer for DefScope {
             term_list,
         ) = self;
         let name_string: String = name_string.into();
-        com2_println!("name_string: String = {:#x?}", name_string);
         let name_string: semantics::Path = name_string
             .as_str()
             .into();
-        com2_println!("name_string: semantics::Path = {:#x?}", name_string);
+        com2_println!("name_string = {:#x?}", name_string);
+        let current: semantics::Path = current + name_string;
+        com2_println!("current = {:#x?}", current);
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());

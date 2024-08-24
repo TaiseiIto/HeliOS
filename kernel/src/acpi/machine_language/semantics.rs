@@ -8,7 +8,10 @@ use {
         vec,
         vec::Vec,
     },
-    core::fmt,
+    core::{
+        fmt,
+        ops::Add,
+    },
     super::syntax::{
         SemanticAnalyzer,
         self,
@@ -72,6 +75,39 @@ impl From<&Node> for Path {
     }
 }
 
+impl Add for Path {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        let mut segments: Vec<Segment> = Vec::new();
+        self.segments
+            .iter()
+            .chain(other
+                .segments
+                .iter())
+            .for_each(|segment| match segment {
+                segment @ Segment::Child {
+                    name: _,
+                } => {
+                    segments.push(segment.clone());
+                },
+                segment @ Segment::Parent => {
+                    if segments.is_empty() {
+                        segments.push(segment.clone());
+                    } else {
+                        segments.pop();
+                    }
+                },
+                segment @ Segment::Root => {
+                    segments = vec![segment.clone()];
+                },
+            });
+        Self::Output {
+            segments,
+        }
+    }
+}
+
 impl From<&Segment> for Path {
     fn from(segment: &Segment) -> Self {
         let segments: Vec<Segment> = vec![segment.clone()];
@@ -88,11 +124,15 @@ impl From<&str> for Path {
         path.chars()
             .for_each(|character| match character {
                 '\\' => {
-                    segments.push(Segment::Root);
+                    segments = vec![Segment::Root];
                     name = String::new();
                 },
                 '^' => {
-                    segments.push(Segment::Parent);
+                    if segments.is_empty() {
+                        segments.push(Segment::Parent);
+                    } else {
+                        segments.pop();
+                    }
                     name = String::new();
                 },
                 '.' => {
