@@ -11,6 +11,7 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
+    crate::com2_println,
     super::semantics,
 };
 
@@ -1290,6 +1291,17 @@ pub struct DefScope(
 
 impl SemanticAnalyzer for DefScope {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
+        let Self(
+            scope_op,
+            pkg_length,
+            name_string,
+            term_list,
+        ) = self;
+        let name_string: String = name_string.into();
+        let name_string: semantics::Path = name_string
+            .as_str()
+            .into();
+        com2_println!("name_string = {:#x?}", name_string);
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());

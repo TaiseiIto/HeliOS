@@ -81,6 +81,68 @@ impl From<&Segment> for Path {
     }
 }
 
+impl From<&str> for Path {
+    fn from(path: &str) -> Self {
+        let mut segments: Vec<Segment> = Vec::new();
+        let mut name: String = String::new();
+        path.chars()
+            .for_each(|character| match character {
+                '\\' => {
+                    segments = vec![Segment::Root];
+                    name = String::new();
+                },
+                '^' => {
+                    segments.pop();
+                    name = String::new();
+                },
+                '.' => {
+                    let segment: Segment = name
+                        .as_str()
+                        .into();
+                    segments.push(segment);
+                    name = String::new();
+                },
+                character => {
+                    name.push(character);
+                },
+            });
+        Self {
+            segments,
+        }
+    }
+}
+
+impl fmt::Debug for Path {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            segments,
+        } = self;
+        let mut print_dot: bool = false;
+        segments
+            .iter()
+            .for_each(|segment| match segment {
+                Segment::Child {
+                    name,
+                } => {
+                    if print_dot {
+                        formatter.write_str(".");
+                    }
+                    formatter.write_str(name);
+                    print_dot = true;
+                },
+                Segment::Parent => {
+                    formatter.write_str("^");
+                    print_dot = false;
+                },
+                Segment::Root => {
+                    formatter.write_str("\\");
+                    print_dot = false;
+                },
+            });
+        Ok(())
+    }
+}
+
 #[derive(Clone)]
 pub enum Segment {
     Child {
@@ -88,6 +150,21 @@ pub enum Segment {
     },
     Parent,
     Root,
+}
+
+impl From<&str> for Segment {
+    fn from(segment: &str) -> Self {
+        match segment {
+            "^" => Self::Parent,
+            "\\" => Self::Root,
+            name => {
+                let name: String = String::from(name);
+                Self::Child {
+                    name,
+                }
+            },
+        }
+    }
 }
 
 impl From<&Segment> for String {
