@@ -2089,7 +2089,11 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                     quote! {
                         let #source_type_name(#(#field_names),*) = source;
                         #(#convert_fields)*
-                        let string = Self::new() + #(#field_references)+*;
+                        let string: Self = Self::new() + #(#field_references)+*;
+                        let string: Self = string
+                            .chars()
+                            .filter(|character| (0x20..=0x7e).contains(&(*character as u8)))
+                            .collect();
                         let (string, underscores): (Self, Self) = string
                             .chars()
                             .rev()
