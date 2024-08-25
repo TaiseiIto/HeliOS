@@ -534,9 +534,9 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => false,
                 }
             });
-        let (matching_elements, string): (Option<usize>, bool) = attrs
+        let matching_elements: Option<usize> = attrs
             .iter()
-            .map(|attribute| {
+            .find_map(|attribute| {
                 let Attribute {
                     pound_token: _,
                     style: _,
@@ -544,30 +544,6 @@ impl From<&DeriveInput> for TypeAttribute {
                     meta,
                 } = attribute;
                 match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens: _,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "bitfield" => (None, false),
-                            "manual" => (None, false),
-                            _ => unimplemented!(),
-                        }
-                    },
                     Meta::NameValue(MetaNameValue {
                         path,
                         eq_token: _,
@@ -576,34 +552,40 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "encoding_value" => (None, false),
-                        "encoding_value_max" => (None, false),
-                        "encoding_value_min" => (None, false),
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
                                 lit: Lit::Int(lit_int),
-                            }) => {
-                                let matching_elements: usize = lit_int
-                                    .base10_digits()
-                                    .parse()
-                                    .unwrap();
-                                (Some(matching_elements), false)
-                            },
+                            }) => lit_int
+                                .base10_parse()
+                                .ok(),
                             _ => unimplemented!(),
                         },
-                        _ => (None, false),
-                    },
+                        _ => None,
+                    }
+                    _ => None,
+                }
+            });
+        let string: bool = attrs
+            .iter()
+            .any(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "string" => (None, true),
-                            _ => unimplemented!(),
-                        },
+                        "string" => true,
+                        _ => false,
+                    },
+                    _ => false,
                 }
-            })
-            .fold((None, false), |(matching_elements, string), (next_matching_elements, next_string)| (matching_elements.or(next_matching_elements), string || next_string));
+            });
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
