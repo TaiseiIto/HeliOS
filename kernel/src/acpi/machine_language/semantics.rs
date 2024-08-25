@@ -26,35 +26,32 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn add_path(&mut self, mut path: Path) {
+    pub fn add_node(&mut self, mut path: Path, object: Object) {
         if let Some(name) = path.pop_first_segment() {
             if name == Segment::Root {
                 assert_eq!(self.name, Segment::Root);
-                self.add_path(path);
+                self.add_node(path, object);
             } else {
                 match self
                     .children
                     .iter_mut()
                     .find(|child| child.name == name) {
                     Some(child) => {
-                        child.add_path(path);
+                        child.add_node(path, object);
                     },
-                    None => {
-                        let child: Self = (&name).into();
-                        self.children.push(child);
-                        self.add_path(path);
+                    None => if path.is_empty() {
+                        self.children.push(Self::new(name, object));
+                    } else {
+                        self.children.push(Self::new(name, Object::Scope));
+                        self.add_node(path, object);
                     },
                 }
             }
         }
     }
-}
 
-impl Default for Node {
-    fn default() -> Self {
-        let name: Segment = Segment::Root;
-        let children: Vec<Self> = Vec::default();
-        let object: Object = Object::default();
+    pub fn new(name: Segment, object: Object) -> Self {
+        let children: Vec<Self> = Vec::new();
         Self {
             name,
             object,
@@ -63,10 +60,10 @@ impl Default for Node {
     }
 }
 
-impl From<&Segment> for Node {
-    fn from(name: &Segment) -> Self {
-        let name: Segment = name.clone();
-        let children: Vec<Self> = Vec::new();
+impl Default for Node {
+    fn default() -> Self {
+        let name: Segment = Segment::Root;
+        let children: Vec<Self> = Vec::default();
         let object: Object = Object::default();
         Self {
             name,
@@ -93,7 +90,8 @@ impl fmt::Debug for Node {
             children,
         } = self;
         let name: String = name.into();
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(format!("{:#x?} \"{}\"", object, name).as_str());
+        let name: String = format!("{:#x?} {:#x?}", object, name);
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
         children
             .iter()
             .for_each(|child| {
@@ -103,7 +101,7 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Object {
     Alias,
     BankField,
@@ -142,6 +140,10 @@ pub struct Path {
 }
 
 impl Path {
+    pub fn is_empty(&self) -> bool {
+        self.segments.is_empty()
+    }
+
     pub fn pop_first_segment(&mut self) -> Option<Segment> {
         self.segments.pop_front()
     }
