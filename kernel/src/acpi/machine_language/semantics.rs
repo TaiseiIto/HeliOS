@@ -35,7 +35,7 @@ impl Node {
                 match self
                     .children
                     .iter_mut()
-                    .find(|child| child.name == name) {
+                    .find(|child| child.name == name && child.object == object) {
                     Some(child) => {
                         child.add_node(path, object);
                     },
@@ -106,7 +106,7 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
     DefAlias,
     DefBankField,
