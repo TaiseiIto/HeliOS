@@ -118,7 +118,9 @@ pub enum Object {
     DefField,
     DefIndexField,
     DefLoad,
-    DefMethod,
+    DefMethod {
+        number_of_term_args: u8,
+    },
     DefMutex,
     DefName,
     DefOpRegion,
@@ -126,6 +128,14 @@ pub enum Object {
     DefProcessor,
     DefScope,
     DefThermalZone,
+}
+
+impl Object {
+    pub fn def_method(number_of_term_args: u8) -> Self {
+        Self::DefMethod {
+            number_of_term_args,
+        }
+    }
 }
 
 impl Default for Object {

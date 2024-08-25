@@ -1061,6 +1061,7 @@ pub struct DefMatch(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
+#[manual(semantic_analyzer)]
 pub struct DefMethod(
     MethodOp,
     PkgLength,
@@ -1069,6 +1070,29 @@ pub struct DefMethod(
     #[no_leftover]
     MethodTermList,
 );
+
+impl SemanticAnalyzer for DefMethod {
+    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
+        let Self(
+            _method_op,
+            _pkg_length,
+            name_string,
+            method_flags,
+            _method_term_list,
+        ) = self;
+        let name_string: String = name_string.into();
+        let name_string: semantics::Path = name_string
+            .as_str()
+            .into();
+        let current: semantics::Path = current + name_string;
+        let number_of_term_args: u8 = method_flags.arg_count();
+        root.add_node(current.clone(), semantics::Object::def_method(number_of_term_args));
+        self.iter()
+            .for_each(|child| {
+                child.analyze_semantics(root, current.clone());
+            });
+    }
+}
 
 /// # DefMid
 /// ## References
