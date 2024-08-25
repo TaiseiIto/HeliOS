@@ -153,11 +153,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "debug" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "debug")
                                     },
                                     _ => true,
                                 }),
@@ -200,11 +198,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "from_slice_u8" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "from_slice_u8")
                                     },
                                     _ => true,
                                 }),
@@ -247,11 +243,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "matches" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "matches")
                                     },
                                     _ => true,
                                 }),
@@ -294,11 +288,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "reader" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "reader")
                                     },
                                     _ => true,
                                 }),
@@ -341,11 +333,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "semantic_analyzer" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "semantic_analyzer")
                                     },
                                     _ => true,
                                 }),
@@ -388,11 +378,9 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .clone()
                                 .into_iter()
                                 .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => match manual_arg
-                                        .to_string()
-                                        .as_str() {
-                                        "string_from_self" => false,
-                                        _ => true,
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg .to_string();
+                                        !matches!(manual_arg.as_str(), "string_from_self")
                                     },
                                     _ => true,
                                 }),
@@ -524,12 +512,8 @@ impl From<&DeriveInput> for TypeAttribute {
                             .iter()
                             .last()
                             .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "bitfield" => true,
-                            _ => false,
-                        }
+                        let ident: String = ident.to_string();
+                        matches!(ident.as_str(), "bitfield")
                     },
                     _ => false,
                 }
@@ -576,12 +560,11 @@ impl From<&DeriveInput> for TypeAttribute {
                     meta,
                 } = attribute;
                 match meta {
-                    Meta::Path(path) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "string" => true,
-                        _ => false,
+                    Meta::Path(path) => {
+                        let path: String = path
+                            .to_token_stream()
+                            .to_string();
+                        matches!(path.as_str(), "string")
                     },
                     _ => false,
                 }
