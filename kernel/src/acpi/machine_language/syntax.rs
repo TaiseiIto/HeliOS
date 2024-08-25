@@ -1085,8 +1085,8 @@ impl SemanticAnalyzer for DefMethod {
             .as_str()
             .into();
         let current: semantics::Path = current + name_string;
-        let number_of_term_args: u8 = method_flags.arg_count();
-        root.add_node(current.clone(), semantics::Object::def_method(number_of_term_args));
+        let number_of_arguments: u8 = method_flags.arg_count();
+        root.add_node(current.clone(), semantics::Object::def_method(number_of_arguments));
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());
@@ -2052,9 +2052,9 @@ impl From<&[u8]> for MethodInvocation {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let (name_string, mut aml): (NameString, &[u8]) = NameString::read(aml);
-        let number_of_term_args: usize = 0;
+        let number_of_arguments: usize = 0;
         let mut term_args: Vec<TermArg> = Vec::new();
-        (0..number_of_term_args)
+        (0..number_of_arguments)
             .for_each(|_| {
                 let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::read(aml);
                 aml = remaining_aml;

@@ -90,7 +90,12 @@ impl fmt::Debug for Node {
             children,
         } = self;
         let name: String = name.into();
-        let name: String = format!("{:#x?} {:#x?}", object, name);
+        let name: String = match object {
+            Object::DefMethod {
+                number_of_arguments
+            } => format!("DefMethod {:#x?} number_of_arguments = {:#x?}", name, number_of_arguments),
+            object => format!("{:#x?} {:#x?}", object, name),
+        };
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
         children
             .iter()
@@ -119,7 +124,7 @@ pub enum Object {
     DefIndexField,
     DefLoad,
     DefMethod {
-        number_of_term_args: u8,
+        number_of_arguments: u8,
     },
     DefMutex,
     DefName,
@@ -131,9 +136,9 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn def_method(number_of_term_args: u8) -> Self {
+    pub fn def_method(number_of_arguments: u8) -> Self {
         Self::DefMethod {
-            number_of_term_args,
+            number_of_arguments,
         }
     }
 }
