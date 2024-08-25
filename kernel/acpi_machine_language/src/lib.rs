@@ -427,14 +427,78 @@ impl From<&DeriveInput> for TypeAttribute {
                             }) => lit_int
                                 .base10_parse()
                                 .ok(),
-                            _ => None,
+                            _ => unimplemented!(),
                         },
                         _ => None,
                     },
                     _ => None,
                 }
             });
-        let (encoding_value_max, encoding_value_min, flags, matching_elements, string): (Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
+        let encoding_value_max: Option<u8> = attrs
+            .iter()
+            .find_map(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::NameValue(MetaNameValue {
+                        path,
+                        eq_token: _,
+                        value,
+                    }) => match path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                        "encoding_value_max" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Int(lit_int),
+                            }) => lit_int
+                                .base10_parse()
+                                .ok(),
+                            _ => unimplemented!(),
+                        }
+                        _ => None,
+                    }
+                    _ => None,
+                }
+            });
+        let encoding_value_min: Option<u8> = attrs
+            .iter()
+            .find_map(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::NameValue(MetaNameValue {
+                        path,
+                        eq_token: _,
+                        value,
+                    }) => match path
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() {
+                        "encoding_value_min" => match value {
+                            Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Int(lit_int),
+                            }) => lit_int
+                                .base10_parse()
+                                .ok(),
+                            _ => unimplemented!(),
+                        }
+                        _ => None,
+                    }
+                    _ => None,
+                }
+            });
+        let (flags, matching_elements, string): (bool, Option<usize>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -463,8 +527,8 @@ impl From<&DeriveInput> for TypeAttribute {
                         match ident
                             .to_string()
                             .as_str() {
-                            "bitfield" => (None, None, true, None, false),
-                            "manual" => (None, None, false, None, false),
+                            "bitfield" => (true, None, false),
+                            "manual" => (false, None, false),
                             _ => unimplemented!(),
                         }
                     },
@@ -476,33 +540,9 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "encoding_value" => (None, None, false, None, false),
-                        "encoding_value_max" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => {
-                                let encoding_value_max: u8 = lit_int
-                                    .base10_digits()
-                                    .parse()
-                                    .unwrap();
-                                (Some(encoding_value_max), None, false, None, false)
-                            },
-                            _ => unimplemented!(),
-                        },
-                        "encoding_value_min" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => {
-                                let encoding_value_min: u8 = lit_int
-                                    .base10_digits()
-                                    .parse()
-                                    .unwrap();
-                                (None, Some(encoding_value_min), false, None, false)
-                            },
-                            _ => unimplemented!(),
-                        },
+                        "encoding_value" => (false, None, false),
+                        "encoding_value_max" => (false, None, false),
+                        "encoding_value_min" => (false, None, false),
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
@@ -512,22 +552,22 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (None, None, false, Some(matching_elements), false)
+                                (false, Some(matching_elements), false)
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (None, None, false, None, false),
+                        _ => (false, None, false),
                     },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "string" => (None, None, false, None, true),
+                            "string" => (false, None, true),
                             _ => unimplemented!(),
                         },
                 }
             })
-            .fold((None, None, false, None, false), |(encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
+            .fold((false, None, false), |(flags, matching_elements, string), (next_flags, next_matching_elements, next_string)| (flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
