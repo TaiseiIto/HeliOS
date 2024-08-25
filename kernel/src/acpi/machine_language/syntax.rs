@@ -1302,7 +1302,7 @@ impl SemanticAnalyzer for DefScope {
             .as_str()
             .into();
         let current: semantics::Path = current + name_string;
-        root.add_node(current.clone(), semantics::Object::Scope);
+        root.add_node(current.clone(), semantics::Object::DefScope);
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());
@@ -2018,7 +2018,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[manual(from_slice_u8, matches)]
+#[manual(from_slice_u8, matches, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2046,6 +2046,15 @@ impl From<&[u8]> for MethodInvocation {
 impl Matcher for MethodInvocation {
     fn matches(aml: &[u8]) -> bool {
         NameString::matches(aml) && !NullName::matches(aml)
+    }
+}
+
+impl SemanticAnalyzer for MethodInvocation {
+    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
+        self.iter()
+            .for_each(|child| {
+                child.analyze_semantics(root, current.clone());
+            });
     }
 }
 

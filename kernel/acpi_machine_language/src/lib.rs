@@ -2193,7 +2193,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
     let TypeAttribute {
         derive_debug: _,
@@ -2207,10 +2207,86 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
         matching_elements: _,
         string: _,
     } = derive_input.into();
+    let analyze_semantics: proc_macro2::TokenStream = match data {
+        Data::Struct(DataStruct {
+            struct_token: _,
+            fields,
+            semi_token: _,
+        }) => match fields {
+            Fields::Unnamed(FieldsUnnamed {
+                paren_token: _,
+                unnamed,
+            }) => {
+                let mut self_has_name_string: bool = false;
+                let fields: Vec<Ident> = unnamed
+                    .iter()
+                    .enumerate()
+                    .map(|(index, field)| {
+                        let default: Ident = format_ident!("field{}", index);
+                        let Field {
+                            attrs: _,
+                            vis: _,
+                            mutability: _,
+                            ident: _,
+                            colon_token: _,
+                            ty,
+                        } = field;
+                        match ty {
+                            Type::Path(TypePath {
+                                qself: _,
+                                path,
+                            }) => {
+                                let Path {
+                                    leading_colon: _,
+                                    segments,
+                                } = path;
+                                let PathSegment {
+                                    ident,
+                                    arguments: _,
+                                } = segments
+                                    .iter()
+                                    .last()
+                                    .unwrap();
+                                match ident
+                                    .to_string()
+                                    .as_str() {
+                                    "NameString" => {
+                                        self_has_name_string = true;
+                                        format_ident!("name")
+                                    },
+                                    _ => default,
+                                }
+                            },
+                            _ => default,
+                        }
+                    })
+                    .collect();
+                if self_has_name_string {
+                    quote! {
+                        let Self(#(#fields),*) = self;
+                        let name: String = name.into();
+                        let name: semantics::Path = name
+                            .as_str()
+                            .into();
+                        let current: semantics::Path = current + name;
+                        root.add_node(current.clone(), semantics::Object::#ident);
+                    }
+                } else {
+                    quote! {
+                    }
+                }
+            },
+            _ => quote! {
+            },
+        },
+        _ => quote! {
+        },
+    };
     if derive_semantic_analyzer {
         quote! {
             impl crate::acpi::machine_language::syntax::SemanticAnalyzer for #ident {
                 fn analyze_semantics(&self, root: &mut crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) {
+                    #analyze_semantics
                     self.iter()
                         .for_each(|child| {
                             child.analyze_semantics(root, current.clone());

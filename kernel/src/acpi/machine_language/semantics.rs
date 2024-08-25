@@ -42,7 +42,7 @@ impl Node {
                     None => if path.is_empty() {
                         self.children.push(Self::new(name, object));
                     } else {
-                        self.children.push(Self::new(name, Object::Scope));
+                        self.children.push(Self::new(name, Object::DefScope));
                         self.add_node(path, object);
                     },
                 }
@@ -64,7 +64,7 @@ impl Default for Node {
     fn default() -> Self {
         let name: Segment = Segment::Root;
         let children: Vec<Self> = Vec::default();
-        let object: Object = Object::default();
+        let object: Object = Object::DefScope;
         Self {
             name,
             object,
@@ -103,34 +103,34 @@ impl fmt::Debug for Node {
 
 #[derive(Clone, Debug)]
 pub enum Object {
-    Alias,
-    BankField,
-    CreateBitField,
-    CreateByteField,
-    CreateDWordFeild,
-    CreateField,
-    CreateQWordField,
-    CreateWordField,
-    DataRegion,
-    Device,
-    Event,
-    External,
-    Field,
-    IndexField,
-    Load,
-    Method,
-    Mutex,
-    Name,
-    OpRegion,
-    PowerRes,
-    Processor,
-    Scope,
-    ThermalZone,
+    DefAlias,
+    DefBankField,
+    DefCreateBitField,
+    DefCreateByteField,
+    DefCreateDWordField,
+    DefCreateField,
+    DefCreateQWordField,
+    DefCreateWordField,
+    DefDataRegion,
+    DefDevice,
+    DefEvent,
+    DefExternal,
+    DefField,
+    DefIndexField,
+    DefLoad,
+    DefMethod,
+    DefMutex,
+    DefName,
+    DefOpRegion,
+    DefPowerRes,
+    DefProcessor,
+    DefScope,
+    DefThermalZone,
 }
 
 impl Default for Object {
     fn default() -> Self {
-        Self::Scope
+        Self::DefScope
     }
 }
 
