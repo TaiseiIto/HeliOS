@@ -2218,11 +2218,14 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                 unnamed,
             }) => {
                 let mut self_has_name_string: bool = false;
-                let fields: Vec<Ident> = unnamed
+                let fields: Vec<proc_macro2::TokenStream> = unnamed
                     .iter()
                     .enumerate()
                     .map(|(index, field)| {
                         let default: Ident = format_ident!("field{}", index);
+                        let default: proc_macro2::TokenStream = quote! {
+                            #default
+                        };
                         let Field {
                             attrs: _,
                             vis: _,
@@ -2232,6 +2235,35 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                             ty,
                         } = field;
                         match ty {
+                            Type::Array(TypeArray {
+                                bracket_token: _,
+                                elem,
+                                semi_token: _,
+                                len: Expr::Lit(ExprLit {
+                                    attrs: _,
+                                    lit: Lit::Int(length),
+                                }),
+                            }) => match elem
+                                .to_token_stream()
+                                .to_string()
+                                .as_str() {
+                                "NameString" => {
+                                    self_has_name_string = true;
+                                    let length: usize = length
+                                        .base10_parse()
+                                        .unwrap();
+                                    let elements: Vec<Ident> = (0..length)
+                                        .map(|index| match index {
+                                            0 => format_ident!("name"),
+                                            index => format_ident!("element{}", index),
+                                        })
+                                        .collect();
+                                    quote! {
+                                        [#(#elements),*]
+                                    }
+                                },
+                                _ => default,
+                            },
                             Type::Path(TypePath {
                                 qself: _,
                                 path,
@@ -2252,7 +2284,10 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                                     .as_str() {
                                     "NameString" => {
                                         self_has_name_string = true;
-                                        format_ident!("name")
+                                        let field: Ident = format_ident!("name");
+                                        quote! {
+                                            #field
+                                        }
                                     },
                                     _ => default,
                                 }
