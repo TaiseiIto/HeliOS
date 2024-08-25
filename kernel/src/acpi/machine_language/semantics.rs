@@ -6,7 +6,6 @@ use {
     alloc::{
         collections::vec_deque::VecDeque,
         string::String,
-        vec,
         vec::Vec,
     },
     core::{

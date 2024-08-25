@@ -1292,10 +1292,10 @@ pub struct DefScope(
 impl SemanticAnalyzer for DefScope {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
         let Self(
-            scope_op,
-            pkg_length,
+            _scope_op,
+            _pkg_length,
             name_string,
-            term_list,
+            _term_list,
         ) = self;
         let name_string: String = name_string.into();
         let name_string: semantics::Path = name_string
