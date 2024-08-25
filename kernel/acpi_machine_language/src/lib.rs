@@ -167,7 +167,242 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => true,
                 }
             });
-        let (derive_from_slice_u8, derive_matches, derive_reader, derive_semantic_analyzer, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (bool, bool, bool, bool, bool, Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
+        let derive_from_slice_u8: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => match manual_arg
+                                        .to_string()
+                                        .as_str() {
+                                        "from_slice_u8" => false,
+                                        _ => true,
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_matches: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => match manual_arg
+                                        .to_string()
+                                        .as_str() {
+                                        "matches" => false,
+                                        _ => true,
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_reader: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => match manual_arg
+                                        .to_string()
+                                        .as_str() {
+                                        "reader" => false,
+                                        _ => true,
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_semantic_analyzer: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => match manual_arg
+                                        .to_string()
+                                        .as_str() {
+                                        "semantic_analyzer" => false,
+                                        _ => true,
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_string_from_self: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => match manual_arg
+                                        .to_string()
+                                        .as_str() {
+                                        "string_from_self" => false,
+                                        _ => true,
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let (encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string): (Option<u8>, Option<u8>, Option<u8>, bool, Option<usize>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -196,28 +431,8 @@ impl From<&DeriveInput> for TypeAttribute {
                         match ident
                             .to_string()
                             .as_str() {
-                            "bitfield" => (true, true, true, true, true, None, None, None, true, None, false),
-                            "manual" => {
-                                let (derive_from_slice_u8, derive_matches, derive_reader, derive_semantic_analyzer, derive_string_from_self): (bool, bool, bool, bool, bool) = tokens
-                                    .clone()
-                                    .into_iter()
-                                    .map(|token_tree| match token_tree {
-                                        TokenTree::Ident(manual_arg) => match manual_arg
-                                            .to_string()
-                                            .as_str() {
-                                            "debug" => (true, true, true, true, true),
-                                            "from_slice_u8" => (false, true, true, true, true),
-                                            "matches" => (true, false, true, true, true),
-                                            "reader" => (true, true, false, true, true),
-                                            "semantic_analyzer" => (true, true, true, false, true),
-                                            "string_from_self" => (true, true, true, true, false),
-                                            _ => unimplemented!(),
-                                        },
-                                        _ => (true, true, true, true, true),
-                                    })
-                                    .fold((true, true, true, true, true), |(derive_from_slice_u8, derive_matches, derive_reader, derive_semantic_analyzer, derive_string_from_self), (next_derive_from_slice_u8, next_derive_matches, next_derive_reader, next_derive_semantic_analyzer, next_derive_string_from_self)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_reader && next_derive_reader, derive_semantic_analyzer && next_derive_semantic_analyzer, derive_string_from_self && next_derive_string_from_self));
-                                (derive_from_slice_u8, derive_matches, derive_reader, derive_semantic_analyzer, derive_string_from_self, None, None, None, false, None, false)
-                            },
+                            "bitfield" => (None, None, None, true, None, false),
+                            "manual" => (None, None, None, false, None, false),
                             _ => unimplemented!(),
                         }
                     },
@@ -238,7 +453,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, true, true, Some(encoding_value), None, None, false, None, false)
+                                (Some(encoding_value), None, None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -251,7 +466,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, true, true, None, Some(encoding_value_max), None, false, None, false)
+                                (None, Some(encoding_value_max), None, false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -264,7 +479,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, true, true, None, None, Some(encoding_value_min), false, None, false)
+                                (None, None, Some(encoding_value_min), false, None, false)
                             },
                             _ => unimplemented!(),
                         },
@@ -277,22 +492,22 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (true, true, true, true, true, None, None, None, false, Some(matching_elements), false)
+                                (None, None, None, false, Some(matching_elements), false)
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (true, true, true, true, true, None, None, None, false, None, false),
+                        _ => (None, None, None, false, None, false),
                     },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "string" => (true, true, true, true, true, None, None, None, false, None, true),
+                            "string" => (None, None, None, false, None, true),
                             _ => unimplemented!(),
                         },
                 }
             })
-            .fold((true, true, true, true, true, None, None, None, false, None, false), |(derive_from_slice_u8, derive_matches, derive_reader, derive_semantic_analyzer, derive_string_from_self, encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_derive_from_slice_u8, next_derive_matches, next_derive_reader, next_derive_semantic_analyzer, next_derive_string_from_self, next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (derive_from_slice_u8 && next_derive_from_slice_u8, derive_matches && next_derive_matches, derive_reader && next_derive_reader, derive_semantic_analyzer && next_derive_semantic_analyzer, derive_string_from_self && next_derive_string_from_self, encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
+            .fold((None, None, None, false, None, false), |(encoding_value, encoding_value_max, encoding_value_min, flags, matching_elements, string), (next_encoding_value, next_encoding_value_max, next_encoding_value_min, next_flags, next_matching_elements, next_string)| (encoding_value.or(next_encoding_value), encoding_value_max.or(next_encoding_value_max), encoding_value_min.or(next_encoding_value_min), flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
