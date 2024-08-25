@@ -208,26 +208,26 @@ impl fmt::Debug for Path {
         let mut print_dot: bool = false;
         segments
             .iter()
-            .for_each(|segment| match segment {
+            .map(|segment| match segment {
                 Segment::Child {
                     name,
                 } => {
                     if print_dot {
-                        formatter.write_str(".");
+                        formatter.write_str(".")?;
                     }
-                    formatter.write_str(name);
                     print_dot = true;
+                    formatter.write_str(name)
                 },
                 Segment::Parent => {
-                    formatter.write_str("^");
                     print_dot = false;
+                    formatter.write_str("^")
                 },
                 Segment::Root => {
-                    formatter.write_str("\\");
                     print_dot = false;
+                    formatter.write_str("\\")
                 },
-            });
-        Ok(())
+            })
+            .try_fold((), |_, result| result)
     }
 }
 
