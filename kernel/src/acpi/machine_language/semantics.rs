@@ -5,6 +5,7 @@
 use {
     alloc::{
         collections::vec_deque::VecDeque,
+        format,
         string::String,
         vec::Vec,
     },
@@ -20,6 +21,7 @@ use {
 
 pub struct Node {
     name: Segment,
+    object: Object,
     children: Vec<Self>,
 }
 
@@ -52,8 +54,10 @@ impl Default for Node {
     fn default() -> Self {
         let name: Segment = Segment::Root;
         let children: Vec<Self> = Vec::default();
+        let object: Object = Object::default();
         Self {
             name,
+            object,
             children,
         }
     }
@@ -63,8 +67,10 @@ impl From<&Segment> for Node {
     fn from(name: &Segment) -> Self {
         let name: Segment = name.clone();
         let children: Vec<Self> = Vec::new();
+        let object: Object = Object::default();
         Self {
             name,
+            object,
             children,
         }
     }
@@ -83,16 +89,50 @@ impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             name,
+            object,
             children,
         } = self;
         let name: String = name.into();
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(&name);
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(format!("{:#x?} \"{}\"", object, name).as_str());
         children
             .iter()
             .for_each(|child| {
                 debug_tuple.field(child);
             });
         debug_tuple.finish()
+    }
+}
+
+#[derive(Debug)]
+pub enum Object {
+    Alias,
+    BankField,
+    CreateBitField,
+    CreateByteField,
+    CreateDWordFeild,
+    CreateField,
+    CreateQWordField,
+    CreateWordField,
+    DataRegion,
+    Device,
+    Event,
+    External,
+    Field,
+    IndexField,
+    Load,
+    Method,
+    Mutex,
+    Name,
+    OpRegion,
+    PowerRes,
+    Processor,
+    Scope,
+    ThermalZone,
+}
+
+impl Default for Object {
+    fn default() -> Self {
+        Self::Scope
     }
 }
 
@@ -111,6 +151,7 @@ impl From<&Node> for Path {
     fn from(node: &Node) -> Self {
         let Node {
             name,
+            object: _,
             children: _,
         } = node;
         name.into()
