@@ -498,7 +498,43 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => None,
                 }
             });
-        let (flags, matching_elements, string): (bool, Option<usize>, bool) = attrs
+        let flags: bool = attrs
+            .iter()
+            .any(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens: _,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "bitfield" => true,
+                            _ => false,
+                        }
+                    },
+                    _ => false,
+                }
+            });
+        let (matching_elements, string): (Option<usize>, bool) = attrs
             .iter()
             .map(|attribute| {
                 let Attribute {
@@ -527,8 +563,8 @@ impl From<&DeriveInput> for TypeAttribute {
                         match ident
                             .to_string()
                             .as_str() {
-                            "bitfield" => (true, None, false),
-                            "manual" => (false, None, false),
+                            "bitfield" => (None, false),
+                            "manual" => (None, false),
                             _ => unimplemented!(),
                         }
                     },
@@ -540,9 +576,9 @@ impl From<&DeriveInput> for TypeAttribute {
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                        "encoding_value" => (false, None, false),
-                        "encoding_value_max" => (false, None, false),
-                        "encoding_value_min" => (false, None, false),
+                        "encoding_value" => (None, false),
+                        "encoding_value_max" => (None, false),
+                        "encoding_value_min" => (None, false),
                         "matching_elements" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
@@ -552,22 +588,22 @@ impl From<&DeriveInput> for TypeAttribute {
                                     .base10_digits()
                                     .parse()
                                     .unwrap();
-                                (false, Some(matching_elements), false)
+                                (Some(matching_elements), false)
                             },
                             _ => unimplemented!(),
                         },
-                        _ => (false, None, false),
+                        _ => (None, false),
                     },
                     Meta::Path(path) => match path
                         .to_token_stream()
                         .to_string()
                         .as_str() {
-                            "string" => (false, None, true),
+                            "string" => (None, true),
                             _ => unimplemented!(),
                         },
                 }
             })
-            .fold((false, None, false), |(flags, matching_elements, string), (next_flags, next_matching_elements, next_string)| (flags || next_flags, matching_elements.or(next_matching_elements), string || next_string));
+            .fold((None, false), |(matching_elements, string), (next_matching_elements, next_string)| (matching_elements.or(next_matching_elements), string || next_string));
         let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
             (Some(encoding_value), None, None) => Some(encoding_value.into()),
             (None, Some(encoding_value_max), Some(encoding_value_min)) => {
