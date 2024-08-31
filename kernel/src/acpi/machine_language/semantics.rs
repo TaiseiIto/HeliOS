@@ -35,7 +35,7 @@ impl Node {
                 match self
                     .children
                     .iter_mut()
-                    .find(|child| child.name == name && child.object == object) {
+                    .find(|child| child.name == name) {
                     Some(child) => {
                         child.add_node(path, object);
                     },
