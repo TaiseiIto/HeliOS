@@ -2281,10 +2281,25 @@ pub enum NameString {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
+#[manual(semantic_analyzer)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
 );
+
+impl SemanticAnalyzer for NamedField {
+    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
+        let Self(
+            name_seg,
+            _pkg_length,
+        ) = self;
+        let name_seg: String = name_seg.into();
+        let name_seg: semantics::Path = name_seg
+            .as_str()
+            .into();
+        root.add_node(current + name_seg, semantics::Object::NamedField);
+    }
+}
 
 /// # NamedObj
 /// ## References
