@@ -178,20 +178,20 @@ impl Add for Path {
                 .segments
                 .iter())
             .for_each(|segment| match segment {
-                segment @ Segment::Child {
+                Segment::Child {
                     name: _,
                 } => {
                     segments.push_back(segment.clone());
                 },
-                segment @ Segment::Parent => {
-                    if segments.is_empty() {
-                        segments.push_back(segment.clone());
-                    } else {
-                        segments.pop_back();
-                    }
+                Segment::Parent => if segments.is_empty() {
+                    segments.push_back(segment.clone());
+                } else {
+                    segments.pop_back();
                 },
-                segment @ Segment::Root => {
-                    segments = VecDeque::from([segment.clone()]);
+                Segment::Root => {
+                    segments = iter::once(segment)
+                        .cloned()
+                        .collect();
                 },
             });
         Self::Output {
