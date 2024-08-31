@@ -2626,6 +2626,16 @@ pub struct Predicate(TermArg);
 #[string]
 pub struct PrefixPath(Vec<ParentPrefixChar>);
 
+impl From<&PrefixPath> for Vec<semantics::Segment> {
+    fn from(prefix_path: &PrefixPath) -> Self {
+        let PrefixPath(prefix_path) = prefix_path;
+        prefix_path
+            .iter()
+            .map(|parent_prefix_char| parent_prefix_char.into())
+            .collect()
+    }
+}
+
 /// # ProcessorOp
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
