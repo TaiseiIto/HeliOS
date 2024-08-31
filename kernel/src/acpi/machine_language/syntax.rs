@@ -1325,7 +1325,7 @@ impl SemanticAnalyzer for DefScope {
             .as_str()
             .into();
         let current: semantics::Path = current + name_string;
-        root.add_node(current.clone(), semantics::Object::DefScope);
+        root.add_node(current.clone(), semantics::Object::Scope);
         self.iter()
             .for_each(|child| {
                 child.analyze_semantics(root, current.clone());

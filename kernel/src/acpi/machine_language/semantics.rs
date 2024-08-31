@@ -42,7 +42,7 @@ impl Node {
                     None => if path.is_empty() {
                         self.children.push(Self::new(name, object));
                     } else {
-                        self.children.push(Self::new(name, Object::DefScope));
+                        self.children.push(Self::new(name, Object::Scope));
                         self.add_node(path, object);
                     },
                 }
@@ -64,7 +64,7 @@ impl Default for Node {
     fn default() -> Self {
         let name: Segment = Segment::Root;
         let children: Vec<Self> = Vec::default();
-        let object: Object = Object::DefScope;
+        let object: Object = Object::Scope;
         Self {
             name,
             object,
@@ -91,9 +91,9 @@ impl fmt::Debug for Node {
         } = self;
         let name: String = name.into();
         let name: String = match object {
-            Object::DefMethod {
+            Object::Method {
                 number_of_arguments
-            } => format!("DefMethod {:#x?} number_of_arguments = {:#x?}", name, number_of_arguments),
+            } => format!("Method {:#x?} number_of_arguments = {:#x?}", name, number_of_arguments),
             object => format!("{:#x?} {:#x?}", object, name),
         };
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
@@ -108,36 +108,36 @@ impl fmt::Debug for Node {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
-    DefAlias,
-    DefBankField,
-    DefCreateBitField,
-    DefCreateByteField,
-    DefCreateDWordField,
-    DefCreateField,
-    DefCreateQWordField,
-    DefCreateWordField,
-    DefDataRegion,
-    DefDevice,
-    DefEvent,
-    DefExternal,
-    DefField,
-    DefIndexField,
-    DefLoad,
-    DefMethod {
+    Alias,
+    BankField,
+    CreateBitField,
+    CreateByteField,
+    CreateDWordField,
+    CreateField,
+    CreateQWordField,
+    CreateWordField,
+    DataRegion,
+    Device,
+    Event,
+    External,
+    Field,
+    IndexField,
+    Load,
+    Method {
         number_of_arguments: u8,
     },
-    DefMutex,
-    DefName,
-    DefOpRegion,
-    DefPowerRes,
-    DefProcessor,
-    DefScope,
-    DefThermalZone,
+    Mutex,
+    Name,
+    OpRegion,
+    PowerRes,
+    Processor,
+    Scope,
+    ThermalZone,
 }
 
 impl Object {
     pub fn def_method(number_of_arguments: u8) -> Self {
-        Self::DefMethod {
+        Self::Method {
             number_of_arguments,
         }
     }
@@ -145,7 +145,7 @@ impl Object {
 
 impl Default for Object {
     fn default() -> Self {
-        Self::DefScope
+        Self::Scope
     }
 }
 
