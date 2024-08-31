@@ -2218,6 +2218,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                 semi_token: _,
             }) => {
                 let mut self_has_name_string: bool = false;
+                let mut self_has_field_list: bool = false;
                 let fields: Vec<proc_macro2::TokenStream> = unnamed
                     .iter()
                     .enumerate()
@@ -2247,6 +2248,10 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                                 .to_token_stream()
                                 .to_string()
                                 .as_str() {
+                                "FieldList" => {
+                                    self_has_field_list = true;
+                                    default
+                                },
                                 "NameString" => {
                                     self_has_name_string = true;
                                     let length: usize = length
@@ -2296,7 +2301,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                         }
                     })
                     .collect();
-                if self_has_name_string {
+                if self_has_name_string && !self_has_field_list {
                     let ident: String = ident.to_string();
                     let ident: &str = ident
                         .strip_prefix("Def")
