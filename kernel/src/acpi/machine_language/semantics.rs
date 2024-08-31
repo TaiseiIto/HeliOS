@@ -28,11 +28,10 @@ pub struct Node {
 impl Node {
     pub fn add_node(&mut self, mut path: Path, object: Object) {
         if let Some(name) = path.pop_first_segment() {
-            if name == Segment::Root {
-                assert_eq!(self.name, Segment::Root);
-                self.add_node(path, object);
-            } else {
-                match self
+            match name {
+                Segment::Child {
+                    name: _,
+                } => match self
                     .children
                     .iter_mut()
                     .find(|child| child.name == name) {
@@ -45,7 +44,12 @@ impl Node {
                         self.children.push(Self::new(name, Object::Scope));
                         self.add_node(path, object);
                     },
-                }
+                },
+                Segment::Parent => unreachable!(),
+                Segment::Root => {
+                    assert_eq!(self.name, Segment::Root);
+                    self.add_node(path, object);
+                },
             }
         }
     }
@@ -76,7 +80,7 @@ impl Default for Node {
 impl From<&syntax::TermList> for Node {
     fn from(term_list: &syntax::TermList) -> Self {
         let mut root: Self = Self::default();
-        let current: Path = (&root).into();
+        let current: Path = Path::default();
         term_list.analyze_semantics(&mut root, current);
         root
     }
@@ -147,7 +151,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
