@@ -300,6 +300,27 @@ pub enum Segment {
     Root,
 }
 
+impl From<&syntax::NameSeg> for Segment {
+    fn from(name_seg: &syntax::NameSeg) -> Self {
+        let name: String = name_seg.into();
+        Self::Child {
+            name,
+        }
+    }
+}
+
+impl From<&syntax::ParentPrefixChar> for Segment {
+    fn from(_parent_prefix_char: &syntax::ParentPrefixChar) -> Self {
+        Self::Parent
+    }
+}
+
+impl From<&syntax::RootChar> for Segment {
+    fn from(_root_char: &syntax::RootChar) -> Self {
+        Self::Root
+    }
+}
+
 impl From<&str> for Segment {
     fn from(segment: &str) -> Self {
         match segment {
