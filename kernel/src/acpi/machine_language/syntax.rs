@@ -1597,7 +1597,7 @@ pub struct DualNamePath(
     [NameSeg; 2],
 );
 
-impl From<&DualNamePath> for Vec<semantics::Segment> {
+impl From<&DualNamePath> for VecDeque<semantics::Segment> {
     fn from(dual_name_path: &DualNamePath) -> Self {
         let DualNamePath(
             _dual_name_prefix,
@@ -2150,7 +2150,7 @@ pub struct MultiNamePath(
     Vec<NameSeg>,
 );
 
-impl From<&MultiNamePath> for Vec<semantics::Segment> {
+impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
     fn from(multi_name_path: &MultiNamePath) -> Self {
         let MultiNamePath(
             _multi_name_prefix,
@@ -2265,7 +2265,7 @@ pub enum NamePath {
     NullName(NullName),
 }
 
-impl From<&NamePath> for Vec<semantics::Segment> {
+impl From<&NamePath> for VecDeque<semantics::Segment> {
     fn from(name_path: &NamePath) -> Self {
         match name_path {
             NamePath::Dual(dual_name_path) => dual_name_path.into(),
@@ -2314,7 +2314,7 @@ pub enum NameString {
     ),
 }
 
-impl From<&NameString> for Vec<semantics::Segment> {
+impl From<&NameString> for VecDeque<semantics::Segment> {
     fn from(name_string: &NameString) -> Self {
         match name_string {
             NameString::AbsolutePath(
@@ -2325,7 +2325,7 @@ impl From<&NameString> for Vec<semantics::Segment> {
                 let name_path: Self = name_path.into();
                 iter::once(&root_char)
                     .chain(name_path.iter())
-                    .map(|segment| segment.clone())
+                    .cloned()
                     .collect()
             },
             NameString::RelativePath(
@@ -2337,7 +2337,7 @@ impl From<&NameString> for Vec<semantics::Segment> {
                 prefix_path
                     .iter()
                     .chain(name_path.iter())
-                    .map(|segment| segment.clone())
+                    .cloned()
                     .collect()
             },
         }
@@ -2698,7 +2698,7 @@ pub struct Predicate(TermArg);
 #[string]
 pub struct PrefixPath(Vec<ParentPrefixChar>);
 
-impl From<&PrefixPath> for Vec<semantics::Segment> {
+impl From<&PrefixPath> for VecDeque<semantics::Segment> {
     fn from(prefix_path: &PrefixPath) -> Self {
         let PrefixPath(prefix_path) = prefix_path;
         prefix_path
