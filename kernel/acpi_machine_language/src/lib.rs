@@ -2248,10 +2248,6 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                                 .to_token_stream()
                                 .to_string()
                                 .as_str() {
-                                "FieldList" => {
-                                    self_has_field_list = true;
-                                    default
-                                },
                                 "NameString" => {
                                     self_has_name_string = true;
                                     let length: usize = length
@@ -2287,6 +2283,10 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                                 match ident
                                     .to_string()
                                     .as_str() {
+                                    "FieldList" => {
+                                        self_has_field_list = true;
+                                        default
+                                    },
                                     "NameString" => {
                                         self_has_name_string = true;
                                         let field: Ident = format_ident!("name");

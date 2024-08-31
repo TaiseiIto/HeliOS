@@ -109,7 +109,6 @@ impl fmt::Debug for Node {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
     Alias,
-    BankField,
     CreateBitField,
     CreateByteField,
     CreateDWordField,
@@ -120,14 +119,13 @@ pub enum Object {
     Device,
     Event,
     External,
-    Field,
-    IndexField,
     Load,
     Method {
         number_of_arguments: u8,
     },
     Mutex,
     Name,
+    NamedField,
     OpRegion,
     PowerRes,
     Processor,
