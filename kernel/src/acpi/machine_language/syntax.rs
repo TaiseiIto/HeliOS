@@ -1083,13 +1083,8 @@ impl SemanticAnalyzer for DefMethod {
         let name_string: semantics::Path = name_string
             .as_str()
             .into();
-        let current: semantics::Path = current + name_string;
         let number_of_arguments: u8 = method_flags.arg_count();
-        root.add_node(current.clone(), semantics::Object::def_method(number_of_arguments));
-        self.iter()
-            .for_each(|child| {
-                child.analyze_semantics(root, current.clone());
-            });
+        root.add_node(current + name_string, semantics::Object::def_method(number_of_arguments));
     }
 }
 
