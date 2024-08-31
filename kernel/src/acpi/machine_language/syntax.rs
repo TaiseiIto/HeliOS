@@ -1082,10 +1082,7 @@ impl SemanticAnalyzer for DefMethod {
             method_flags,
             _method_term_list,
         ) = self;
-        let name_string: String = name_string.into();
-        let name_string: semantics::Path = name_string
-            .as_str()
-            .into();
+        let name_string: semantics::Path = name_string.into();
         let number_of_arguments: u8 = method_flags.arg_count();
         root.add_node(current + name_string, semantics::Object::def_method(number_of_arguments));
     }
@@ -1318,10 +1315,7 @@ impl SemanticAnalyzer for DefScope {
             name_string,
             _term_list,
         ) = self;
-        let name_string: String = name_string.into();
-        let name_string: semantics::Path = name_string
-            .as_str()
-            .into();
+        let name_string: semantics::Path = name_string.into();
         let current: semantics::Path = current + name_string;
         root.add_node(current.clone(), semantics::Object::Scope);
         self.iter()
@@ -2360,10 +2354,7 @@ impl SemanticAnalyzer for NamedField {
             name_seg,
             _pkg_length,
         ) = self;
-        let name_seg: String = name_seg.into();
-        let name_seg: semantics::Path = name_seg
-            .as_str()
-            .into();
+        let name_seg: semantics::Path = name_seg.into();
         root.add_node(current + name_seg, semantics::Object::NamedField);
     }
 }

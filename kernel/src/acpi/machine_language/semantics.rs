@@ -11,6 +11,7 @@ use {
     },
     core::{
         fmt,
+        iter,
         ops::Add,
     },
     super::syntax::{
@@ -166,17 +167,6 @@ impl Path {
     }
 }
 
-impl From<&Node> for Path {
-    fn from(node: &Node) -> Self {
-        let Node {
-            name,
-            object: _,
-            children: _,
-        } = node;
-        name.into()
-    }
-}
-
 impl Add for Path {
     type Output = Self;
 
@@ -210,50 +200,41 @@ impl Add for Path {
     }
 }
 
-impl From<&Segment> for Path {
-    fn from(segment: &Segment) -> Self {
-        let segments: VecDeque<Segment> = VecDeque::from([segment.clone()]);
+impl From<&syntax::NameSeg> for Path {
+    fn from(name_seg: &syntax::NameSeg) -> Self {
+        let segment: Segment = name_seg.into();
+        let segments: VecDeque<Segment> = iter::once(segment).collect();
         Self {
             segments,
         }
     }
 }
 
-impl From<&str> for Path {
-    fn from(path: &str) -> Self {
-        let mut segments: VecDeque<Segment> = VecDeque::new();
-        let mut name: String = String::new();
-        path.chars()
-            .for_each(|character| match character {
-                '\\' => {
-                    segments = VecDeque::from([Segment::Root]);
-                    name = String::new();
-                },
-                '^' => {
-                    if segments.is_empty() {
-                        segments.push_back(Segment::Parent);
-                    } else {
-                        segments.pop_back();
-                    }
-                    name = String::new();
-                },
-                '.' => {
-                    let segment: Segment = name
-                        .as_str()
-                        .into();
-                    segments.push_back(segment);
-                    name = String::new();
-                },
-                character => {
-                    name.push(character);
-                },
-            });
-        if !name.is_empty() {
-            let segment: Segment = name
-                .as_str()
-                .into();
-            segments.push_back(segment);
+impl From<&syntax::NameString> for Path {
+    fn from(name_string: &syntax::NameString) -> Self {
+        let segments: VecDeque<Segment> = name_string.into();
+        Self {
+            segments,
         }
+    }
+}
+
+impl From<&Node> for Path {
+    fn from(node: &Node) -> Self {
+        let Node {
+            name,
+            object: _,
+            children: _,
+        } = node;
+        name.into()
+    }
+}
+
+impl From<&Segment> for Path {
+    fn from(segment: &Segment) -> Self {
+        let segments: VecDeque<Segment> = iter::once(segment)
+            .cloned()
+            .collect();
         Self {
             segments,
         }
@@ -318,21 +299,6 @@ impl From<&syntax::ParentPrefixChar> for Segment {
 impl From<&syntax::RootChar> for Segment {
     fn from(_root_char: &syntax::RootChar) -> Self {
         Self::Root
-    }
-}
-
-impl From<&str> for Segment {
-    fn from(segment: &str) -> Self {
-        match segment {
-            "^" => Self::Parent,
-            "\\" => Self::Root,
-            name => {
-                let name: String = String::from(name);
-                Self::Child {
-                    name,
-                }
-            },
-        }
     }
 }
 

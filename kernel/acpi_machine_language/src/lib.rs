@@ -2309,10 +2309,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                     let ident: Ident = format_ident!("{}", ident);
                     quote! {
                         let Self(#(#fields),*) = self;
-                        let name: String = name.into();
-                        let name: semantics::Path = name
-                            .as_str()
-                            .into();
+                        let name: semantics::Path = name.into();
                         let current: semantics::Path = current + name;
                         root.add_node(current.clone(), semantics::Object::#ident);
                     }
