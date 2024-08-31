@@ -11,7 +11,6 @@ use {
     },
     bitfield_struct::bitfield,
     core::fmt,
-    crate::com2_println,
     super::semantics,
 };
 
