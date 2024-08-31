@@ -10,7 +10,10 @@ use {
         vec::Vec,
     },
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        iter,
+    },
     super::semantics,
 };
 
@@ -1594,6 +1597,20 @@ pub struct DualNamePath(
     [NameSeg; 2],
 );
 
+impl From<&DualNamePath> for Vec<semantics::Segment> {
+    fn from(dual_name_path: &DualNamePath) -> Self {
+        let DualNamePath(
+            _dual_name_prefix,
+            name_segs,
+        ) = dual_name_path;
+        name_segs
+            .as_slice()
+            .iter()
+            .map(|name_seg| name_seg.into())
+            .collect()
+    }
+}
+
 /// # DualNamePrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -2133,6 +2150,20 @@ pub struct MultiNamePath(
     Vec<NameSeg>,
 );
 
+impl From<&MultiNamePath> for Vec<semantics::Segment> {
+    fn from(multi_name_path: &MultiNamePath) -> Self {
+        let MultiNamePath(
+            _multi_name_prefix,
+            _seg_count,
+            name_segs,
+        ) = multi_name_path;
+        name_segs
+            .iter()
+            .map(|name_seg| name_seg.into())
+            .collect()
+    }
+}
+
 impl From<&[u8]> for MultiNamePath {
     fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
@@ -2232,6 +2263,17 @@ pub enum NamePath {
     Multi(MultiNamePath),
     NameSeg(NameSeg),
     NullName(NullName),
+}
+
+impl From<&NamePath> for Vec<semantics::Segment> {
+    fn from(name_path: &NamePath) -> Self {
+        match name_path {
+            NamePath::Dual(dual_name_path) => dual_name_path.into(),
+            NamePath::Multi(multi_name_path) => multi_name_path.into(),
+            NamePath::NameSeg(name_seg) => iter::once(name_seg.into()).collect(),
+            NamePath::NullName(_null_name) => Self::new(),
+        }
+    }
 }
 
 /// # NameSeg
