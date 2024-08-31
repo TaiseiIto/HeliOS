@@ -2302,16 +2302,46 @@ pub enum NameSpaceModifierObj {
 #[derive(acpi_machine_language::Analyzer)]
 #[string]
 pub enum NameString {
-    RootCharNamePath(
+    AbsolutePath(
         RootChar,
         NamePath,
     ),
     #[matching_type = "ParentPrefixChar"]
     #[matching_type = "NamePath"]
-    PrefixPathNamePath(
+    RelativePath(
         PrefixPath,
         NamePath,
     ),
+}
+
+impl From<&NameString> for Vec<semantics::Segment> {
+    fn from(name_string: &NameString) -> Self {
+        match name_string {
+            NameString::AbsolutePath(
+                root_char,
+                name_path,
+            ) => {
+                let root_char: semantics::Segment = root_char.into();
+                let name_path: Self = name_path.into();
+                iter::once(&root_char)
+                    .chain(name_path.iter())
+                    .map(|segment| segment.clone())
+                    .collect()
+            },
+            NameString::RelativePath(
+                prefix_path,
+                name_path,
+            ) => {
+                let prefix_path: Self = prefix_path.into();
+                let name_path: Self = name_path.into();
+                prefix_path
+                    .iter()
+                    .chain(name_path.iter())
+                    .map(|segment| segment.clone())
+                    .collect()
+            },
+        }
+    }
 }
 
 /// # NamedField
