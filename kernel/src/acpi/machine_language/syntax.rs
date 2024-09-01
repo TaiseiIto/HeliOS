@@ -2644,7 +2644,7 @@ impl PkgLeadByte {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(debug, from_slice_u8, reader)]
+#[manual(debug, from_slice_u8, reader, reader_with_semantic_tree)]
 pub struct PkgLength(
     PkgLeadByte,
     Vec<ByteData>,
@@ -2696,6 +2696,24 @@ impl From<&[u8]> for PkgLength {
 impl Reader for PkgLength {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
         let pkg_length: Self = aml.into();
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
+        (pkg_length, aml)
+    }
+}
+
+impl ReaderWithSemanticTree for PkgLength {
+    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        let (pkg_lead_byte, pkg_length_aml): (PkgLeadByte, &[u8]) = PkgLeadByte::read_with_semantic_tree(aml, root, current.clone());
+        let (_pkg_length_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
+            .fold((pkg_length_aml, Vec::new()), |(pkg_length_aml, mut byte_data), _| {
+                let (new_byte_data, pkg_length_aml): (ByteData, &[u8]) = ByteData::read_with_semantic_tree(pkg_length_aml, root, current);
+                byte_data.push(new_byte_data);
+                (pkg_length_aml, byte_data)
+            });
+        let pkg_length = Self(
+            pkg_lead_byte,
+            byte_data,
+        );
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
     }
