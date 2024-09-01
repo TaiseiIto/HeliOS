@@ -124,7 +124,7 @@ impl Table {
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         let semantic_tree: machine_language::semantics::Node = (&syntax_tree).into();
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
-        let current = machine_language::semantics::Path::default();
+        let current = machine_language::semantics::Path::root();
         syntax_tree.analyze_methods(&semantic_tree, current);
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);

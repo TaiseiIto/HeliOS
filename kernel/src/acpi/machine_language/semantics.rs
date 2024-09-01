@@ -81,7 +81,7 @@ impl Default for Node {
 impl From<&syntax::TermList> for Node {
     fn from(term_list: &syntax::TermList) -> Self {
         let mut root: Self = Self::default();
-        let current: Path = Path::default();
+        let current: Path = Path::root();
         term_list.analyze_semantics(&mut root, current);
         root
     }
@@ -152,7 +152,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
@@ -164,6 +164,13 @@ impl Path {
 
     pub fn pop_first_segment(&mut self) -> Option<Segment> {
         self.segments.pop_front()
+    }
+
+    pub fn root() -> Self {
+        let segments: VecDeque<Segment> = iter::once(Segment::Root).collect();
+        Self {
+            segments,
+        }
     }
 }
 
