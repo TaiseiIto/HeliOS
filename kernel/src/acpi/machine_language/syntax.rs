@@ -313,10 +313,17 @@ pub struct ByteConst(
 #[encoding_value_max = 0xff]
 pub struct ByteData(u8);
 
-impl From<&ByteData> for usize {
+impl From<&ByteData> for u8 {
     fn from(byte_data: &ByteData) -> Self {
         let ByteData(byte_data) = byte_data;
-        *byte_data as Self
+        *byte_data
+    }
+}
+
+impl From<&ByteData> for usize {
+    fn from(byte_data: &ByteData) -> Self {
+        let byte_data: u8 = byte_data.into();
+        byte_data as Self
     }
 }
 
@@ -331,6 +338,16 @@ pub struct ByteIndex(TermArg);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ByteList(Vec<ByteData>);
+
+impl From<&ByteList> for Vec<u8> {
+    fn from(byte_list: &ByteList) -> Self {
+        let ByteList(byte_list) = byte_list;
+        byte_list
+            .iter()
+            .map(|byte_data| byte_data.into())
+            .collect()
+    }
+}
 
 /// # BytePrefix
 /// ## References
@@ -2098,7 +2115,15 @@ pub enum MethodTermList {
 
 impl MethodAnalyzer for MethodTermList {
     fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
+        let binary: Vec<u8> = match self {
+            Self::Binary(byte_list) => {
+                let byte_list: ByteList = byte_list.clone();
+                (&byte_list).into()
+            },
+            Self::SyntaxTree(_term_list) => unreachable!(),
+        };
         com2_println!("analyze methods current = {:#x?}", current);
+        com2_println!("binary = {:#x?}", binary);
     }
 }
 
