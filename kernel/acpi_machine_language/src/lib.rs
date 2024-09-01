@@ -2683,15 +2683,32 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding: _,
-        flags: _,
+        flags,
         matching_elements: _,
         string: _,
     } = derive_input.into();
     if derive_reader_with_semantic_tree {
+        let read: proc_macro2::TokenStream = if flags {
+            quote! {
+                assert!(Self::matches(aml), "aml = {:02x?}", aml);
+                match aml {
+                    [symbol, aml @ ..] => {
+                        let symbol: u8 = *symbol;
+                        let symbol: Self = symbol.into();
+                        (symbol, aml)
+                    },
+                    _ => unreachable!(),
+                }
+            }
+        } else {
+            quote! {
+                unimplemented!()
+            }
+        };
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderWithSemanticTree for #ident {
                 fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    unimplemented!()
+                    #read
                 }
             }
         }
