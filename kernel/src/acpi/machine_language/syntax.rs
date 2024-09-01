@@ -2067,7 +2067,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8, matches, semantic_analyzer)]
+#[manual(from_slice_u8, matches, reader_with_semantic_tree, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2095,6 +2095,12 @@ impl From<&[u8]> for MethodInvocation {
 impl Matcher for MethodInvocation {
     fn matches(aml: &[u8]) -> bool {
         NameString::matches(aml) && !NullName::matches(aml)
+    }
+}
+
+impl ReaderWithSemanticTree for MethodInvocation {
+    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        unimplemented!()
     }
 }
 
