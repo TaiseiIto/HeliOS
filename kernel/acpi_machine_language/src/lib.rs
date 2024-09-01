@@ -1294,7 +1294,6 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                             };
                             let convert: proc_macro2::TokenStream = quote! {
                                 let #field_name: #field_type = #convert_field;
-                                let #field_name: #field_type = #field_name;
                             };
                             let pack: proc_macro2::TokenStream = quote! {
                                 #field_name
@@ -2682,7 +2681,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         derive_reader_with_semantic_tree,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
-        encoding: _,
+        encoding,
         flags,
         matching_elements: _,
         string: _,
@@ -2730,7 +2729,145 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                 Fields::Unnamed(FieldsUnnamed {
                                     paren_token: _,
                                     unnamed,
-                                }) => unimplemented!(),
+                                }) => {
+                                    let Field {
+                                        attrs: _,
+                                        vis: _,
+                                        mutability: _,
+                                        ident: _,
+                                        colon_token: _,
+                                        ty,
+                                    } = unnamed
+                                        .first()
+                                        .unwrap();
+                                    let matches: proc_macro2::TokenStream = if matching_types.is_empty() {
+                                        match ty {
+                                            Type::Path(TypePath {
+                                                qself: _,
+                                                path,
+                                            }) => {
+                                                let Path {
+                                                    leading_colon: _,
+                                                    segments,
+                                                } = path;
+                                                let PathSegment {
+                                                    ident,
+                                                    arguments,
+                                                } = segments
+                                                    .iter()
+                                                    .last()
+                                                    .unwrap();
+                                                match ident
+                                                    .to_string()
+                                                    .as_str() {
+                                                    "Box" => match arguments {
+                                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                            colon2_token: _,
+                                                            lt_token: _,
+                                                            args,
+                                                            gt_token: _,
+                                                        }) => match args
+                                                            .first()
+                                                            .unwrap() {
+                                                            GenericArgument::Type(element_type) => quote! {
+                                                                #element_type::matches(aml)
+                                                            },
+                                                            _ => unimplemented!(),
+                                                        }
+                                                        _ => unimplemented!(),
+                                                    },
+                                                    _ => quote! {
+                                                        #ty::matches(aml)
+                                                    },
+                                                }
+                                            }
+                                            _ => unimplemented!(),
+                                        }
+                                    } else {
+                                        let matches: Vec<proc_macro2::TokenStream> = matching_types
+                                            .iter()
+                                            .map(|matching_type| {
+                                                let matching_type: Ident = format_ident!("{}", matching_type);
+                                                quote! {
+                                                    #matching_type::matches(aml)
+                                                }
+                                            })
+                                            .collect();
+                                        quote! {
+                                            #(#matches) || *
+                                        }
+                                    };
+                                    let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                        .iter()
+                                        .enumerate()
+                                        .map(|(index, field)| {
+                                            let field_name: Ident = format_ident!("field{}", index);
+                                            let Field {
+                                                attrs: _,
+                                                vis: _,
+                                                mutability: _,
+                                                ident: _,
+                                                colon_token: _,
+                                                ty,
+                                            } = field;
+                                            match ty {
+                                                Type::Path(TypePath {
+                                                    qself: _,
+                                                    path,
+                                                }) => {
+                                                    let Path {
+                                                        leading_colon: _,
+                                                        segments,
+                                                    } = path;
+                                                    let PathSegment {
+                                                        ident,
+                                                        arguments,
+                                                    } = segments
+                                                        .iter()
+                                                        .last()
+                                                        .unwrap();
+                                                    match ident
+                                                        .to_string()
+                                                        .as_str() {
+                                                        "Box" => match arguments {
+                                                            PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                                colon2_token: _,
+                                                                lt_token: _,
+                                                                args,
+                                                                gt_token: _,
+                                                            }) => match args
+                                                                .first()
+                                                                .unwrap() {
+                                                                GenericArgument::Type(element_type) => quote! {
+                                                                    let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                                    let #field_name: #ty = Box::new(#field_name);
+                                                                },
+                                                                _ => unimplemented!(),
+                                                            },
+                                                            _ => unimplemented!(),
+                                                        }
+                                                        _ => quote! {
+                                                            let (#field_name, aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(aml, root, current.clone());
+                                                        },
+                                                    }
+                                                },
+                                                _ => unimplemented!(),
+                                            };
+                                            (field_name, read)
+                                        })
+                                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut reads), (field_name, read)| {
+                                            field_names.push(field_name);
+                                            reads.push(read);
+                                            (field_names, reads)
+                                        });
+                                    quote! {
+                                        if #matches {
+                                            #(#reads)*
+                                            let symbol = Self::#ident(#(#field_names), *)
+                                            (symbol, aml)
+                                        }
+                                    }
+                                },
                                 _ => unimplemented!(),
                             }
                         })
@@ -2745,7 +2882,203 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                     struct_token: _,
                     fields,
                     semi_token: _,
-                }) => unimplemented!(),
+                }) => match fields {
+                    Fields::Unit => quote! {
+                        let symbol = Self;
+                        let aml: &[u8] = &aml[symbol.length()..];
+                        (symbol, aml)
+                    },
+                    Fields::Unnamed(FieldsUnnamed {
+                        paren_token: _,
+                        unnamed,
+                    }) => {
+                        let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
+                            Some(_encoding) => {
+                                let field_type: proc_macro2::TokenStream = unnamed
+                                    .first()
+                                    .unwrap()
+                                    .to_token_stream();
+                                let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = quote! {
+                                    let (#field_name, aml): (#field_type, &[u8]) = match aml {
+                                        [#field_name, aml @ ..] => {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name as #field_type;
+                                            (#field_name, aml)
+                                        },
+                                        _ => unreachable!(),
+                                    };
+                                };
+                                let pack: proc_macro2::TokenStream = quote! {
+                                    #field_name
+                                };
+                                (vec![read], vec![pack])
+                            }
+                            None => unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(index, field)| {
+                                    let field_name: Ident = format_ident!("field{}", index);
+                                    let Field {
+                                        attrs: _,
+                                        vis: _,
+                                        mutability: _,
+                                        ident: _,
+                                        colon_token: _,
+                                        ty,
+                                    } = field;
+                                    let FieldAttribute {
+                                        debug,
+                                        delimiter: _,
+                                        no_leftover,
+                                        not_string: _,
+                                    } = field.into();
+                                    let read: proc_macro2::TokenStream = match ty {
+                                        Type::Array(TypeArray {
+                                            bracket_token: _,
+                                            elem,
+                                            semi_token: _,
+                                            len,
+                                        }) => quote! {
+                                            let (elements, aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
+                                                .fold((alloc::vec::Vec::new(), aml), |(mut elements, aml), _| {
+                                                    let (element, aml): (#elem, &[u8]) = #elem::read_with_semantic_tree(aml, root, current.clone());
+                                                    elements.push(element);
+                                                    (elements, aml)
+                                                });
+                                            let #field_name: #ty = elements
+                                                .try_into()
+                                                .unwrap();
+                                        },
+                                        Type::Path(TypePath {
+                                            qself: _,
+                                            path,
+                                        }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments,
+                                            } = segments
+                                                .iter()
+                                                .last()
+                                                .unwrap();
+                                            match ident
+                                                .to_string()
+                                                .as_str() {
+                                                "Box" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                            let #field_name: #ty = Box::new(#field_name);
+                                                        },
+                                                        _ unimplemented!(),
+                                                    },
+                                                    _ => unimplemented!(),
+                                                },
+                                                "Option" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            let (#field_name, aml): (Option<#element_type>, &[u8]) = if #element_type::matches(aml) {
+                                                                let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                                (Some(#field_name), aml)
+                                                            } else {
+                                                                (None, aml)
+                                                            };
+                                                        },
+                                                        _ => unimplemented!(),
+                                                    },
+                                                    _ => unimplemented!(),
+                                                },
+                                                "Vec" => match arguments {
+                                                    PathARguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => {
+                                                            let debug: proc_macro2::TokenStream = if debug {
+                                                                quote! {
+                                                                    crate::com2_println!("element = {:#x?}", element);
+                                                                    crate::com2_println!("remaining_aml = {:02x?}", &reamaining_aml[0..core::cmp::min(10, remaining_aml.len())]);
+                                                                }
+                                                            } else {
+                                                                quote! {
+                                                                }
+                                                            };
+                                                            quote! {
+                                                                let mut aml: &[u8] = aml;
+                                                                let mut #field_name: Vec<#element_type> = Vec::new();
+                                                                while if aml.is_empty() {
+                                                                    false
+                                                                } else {
+                                                                    #element_type::matches(aml)
+                                                                } {
+                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                                    #debug
+                                                                    aml = remaining_aml;
+                                                                    #field_name.push(element);
+                                                                }
+                                                            }
+                                                        },
+                                                        _ => unimplemented!(),
+                                                    },
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => quote! {
+                                                    let (#field_name, aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(aml, root, current.clone());
+                                                },
+                                            }
+                                        },
+                                        _ => unimplemented!(),
+                                    };
+                                    let read: proc_macro2::TokenStream = if no_leftover {
+                                        quote! {
+                                            #read
+                                            assert!(aml.is_empty(), "aml = {:02x?}", aml);
+                                        }
+                                    } else {
+                                        read
+                                    };
+                                    let pack: proc_macro2::TokenStream = quote! {
+                                        #field_name
+                                    };
+                                    (read, pack)
+                                })
+                                .fold((Vec::new(), Vec::new()), |(mut read, mut pack), (next_read, next_pack)| {
+                                    read.push(next_read);
+                                    pack.push(next_pack);
+                                    (read, pack)
+                                }),
+                        };
+                        quote! {
+                            assert!(Self::matches(aml), "aml = {:#x?}", aml);
+                            #(#read)*
+                            let symbol = Self(#(#pack),*);
+                            (symbol, aml)
+                        }
+                    },
+                    _ => unimplemented!(),
+                },
                 _ => unimplemented!(),
             }
         };
