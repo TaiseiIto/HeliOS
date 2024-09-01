@@ -2125,15 +2125,17 @@ pub enum MethodTermList {
 
 impl MethodAnalyzer for MethodTermList {
     fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
-        let binary: Vec<u8> = match self {
+        let aml: Vec<u8> = match self {
             Self::Binary(byte_list) => {
                 let byte_list: ByteList = byte_list.clone();
                 (&byte_list).into()
             },
             Self::SyntaxTree(_term_list) => unreachable!(),
         };
-        com2_println!("analyze methods current = {:#x?}", current);
-        com2_println!("binary = {:#x?}", binary);
+        let aml: &[u8] = aml.as_slice();
+        let (term_list, aml): (TermList, &[u8]) = TermList::read_with_semantic_tree(aml, root, current);
+        assert!(aml.is_empty());
+        *self = Self::SyntaxTree(term_list);
     }
 }
 
