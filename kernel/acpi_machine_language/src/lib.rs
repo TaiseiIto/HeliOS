@@ -2810,7 +2810,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                 colon_token: _,
                                                 ty,
                                             } = field;
-                                            match ty {
+                                            let read: proc_macro2::TokenStream = match ty {
                                                 Type::Path(TypePath {
                                                     qself: _,
                                                     path,
@@ -2981,7 +2981,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                             let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
                                                             let #field_name: #ty = Box::new(#field_name);
                                                         },
-                                                        _ unimplemented!(),
+                                                        _ => unimplemented!(),
                                                     },
                                                     _ => unimplemented!(),
                                                 },
@@ -3007,7 +3007,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                     _ => unimplemented!(),
                                                 },
                                                 "Vec" => match arguments {
-                                                    PathARguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                                                         colon2_token: _,
                                                         lt_token: _,
                                                         args,
