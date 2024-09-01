@@ -1302,7 +1302,6 @@ pub struct DefReturn(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
 #[derive(acpi_machine_language::Analyzer)]
-#[manual(semantic_analyzer)]
 pub struct DefScope(
     ScopeOp,
     PkgLength,
@@ -1310,24 +1309,6 @@ pub struct DefScope(
     #[no_leftover]
     TermList,
 );
-
-impl SemanticAnalyzer for DefScope {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
-        let Self(
-            _scope_op,
-            _pkg_length,
-            name_string,
-            _term_list,
-        ) = self;
-        let name_string: semantics::Path = name_string.into();
-        let current: semantics::Path = current + name_string;
-        root.add_node(current.clone(), semantics::Object::Scope);
-        self.iter()
-            .for_each(|child| {
-                child.analyze_semantics(root, current.clone());
-            });
-    }
-}
 
 /// # DefShiftLeft
 /// ## References
