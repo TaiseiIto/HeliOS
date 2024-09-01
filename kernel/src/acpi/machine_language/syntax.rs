@@ -2706,7 +2706,7 @@ impl ReaderWithSemanticTree for PkgLength {
         let (pkg_lead_byte, pkg_length_aml): (PkgLeadByte, &[u8]) = PkgLeadByte::read_with_semantic_tree(aml, root, current.clone());
         let (_pkg_length_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
             .fold((pkg_length_aml, Vec::new()), |(pkg_length_aml, mut byte_data), _| {
-                let (new_byte_data, pkg_length_aml): (ByteData, &[u8]) = ByteData::read_with_semantic_tree(pkg_length_aml, root, current);
+                let (new_byte_data, pkg_length_aml): (ByteData, &[u8]) = ByteData::read_with_semantic_tree(pkg_length_aml, root, current.clone());
                 byte_data.push(new_byte_data);
                 (pkg_length_aml, byte_data)
             });
