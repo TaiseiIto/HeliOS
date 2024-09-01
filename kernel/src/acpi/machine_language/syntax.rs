@@ -18,7 +18,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: Matcher + MethodAnalyzer + Reader + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
+pub trait Analyzer: Matcher + MethodAnalyzer + Reader + ReaderWithSemanticTree + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
 }
 
 pub trait Matcher {
@@ -31,6 +31,10 @@ pub trait MethodAnalyzer {
 
 pub trait Reader {
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
+}
+
+pub trait ReaderWithSemanticTree {
+    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
 }
 
 pub trait ReferenceToSymbolIterator {

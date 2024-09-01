@@ -64,7 +64,8 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
     let matches: proc_macro2::TokenStream = derive_matcher(&derive_input);
     let method_analyzer: proc_macro2::TokenStream = derive_method_analyzer(&derive_input);
-    let read: proc_macro2::TokenStream = derive_reader(&derive_input);
+    let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
+    let reader_with_semantic_tree: proc_macro2::TokenStream = derive_reader_with_semantic_tree(&derive_input);
     let semantic_analyzer: proc_macro2::TokenStream = derive_semantic_analyzer(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
@@ -76,7 +77,8 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #length
         #matches
         #method_analyzer
-        #read
+        #reader
+        #reader_with_semantic_tree
         #semantic_analyzer
         #string_from_self
     }   .try_into()
@@ -2605,6 +2607,23 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     } else {
         quote! {
+        }
+    }
+}
+
+fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::ReaderWithSemanticTree {
+            fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
+                unimplemented!()
+            }
         }
     }
 }
