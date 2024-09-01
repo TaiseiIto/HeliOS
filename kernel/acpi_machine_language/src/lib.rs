@@ -1634,12 +1634,232 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
             _ => unimplemented!(),
         }
     };
+    let push_mut_symbols: proc_macro2::TokenStream = if encoding.is_some() || flags {
+        quote! {
+        }
+    } else {
+        match data {
+            Data::Enum(DataEnum {
+                enum_token: _,
+                brace_token: _,
+                variants,
+            }) => {
+                let push_patterns: Vec<proc_macro2::TokenStream> = variants
+                    .iter()
+                    .map(|variant| {
+                        let Variant {
+                            attrs: _,
+                            ident,
+                            fields,
+                            discriminant: _,
+                        } = variant;
+                        match fields {
+                            Fields::Unit => quote! {
+                                Self::#ident => {},
+                            },
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token: _,
+                                unnamed,
+                            }) => {
+                                let (field_names, push_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(index, field)| {
+                                        let field_name: Ident = format_ident!("field{}", index);
+                                        let Field {
+                                            attrs: _,
+                                            vis: _,
+                                            mutability: _,
+                                            ident: _,
+                                            colon_token: _,
+                                            ty,
+                                        } = field;
+                                        let push_field: proc_macro2::TokenStream = match ty {
+                                            Type::Array(TypeArray {
+                                                bracket_token: _,
+                                                elem: _,
+                                                semi_token: _,
+                                                len: _,
+                                            }) => quote! {
+                                                #field_name
+                                                    .as_mut_slice()
+                                                    .iter_mut()
+                                                    .for_each(|element| {
+                                                        symbols.push_back(element);
+                                                    });
+                                            },
+                                            Type::Path(TypePath {
+                                                qself: _,
+                                                path,
+                                            }) => {
+                                                let Path {
+                                                    leading_colon: _,
+                                                    segments,
+                                                } = path;
+                                                let PathSegment {
+                                                    ident,
+                                                    arguments: _,
+                                                } = segments
+                                                    .iter()
+                                                    .last()
+                                                    .unwrap();
+                                                match ident
+                                                    .to_string()
+                                                    .as_str() {
+                                                    "Box" => quote! {
+                                                        symbols.push_back(&mut **#field_name);
+                                                    },
+                                                    "Option" => quote! {
+                                                        if let Some(element) = #field_name {
+                                                            symbols.push_back(element);
+                                                        }
+                                                    },
+                                                    "Vec" => quote! {
+                                                        #field_name
+                                                            .iter_mut()
+                                                            .for_each(|element| {
+                                                                symbols.push_back(element);
+                                                            });
+                                                    },
+                                                    _ => quote! {
+                                                        symbols.push_back(#field_name);
+                                                    },
+                                                }
+                                            },
+                                            _ => unimplemented!(),
+                                        };
+                                        (field_name, push_field)
+                                    })
+                                    .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (next_field_name, push_next_field)| {
+                                        field_names.push(next_field_name);
+                                        push_fields.push(push_next_field);
+                                        (field_names, push_fields)
+                                    });
+                                quote! {
+                                    Self::#ident(#(#field_names),*) => {
+                                        #(#push_fields)*
+                                    }
+                                }
+                            },
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect();
+                quote! {
+                    match self {
+                        #(#push_patterns),*
+                    }
+                }
+            },
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields,
+                semi_token: _,
+            }) => match fields {
+                Fields::Unit => quote! {
+                },
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }) => {
+                    let (field_names, push_fields): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index,field)| {
+                            let field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
+                                ty,
+                            } = field;
+                            let push_field: proc_macro2::TokenStream = match ty {
+                                Type::Array(TypeArray {
+                                    bracket_token: _,
+                                    elem: _,
+                                    semi_token: _,
+                                    len: _,
+                                }) => quote! {
+                                    #field_name
+                                        .as_mut_slice()
+                                        .iter_mut()
+                                        .for_each(|element| {
+                                            symbols.push_back(element);
+                                        });
+                                },
+                                Type::Path(TypePath {
+                                    qself: _,
+                                    path,
+                                }) => {
+                                    let Path {
+                                        leading_colon: _,
+                                        segments,
+                                    } = path;
+                                    let PathSegment {
+                                        ident,
+                                        arguments: _,
+                                    } = segments
+                                        .iter()
+                                        .last()
+                                        .unwrap();
+                                    match ident
+                                        .to_string()
+                                        .as_str() {
+                                        "Box" => quote! {
+                                            symbols.push_back(&mut **#field_name);
+                                        },
+                                        "Option" => quote! {
+                                            if let Some(element) = #field_name {
+                                                symbols.push_back(element);
+                                            }
+                                        },
+                                        "Vec" => quote! {
+                                            #field_name
+                                                .iter_mut()
+                                                .for_each(|element| {
+                                                    symbols.push_back(element);
+                                                });
+                                        },
+                                        _ => quote! {
+                                            symbols.push_back(#field_name);
+                                        },
+                                    }
+                                },
+                                _ => unimplemented!(),
+                            };
+                            (field_name, push_field)
+                        })
+                        .fold((Vec::new(), Vec::new()), |(mut field_names, mut push_fields), (next_field_name, push_next_field)| {
+                            field_names.push(next_field_name);
+                            push_fields.push(push_next_field);
+                            (field_names, push_fields)
+                        });
+                    quote! {
+                        let Self(#(#field_names),*) = self;
+                        #(#push_fields)*
+                    }
+                },
+                _ => unimplemented!(),
+            },
+            _ => unimplemented!(),
+        }
+    };
     quote! {
         impl crate::acpi::machine_language::syntax::ReferenceToSymbolIterator for #ident {
             fn iter(&self) -> crate::acpi::machine_language::syntax::SymbolIterator<'_> {
                 let mut symbols: alloc::collections::vec_deque::VecDeque<&dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
                 #push_symbols
-                SymbolIterator {
+                crate::acpi::machine_language::syntax::SymbolIterator {
+                    symbols,
+                }
+            }
+
+            fn iter_mut(&mut self) -> crate::acpi::machine_language::syntax::MutSymbolIterator<'_> {
+                let mut symbols: alloc::collections::vec_deque::VecDeque<&mut dyn crate::acpi::machine_language::syntax::Analyzer> = alloc::collections::vec_deque::VecDeque::new();
+                #push_mut_symbols
+                crate::acpi::machine_language::syntax::MutSymbolIterator {
                     symbols,
                 }
             }
@@ -2257,7 +2477,8 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
             if self_has_name_string && !self_has_field_list {
                 quote! {
                     let Self(#(#fields),*) = self;
-                    let name: crate::acpi::machine_language::semantics::Path = name.into();
+                    let name: crate::acpi::machine_language::syntax::NameString = name.clone();
+                    let name: crate::acpi::machine_language::semantics::Path = (&name).into();
                     let current: crate::acpi::machine_language::semantics::Path = current + name;
                 }
             } else {
@@ -2272,7 +2493,7 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         impl crate::acpi::machine_language::syntax::MethodAnalyzer for #ident {
             fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
                 #analyze_methods
-                self.iter()
+                self.iter_mut()
                     .for_each(|child| {
                         child.analyze_methods(root, current.clone());
                     });

@@ -34,6 +34,7 @@ pub trait Reader {
 
 pub trait ReferenceToSymbolIterator {
     fn iter(&self) -> SymbolIterator<'_>;
+    fn iter_mut(&mut self) -> MutSymbolIterator<'_>;
 }
 
 pub trait SemanticAnalyzer {
@@ -56,16 +57,28 @@ impl<'a> Iterator for SymbolIterator<'a> {
     }
 }
 
+pub struct MutSymbolIterator<'a> {
+    symbols: VecDeque<&'a mut dyn Analyzer>,
+}
+
+impl<'a> Iterator for MutSymbolIterator<'a> {
+    type Item = &'a mut dyn Analyzer;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.symbols.pop_front()
+    }
+}
+
 /// # AccessAttrib
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct AccessAttrib(ByteData);
 
 /// # AccessField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct AccessField(
     AccessFieldOp,
     AccessType,
@@ -75,7 +88,7 @@ pub struct AccessField(
 /// # AccessFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x01]
 pub struct AccessFieldOp;
 
@@ -96,7 +109,7 @@ pub struct AccessType {
 /// # AcquireOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct AcquireOp(
     ExtOpPrefix,
@@ -106,28 +119,28 @@ pub struct AcquireOp(
 /// # AcquireOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x23]
 pub struct AcquireOpSuffix;
 
 /// # AddOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x72]
 pub struct AddOp;
 
 /// # AliasOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x06]
 pub struct AliasOp;
 
 /// # AmlString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub struct AmlString(
     #[not_string]
@@ -139,14 +152,14 @@ pub struct AmlString(
 /// # AndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7b]
 pub struct AndOp;
 
 /// # Arg Objects Encoding
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.1 Arg Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x68]
 #[encoding_value_max = 0x6e]
 pub struct ArgObj(u8);
@@ -154,19 +167,19 @@ pub struct ArgObj(u8);
 /// # ArgObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ArgObject(TermArg);
 
 /// # ArgumentCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ArgumentCount(ByteData);
 
 /// # AsciiChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x01]
 #[encoding_value_max = 0x7f]
 pub struct AsciiChar(char);
@@ -174,7 +187,7 @@ pub struct AsciiChar(char);
 /// # AsciiCharList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 0]
 #[string]
 pub struct AsciiCharList(Vec<AsciiChar>);
@@ -182,7 +195,7 @@ pub struct AsciiCharList(Vec<AsciiChar>);
 /// # AsciiUppercase
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x41]
 #[encoding_value_max = 0x5a]
 pub struct AsciiUppercase(char);
@@ -190,28 +203,28 @@ pub struct AsciiUppercase(char);
 /// # AttribBytes
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0b]
 pub struct AttribBytes;
 
 /// # AttribRawBytes
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0e]
 pub struct AttribRawBytes;
 
 /// # AttribRawProcess
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0f]
 pub struct AttribRawProcess;
 
 /// # BankFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct BankFieldOp(
     ExtOpPrefix,
@@ -221,71 +234,71 @@ pub struct BankFieldOp(
 /// # BankFieldOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x87]
 pub struct BankFieldOpSuffix;
 
 /// # BankValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BankValue(TermArg);
 
 /// # BcdValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BcdValue(TermArg);
 
 /// # BitIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BitIndex(TermArg);
 
 /// # BreakOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa5]
 pub struct BreakOp;
 
 /// # BreakPointOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xcc]
 pub struct BreakPointOp;
 
 /// # BufData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BufData(TermArg);
 
 /// # BuffPkgStrObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BuffPkgStrObj(TermArg);
 
 /// # BufferOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x11]
 pub struct BufferOp;
 
 /// # BufferSize
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BufferSize(TermArg);
 
 /// # ByteConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ByteConst(
     BytePrefix,
     ByteData,
@@ -294,7 +307,7 @@ pub struct ByteConst(
 /// # ByteData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x00]
 #[encoding_value_max = 0xff]
 pub struct ByteData(u8);
@@ -309,26 +322,26 @@ impl From<&ByteData> for usize {
 /// # ByteIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ByteIndex(TermArg);
 
 /// # ByteList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ByteList(Vec<ByteData>);
 
 /// # BytePrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0a]
 pub struct BytePrefix;
 
 /// # ComputationalData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ComputationalData {
     AmlString(AmlString),
     ByteConst(ByteConst),
@@ -343,21 +356,21 @@ pub enum ComputationalData {
 /// # ConcatOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x73]
 pub struct ConcatOp;
 
 /// # ConcatResOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x84]
 pub struct ConcatResOp;
 
 /// # CondRefOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct CondRefOfOp(
     ExtOpPrefix,
@@ -367,14 +380,14 @@ pub struct CondRefOfOp(
 /// # CondRefOfOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x12]
 pub struct CondRefOfOpSuffix;
 
 /// # ConnectField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ConnectField(
     ConnectFieldOp,
     ConnectFieldEnum,
@@ -383,7 +396,7 @@ pub struct ConnectField(
 /// # ConnectFieldEnum
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ConnectFieldEnum {
     BufData(BufData),
     NameString(NameString),
@@ -392,28 +405,28 @@ pub enum ConnectFieldEnum {
 /// # ConnectFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x02]
 pub struct ConnectFieldOp;
 
 /// # ContinueOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x9f]
 pub struct ContinueOp;
 
 /// # CopyObjectOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x9d]
 pub struct CopyObjectOp;
 
 /// # ConstObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ConstObj {
     One(OneOp),
     Ones(OnesOp),
@@ -423,28 +436,28 @@ pub enum ConstObj {
 /// # CreateBitFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8d]
 pub struct CreateBitFieldOp;
 
 /// # CreateByteFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8c]
 pub struct CreateByteFieldOp;
 
 /// # CreateDWordFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8a]
 pub struct CreateDWordFieldOp;
 
 /// # CreateFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct CreateFieldOp(
     ExtOpPrefix,
@@ -454,28 +467,28 @@ pub struct CreateFieldOp(
 /// # CreateFieldOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x13]
 pub struct CreateFieldOpSuffix;
 
 /// # CreateQWordFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8f]
 pub struct CreateQWordFieldOp;
 
 /// # CreateWordFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8b]
 pub struct CreateWordFieldOp;
 
 /// # DWordConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DWordConst(
     DWordPrefix,
     DWordData,
@@ -484,7 +497,7 @@ pub struct DWordConst(
 /// # DWordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DWordData(
     [WordData; 2],
 );
@@ -492,20 +505,20 @@ pub struct DWordData(
 /// # DWordPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0c]
 pub struct DWordPrefix;
 
 /// # Data
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Data(TermArg);
 
 /// # DataObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum DataObject {
     ComputationalData(ComputationalData),
     DefPackage(DefPackage),
@@ -515,7 +528,7 @@ pub enum DataObject {
 /// # DataRefObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum DataRefObject {
     DataObject(DataObject),
     ObjReference(ObjReference),
@@ -524,7 +537,7 @@ pub enum DataRefObject {
 /// # DataRegionOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct DataRegionOp(
     ExtOpPrefix,
@@ -534,20 +547,20 @@ pub struct DataRegionOp(
 /// # DataRegionOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x88]
 pub struct DataRegionOpSuffix;
 
 /// # DebugObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DebugObj(DebugOp);
 
 /// # DebugOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct DebugOp(
     ExtOpPrefix,
@@ -557,21 +570,21 @@ pub struct DebugOp(
 /// # DebugOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x31]
 pub struct DebugOpSuffix;
 
 /// # DecrementOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x76]
 pub struct DecrementOp;
 
 /// # DefAcquire
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefAcquire(
     AcquireOp,
     MutexObject,
@@ -581,7 +594,7 @@ pub struct DefAcquire(
 /// # DefAdd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefAdd(
     AddOp,
     [Operand; 2],
@@ -591,7 +604,7 @@ pub struct DefAdd(
 /// # DefAlias
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefAlias(
     AliasOp,
     [NameString; 2],
@@ -600,7 +613,7 @@ pub struct DefAlias(
 /// # DefAnd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefAnd(
     AndOp,
     [Operand; 2],
@@ -610,7 +623,7 @@ pub struct DefAnd(
 /// # DefBankField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBankField(
     BankFieldOp,
     PkgLength,
@@ -624,19 +637,19 @@ pub struct DefBankField(
 /// # DefBreak
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBreak(BreakOp);
 
 /// # DefBreakPoint
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBreakPoint(BreakPointOp);
 
 /// # DefBuffer
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBuffer(
     BufferOp,
     PkgLength,
@@ -648,7 +661,7 @@ pub struct DefBuffer(
 /// # DefCondRefOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCondRefOf(
     CondRefOfOp,
     SuperName,
@@ -658,7 +671,7 @@ pub struct DefCondRefOf(
 /// # DefConcat
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefConcat(
     ConcatOp,
     [Data; 2],
@@ -668,7 +681,7 @@ pub struct DefConcat(
 /// # DefConcatRes
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefConcatRes(
     ConcatResOp,
     [BufData; 2],
@@ -678,13 +691,13 @@ pub struct DefConcatRes(
 /// # DefContinue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefContinue(ContinueOp);
 
 /// # DefCopyObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCopyObject(
     CopyObjectOp,
     TermArg,
@@ -694,7 +707,7 @@ pub struct DefCopyObject(
 /// # DefCreateBitField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateBitField(
     CreateBitFieldOp,
     SourceBuff,
@@ -705,7 +718,7 @@ pub struct DefCreateBitField(
 /// # DefCreateByteField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateByteField(
     CreateByteFieldOp,
     SourceBuff,
@@ -716,7 +729,7 @@ pub struct DefCreateByteField(
 /// # DefCreateDWordField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateDWordField(
     CreateDWordFieldOp,
     SourceBuff,
@@ -727,7 +740,7 @@ pub struct DefCreateDWordField(
 /// # DefCreateField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateField(
     CreateFieldOp,
     SourceBuff,
@@ -739,7 +752,7 @@ pub struct DefCreateField(
 /// # DefCreateQWordField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateQWordField(
     CreateQWordFieldOp,
     SourceBuff,
@@ -750,7 +763,7 @@ pub struct DefCreateQWordField(
 /// # DefCreateWordField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefCreateWordField(
     CreateWordFieldOp,
     SourceBuff,
@@ -761,7 +774,7 @@ pub struct DefCreateWordField(
 /// # DefDataRegion
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefDataRegion(
     DataRegionOp,
     NameString,
@@ -771,7 +784,7 @@ pub struct DefDataRegion(
 /// # DefDecrement
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefDecrement(
     DecrementOp,
     SuperName,
@@ -780,7 +793,7 @@ pub struct DefDecrement(
 /// # DefDerefOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefDerefOf(
     DerefOfOp,
     ObjReference,
@@ -789,7 +802,7 @@ pub struct DefDerefOf(
 /// # DefDevice
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefDevice(
     DeviceOp,
     PkgLength,
@@ -801,7 +814,7 @@ pub struct DefDevice(
 /// # DefDivide
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefDivide(
     DivideOp,
     Dividend,
@@ -813,7 +826,7 @@ pub struct DefDivide(
 /// # DefElse
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefElse(
     ElseOp,
     PkgLength,
@@ -824,7 +837,7 @@ pub struct DefElse(
 /// # DefEvent
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefEvent(
     EventOp,
     NameString,
@@ -833,7 +846,7 @@ pub struct DefEvent(
 /// # DefExternal
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefExternal(
     ExternalOp,
     NameString,
@@ -844,7 +857,7 @@ pub struct DefExternal(
 /// # DefFatal
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefFatal(
     FatalOp,
     FatalType,
@@ -855,7 +868,7 @@ pub struct DefFatal(
 /// # DefField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefField(
     FieldOp,
     PkgLength,
@@ -868,7 +881,7 @@ pub struct DefField(
 /// # DefFindSetLeftBit
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefFindSetLeftBit(
     FindSetLeftBitOp,
     Operand,
@@ -878,7 +891,7 @@ pub struct DefFindSetLeftBit(
 /// # DefFindSetRightBit
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefFindSetRightBit(
     FindSetRightBitOp,
     Operand,
@@ -888,7 +901,7 @@ pub struct DefFindSetRightBit(
 /// # DefFromBcd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefFromBcd(
     FromBcdOp,
     BcdValue,
@@ -898,7 +911,7 @@ pub struct DefFromBcd(
 /// # DefIf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefIf(
     IfOp,
     PkgLength,
@@ -910,7 +923,7 @@ pub struct DefIf(
 /// # DefIfElse
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefIfElse(
     DefIf,
     Option<DefElse>,
@@ -919,7 +932,7 @@ pub struct DefIfElse(
 /// # DefIncrement
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefIncrement(
     IncrementOp,
     SuperName,
@@ -928,7 +941,7 @@ pub struct DefIncrement(
 /// # DefIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefIndex(
     IndexOp,
     BuffPkgStrObj,
@@ -939,7 +952,7 @@ pub struct DefIndex(
 /// # DefIndexField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefIndexField(
     IndexFieldOp,
     PkgLength,
@@ -952,7 +965,7 @@ pub struct DefIndexField(
 /// # DefLAnd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLAnd(
     LAndOp,
     [Operand; 2],
@@ -961,7 +974,7 @@ pub struct DefLAnd(
 /// # DefLEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLEqual(
     LEqualOp,
     [Operand; 2],
@@ -970,7 +983,7 @@ pub struct DefLEqual(
 /// # DefLGreater
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLGreater(
     LGreaterOp,
     [Operand; 2],
@@ -979,7 +992,7 @@ pub struct DefLGreater(
 /// # DefLGreaterEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLGreaterEqual(
     LGreaterEqualOp,
     [Operand; 2],
@@ -988,7 +1001,7 @@ pub struct DefLGreaterEqual(
 /// # DefLLess
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLLess(
     LLessOp,
     [Operand; 2],
@@ -997,7 +1010,7 @@ pub struct DefLLess(
 /// # DefLLessEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLLessEqual(
     LLessEqualOp,
     [Operand; 2],
@@ -1006,7 +1019,7 @@ pub struct DefLLessEqual(
 /// # DefLNot
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLNot(
     LNotOp,
     Operand,
@@ -1015,7 +1028,7 @@ pub struct DefLNot(
 /// # DefLNotEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLNotEqual(
     LNotEqualOp,
     [Operand; 2],
@@ -1024,7 +1037,7 @@ pub struct DefLNotEqual(
 /// # DefLOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLOr(
     LOrOp,
     [Operand; 2],
@@ -1033,7 +1046,7 @@ pub struct DefLOr(
 /// # DefLoad
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLoad(
     LoadOp,
     NameString,
@@ -1043,7 +1056,7 @@ pub struct DefLoad(
 /// # DefLoadTable
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefLoadTable(
     LoadTableOp,
     [TermArg; 6],
@@ -1052,7 +1065,7 @@ pub struct DefLoadTable(
 /// # DefMatch
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefMatch(
     MatchOp,
     SearchPkg,
@@ -1066,7 +1079,7 @@ pub struct DefMatch(
 /// # DefMethod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[manual(semantic_analyzer)]
 pub struct DefMethod(
     MethodOp,
@@ -1095,7 +1108,7 @@ impl SemanticAnalyzer for DefMethod {
 /// # DefMid
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefMid(
     MidOp,
     MidObj,
@@ -1106,7 +1119,7 @@ pub struct DefMid(
 /// # DefMod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefMod(
     ModOp,
     Dividend,
@@ -1117,7 +1130,7 @@ pub struct DefMod(
 /// # DefMultiply
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefMultiply(
     MultiplyOp,
     [Operand; 2],
@@ -1127,7 +1140,7 @@ pub struct DefMultiply(
 /// # DefMutex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefMutex(
     MutexOp,
     NameString,
@@ -1137,7 +1150,7 @@ pub struct DefMutex(
 /// # DefNAnd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNAnd(
     NAndOp,
     [Operand; 2],
@@ -1147,7 +1160,7 @@ pub struct DefNAnd(
 /// # DefNOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNOr(
     NOrOp,
     [Operand; 2],
@@ -1157,7 +1170,7 @@ pub struct DefNOr(
 /// # DefName
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefName(
     NameOp,
     NameString,
@@ -1167,13 +1180,13 @@ pub struct DefName(
 /// # DefNoop
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNoop(NoopOp);
 
 /// # DefNot
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNot(
     NotOp,
     Operand,
@@ -1183,7 +1196,7 @@ pub struct DefNot(
 /// # DefNotify
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNotify(
     NotifyOp,
     NotifyObject,
@@ -1193,7 +1206,7 @@ pub struct DefNotify(
 /// # DefOpRegion
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefOpRegion(
     OpRegionOp,
     NameString,
@@ -1205,7 +1218,7 @@ pub struct DefOpRegion(
 /// # DefObjectType
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefObjectType(
     ObjectTypeOp,
     ObjectTypeEnum,
@@ -1214,7 +1227,7 @@ pub struct DefObjectType(
 /// # DefOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefOr(
     OrOp,
     [Operand; 2],
@@ -1224,7 +1237,7 @@ pub struct DefOr(
 /// # DefPackage
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefPackage(
     PackageOp,
     PkgLength,
@@ -1236,7 +1249,7 @@ pub struct DefPackage(
 /// # DefPowerRes
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefPowerRes(
     PowerResOp,
     PkgLength,
@@ -1250,7 +1263,7 @@ pub struct DefPowerRes(
 /// # DefProcessor
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefProcessor(
     ProcessorOp,
     PkgLength,
@@ -1265,7 +1278,7 @@ pub struct DefProcessor(
 /// # DefRefOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefRefOf(
     RefOfOp,
     Box<SuperName>,
@@ -1274,7 +1287,7 @@ pub struct DefRefOf(
 /// # DefRelease
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefRelease(
     ReleaseOp,
     MutexObject,
@@ -1283,7 +1296,7 @@ pub struct DefRelease(
 /// # DefReset
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefReset(
     ResetOp,
     EventObject,
@@ -1292,7 +1305,7 @@ pub struct DefReset(
 /// # DefReturn
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefReturn(
     ReturnOp,
     ArgObject,
@@ -1301,7 +1314,7 @@ pub struct DefReturn(
 /// # DefScope
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefScope(
     ScopeOp,
     PkgLength,
@@ -1313,7 +1326,7 @@ pub struct DefScope(
 /// # DefShiftLeft
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefShiftLeft(
     ShiftLeftOp,
     Operand,
@@ -1324,7 +1337,7 @@ pub struct DefShiftLeft(
 /// # DefShiftRight
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefShiftRight(
     ShiftRightOp,
     Operand,
@@ -1335,7 +1348,7 @@ pub struct DefShiftRight(
 /// # DefSignal
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefSignal(
     SignalOp,
     EventObject,
@@ -1344,7 +1357,7 @@ pub struct DefSignal(
 /// # DefSizeOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefSizeOf(
     SizeOfOp,
     SuperName,
@@ -1353,7 +1366,7 @@ pub struct DefSizeOf(
 /// # DefSleep
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefSleep(
     SleepOp,
     MsecTime,
@@ -1362,7 +1375,7 @@ pub struct DefSleep(
 /// # DefStall
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefStall(
     StallOp,
     UsecTime,
@@ -1371,7 +1384,7 @@ pub struct DefStall(
 /// # DefStore
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefStore(
     StoreOp,
     TermArg,
@@ -1381,7 +1394,7 @@ pub struct DefStore(
 /// # DefSubtract
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefSubtract(
     SubtractOp,
     [Operand; 2],
@@ -1391,7 +1404,7 @@ pub struct DefSubtract(
 /// # DefThermalZone
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefThermalZone(
     ThermalZoneOp,
     PkgLength,
@@ -1403,7 +1416,7 @@ pub struct DefThermalZone(
 /// # DefTimer
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefTimer(
     TimerOp,
 );
@@ -1411,7 +1424,7 @@ pub struct DefTimer(
 /// # DefToBcd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToBcd(
     ToBcdOp,
     Operand,
@@ -1421,7 +1434,7 @@ pub struct DefToBcd(
 /// # DefToBuffer
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToBuffer(
     ToBufferOp,
     Operand,
@@ -1431,7 +1444,7 @@ pub struct DefToBuffer(
 /// # DefToDecimalString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToDecimalString(
     ToDecimalStringOp,
     Operand,
@@ -1441,7 +1454,7 @@ pub struct DefToDecimalString(
 /// # DefToHexString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToHexString(
     ToHexStringOp,
     Operand,
@@ -1451,7 +1464,7 @@ pub struct DefToHexString(
 /// # DefToInteger
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToInteger(
     ToIntegerOp,
     Operand,
@@ -1461,7 +1474,7 @@ pub struct DefToInteger(
 /// # DefToString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefToString(
     ToStringOp,
     TermArg,
@@ -1472,7 +1485,7 @@ pub struct DefToString(
 /// # DefVarPackage
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefVarPackage(
     VarPackageOp,
     PkgLength,
@@ -1484,7 +1497,7 @@ pub struct DefVarPackage(
 /// # DefWait
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefWait(
     WaitOp,
     EventObject,
@@ -1494,7 +1507,7 @@ pub struct DefWait(
 /// # DefWhile
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefWhile(
     WhileOp,
     PkgLength,
@@ -1506,7 +1519,7 @@ pub struct DefWhile(
 /// # DefXOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefXOr(
     XOrOp,
     [Operand; 2],
@@ -1516,14 +1529,14 @@ pub struct DefXOr(
 /// # DerefOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x83]
 pub struct DerefOfOp;
 
 /// # DeviceOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct DeviceOp(
     ExtOpPrefix,
@@ -1533,14 +1546,14 @@ pub struct DeviceOp(
 /// # DeviceOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x82]
 pub struct DeviceOpSuffix;
 
 /// # DigitChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x30]
 #[encoding_value_max = 0x39]
 pub struct DigitChar(char);
@@ -1548,26 +1561,26 @@ pub struct DigitChar(char);
 /// # DivideOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x78]
 pub struct DivideOp;
 
 /// # Dividend
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Dividend(TermArg);
 
 /// # Divisor
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Divisor(TermArg);
 
 /// # DualNamePath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub struct DualNamePath(
     #[not_string]
@@ -1593,27 +1606,27 @@ impl From<&DualNamePath> for VecDeque<semantics::Segment> {
 /// # DualNamePrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x2e]
 pub struct DualNamePrefix;
 
 /// # ElseOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa1]
 pub struct ElseOp;
 
 /// # EventObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct EventObject(SuperName);
 
 /// # EventOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct EventOp(
     ExtOpPrefix,
@@ -1623,14 +1636,14 @@ pub struct EventOp(
 /// # EventOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x02]
 pub struct EventOpSuffix;
 
 /// # ExpressionOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ExpressionOpcode {
     Acquire(DefAcquire),
     Add(DefAdd),
@@ -1691,14 +1704,14 @@ pub enum ExpressionOpcode {
 /// # ExtOpPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x5b]
 pub struct ExtOpPrefix;
 
 /// # ExtendedAccessField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ExtendedAccessField {
     Bytes(AttribBytes),
     RawBytes(AttribRawBytes),
@@ -1708,14 +1721,14 @@ pub enum ExtendedAccessField {
 /// # ExternalOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x15]
 pub struct ExternalOp;
 
 /// # FieldElement
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum FieldElement {
     AccessField(AccessField),
     ConnectField(ConnectField),
@@ -1727,19 +1740,19 @@ pub enum FieldElement {
 /// # FataArg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalArg(TermArg);
 
 /// # FatalCode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalCode(DWordData);
 
 /// # FatalOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct FatalOp(
     ExtOpPrefix,
@@ -1749,14 +1762,14 @@ pub struct FatalOp(
 /// # FatalOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x32]
 pub struct FatalOpSuffix;
 
 /// # FatalType
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalType(ByteData);
 
 /// # FieldFlags
@@ -1777,13 +1790,13 @@ pub struct FieldFlags {
 /// # FieldList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FieldList(Vec<FieldElement>);
 
 /// # FieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct FieldOp(
     ExtOpPrefix,
@@ -1793,28 +1806,28 @@ pub struct FieldOp(
 /// # FieldOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x81]
 pub struct FieldOpSuffix;
 
 /// # FindSetLeftBitOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x81]
 pub struct FindSetLeftBitOp;
 
 /// # FindSetRightBitOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x82]
 pub struct FindSetRightBitOp;
 
 /// # FromBcdOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct FromBcdOp(
     ExtOpPrefix,
@@ -1824,28 +1837,28 @@ pub struct FromBcdOp(
 /// # FromBcdOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x28]
 pub struct FromBcdOpSuffix;
 
 /// # IfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa0]
 pub struct IfOp;
 
 /// # IncrementOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x75]
 pub struct IncrementOp;
 
 /// # IndexFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct IndexFieldOp(
     ExtOpPrefix,
@@ -1855,41 +1868,41 @@ pub struct IndexFieldOp(
 /// # IndexFieldOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x86]
 pub struct IndexFieldOpSuffix;
 
 /// # IndexOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x88]
 pub struct IndexOp;
 
 /// # IndexValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct IndexValue(TermArg);
 
 /// # LAndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x90]
 pub struct LAndOp;
 
 /// # LEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x93]
 pub struct LEqualOp;
 
 /// # LGreaterEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct LGreaterEqualOp(
     LNotOp,
@@ -1899,14 +1912,14 @@ pub struct LGreaterEqualOp(
 /// # LGreaterOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x94]
 pub struct LGreaterOp;
 
 /// # LLessEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct LLessEqualOp(
     LNotOp,
@@ -1916,14 +1929,14 @@ pub struct LLessEqualOp(
 /// # LLessOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x95]
 pub struct LLessOp;
 
 /// # LNotEqualOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct LNotEqualOp(
     LNotOp,
@@ -1933,27 +1946,27 @@ pub struct LNotEqualOp(
 /// # LNotOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x92]
 pub struct LNotOp;
 
 /// # LOrOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x91]
 pub struct LOrOp;
 
 /// # LengthArg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct LengthArg(TermArg);
 
 /// # LoadOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct LoadOp(
     ExtOpPrefix,
@@ -1963,14 +1976,14 @@ pub struct LoadOp(
 /// # LoadOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x20]
 pub struct LoadOpSuffix;
 
 /// # LoadTableOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct LoadTableOp(
     ExtOpPrefix,
@@ -1980,14 +1993,14 @@ pub struct LoadTableOp(
 /// # LoadTableOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x1f]
 pub struct LoadTableOpSuffix;
 
 /// # LeadNameChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub enum LeadNameChar {
     AsciiUppercase(AsciiUppercase),
@@ -1997,7 +2010,7 @@ pub enum LeadNameChar {
 /// # Local Objects Encoding
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.2 Local Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x60]
 #[encoding_value_max = 0x67]
 pub struct LocalObj(u8);
@@ -2005,14 +2018,14 @@ pub struct LocalObj(u8);
 /// # MatchOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x89]
 pub struct MatchOp;
 
 /// # MatchOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MatchOpcode(ByteData);
 
 /// # MethodFlags
@@ -2031,7 +2044,7 @@ pub struct MethodFlags {
 /// # MethodInvocation
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[manual(from_slice_u8, matches, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
@@ -2075,7 +2088,7 @@ impl SemanticAnalyzer for MethodInvocation {
 /// # MethodTermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
@@ -2084,40 +2097,40 @@ pub enum MethodTermList {
 /// # MethodOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x14]
 pub struct MethodOp;
 
 /// # MidObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MidObj(TermArg);
 
 /// # MidOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x9e]
 pub struct MidOp;
 
 /// # ModOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x85]
 pub struct ModOp;
 
 /// # MsecTime
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MsecTime(TermArg);
 
 /// # MultiNamePath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[manual(from_slice_u8)]
 #[string]
 pub struct MultiNamePath(
@@ -2167,27 +2180,27 @@ impl From<&[u8]> for MultiNamePath {
 /// # MultiNamePrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x2f]
 pub struct MultiNamePrefix;
 
 /// # MultiplyOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x77]
 pub struct MultiplyOp;
 
 /// # MutexObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MutexObject(SuperName);
 
 /// # MutexOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct MutexOp(
     ExtOpPrefix,
@@ -2197,28 +2210,28 @@ pub struct MutexOp(
 /// # MutexOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x01]
 pub struct MutexOpSuffix;
 
 /// # NAndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7c]
 pub struct NAndOp;
 
 /// # NOrOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7e]
 pub struct NOrOp;
 
 /// # NameChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub enum NameChar {
     DigitChar(DigitChar),
@@ -2228,14 +2241,14 @@ pub enum NameChar {
 /// # NameOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x08]
 pub struct NameOp;
 
 /// # NamePath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub enum NamePath {
     Dual(DualNamePath),
@@ -2258,7 +2271,7 @@ impl From<&NamePath> for VecDeque<semantics::Segment> {
 /// # NameSeg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub struct NameSeg(
     LeadNameChar,
@@ -2268,7 +2281,7 @@ pub struct NameSeg(
 /// # NameSpaceModifierObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum NameSpaceModifierObj {
     Alias(DefAlias),
     Name(DefName),
@@ -2278,7 +2291,7 @@ pub enum NameSpaceModifierObj {
 /// # NameString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[string]
 pub enum NameString {
     AbsolutePath(
@@ -2326,7 +2339,7 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
 /// # NamedField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[manual(semantic_analyzer)]
 pub struct NamedField(
     NameSeg,
@@ -2347,7 +2360,7 @@ impl SemanticAnalyzer for NamedField {
 /// # NamedObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum NamedObj {
     BankField(DefBankField),
     CreateBitField(DefCreateBitField),
@@ -2373,72 +2386,72 @@ pub enum NamedObj {
 /// # NoopOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa3]
 pub struct NoopOp;
 
 /// # NotOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x80]
 pub struct NotOp;
 
 /// # NotifyObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NotifyObject(SuperName);
 
 /// # NotifyOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x86]
 pub struct NotifyOp;
 
 /// # NotifyValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NotifyValue(TermArg);
 
 /// # NullChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x00]
 pub struct NullChar(char);
 
 /// # NullName
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x00]
 pub struct NullName(char);
 
 /// # NumBits
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NumBits(TermArg);
 
 /// # NumElements
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NumElements(ByteData);
 
 /// # ObjReference
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ObjReference(TermArg);
 
 /// # Object
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum Object {
     NameSpaceModifierObj(NameSpaceModifierObj),
     NamedObj(NamedObj),
@@ -2447,19 +2460,19 @@ pub enum Object {
 /// # ObjectList
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ObjectList(Vec<Object>);
 
 /// # ObjectType
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ObjectType(ByteData);
 
 /// # ObjectTypeEnum
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ObjectTypeEnum {
     SimpleName(SimpleName),
     DebugObj(DebugObj),
@@ -2471,28 +2484,28 @@ pub enum ObjectTypeEnum {
 /// # ObjectTypeOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x8e]
 pub struct ObjectTypeOp;
 
 /// # OneOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x01]
 pub struct OneOp;
 
 /// # OnesOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xff]
 pub struct OnesOp;
 
 /// # OpRegionOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct OpRegionOp(
     ExtOpPrefix,
@@ -2502,27 +2515,27 @@ pub struct OpRegionOp(
 /// # OpRegionOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x80]
 pub struct OpRegionOpSuffix;
 
 /// # Operand
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Operand(TermArg);
 
 /// # OrOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7d]
 pub struct OrOp;
 
 /// # PackageElement
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum PackageElement {
     DataRefObject(DataRefObject),
     NameString(NameString),
@@ -2531,33 +2544,33 @@ pub enum PackageElement {
 /// # PackageElementList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct PackageElementList(Vec<PackageElement>);
 
 /// # PackageOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x12]
 pub struct PackageOp;
 
 /// # ParentPrefixChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x5e]
 pub struct ParentPrefixChar(char);
 
 /// # PblkAddr
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct PblkAddr(DWordData);
 
 /// # PblkLen
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct PblkLen(ByteData);
 
 /// # PkgLeadByte
@@ -2585,7 +2598,7 @@ impl PkgLeadByte {
 /// # PkgLength
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[manual(debug, from_slice_u8, reader)]
 pub struct PkgLength(
     PkgLeadByte,
@@ -2646,7 +2659,7 @@ impl Reader for PkgLength {
 /// # PowerResOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct PowerResOp(
     ExtOpPrefix,
@@ -2656,20 +2669,20 @@ pub struct PowerResOp(
 /// # PowerResOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x84]
 pub struct PowerResOpSuffix;
 
 /// # Predicate
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Predicate(TermArg);
 
 /// # PrefixPath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 0]
 #[string]
 pub struct PrefixPath(Vec<ParentPrefixChar>);
@@ -2687,7 +2700,7 @@ impl From<&PrefixPath> for VecDeque<semantics::Segment> {
 /// # ProcessorOp
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct ProcessorOp(
     ExtOpPrefix,
@@ -2697,20 +2710,20 @@ pub struct ProcessorOp(
 /// # ProcessorOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x83]
 pub struct ProcessorOpSuffix;
 
 /// # ProcId
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ProcId(ByteData);
 
 /// # QWordConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct QWordConst(
     QWordPrefix,
     QWordData,
@@ -2719,7 +2732,7 @@ pub struct QWordConst(
 /// # QWordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct QWordData(
     [DWordData; 2],
 );
@@ -2727,20 +2740,20 @@ pub struct QWordData(
 /// # QWordPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0e]
 pub struct QWordPrefix;
 
 /// # Quotient
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Quotient(Target);
 
 /// # ReferenceTypeOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum ReferenceTypeOpcode {
     DefIndex(DefIndex),
     DerefOf(DefDerefOf),
@@ -2750,26 +2763,26 @@ pub enum ReferenceTypeOpcode {
 /// # RefOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x71]
 pub struct RefOfOp;
 
 /// # RegionLen
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct RegionLen(TermArg);
 
 /// # RegionOffset
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct RegionOffset(TermArg);
 
 /// # RegionSpace
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value_min = 0x00]
 #[encoding_value_max = 0xff]
 pub struct RegionSpace(u8);
@@ -2777,7 +2790,7 @@ pub struct RegionSpace(u8);
 /// # ReleaseOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct ReleaseOp(
     ExtOpPrefix,
@@ -2787,20 +2800,20 @@ pub struct ReleaseOp(
 /// # ReleaseOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x27]
 pub struct ReleaseOpSuffix;
 
 /// # Remainder
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Remainder(Target);
 
 /// # ReservedField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ReservedField(
     ReservedFieldOp,
     PkgLength,
@@ -2809,14 +2822,14 @@ pub struct ReservedField(
 /// # ReservedFieldOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x00]
 pub struct ReservedFieldOp;
 
 /// # ResetOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct ResetOp(
     ExtOpPrefix,
@@ -2826,27 +2839,27 @@ pub struct ResetOp(
 /// # ResetOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x26]
 pub struct ResetOpSuffix;
 
 /// # ResourceOrder
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ResourceOrder(WordData);
 
 /// # ReturnOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa4]
 pub struct ReturnOp;
 
 /// # RevisionOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct RevisionOp(
     ExtOpPrefix,
@@ -2856,34 +2869,34 @@ pub struct RevisionOp(
 /// # RevisionOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x30]
 pub struct RevisionOpSuffix;
 
 /// # RootChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x5c]
 pub struct RootChar(char);
 
 /// # ScopeOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x10]
 pub struct ScopeOp;
 
 /// # SearchPkg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SearchPkg(TermArg);
 
 /// # SegCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SegCount(ByteData);
 
 impl From<&SegCount> for usize {
@@ -2896,27 +2909,27 @@ impl From<&SegCount> for usize {
 /// # ShiftCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ShiftCount(TermArg);
 
 /// # ShiftLeftOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x79]
 pub struct ShiftLeftOp;
 
 /// # ShiftRightOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7a]
 pub struct ShiftRightOp;
 
 /// # SignalOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct SignalOp(
     ExtOpPrefix,
@@ -2926,14 +2939,14 @@ pub struct SignalOp(
 /// # SignalOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x24]
 pub struct SignalOpSuffix;
 
 /// # SimpleName
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum SimpleName {
     NameString(NameString),
     ArgObj(ArgObj),
@@ -2943,14 +2956,14 @@ pub enum SimpleName {
 /// # SizeOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x87]
 pub struct SizeOfOp;
 
 /// # SleepOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct SleepOp(
     ExtOpPrefix,
@@ -2960,20 +2973,20 @@ pub struct SleepOp(
 /// # SleepOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x22]
 pub struct SleepOpSuffix;
 
 /// # SourceBuff
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SourceBuff(TermArg);
 
 /// # StatementOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum StatementOpcode {
     Break(DefBreak),
     BreakPoint(DefBreakPoint),
@@ -2994,7 +3007,7 @@ pub enum StatementOpcode {
 /// # StallOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct StallOp(
     ExtOpPrefix,
@@ -3004,41 +3017,41 @@ pub struct StallOp(
 /// # StallOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x21]
 pub struct StallOpSuffix;
 
 /// # StartIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct StartIndex(TermArg);
 
 /// # StoreOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x70]
 pub struct StoreOp;
 
 /// # StringPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0d]
 pub struct StringPrefix;
 
 /// # SubtractOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x74]
 pub struct SubtractOp;
 
 /// # SuperName
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum SuperName {
     DebugObj(DebugObj),
     ReferenceTypeOpcode(ReferenceTypeOpcode),
@@ -3060,13 +3073,13 @@ pub struct SyncFlags {
 /// # SystemLevel
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SystemLevel(ByteData);
 
 /// # Target
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum Target {
     NullName(NullName),
     SuperName(Box::<SuperName>),
@@ -3075,7 +3088,7 @@ pub enum Target {
 /// # TermArg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum TermArg {
     ExpressionOpcode(Box::<ExpressionOpcode>),
     DataObject(Box::<DataObject>),
@@ -3086,7 +3099,7 @@ pub enum TermArg {
 /// # TermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct TermList(
     #[no_leftover]
     Vec<TermObj>
@@ -3095,7 +3108,7 @@ pub struct TermList(
 /// # TermObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub enum TermObj {
     ExpressionOpcode(ExpressionOpcode),
     Object(Object),
@@ -3105,7 +3118,7 @@ pub enum TermObj {
 /// # ThermalZoneOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct ThermalZoneOp(
     ExtOpPrefix,
@@ -3115,20 +3128,20 @@ pub struct ThermalZoneOp(
 /// # ThermalZoneOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x85]
 pub struct ThermalZoneOpSuffix;
 
 /// # Timeout
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Timeout(WordData);
 
 /// # TimerOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct TimerOp(
     ExtOpPrefix,
@@ -3138,14 +3151,14 @@ pub struct TimerOp(
 /// # TimerOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x33]
 pub struct TimerOpSuffix;
 
 /// # ToBcdOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct ToBcdOp(
     ExtOpPrefix,
@@ -3155,75 +3168,75 @@ pub struct ToBcdOp(
 /// # ToBcdOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x29]
 pub struct ToBdcOpSuffix;
 
 /// # ToBufferOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x96]
 pub struct ToBufferOp;
 
 /// # ToDecimalStringOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x97]
 pub struct ToDecimalStringOp;
 
 /// # ToHexStringOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x98]
 pub struct ToHexStringOp;
 
 /// # ToIntegerOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x99]
 pub struct ToIntegerOp;
 
 /// # ToStringOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x9c]
 pub struct ToStringOp;
 
 /// # Underscore
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x5f]
 pub struct Underscore(char);
 
 /// # UsecTime
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct UsecTime(TermArg);
 
 /// # VarPackageOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x13]
 pub struct VarPackageOp;
 
 /// # VarNumElements
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct VarNumElements(TermArg);
 
 /// # WaitOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[matching_elements = 2]
 pub struct WaitOp(
     ExtOpPrefix,
@@ -3233,21 +3246,21 @@ pub struct WaitOp(
 /// # WaitOpSuffix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x25]
 pub struct WaitOpSuffix;
 
 /// # WhileOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0xa2]
 pub struct WhileOp;
 
 /// # WordConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct WordConst(
     WordPrefix,
     WordData,
@@ -3256,7 +3269,7 @@ pub struct WordConst(
 /// # WordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct WordData(
     [ByteData; 2],
 );
@@ -3264,21 +3277,21 @@ pub struct WordData(
 /// # WordPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x0b]
 pub struct WordPrefix;
 
 /// # XOrOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x7f]
 pub struct XOrOp;
 
 /// # ZeroOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
-#[derive(acpi_machine_language::Analyzer)]
+#[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x00]
 pub struct ZeroOp;
 
