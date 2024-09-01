@@ -104,6 +104,7 @@ struct TypeAttribute {
     derive_debug: bool,
     derive_from_slice_u8: bool,
     derive_matches: bool,
+    derive_method_analyzer: bool,
     derive_reader: bool,
     derive_semantic_analyzer: bool,
     derive_string_from_self: bool,
@@ -248,6 +249,51 @@ impl From<&DeriveInput> for TypeAttribute {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
                                         !matches!(manual_arg.as_str(), "matches")
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_method_analyzer: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "method_analyzer")
                                     },
                                     _ => true,
                                 }),
@@ -584,6 +630,7 @@ impl From<&DeriveInput> for TypeAttribute {
             derive_debug,
             derive_from_slice_u8,
             derive_matches,
+            derive_method_analyzer,
             derive_reader,
             derive_semantic_analyzer,
             derive_string_from_self,
@@ -769,6 +816,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -973,6 +1021,7 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         derive_debug: _,
         derive_from_slice_u8,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -1414,6 +1463,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -1879,6 +1929,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -2070,6 +2121,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -2381,6 +2433,19 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         generics: _,
         data,
     } = derive_input;
+    let TypeAttribute {
+        derive_debug: _,
+        derive_from_slice_u8: _,
+        derive_matches: _,
+        derive_method_analyzer,
+        derive_reader: _,
+        derive_semantic_analyzer: _,
+        derive_string_from_self: _,
+        encoding: _,
+        flags: _,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
     let analyze_methods: proc_macro2::TokenStream = match data {
         Data::Struct(DataStruct {
             struct_token: _,
@@ -2489,15 +2554,20 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         _ => quote! {
         },
     };
-    quote! {
-        impl crate::acpi::machine_language::syntax::MethodAnalyzer for #ident {
-            fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
-                #analyze_methods
-                self.iter_mut()
-                    .for_each(|child| {
-                        child.analyze_methods(root, current.clone());
-                    });
+    if derive_method_analyzer {
+        quote! {
+            impl crate::acpi::machine_language::syntax::MethodAnalyzer for #ident {
+                fn analyze_methods(&mut self, root: &crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) {
+                    #analyze_methods
+                    self.iter_mut()
+                        .for_each(|child| {
+                            child.analyze_methods(root, current.clone());
+                        });
+                }
             }
+        }
+    } else {
+        quote! {
         }
     }
 }
@@ -2514,6 +2584,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader,
         derive_semantic_analyzer: _,
         derive_string_from_self: _,
@@ -2550,6 +2621,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer,
         derive_string_from_self: _,
@@ -2701,6 +2773,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         derive_debug: _,
         derive_from_slice_u8: _,
         derive_matches: _,
+        derive_method_analyzer: _,
         derive_reader: _,
         derive_semantic_analyzer: _,
         derive_string_from_self,

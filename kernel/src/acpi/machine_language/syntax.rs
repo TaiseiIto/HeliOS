@@ -14,6 +14,7 @@ use {
         fmt,
         iter,
     },
+    crate::com2_println,
     super::semantics,
 };
 
@@ -2089,9 +2090,16 @@ impl SemanticAnalyzer for MethodInvocation {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(method_analyzer)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
+}
+
+impl MethodAnalyzer for MethodTermList {
+    fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
+        com2_println!("analyze methods current = {:#x?}", current);
+    }
 }
 
 /// # MethodOp
