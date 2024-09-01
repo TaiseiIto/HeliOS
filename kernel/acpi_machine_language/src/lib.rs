@@ -2694,6 +2694,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                     [symbol, aml @ ..] => {
                         let symbol: u8 = *symbol;
                         let symbol: Self = symbol.into();
+                        let aml: &[u8] = &aml[symbol.length()..];
                         (symbol, aml)
                     },
                     _ => unreachable!(),
@@ -2839,7 +2840,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                                 .first()
                                                                 .unwrap() {
                                                                 GenericArgument::Type(element_type) => quote! {
-                                                                    let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                                    let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                                     let #field_name: #ty = Box::new(#field_name);
                                                                 },
                                                                 _ => unimplemented!(),
@@ -2847,7 +2848,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                             _ => unimplemented!(),
                                                         }
                                                         _ => quote! {
-                                                            let (#field_name, aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(aml, root, current.clone());
+                                                            let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                         },
                                                     }
                                                 },
@@ -2862,8 +2863,10 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                         });
                                     quote! {
                                         if #matches {
+                                            let symbol_aml: &[u8] = aml;
                                             #(#reads)*
                                             let symbol = Self::#ident(#(#field_names), *);
+                                            let aml: &[u8] = &aml[symbol.length()..];
                                             (symbol, aml)
                                         }
                                     }
@@ -2900,11 +2903,11 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
                                 let read: proc_macro2::TokenStream = quote! {
-                                    let (#field_name, aml): (#field_type, &[u8]) = match aml {
-                                        [#field_name, aml @ ..] => {
+                                    let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
+                                        [#field_name, symbol_aml @ ..] => {
                                             let #field_name: u8 = *#field_name;
                                             let #field_name: #field_type = #field_name as #field_type;
-                                            (#field_name, aml)
+                                            (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
                                     };
@@ -2940,11 +2943,11 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                             semi_token: _,
                                             len,
                                         }) => quote! {
-                                            let (elements, aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
-                                                .fold((alloc::vec::Vec::new(), aml), |(mut elements, aml), _| {
-                                                    let (element, aml): (#elem, &[u8]) = #elem::read_with_semantic_tree(aml, root, current.clone());
+                                            let (elements, symbol_aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
+                                                .fold((alloc::vec::Vec::new(), symbol_aml), |(mut elements, symbol_aml), _| {
+                                                    let (element, symbol_aml): (#elem, &[u8]) = #elem::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                     elements.push(element);
-                                                    (elements, aml)
+                                                    (elements, symbol_aml)
                                                 });
                                             let #field_name: #ty = elements
                                                 .try_into()
@@ -2978,7 +2981,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                         .first()
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
-                                                            let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                            let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                             let #field_name: #ty = Box::new(#field_name);
                                                         },
                                                         _ => unimplemented!(),
@@ -2995,11 +2998,11 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                         .first()
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
-                                                            let (#field_name, aml): (Option<#element_type>, &[u8]) = if #element_type::matches(aml) {
-                                                                let (#field_name, aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
-                                                                (Some(#field_name), aml)
+                                                            let (#field_name, symbol_aml): (Option<#element_type>, &[u8]) = if #element_type::matches(symbol_aml) {
+                                                                let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(symbol_aml, root, current.clone());
+                                                                (Some(#field_name), symbol_aml)
                                                             } else {
-                                                                (None, aml)
+                                                                (None, symbol_aml)
                                                             };
                                                         },
                                                         _ => unimplemented!(),
@@ -3026,16 +3029,16 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                                 }
                                                             };
                                                             quote! {
-                                                                let mut aml: &[u8] = aml;
+                                                                let mut symbol_aml: &[u8] = symbol_aml;
                                                                 let mut #field_name: Vec<#element_type> = Vec::new();
-                                                                while if aml.is_empty() {
+                                                                while if symbol_aml.is_empty() {
                                                                     false
                                                                 } else {
-                                                                    #element_type::matches(aml)
+                                                                    #element_type::matches(symbol_aml)
                                                                 } {
-                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(aml, root, current.clone());
+                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                                     #debug
-                                                                    aml = remaining_aml;
+                                                                    symbol_aml = remaining_aml;
                                                                     #field_name.push(element);
                                                                 }
                                                             }
@@ -3045,7 +3048,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                     _ => unimplemented!(),
                                                 },
                                                 _ => quote! {
-                                                    let (#field_name, aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(aml, root, current.clone());
+                                                    let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(symbol_aml, root, current.clone());
                                                 },
                                             }
                                         },
@@ -3054,7 +3057,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                     let read: proc_macro2::TokenStream = if no_leftover {
                                         quote! {
                                             #read
-                                            assert!(aml.is_empty(), "aml = {:02x?}", aml);
+                                            assert!(symbol_aml.is_empty(), "symbol_aml = {:02x?}", symbol_aml);
                                         }
                                     } else {
                                         read
@@ -3072,8 +3075,10 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                         };
                         quote! {
                             assert!(Self::matches(aml), "aml = {:#x?}", aml);
+                            let symbol_aml: &[u8] = aml;
                             #(#read)*
                             let symbol = Self(#(#pack),*);
+                            let aml: &[u8] = &aml[symbol.length()..];
                             (symbol, aml)
                         }
                     },
