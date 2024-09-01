@@ -2671,7 +2671,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
     let TypeAttribute {
         derive_debug: _,
@@ -2701,8 +2701,52 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                 }
             }
         } else {
-            quote! {
-                unimplemented!()
+            match data {
+                Data::Enum(DataEnum {
+                    enum_token: _,
+                    brace_token: _,
+                    variants,
+                }) => {
+                    let read_patterns: Vec<proc_macro2::TokenStream> = variants
+                        .iter()
+                        .map(|variant| {
+                            let Variant {
+                                attrs: _,
+                                ident,
+                                fields,
+                                discriminant: _,
+                            } = variant;
+                            let VariantAttribute {
+                                matching_types,
+                            } = variant.into();
+                            match fields {
+                                Fields::Unit => quote! {
+                                    if true {
+                                        let symbol = Self::#ident;
+                                        let aml: &[u8] = &aml[symbol.length()..];
+                                        (symbol, aml)
+                                    }
+                                },
+                                Fields::Unnamed(FieldsUnnamed {
+                                    paren_token: _,
+                                    unnamed,
+                                }) => unimplemented!(),
+                                _ => unimplemented!(),
+                            }
+                        })
+                        .collect();
+                    quote! {
+                        #(#read_patterns) else * else {
+                            panic!("aml = {:#x?}", aml)
+                        }
+                    }
+                },
+                Data::Struct(DataStruct {
+                    struct_token: _,
+                    fields,
+                    semi_token: _,
+                }) => unimplemented!(),
+                _ => unimplemented!(),
             }
         };
         quote! {
