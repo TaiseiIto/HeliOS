@@ -2863,7 +2863,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                     quote! {
                                         if #matches {
                                             #(#reads)*
-                                            let symbol = Self::#ident(#(#field_names), *)
+                                            let symbol = Self::#ident(#(#field_names), *);
                                             (symbol, aml)
                                         }
                                     }
