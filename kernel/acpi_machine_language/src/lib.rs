@@ -2159,11 +2159,123 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
+    let analyze_methods: proc_macro2::TokenStream = match data {
+        Data::Struct(DataStruct {
+            struct_token: _,
+            fields: Fields::Unnamed(FieldsUnnamed {
+                paren_token: _,
+                unnamed,
+            }),
+            semi_token: _,
+        }) => {
+            let mut self_has_name_string: bool = false;
+            let mut self_has_field_list: bool = false;
+            let fields: Vec<proc_macro2::TokenStream> = unnamed
+                .iter()
+                .enumerate()
+                .map(|(index, field)| {
+                    let default: Ident = format_ident!("field{}", index);
+                    let default: proc_macro2::TokenStream = quote! {
+                        #default
+                    };
+                    let Field {
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident: _,
+                        colon_token: _,
+                        ty,
+                    } = field;
+                    match ty {
+                        Type::Array(TypeArray {
+                            bracket_token: _,
+                            elem,
+                            semi_token: _,
+                            len: Expr::Lit(ExprLit {
+                                attrs: _,
+                                lit: Lit::Int(length),
+                            }),
+                        }) => match elem
+                            .to_token_stream()
+                            .to_string()
+                            .as_str() {
+                            "NameString" => {
+                                self_has_name_string = true;
+                                let length: usize = length
+                                    .base10_parse()
+                                    .unwrap();
+                                let elements: Vec<Ident> = (0..length)
+                                    .map(|index| match index {
+                                        0 => format_ident!("name"),
+                                        index => format_ident!("element{}", index),
+                                    })
+                                    .collect();
+                                quote! {
+                                    [#(#elements),*]
+                                }
+                            },
+                            _ => default,
+                        },
+                        Type::Path(TypePath {
+                            qself: _,
+                            path,
+                        }) => {
+                            let Path {
+                                leading_colon: _,
+                                segments,
+                            } = path;
+                            let PathSegment {
+                                ident,
+                                arguments: _,
+                            } = segments
+                                .iter()
+                                .last()
+                                .unwrap();
+                            match ident
+                                .to_string()
+                                .as_str() {
+                                "FieldList" => {
+                                    self_has_field_list = true;
+                                    default
+                                },
+                                "NameString" => {
+                                    self_has_name_string = true;
+                                    let field: Ident = format_ident!("name");
+                                    quote! {
+                                        #field
+                                    }
+                                },
+                                _ => default,
+                            }
+                        },
+                        _ => default,
+                    }
+                })
+                .collect();
+            if self_has_name_string && !self_has_field_list {
+                quote! {
+                    let Self(#(#fields),*) = self;
+                    let name: crate::acpi::machine_language::semantics::Path = name.into();
+                    let current: crate::acpi::machine_language::semantics::Path = current + name;
+                }
+            } else {
+                quote! {
+                }
+            }
+        },
+        _ => quote! {
+        },
+    };
     quote! {
         impl crate::acpi::machine_language::syntax::MethodAnalyzer for #ident {
             fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
+                #analyze_methods
+                self.iter()
+                    .for_each(|child| {
+                        child.analyze_methods(root, current.clone());
+                    });
             }
         }
     }
@@ -2327,9 +2439,9 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
                     let ident: Ident = format_ident!("{}", ident);
                     quote! {
                         let Self(#(#fields),*) = self;
-                        let name: semantics::Path = name.into();
-                        let current: semantics::Path = current + name;
-                        root.add_node(current.clone(), semantics::Object::#ident);
+                        let name: crate::acpi::machine_language::semantics::Path = name.into();
+                        let current: crate::acpi::machine_language::semantics::Path = current + name;
+                        root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#ident);
                     }
                 } else {
                     quote! {
