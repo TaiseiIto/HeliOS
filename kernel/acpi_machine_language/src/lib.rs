@@ -3019,7 +3019,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                             let debug: proc_macro2::TokenStream = if debug {
                                                                 quote! {
                                                                     crate::com2_println!("element = {:#x?}", element);
-                                                                    crate::com2_println!("remaining_aml = {:02x?}", &reamaining_aml[0..core::cmp::min(10, remaining_aml.len())]);
+                                                                    crate::com2_println!("remaining_aml = {:02x?}", &remaining_aml[0..core::cmp::min(10, remaining_aml.len())]);
                                                                 }
                                                             } else {
                                                                 quote! {

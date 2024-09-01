@@ -3146,8 +3146,9 @@ pub enum TermArg {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct TermList(
+    #[debug]
     #[no_leftover]
-    Vec<TermObj>
+    Vec<TermObj>,
 );
 
 /// # TermObj
