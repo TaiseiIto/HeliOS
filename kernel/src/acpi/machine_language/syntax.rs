@@ -17,27 +17,31 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: ReferenceToSymbolIterator + WithLength + Matcher + Reader + SemanticAnalyzer {
-}
-
-pub trait ReferenceToSymbolIterator {
-    fn iter(&self) -> SymbolIterator<'_>;
-}
-
-pub trait WithLength {
-    fn length(&self) -> usize;
+pub trait Analyzer: Matcher + MethodAnalyzer + Reader + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
 }
 
 pub trait Matcher {
     fn matches(aml: &[u8]) -> bool where Self: Sized;
 }
 
+pub trait MethodAnalyzer {
+    fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path);
+}
+
 pub trait Reader {
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
 }
 
+pub trait ReferenceToSymbolIterator {
+    fn iter(&self) -> SymbolIterator<'_>;
+}
+
 pub trait SemanticAnalyzer {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path);
+}
+
+pub trait WithLength {
+    fn length(&self) -> usize;
 }
 
 pub struct SymbolIterator<'a> {
@@ -3106,11 +3110,6 @@ pub struct TermList(
     #[no_leftover]
     Vec<TermObj>
 );
-
-impl TermList {
-    pub fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
-    }
-}
 
 /// # TermObj
 /// ## References

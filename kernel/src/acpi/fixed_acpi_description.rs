@@ -11,7 +11,10 @@ use {
     super::{
         firmware_acpi_control,
         generic_address,
-        machine_language,
+        machine_language::{
+            self,
+            syntax::MethodAnalyzer,
+        },
         system_description,
     },
 };
