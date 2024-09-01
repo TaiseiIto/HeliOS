@@ -3108,7 +3108,7 @@ pub struct TermList(
 );
 
 impl TermList {
-    pub fn analyze_methods(&mut self, root: &semantics::Node) {
+    pub fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
     }
 }
 
