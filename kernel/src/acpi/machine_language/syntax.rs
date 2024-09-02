@@ -2067,7 +2067,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8, matches, reader, reader_with_semantic_tree, semantic_analyzer)]
+#[manual(matches, reader, reader_with_semantic_tree, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2163,7 +2163,7 @@ pub struct MsecTime(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8, reader)]
+#[manual(reader)]
 #[string]
 pub struct MultiNamePath(
     #[not_string]
@@ -2634,7 +2634,7 @@ impl PkgLeadByte {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(debug, from_slice_u8, reader, reader_with_semantic_tree)]
+#[manual(debug, reader, reader_with_semantic_tree)]
 pub struct PkgLength(
     PkgLeadByte,
     Vec<ByteData>,

@@ -13,7 +13,10 @@ use {
         generic_address,
         machine_language::{
             self,
-            syntax::MethodAnalyzer,
+            syntax::{
+                MethodAnalyzer,
+                Reader,
+            },
         },
         system_description,
     },
@@ -118,9 +121,9 @@ impl Table {
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
-        let mut syntax_tree: machine_language::syntax::TermList = dsdt
-            .definition_block()
-            .into();
+        let dsdt: &[u8] = dsdt.definition_block();
+        let (mut syntax_tree, dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::read(dsdt);
+        assert!(dsdt.is_empty());
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         let semantic_tree: machine_language::semantics::Node = (&syntax_tree).into();
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
