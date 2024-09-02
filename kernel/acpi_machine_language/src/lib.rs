@@ -2173,7 +2173,6 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     [symbol, aml @ ..] => {
                         let symbol: u8 = *symbol;
                         let symbol: Self = symbol.into();
-                        let aml: &[u8] = &aml[symbol.length()..];
                         (symbol, aml)
                     },
                     _ => unreachable!(),
@@ -2617,7 +2616,6 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                     [symbol, aml @ ..] => {
                         let symbol: u8 = *symbol;
                         let symbol: Self = symbol.into();
-                        let aml: &[u8] = &aml[symbol.length()..];
                         (symbol, aml)
                     },
                     _ => unreachable!(),
@@ -2931,6 +2929,15 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
                                                         _ => unimplemented!(),
                                                     },
                                                     _ => unimplemented!(),
+                                                },
+                                                "PkgLength" => if index + 1 == unnamed.len() {
+                                                    quote! {
+                                                        let #field_name: #ty = symbol_aml.into();
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_with_semantic_tree(symbol_aml, root, current.clone());
+                                                    }
                                                 },
                                                 "Vec" => match arguments {
                                                     PathArguments::AngleBracketed(AngleBracketedGenericArguments {
