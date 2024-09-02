@@ -2375,11 +2375,26 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(semantic_analyzer)]
+#[manual(from_slice_u8, reader, semantic_analyzer)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
 );
+
+impl Reader for NamedField {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::read(symbol_aml);
+        let pkg_length: PkgLength = symbol_aml.into();
+        let named_field = Self(
+            name_seg,
+            pkg_length,
+        );
+        let aml: &[u8] = &aml[named_field.length()..];
+        (named_field, aml)
+    }
+}
 
 impl SemanticAnalyzer for NamedField {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
@@ -2665,8 +2680,8 @@ impl fmt::Debug for PkgLength {
     }
 }
 
-impl Reader for PkgLength {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
+impl From<&[u8]> for PkgLength {
+    fn from(aml: &[u8]) -> Self {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (pkg_lead_byte, symbol_aml): (PkgLeadByte, &[u8]) = PkgLeadByte::read(symbol_aml);
@@ -2676,10 +2691,16 @@ impl Reader for PkgLength {
                 byte_data.push(new_byte_data);
                 (symbol_aml, byte_data)
             });
-        let pkg_length = Self(
+        Self(
             pkg_lead_byte,
             byte_data,
-        );
+        )
+    }
+}
+
+impl Reader for PkgLength {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
     }
