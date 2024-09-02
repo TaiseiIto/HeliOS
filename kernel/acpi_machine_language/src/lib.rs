@@ -2490,11 +2490,11 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 },
                                                 "PkgLength" => if index + 1 == unnamed.len() {
                                                     quote! {
-                                                        let #field_name: #ty = aml.into();
+                                                        let #field_name: #ty = symbol_aml.into();
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read(aml);
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read(symbol_aml);
                                                     }
                                                 },
                                                 "Vec" => match arguments {
