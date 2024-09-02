@@ -1430,15 +1430,9 @@ fn derive_from_slice_u8(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 },
                                                 _ => unimplemented!(),
                                             },
-                                            _ => if index + 1 < unnamed.len() || no_leftover {
-                                                quote! {
-                                                    let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
-                                                }
-                                            } else {
-                                                quote! {
-                                                    let #field_name: #ty = aml.into();
-                                                }
-                                            },
+                                            _ => quote! {
+                                                let (#field_name, aml): (#ty, &[u8]) = #ty::read(aml);
+                                            }
                                         }
                                     },
                                     _ => unimplemented!(),

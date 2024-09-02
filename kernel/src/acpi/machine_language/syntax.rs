@@ -2067,34 +2067,21 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8, matches, reader_with_semantic_tree, semantic_analyzer)]
+#[manual(from_slice_u8, matches, reader, reader_with_semantic_tree, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
 );
 
-impl From<&[u8]> for MethodInvocation {
-    fn from(aml: &[u8]) -> Self {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let (name_string, mut aml): (NameString, &[u8]) = NameString::read(aml);
-        let number_of_arguments: usize = 0;
-        let mut term_args: Vec<TermArg> = Vec::new();
-        (0..number_of_arguments)
-            .for_each(|_| {
-                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::read(aml);
-                aml = remaining_aml;
-                term_args.push(term_arg);
-            });
-        Self(
-            name_string,
-            term_args,
-        )
-    }
-}
-
 impl Matcher for MethodInvocation {
     fn matches(aml: &[u8]) -> bool {
         NameString::matches(aml) && !NullName::matches(aml)
+    }
+}
+
+impl Reader for MethodInvocation {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        unimplemented!()
     }
 }
 
@@ -2176,7 +2163,7 @@ pub struct MsecTime(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8)]
+#[manual(from_slice_u8, reader)]
 #[string]
 pub struct MultiNamePath(
     #[not_string]
@@ -2201,24 +2188,27 @@ impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
     }
 }
 
-impl From<&[u8]> for MultiNamePath {
-    fn from(aml: &[u8]) -> Self {
+impl Reader for MultiNamePath {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let (multi_name_prefix, aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(aml);
-        let (seg_count, mut aml): (SegCount, &[u8]) = SegCount::read(aml);
+        let symbol_aml: &[u8] = aml;
+        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(symbol_aml);
+        let (seg_count, mut symbol_aml): (SegCount, &[u8]) = SegCount::read(symbol_aml);
         let number_of_name_segs: usize = (&seg_count).into();
         let mut name_segs: Vec<NameSeg> = Vec::new();
         (0..number_of_name_segs)
             .for_each(|_| {
-                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read(aml);
-                aml = remaining_aml;
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read(symbol_aml);
+                symbol_aml = remaining_aml;
                 name_segs.push(name_seg);
             });
-        Self(
+        let symbol = Self(
             multi_name_prefix,
             seg_count,
             name_segs,
-        )
+        );
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
     }
 }
 
@@ -2675,27 +2665,21 @@ impl fmt::Debug for PkgLength {
     }
 }
 
-impl From<&[u8]> for PkgLength {
-    fn from(aml: &[u8]) -> Self {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let pkg_lead_byte: PkgLeadByte = aml.into();
-        let aml: &[u8] = &aml[pkg_lead_byte.length()..];
-        let (_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
-            .fold((aml, Vec::new()), |(aml, mut byte_data), _| {
-                let (new_byte_data, aml): (ByteData, &[u8]) = ByteData::read(aml);
-                byte_data.push(new_byte_data);
-                (aml, byte_data)
-            });
-        Self(
-            pkg_lead_byte,
-            byte_data,
-        )
-    }
-}
-
 impl Reader for PkgLength {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let pkg_length: Self = aml.into();
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (pkg_lead_byte, symbol_aml): (PkgLeadByte, &[u8]) = PkgLeadByte::read(symbol_aml);
+        let (_symbol_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
+            .fold((symbol_aml, Vec::new()), |(symbol_aml, mut byte_data), _| {
+                let (new_byte_data, symbol_aml): (ByteData, &[u8]) = ByteData::read(symbol_aml);
+                byte_data.push(new_byte_data);
+                (symbol_aml, byte_data)
+            });
+        let pkg_length = Self(
+            pkg_lead_byte,
+            byte_data,
+        );
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
     }
