@@ -2375,26 +2375,11 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(from_slice_u8, reader, semantic_analyzer)]
+#[manual(semantic_analyzer)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
 );
-
-impl Reader for NamedField {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let symbol_aml: &[u8] = aml;
-        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::read(symbol_aml);
-        let pkg_length: PkgLength = symbol_aml.into();
-        let named_field = Self(
-            name_seg,
-            pkg_length,
-        );
-        let aml: &[u8] = &aml[named_field.length()..];
-        (named_field, aml)
-    }
-}
 
 impl SemanticAnalyzer for NamedField {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
