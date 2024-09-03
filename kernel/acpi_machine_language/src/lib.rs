@@ -2577,6 +2577,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         quote! {
             impl crate::acpi::machine_language::syntax::Reader for #ident {
                 fn read(aml: &[u8]) -> (Self, &[u8]) {
+                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }
@@ -3020,6 +3021,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderWithSemanticTree for #ident {
                 fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
+                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }
