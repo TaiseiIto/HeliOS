@@ -1121,7 +1121,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding,
         flags,
-        has_field_list: _,
+        has_field_list,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -1425,6 +1425,22 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         _ => unimplemented!(),
                                                     },
                                                     _ => unimplemented!(),
+                                                },
+                                                "NameString" => if has_field_list {
+                                                    quote! {
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                    }
+                                                } else {
+                                                    let ident: String = derive_input.ident.to_string();
+                                                    let ident: &str = ident
+                                                        .strip_prefix("Def")
+                                                        .unwrap();
+                                                    let ident: Ident = format_ident!("{}", ident);
+                                                    quote! {
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                        let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
+                                                        root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#ident);
+                                                    }
                                                 },
                                                 "Option" => match arguments {
                                                     PathArguments::AngleBracketed(AngleBracketedGenericArguments {
