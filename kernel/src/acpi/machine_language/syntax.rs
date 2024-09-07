@@ -18,7 +18,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: FirstReader + Matcher + ReferenceToSymbolIterator + WithLength {
+pub trait Analyzer: FirstReader + Matcher + Reader + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
@@ -27,6 +27,10 @@ pub trait FirstReader {
 
 pub trait Matcher {
     fn matches(aml: &[u8]) -> bool where Self: Sized;
+}
+
+pub trait Reader {
+    fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
 }
 
 pub trait ReferenceToSymbolIterator {
@@ -2090,6 +2094,12 @@ impl Matcher for MethodInvocation {
     }
 }
 
+impl Reader for MethodInvocation {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        unimplemented!()
+    }
+}
+
 /// # MethodTermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2184,6 +2194,30 @@ impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
             .iter()
             .map(|name_seg| name_seg.into())
             .collect()
+    }
+}
+
+impl Reader for MultiNamePath {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(symbol_aml);
+        let (seg_count, mut symbol_aml): (SegCount, &[u8]) = SegCount::read(symbol_aml);
+        let number_of_name_segs: usize = (&seg_count).into();
+        let mut name_segs: Vec<NameSeg> = Vec::new();
+        (0..number_of_name_segs)
+            .for_each(|_| {
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read(symbol_aml);
+                symbol_aml = remaining_aml;
+                name_segs.push(name_seg);
+            });
+        let symbol = Self(
+            multi_name_prefix,
+            seg_count,
+            name_segs,
+        );
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
     }
 }
 
@@ -2361,8 +2395,8 @@ impl FirstReader for NamedField {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
-        let name_seg: semantics::Path = name_seg.into();
-        let current: semantics::Path = current + name_seg;
+        let path: semantics::Path = (&name_seg).into();
+        let current: semantics::Path = current + path;
         root.add_node(current.clone(), semantics::Object::NamedField);
         let pkg_length: PkgLength = symbol_aml.into();
         let named_field = Self(
@@ -2670,6 +2704,14 @@ impl From<&[u8]> for PkgLength {
             pkg_lead_byte,
             byte_data,
         )
+    }
+}
+
+impl Reader for PkgLength {
+    fn read(aml: &[u8]) -> (Self, &[u8]) {
+        let pkg_length: Self = aml.into();
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
+        (pkg_length, aml)
     }
 }
 

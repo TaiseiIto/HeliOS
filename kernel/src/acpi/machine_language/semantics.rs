@@ -75,15 +75,6 @@ impl Default for Node {
     }
 }
 
-impl From<&syntax::TermList> for Node {
-    fn from(term_list: &syntax::TermList) -> Self {
-        let mut root: Self = Self::default();
-        let current: Path = Path::root();
-        term_list.analyze_semantics(&mut root, current);
-        root
-    }
-}
-
 impl fmt::Debug for Node {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
