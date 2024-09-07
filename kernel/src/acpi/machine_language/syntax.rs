@@ -1106,7 +1106,7 @@ pub struct DefMatch(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(semantic_analyzer)]
+#[manual(first_reader, semantic_analyzer)]
 pub struct DefMethod(
     MethodOp,
     PkgLength,
@@ -1115,6 +1115,28 @@ pub struct DefMethod(
     #[no_leftover]
     MethodTermList,
 );
+
+impl FirstReader for DefMethod {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        let (method_op, aml): (MethodOp, &[u8]) = MethodOp::first_read(aml, root, current.clone());
+        let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::first_read(aml, root, current.clone());
+        let (name_string, aml): (NameString, &[u8]) = NameString::first_read(aml, root, current.clone());
+        let (method_flags, aml): (MethodFlags, &[u8]) = MethodFlags::first_read(aml, root, current.clone());
+        let path: semantics::Path = (&name_string).into();
+        let number_of_arguments: u8 = method_flags.arg_count();
+        root.add_node(current.clone() + path, semantics::Object::def_method(number_of_arguments));
+        let (method_term_list, aml): (MethodTermList, &[u8]) = MethodTermList::first_read(aml, root, current.clone());
+        assert!(aml.is_empty());
+        let def_method = Self(
+            method_op,
+            pkg_length,
+            name_string,
+            method_flags,
+            method_term_list,
+        );
+        (def_method, aml)
+    }
+}
 
 impl SemanticAnalyzer for DefMethod {
     fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
