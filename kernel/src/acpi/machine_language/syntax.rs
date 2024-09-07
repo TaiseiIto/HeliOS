@@ -2089,7 +2089,9 @@ impl FirstReader for MethodInvocation {
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
         let method: semantics::Path = current.clone() + (&name_string).into();
-        let number_of_arguments: usize = root.number_of_arguments(&method);
+        let number_of_arguments: usize = root
+            .number_of_arguments(&method)
+            .unwrap();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)

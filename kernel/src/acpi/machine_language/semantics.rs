@@ -62,7 +62,7 @@ impl Node {
         }
     }
 
-    pub fn number_of_arguments(&self, method: &Path) -> usize {
+    pub fn number_of_arguments(&self, method: &Path) -> Option<usize> {
         com2_println!("method = {:#x?}", method);
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
@@ -73,15 +73,14 @@ impl Node {
                     .children
                     .iter()
                     .find(|child| child.name == method_segment)
-                    .unwrap()
-                    .number_of_arguments(&method),
+                    .and_then(|child| child.number_of_arguments(&method)),
                 Segment::Parent => unreachable!(),
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
                     self.number_of_arguments(&method)
                 },
             },
-            None => self.object.number_of_arguments(),
+            None => Some(self.object.number_of_arguments()),
         }
     }
 }
