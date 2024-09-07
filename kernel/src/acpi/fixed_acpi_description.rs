@@ -14,6 +14,7 @@ use {
         machine_language::{
             self,
             syntax::{
+                FirstReader,
                 MethodAnalyzer,
                 Reader,
             },
@@ -122,13 +123,12 @@ impl Table {
             .dsdt()
             .unwrap();
         let dsdt: &[u8] = dsdt.definition_block();
-        let (mut syntax_tree, dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::read(dsdt);
+        let mut semantic_tree = machine_language::semantics::Node::default();
+        let current = machine_language::semantics::Path::root();
+        let (syntax_tree, dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, current);
         assert!(dsdt.is_empty());
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
-        let semantic_tree: machine_language::semantics::Node = (&syntax_tree).into();
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
-        let current = machine_language::semantics::Path::root();
-        syntax_tree.analyze_methods(&semantic_tree, current);
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
