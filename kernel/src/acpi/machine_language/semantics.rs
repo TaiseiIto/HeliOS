@@ -14,6 +14,7 @@ use {
         iter,
         ops::Add,
     },
+    crate::com2_println,
     super::syntax,
 };
 
@@ -62,6 +63,7 @@ impl Node {
     }
 
     pub fn number_of_arguments(&self, method: &Path) -> usize {
+        com2_println!("method = {:#x?}", method);
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {

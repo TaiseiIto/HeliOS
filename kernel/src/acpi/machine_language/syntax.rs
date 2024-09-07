@@ -2084,7 +2084,7 @@ pub struct MethodInvocation(
 
 impl FirstReader for MethodInvocation {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
+        crate::com2_println!("Read {:02x?} as MethodInvocation", &aml[0..core::cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
