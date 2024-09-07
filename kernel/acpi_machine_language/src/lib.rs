@@ -1388,16 +1388,56 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                             elem,
                                             semi_token: _,
                                             len,
-                                        }) => quote! {
-                                            let (elements, symbol_aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
-                                                .fold((alloc::vec::Vec::new(), symbol_aml), |(mut elements, symbol_aml), _| {
-                                                    let (element, symbol_aml): (#elem, &[u8]) = #elem::first_read(symbol_aml, root, current.clone());
-                                                    elements.push(element);
-                                                    (elements, symbol_aml)
-                                                });
-                                            let #field_name: #ty = elements
-                                                .try_into()
-                                                .unwrap();
+                                        }) => {
+                                            let mutable_current: proc_macro2::TokenStream = match elem
+                                                .to_token_stream()
+                                                .to_string()
+                                                .as_str() {
+                                                "NameString" => if has_field_list {
+                                                    quote! {
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                        let mut current: crate::acpi::machine_language::semantics::Path = current.clone();
+                                                    }
+                                                },
+                                                _ => quote! {
+                                                },
+                                            };
+                                            let add_node: proc_macro2::TokenStream = match elem
+                                                .to_token_stream()
+                                                .to_string()
+                                                .as_str() {
+                                                "NameString" => if has_field_list {
+                                                    quote! {
+                                                    }
+                                                } else {
+                                                    let defined_object_name: &Ident = defined_object_name
+                                                        .as_ref()
+                                                        .unwrap();
+                                                    quote! {
+                                                        if index == 0 {
+                                                            current = current + (&element).into();
+                                                            root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        }
+                                                    }
+                                                },
+                                                _ => quote! {
+                                                },
+                                            };
+                                            quote! {
+                                                #mutable_current
+                                                let (elements, symbol_aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
+                                                    .fold((alloc::vec::Vec::new(), symbol_aml), |(mut elements, symbol_aml), index| {
+                                                        let (element, symbol_aml): (#elem, &[u8]) = #elem::first_read(symbol_aml, root, current.clone());
+                                                        elements.push(element);
+                                                        #add_node
+                                                        (elements, symbol_aml)
+                                                    });
+                                                let #field_name: #ty = elements
+                                                    .try_into()
+                                                    .unwrap();
+                                            }
                                         },
                                         Type::Path(TypePath {
                                             qself: _,
