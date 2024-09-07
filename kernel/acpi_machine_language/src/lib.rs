@@ -1264,7 +1264,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         .unwrap();
                                                     quote! {
                                                         if index == 0 {
-                                                            current = current + (&element).into();
+                                                            current += (&element).into();
                                                             root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                         }
                                                     }
