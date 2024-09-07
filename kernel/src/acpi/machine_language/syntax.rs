@@ -631,10 +631,17 @@ pub struct DefAdd(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(first_reader)]
 pub struct DefAlias(
     AliasOp,
     [NameString; 2],
 );
+
+impl FirstReader for DefAlias {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        todo!("Implement alias name solution.")
+    }
+}
 
 /// # DefAnd
 /// ## References
@@ -1118,23 +1125,26 @@ pub struct DefMethod(
 
 impl FirstReader for DefMethod {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        let (method_op, aml): (MethodOp, &[u8]) = MethodOp::first_read(aml, root, current.clone());
-        let (pkg_length, aml): (PkgLength, &[u8]) = PkgLength::first_read(aml, root, current.clone());
-        let (name_string, aml): (NameString, &[u8]) = NameString::first_read(aml, root, current.clone());
-        let (method_flags, aml): (MethodFlags, &[u8]) = MethodFlags::first_read(aml, root, current.clone());
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (method_op, symbol_aml): (MethodOp, &[u8]) = MethodOp::first_read(symbol_aml, root, current.clone());
+        let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::first_read(symbol_aml, root, current.clone());
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
         let path: semantics::Path = (&name_string).into();
         let number_of_arguments: u8 = method_flags.arg_count();
         root.add_node(current.clone() + path, semantics::Object::def_method(number_of_arguments));
-        let (method_term_list, aml): (MethodTermList, &[u8]) = MethodTermList::first_read(aml, root, current.clone());
-        assert!(aml.is_empty());
-        let def_method = Self(
+        let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
+        assert!(symbol_aml.is_empty());
+        let symbol = Self(
             method_op,
             pkg_length,
             name_string,
             method_flags,
             method_term_list,
         );
-        (def_method, aml)
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
     }
 }
 
@@ -2093,11 +2103,17 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(matches, reader, reader_with_semantic_tree, semantic_analyzer)]
+#[manual(first_reader, matches, reader, reader_with_semantic_tree, semantic_analyzer)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
 );
+
+impl FirstReader for MethodInvocation {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        unimplemented!()
+    }
+}
 
 impl Matcher for MethodInvocation {
     fn matches(aml: &[u8]) -> bool {
@@ -2189,7 +2205,7 @@ pub struct MsecTime(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(reader)]
+#[manual(first_reader, reader)]
 #[string]
 pub struct MultiNamePath(
     #[not_string]
@@ -2199,6 +2215,31 @@ pub struct MultiNamePath(
     #[delimiter = "."]
     Vec<NameSeg>,
 );
+
+impl FirstReader for MultiNamePath {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::first_read(symbol_aml, root, current.clone());
+        let (seg_count, symbol_aml): (SegCount, &[u8]) = SegCount::first_read(symbol_aml, root, current.clone());
+        let number_of_name_segs: usize = (&seg_count).into();
+        let mut symbol_aml: &[u8] = symbol_aml;
+        let mut name_segs: Vec<NameSeg> = Vec::new();
+        (0..number_of_name_segs)
+            .for_each(|_| {
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
+                symbol_aml = remaining_aml;
+                name_segs.push(name_seg);
+            });
+        let symbol = Self(
+            multi_name_prefix,
+            seg_count,
+            name_segs,
+        );
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
+    }
+}
 
 impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
     fn from(multi_name_path: &MultiNamePath) -> Self {
@@ -2660,7 +2701,7 @@ impl PkgLeadByte {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(debug, reader, reader_with_semantic_tree)]
+#[manual(debug, first_reader, reader, reader_with_semantic_tree)]
 pub struct PkgLength(
     PkgLeadByte,
     Vec<ByteData>,
@@ -2688,6 +2729,14 @@ impl fmt::Debug for PkgLength {
             .debug_tuple("PkgLength")
             .field(&self.pkg_length())
             .finish()
+    }
+}
+
+impl FirstReader for PkgLength {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        let pkg_length: Self = aml.into();
+        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
+        (pkg_length, aml)
     }
 }
 
