@@ -60,6 +60,28 @@ impl Node {
             children,
         }
     }
+
+    pub fn number_of_arguments(&self, method: &Path) -> usize {
+        let mut method: Path = method.clone();
+        match method.pop_first_segment() {
+            Some(segment) => match segment {
+                Segment::Child {
+                    name,
+                } => self
+                    .children
+                    .iter()
+                    .find(|child| child.name == name)
+                    .unwrap()
+                    .number_of_arguments(&method),
+                Segment::Parent => unreachable!(),
+                Segment::Root => {
+                    assert_eq!(self.name, Segment::Root);
+                    self.number_of_arguments(&method)
+                },
+            },
+            None => self.object.number_of_arguments(),
+        }
+    }
 }
 
 impl Default for Node {
@@ -114,7 +136,7 @@ pub enum Object {
     External,
     Load,
     Method {
-        number_of_arguments: u8,
+        number_of_arguments: usize,
     },
     Mutex,
     Name,
@@ -127,9 +149,18 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn def_method(number_of_arguments: u8) -> Self {
+    pub fn def_method(number_of_arguments: usize) -> Self {
         Self::Method {
             number_of_arguments,
+        }
+    }
+
+    pub fn number_of_arguments(&self) -> usize {
+        match self {
+            Method {
+                number_of_arguments,
+            } => number_of_arguments
+            _ => 0,
         }
     }
 }

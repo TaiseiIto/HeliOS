@@ -1120,7 +1120,7 @@ impl FirstReader for DefMethod {
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
         let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
         let current: semantics::Path = current + (&name_string).into();
-        let number_of_arguments: u8 = method_flags.arg_count();
+        let number_of_arguments: usize = method_flags.arg_count() as usize;
         root.add_node(current.clone(), semantics::Object::def_method(number_of_arguments));
         let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
         assert!(symbol_aml.is_empty());
@@ -2084,7 +2084,26 @@ pub struct MethodInvocation(
 
 impl FirstReader for MethodInvocation {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        unimplemented!()
+        crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let method: semantics::Path = currnet.clone() + (&name_string).into();
+        let number_of_arguments: usize = root.number_of_arguments(&method);
+        let mut symbol_aml: &[u8] = symbol_aml;
+        let mut term_args: Vec<TermArg> = Vec::new();
+        (0..number_of_arguments)
+            .fold_each(|_| {
+                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::first_read(symbol_aml, root, current.clone());
+                symbol_aml = remaining_aml;
+                term_args.push(term_arg);
+            });
+        let method_invocation = Self(
+            name_string,
+            term_args,
+        );
+        let aml: &[u8] = &aml[method_invocation.length()..];
+        (method_invocation, aml)
     }
 }
 
