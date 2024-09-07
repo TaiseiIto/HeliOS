@@ -2096,7 +2096,13 @@ impl Matcher for MethodInvocation {
 
 impl Reader for MethodInvocation {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
-        unimplemented!()
+        let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
+        let term_args: Vec<TermArg> = Vec::new();
+        let method_invocation = Self(
+            name_string,
+            term_args,
+        );
+        (method_invocation, aml)
     }
 }
 
@@ -3159,6 +3165,7 @@ pub enum TermArg {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct TermList(
+    #[debug]
     #[no_leftover]
     Vec<TermObj>,
 );
