@@ -186,6 +186,10 @@ impl Path {
         self.segments.pop_front()
     }
 
+    pub fn pop_last_segment(&mut self) -> Option<Segment> {
+        self.segments.pop_back()
+    }
+
     pub fn root() -> Self {
         let segments: VecDeque<Segment> = iter::once(Segment::Root).collect();
         Self {
@@ -296,6 +300,35 @@ impl fmt::Debug for Path {
                 },
             })
             .try_fold((), |_, result| result)
+    }
+}
+
+pub struct RelativePath {
+    current: Path,
+    target: Path,
+}
+
+impl RelativePath {
+    pub fn new(current: Path, target: Path) -> Self {
+        Self {
+            current,
+            target,
+        }
+    }
+}
+
+impl Iterator for RelativePath {
+    type Item = Path;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            current,
+            target,
+        } = self;
+        let absolute_path: Path = current.clone() + target.clone();
+        current
+            .pop_last_segment()
+            .map(|_| absolute_path)
     }
 }
 

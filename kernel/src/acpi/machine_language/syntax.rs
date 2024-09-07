@@ -2088,9 +2088,8 @@ impl FirstReader for MethodInvocation {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
-        let method: semantics::Path = current.clone() + (&name_string).into();
-        let number_of_arguments: usize = root
-            .number_of_arguments(&method)
+        let number_of_arguments: usize = semantics::RelativePath::new(current.clone(), (&name_string).into())
+            .find_map(|method| root.number_of_arguments(&method))
             .unwrap();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
