@@ -103,6 +103,7 @@ impl From<RangeInclusive<u8>> for Encoding {
 }
 
 struct TypeAttribute {
+    defined_object_name: Option<Ident>,
     derive_debug: bool,
     derive_first_reader: bool,
     derive_matches: bool,
@@ -123,10 +124,14 @@ impl From<&DeriveInput> for TypeAttribute {
         let DeriveInput {
             attrs,
             vis: _,
-            ident: _,
+            ident,
             generics: _,
             data,
         } = derive_input;
+        let defined_object_name: Option<Ident> = ident
+            .to_string()
+            .strip_prefix("Def")
+            .map(|defined_object_name| format_ident!("{}", defined_object_name));
         let derive_debug: bool = attrs
             .iter()
             .all(|attribute| {
@@ -702,6 +707,7 @@ impl From<&DeriveInput> for TypeAttribute {
         };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
+            defined_object_name,
             derive_debug,
             derive_first_reader,
             derive_matches,
@@ -904,6 +910,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug,
         derive_first_reader: _,
         derive_matches: _,
@@ -1111,6 +1118,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name,
         derive_debug: _,
         derive_first_reader,
         derive_matches: _,
@@ -1431,15 +1439,13 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
                                                     }
                                                 } else {
-                                                    let ident: String = derive_input.ident.to_string();
-                                                    let ident: &str = ident
-                                                        .strip_prefix("Def")
+                                                    let defined_object_name: &Ident = defined_object_name
+                                                        .as_ref()
                                                         .unwrap();
-                                                    let ident: Ident = format_ident!("{}", ident);
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
                                                         let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#ident);
+                                                        root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {
@@ -1572,6 +1578,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -2040,6 +2047,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -2234,6 +2242,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches,
@@ -2552,6 +2561,7 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -2701,6 +2711,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -3146,6 +3157,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -3591,6 +3603,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
@@ -3745,6 +3758,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         data,
     } = derive_input;
     let TypeAttribute {
+        defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
