@@ -101,10 +101,7 @@ struct TypeAttribute {
     derive_debug: bool,
     derive_first_reader: bool,
     derive_matches: bool,
-    derive_method_analyzer: bool,
     derive_reader: bool,
-    derive_reader_with_semantic_tree: bool,
-    derive_semantic_analyzer: bool,
     derive_string_from_self: bool,
     encoding: Option<Encoding>,
     flags: bool,
@@ -261,51 +258,6 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => true,
                 }
             });
-        let derive_method_analyzer: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "method_analyzer")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
         let derive_reader: bool = attrs
             .iter()
             .all(|attribute| {
@@ -342,96 +294,6 @@ impl From<&DeriveInput> for TypeAttribute {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
                                         !matches!(manual_arg.as_str(), "reader")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_reader_with_semantic_tree: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "reader_with_semantic_tree")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_semantic_analyzer: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "semantic_analyzer")
                                     },
                                     _ => true,
                                 }),
@@ -705,10 +567,7 @@ impl From<&DeriveInput> for TypeAttribute {
             derive_debug,
             derive_first_reader,
             derive_matches,
-            derive_method_analyzer,
             derive_reader,
-            derive_reader_with_semantic_tree,
-            derive_semantic_analyzer,
             derive_string_from_self,
             encoding,
             flags,
@@ -908,10 +767,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug,
         derive_first_reader: _,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding: _,
         flags,
@@ -1116,10 +972,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_first_reader,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1616,10 +1469,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2085,10 +1935,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2280,10 +2127,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_first_reader: _,
         derive_matches,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2599,10 +2443,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -3045,10 +2886,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         derive_debug: _,
         derive_first_reader: _,
         derive_matches: _,
-        derive_method_analyzer: _,
         derive_reader: _,
-        derive_reader_with_semantic_tree: _,
-        derive_semantic_analyzer: _,
         derive_string_from_self,
         encoding: _,
         flags: _,

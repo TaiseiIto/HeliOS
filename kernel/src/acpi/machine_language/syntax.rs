@@ -1101,7 +1101,7 @@ pub struct DefMatch(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, semantic_analyzer)]
+#[manual(first_reader)]
 pub struct DefMethod(
     MethodOp,
     PkgLength,
@@ -2076,7 +2076,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, matches, reader, reader_with_semantic_tree, semantic_analyzer)]
+#[manual(first_reader, matches, reader)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2104,7 +2104,6 @@ impl Reader for MethodInvocation {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(method_analyzer)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
@@ -2384,7 +2383,7 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, semantic_analyzer)]
+#[manual(first_reader)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
@@ -2650,7 +2649,7 @@ impl PkgLeadByte {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(debug, first_reader, reader, reader_with_semantic_tree)]
+#[manual(debug, first_reader, reader)]
 pub struct PkgLength(
     PkgLeadByte,
     Vec<ByteData>,
