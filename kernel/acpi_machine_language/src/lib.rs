@@ -113,6 +113,7 @@ struct TypeAttribute {
     derive_string_from_self: bool,
     encoding: Option<Encoding>,
     flags: bool,
+    has_field_list: bool,
     matching_elements: usize,
     string: bool,
 }
@@ -124,7 +125,7 @@ impl From<&DeriveInput> for TypeAttribute {
             vis: _,
             ident: _,
             generics: _,
-            data: _,
+            data,
         } = derive_input;
         let derive_debug: bool = attrs
             .iter()
@@ -614,6 +615,32 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => false,
                 }
             });
+        let has_field_list: bool = match data {
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields: Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }),
+                semi_token: _,
+            }) => unnamed
+                .iter()
+                .any(|field| {
+                    let Field {
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident: _,
+                        colon_token: _,
+                        ty,
+                    } = field;
+                    ty
+                        .to_token_stream()
+                        .to_string()
+                        .as_str() == "FieldList"
+                }),
+            _ => false,
+        };
         let matching_elements: Option<usize> = attrs
             .iter()
             .find_map(|attribute| {
@@ -685,6 +712,7 @@ impl From<&DeriveInput> for TypeAttribute {
             derive_string_from_self,
             encoding,
             flags,
+            has_field_list,
             matching_elements,
             string,
         }
@@ -886,6 +914,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding: _,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string,
     } = derive_input.into();
@@ -1092,6 +1121,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -1536,6 +1566,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -2003,6 +2034,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -2196,6 +2228,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements,
         string: _,
     } = derive_input.into();
@@ -2513,6 +2546,7 @@ fn derive_method_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStrea
         derive_string_from_self: _,
         encoding: _,
         flags: _,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -2661,6 +2695,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -3105,6 +3140,7 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         derive_string_from_self: _,
         encoding,
         flags,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -3549,6 +3585,7 @@ fn derive_semantic_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStr
         derive_string_from_self: _,
         encoding: _,
         flags: _,
+        has_field_list: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -3702,6 +3739,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         derive_string_from_self,
         encoding: _,
         flags: _,
+        has_field_list: _,
         matching_elements: _,
         string,
     } = derive_input.into();
