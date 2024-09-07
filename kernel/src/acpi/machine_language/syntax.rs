@@ -1131,9 +1131,9 @@ impl FirstReader for DefMethod {
         let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::first_read(symbol_aml, root, current.clone());
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
         let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
-        let path: semantics::Path = (&name_string).into();
+        let current: semantics::Path = current + (&name_string).into();
         let number_of_arguments: u8 = method_flags.arg_count();
-        root.add_node(current.clone() + path, semantics::Object::def_method(number_of_arguments));
+        root.add_node(current.clone(), semantics::Object::def_method(number_of_arguments));
         let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
         assert!(symbol_aml.is_empty());
         let symbol = Self(
