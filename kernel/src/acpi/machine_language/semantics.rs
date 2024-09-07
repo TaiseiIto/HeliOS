@@ -14,10 +14,7 @@ use {
         iter,
         ops::Add,
     },
-    super::syntax::{
-        SemanticAnalyzer,
-        self,
-    },
+    super::syntax,
 };
 
 pub struct Node {

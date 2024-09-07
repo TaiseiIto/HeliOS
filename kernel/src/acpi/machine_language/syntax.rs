@@ -18,7 +18,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: FirstReader + Matcher + MethodAnalyzer + Reader + ReaderWithSemanticTree + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
+pub trait Analyzer: FirstReader + Matcher + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
@@ -29,25 +29,9 @@ pub trait Matcher {
     fn matches(aml: &[u8]) -> bool where Self: Sized;
 }
 
-pub trait MethodAnalyzer {
-    fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path);
-}
-
-pub trait Reader {
-    fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
-}
-
-pub trait ReaderWithSemanticTree {
-    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
-}
-
 pub trait ReferenceToSymbolIterator {
     fn iter(&self) -> SymbolIterator<'_>;
     fn iter_mut(&mut self) -> MutSymbolIterator<'_>;
-}
-
-pub trait SemanticAnalyzer {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path);
 }
 
 pub trait WithLength {
@@ -1148,21 +1132,6 @@ impl FirstReader for DefMethod {
     }
 }
 
-impl SemanticAnalyzer for DefMethod {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
-        let Self(
-            _method_op,
-            _pkg_length,
-            name_string,
-            method_flags,
-            _method_term_list,
-        ) = self;
-        let name_string: semantics::Path = name_string.into();
-        let number_of_arguments: u8 = method_flags.arg_count();
-        root.add_node(current + name_string, semantics::Object::def_method(number_of_arguments));
-    }
-}
-
 /// # DefMid
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2121,27 +2090,6 @@ impl Matcher for MethodInvocation {
     }
 }
 
-impl Reader for MethodInvocation {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        unimplemented!()
-    }
-}
-
-impl ReaderWithSemanticTree for MethodInvocation {
-    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        unimplemented!()
-    }
-}
-
-impl SemanticAnalyzer for MethodInvocation {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
-        self.iter()
-            .for_each(|child| {
-                child.analyze_semantics(root, current.clone());
-            });
-    }
-}
-
 /// # MethodTermList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2150,22 +2098,6 @@ impl SemanticAnalyzer for MethodInvocation {
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
-}
-
-impl MethodAnalyzer for MethodTermList {
-    fn analyze_methods(&mut self, root: &semantics::Node, current: semantics::Path) {
-        let aml: Vec<u8> = match self {
-            Self::Binary(byte_list) => {
-                let byte_list: ByteList = byte_list.clone();
-                (&byte_list).into()
-            },
-            Self::SyntaxTree(_term_list) => unreachable!(),
-        };
-        let aml: &[u8] = aml.as_slice();
-        let (term_list, aml): (TermList, &[u8]) = TermList::read_with_semantic_tree(aml, root, current);
-        assert!(aml.is_empty());
-        *self = Self::SyntaxTree(term_list);
-    }
 }
 
 /// # MethodOp
@@ -2252,30 +2184,6 @@ impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
             .iter()
             .map(|name_seg| name_seg.into())
             .collect()
-    }
-}
-
-impl Reader for MultiNamePath {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        assert!(Self::matches(aml), "aml = {:#x?}", aml);
-        let symbol_aml: &[u8] = aml;
-        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(symbol_aml);
-        let (seg_count, mut symbol_aml): (SegCount, &[u8]) = SegCount::read(symbol_aml);
-        let number_of_name_segs: usize = (&seg_count).into();
-        let mut name_segs: Vec<NameSeg> = Vec::new();
-        (0..number_of_name_segs)
-            .for_each(|_| {
-                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read(symbol_aml);
-                symbol_aml = remaining_aml;
-                name_segs.push(name_seg);
-            });
-        let symbol = Self(
-            multi_name_prefix,
-            seg_count,
-            name_segs,
-        );
-        let aml: &[u8] = &aml[symbol.length()..];
-        (symbol, aml)
     }
 }
 
@@ -2442,20 +2350,27 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(semantic_analyzer)]
+#[manual(first_reader, semantic_analyzer)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
 );
 
-impl SemanticAnalyzer for NamedField {
-    fn analyze_semantics(&self, root: &mut semantics::Node, current: semantics::Path) {
-        let Self(
-            name_seg,
-            _pkg_length,
-        ) = self;
+impl FirstReader for NamedField {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
         let name_seg: semantics::Path = name_seg.into();
-        root.add_node(current + name_seg, semantics::Object::NamedField);
+        let current: semantics::Path = current + name_seg;
+        root.add_node(current.clone(), semantics::Object::NamedField);
+        let pkg_length: PkgLength = symbol_aml.into();
+        let named_field = Self(
+            name_seg,
+            pkg_length,
+        );
+        let aml: &[u8] = &aml[named_field.length()..];
+        (named_field, aml)
     }
 }
 
@@ -2755,32 +2670,6 @@ impl From<&[u8]> for PkgLength {
             pkg_lead_byte,
             byte_data,
         )
-    }
-}
-
-impl Reader for PkgLength {
-    fn read(aml: &[u8]) -> (Self, &[u8]) {
-        let pkg_length: Self = aml.into();
-        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-        (pkg_length, aml)
-    }
-}
-
-impl ReaderWithSemanticTree for PkgLength {
-    fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        let (pkg_lead_byte, pkg_length_aml): (PkgLeadByte, &[u8]) = PkgLeadByte::read_with_semantic_tree(aml, root, current.clone());
-        let (_pkg_length_aml, byte_data): (&[u8], Vec<ByteData>) = (0..pkg_lead_byte.byte_data_length())
-            .fold((pkg_length_aml, Vec::new()), |(pkg_length_aml, mut byte_data), _| {
-                let (new_byte_data, pkg_length_aml): (ByteData, &[u8]) = ByteData::read_with_semantic_tree(pkg_length_aml, root, current.clone());
-                byte_data.push(new_byte_data);
-                (pkg_length_aml, byte_data)
-            });
-        let pkg_length = Self(
-            pkg_lead_byte,
-            byte_data,
-        );
-        let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
-        (pkg_length, aml)
     }
 }
 

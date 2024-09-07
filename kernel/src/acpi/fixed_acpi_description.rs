@@ -13,11 +13,7 @@ use {
         generic_address,
         machine_language::{
             self,
-            syntax::{
-                FirstReader,
-                MethodAnalyzer,
-                Reader,
-            },
+            syntax::FirstReader,
         },
         system_description,
     },
@@ -133,7 +129,6 @@ impl Table {
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
         com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
-        com2_println!("syntax_tree = {:#x?}", syntax_tree);
     }
 
     pub fn timer_bits(&self) -> usize {
