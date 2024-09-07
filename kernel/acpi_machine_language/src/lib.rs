@@ -59,6 +59,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let analyzer: proc_macro2::TokenStream = derive_analyzer(&derive_input);
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
+    let first_reader: proc_macro2::TokenStream = derive_first_reader(&derive_input);
     let iter: proc_macro2::TokenStream = derive_reference_to_symbol_iterator(&derive_input);
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
     let matches: proc_macro2::TokenStream = derive_matcher(&derive_input);
@@ -71,6 +72,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #analyzer
         #char_from_self
         #debug
+        #first_reader
         #iter
         #length
         #matches
@@ -757,6 +759,20 @@ impl From<&Field> for FieldAttribute {
     }
 }
 
+fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::Analyzer for #ident {
+        }
+    }
+}
+
 fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
@@ -1009,16 +1025,19 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
         ident,
         generics: _,
-        data: _,
+        data,
     } = derive_input;
     quote! {
-        impl crate::acpi::machine_language::syntax::Analyzer for #ident {
+        impl crate::acpi::machine_language::syntax::FirstReader for #ident {
+            fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+                unimplemented!()
+            }
         }
     }
 }
@@ -2577,7 +2596,6 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         quote! {
             impl crate::acpi::machine_language::syntax::Reader for #ident {
                 fn read(aml: &[u8]) -> (Self, &[u8]) {
-                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }
@@ -3021,7 +3039,6 @@ fn derive_reader_with_semantic_tree(derive_input: &DeriveInput) -> proc_macro2::
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderWithSemanticTree for #ident {
                 fn read_with_semantic_tree<'a>(aml: &'a [u8], root: &crate::acpi::machine_language::semantics::Node, current: crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }

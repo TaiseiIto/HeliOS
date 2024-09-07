@@ -18,7 +18,11 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: Matcher + MethodAnalyzer + Reader + ReaderWithSemanticTree + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
+pub trait Analyzer: FirstReader + Matcher + MethodAnalyzer + Reader + ReaderWithSemanticTree + ReferenceToSymbolIterator + SemanticAnalyzer + WithLength {
+}
+
+pub trait FirstReader {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
 }
 
 pub trait Matcher {
@@ -3154,7 +3158,6 @@ pub enum TermArg {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct TermList(
-    #[debug]
     #[no_leftover]
     Vec<TermObj>,
 );
