@@ -2088,12 +2088,12 @@ impl FirstReader for MethodInvocation {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
-        let method: semantics::Path = currnet.clone() + (&name_string).into();
+        let method: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = root.number_of_arguments(&method);
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)
-            .fold_each(|_| {
+            .for_each(|_| {
                 let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::first_read(symbol_aml, root, current.clone());
                 symbol_aml = remaining_aml;
                 term_args.push(term_arg);

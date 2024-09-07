@@ -65,12 +65,12 @@ impl Node {
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {
-                Segment::Child {
-                    name,
+                method_segment @ Segment::Child {
+                    name: _,
                 } => self
                     .children
                     .iter()
-                    .find(|child| child.name == name)
+                    .find(|child| child.name == method_segment)
                     .unwrap()
                     .number_of_arguments(&method),
                 Segment::Parent => unreachable!(),
@@ -157,9 +157,9 @@ impl Object {
 
     pub fn number_of_arguments(&self) -> usize {
         match self {
-            Method {
+            Self::Method {
                 number_of_arguments,
-            } => number_of_arguments
+            } => *number_of_arguments,
             _ => 0,
         }
     }
