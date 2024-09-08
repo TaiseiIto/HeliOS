@@ -627,7 +627,21 @@ pub struct DefAlias(
 
 impl FirstReader for DefAlias {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
-        todo!("Implement alias name solution.")
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let symbol_aml: &[u8] = aml;
+        let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::first_read(symbol_aml, root, current.clone());
+        let (original_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let original_path: semantics::Path = current.clone() + (&original_name).into();
+        let new_path: semantics::Path = current.clone() + (&new_name).into();
+        root.add_node(current.clone(), semantics::Object::alias(original_path));
+        let name_strings: [NameString; 2] = [original_name, new_name];
+        let def_alias = Self(
+            alias_op,
+            name_strings,
+        );
+        let aml: &[u8] = &aml[def_alias.length()..];
+        (def_alias, aml)
     }
 }
 
@@ -1121,7 +1135,7 @@ impl FirstReader for DefMethod {
         let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
         let current: semantics::Path = current + (&name_string).into();
         let number_of_arguments: usize = method_flags.arg_count() as usize;
-        root.add_node(current.clone(), semantics::Object::def_method(number_of_arguments));
+        root.add_node(current.clone(), semantics::Object::method(number_of_arguments));
         let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
         assert!(symbol_aml.is_empty());
         let symbol = Self(

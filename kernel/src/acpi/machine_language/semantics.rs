@@ -124,7 +124,9 @@ impl fmt::Debug for Node {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
-    Alias,
+    Alias {
+        original_path: Path,
+    },
     CreateBitField,
     CreateByteField,
     CreateDWordField,
@@ -150,7 +152,13 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn def_method(number_of_arguments: usize) -> Self {
+    pub fn alias(original_path: Path) -> Self {
+        Self::Alias {
+            original_path,
+        }
+    }
+
+    pub fn method(number_of_arguments: usize) -> Self {
         Self::Method {
             number_of_arguments,
         }
@@ -172,7 +180,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
