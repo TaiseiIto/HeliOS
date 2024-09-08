@@ -2347,6 +2347,7 @@ impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
 
 impl Reader for MultiNamePath {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
+        com2_println!("Read {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(symbol_aml);
@@ -2907,6 +2908,7 @@ impl From<&[u8]> for PkgLength {
 
 impl Reader for PkgLength {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
+        com2_println!("Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)

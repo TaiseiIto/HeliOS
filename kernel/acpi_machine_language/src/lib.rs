@@ -2920,6 +2920,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         quote! {
             impl crate::acpi::machine_language::syntax::Reader for #ident {
                 fn read(aml: &[u8]) -> (Self, &[u8]) {
+                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }
