@@ -88,6 +88,32 @@ impl Node {
         RelativePath::new(current, method)
             .find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
     }
+
+    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<Path> {
+        let mut alias: Path = alias.clone();
+        match alias.pop_first_segment() {
+            Some(segment) => match segment {
+                segment @ Segment::Child {
+                    name: _,
+                } => self
+                    .children
+                    .iter()
+                    .find(|child| child.name == segment)
+                    .and_then(|child| child.solve_absolute_alias(&alias)),
+                Segment::Parent => unreachable!(),
+                Segment::Root => {
+                    assert_eq!(self.name, Segment::Root);
+                    self.solve_absolute_alias(&alias)
+                },
+            },
+            None => self.object.solve_alias(),
+        }
+    }
+
+    pub fn solve_relative_alias(&self, current: &Path, alias: &Path) -> Option<Path> {
+        RelativePath::new(current, alias)
+            .find_map(|alias| self.solve_absolute_alias(&alias))
+    }
 }
 
 impl Default for Node {
@@ -176,6 +202,15 @@ impl Object {
                 number_of_arguments,
             } => *number_of_arguments,
             _ => 0,
+        }
+    }
+
+    pub fn solve_alias(&self) -> Option<Path> {
+        match self {
+            Self::Alias {
+                original_path,
+            } => Some(original_path.clone()),
+            _ => None,
         }
     }
 }
