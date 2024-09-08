@@ -243,6 +243,12 @@ impl Path {
         self.segments.is_empty()
     }
 
+    pub fn last_segment(&self) -> Option<Segment> {
+        self.segments
+            .back()
+            .cloned()
+    }
+
     pub fn pop_first_segment(&mut self) -> Option<Segment> {
         self.segments.pop_front()
     }
@@ -371,6 +377,15 @@ pub struct RelativePath {
 }
 
 impl RelativePath {
+    pub fn last_segment(&self) -> Option<Segment> {
+        let Self {
+            current,
+            target,
+        } = self;
+        let absolute_path: Path = current.clone() + target.clone();
+        absolute_path.last_segment()
+    }
+
     pub fn new(current: &Path, target: &Path) -> Self {
         let current: Path = current.clone();
         let target: Path = target.clone();

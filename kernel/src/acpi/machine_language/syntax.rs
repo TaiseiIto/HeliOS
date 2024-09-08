@@ -2214,6 +2214,15 @@ impl SecondReader for MethodInvocation {
         com2_println!("method = {:#x?}", method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
+            .or(method
+                .last_segment()
+                .map(|segment| {
+                    let segment: String = (&segment).into();
+                    match segment.as_str() {
+                        "_OS" => Some(0),
+                        _ => None,
+                    }
+                }))
             .unwrap();
         com2_println!("number_of_arguments = {:#x?}", number_of_arguments);
         let mut symbol_aml: &[u8] = symbol_aml;
