@@ -22,7 +22,7 @@ pub trait Analyzer: FirstReader + Matcher + Reader + ReferenceToSymbolIterator +
 }
 
 pub trait FirstReader {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
 }
 
 pub trait Matcher {
@@ -626,12 +626,13 @@ pub struct DefAlias(
 );
 
 impl FirstReader for DefAlias {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::first_read(symbol_aml, root, current.clone());
-        let (original_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
-        let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::first_read(symbol_aml, root, &current);
+        let (original_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
+        let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
         root.add_node(&current, semantics::Object::alias(&original_path));
@@ -1126,17 +1127,18 @@ pub struct DefMethod(
 );
 
 impl FirstReader for DefMethod {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (method_op, symbol_aml): (MethodOp, &[u8]) = MethodOp::first_read(symbol_aml, root, current.clone());
-        let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::first_read(symbol_aml, root, current.clone());
-        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
-        let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
-        let current: semantics::Path = current + (&name_string).into();
+        let (method_op, symbol_aml): (MethodOp, &[u8]) = MethodOp::first_read(symbol_aml, root, &current);
+        let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::first_read(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
+        let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, &current);
+        let current: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = method_flags.arg_count() as usize;
         root.add_node(&current, semantics::Object::method(number_of_arguments));
-        let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
+        let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, &current);
         assert!(symbol_aml.is_empty());
         let symbol = Self(
             method_op,
@@ -2097,11 +2099,12 @@ pub struct MethodInvocation(
 );
 
 impl FirstReader for MethodInvocation {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
         crate::com2_println!("Read {:02x?} as MethodInvocation", &aml[0..core::cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let number_of_arguments: usize = semantics::RelativePath::new(&current, &((&name_string).into()))
             .find_map(|method| root.number_of_arguments(&method))
             .unwrap();
@@ -2109,7 +2112,7 @@ impl FirstReader for MethodInvocation {
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)
             .for_each(|_| {
-                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::first_read(symbol_aml, root, current.clone());
+                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::first_read(symbol_aml, root, &current);
                 symbol_aml = remaining_aml;
                 term_args.push(term_arg);
             });
@@ -2198,17 +2201,18 @@ pub struct MultiNamePath(
 );
 
 impl FirstReader for MultiNamePath {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::first_read(symbol_aml, root, current.clone());
-        let (seg_count, symbol_aml): (SegCount, &[u8]) = SegCount::first_read(symbol_aml, root, current.clone());
+        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::first_read(symbol_aml, root, &current);
+        let (seg_count, symbol_aml): (SegCount, &[u8]) = SegCount::first_read(symbol_aml, root, &current);
         let number_of_name_segs: usize = (&seg_count).into();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut name_segs: Vec<NameSeg> = Vec::new();
         (0..number_of_name_segs)
             .for_each(|_| {
-                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, &current);
                 symbol_aml = remaining_aml;
                 name_segs.push(name_seg);
             });
@@ -2430,12 +2434,13 @@ pub struct NamedField(
 );
 
 impl FirstReader for NamedField {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
+        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, &current);
         let path: semantics::Path = (&name_seg).into();
-        let current: semantics::Path = current + path;
+        let current: semantics::Path = current.clone() + path;
         root.add_node(&current, semantics::Object::NamedField);
         let pkg_length: PkgLength = symbol_aml.into();
         let named_field = Self(
@@ -2721,7 +2726,7 @@ impl fmt::Debug for PkgLength {
 }
 
 impl FirstReader for PkgLength {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)

@@ -1133,7 +1133,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                                 .first()
                                                                 .unwrap() {
                                                                 GenericArgument::Type(element_type) => quote! {
-                                                                    let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, current.clone());
+                                                                    let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, &current);
                                                                     let #field_name: #ty = Box::new(#field_name);
                                                                 },
                                                                 _ => unimplemented!(),
@@ -1141,7 +1141,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                             _ => unimplemented!(),
                                                         }
                                                         _ => quote! {
-                                                            let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                            let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
                                                         },
                                                     }
                                                 },
@@ -1276,7 +1276,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 #mutable_current
                                                 let (elements, symbol_aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
                                                     .fold((alloc::vec::Vec::new(), symbol_aml), |(mut elements, symbol_aml), index| {
-                                                        let (element, symbol_aml): (#elem, &[u8]) = #elem::first_read(symbol_aml, root, current.clone());
+                                                        let (element, symbol_aml): (#elem, &[u8]) = #elem::first_read(symbol_aml, root, &current);
                                                         elements.push(element);
                                                         #add_node
                                                         (elements, symbol_aml)
@@ -1314,7 +1314,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         .first()
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
-                                                            let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, current.clone());
+                                                            let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, &current);
                                                             let #field_name: #ty = Box::new(#field_name);
                                                         },
                                                         _ => unimplemented!(),
@@ -1323,14 +1323,14 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 },
                                                 "NameString" => if has_field_list {
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
                                                     }
                                                 } else {
                                                     let defined_object_name: &Ident = defined_object_name
                                                         .as_ref()
                                                         .unwrap();
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
                                                         let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
                                                         root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                     }
@@ -1346,7 +1346,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
                                                             let (#field_name, symbol_aml): (Option<#element_type>, &[u8]) = if #element_type::matches(symbol_aml) {
-                                                                let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, current.clone());
+                                                                let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, &current);
                                                                 (Some(#field_name), symbol_aml)
                                                             } else {
                                                                 (None, symbol_aml)
@@ -1362,7 +1362,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
                                                     }
                                                 },
                                                 "Vec" => match arguments {
@@ -1392,7 +1392,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                                 } else {
                                                                     #element_type::matches(symbol_aml)
                                                                 } {
-                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, current.clone());
+                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::first_read(symbol_aml, root, &current);
                                                                     #debug
                                                                     symbol_aml = remaining_aml;
                                                                     #field_name.push(element);
@@ -1404,7 +1404,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     _ => unimplemented!(),
                                                 },
                                                 _ => quote! {
-                                                    let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
+                                                    let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
                                                 },
                                             }
                                         },
@@ -1445,8 +1445,9 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         };
         quote! {
             impl crate::acpi::machine_language::syntax::FirstReader for #ident {
-                fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: semantics::Path) -> (Self, &'a [u8]) {
+                fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
                     crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
+                    let current: crate::acpi::machine_language::semantics::Path = current.clone();
                     #first_read
                 }
             }
