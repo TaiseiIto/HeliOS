@@ -25,7 +25,8 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn add_node(&mut self, mut path: Path, object: Object) {
+    pub fn add_node(&mut self, path: &Path, object: Object) {
+        let mut path: Path = path.clone();
         if let Some(name) = path.pop_first_segment() {
             match name {
                 Segment::Child {
@@ -35,19 +36,19 @@ impl Node {
                     .iter_mut()
                     .find(|child| child.name == name) {
                     Some(child) => {
-                        child.add_node(path, object);
+                        child.add_node(&path, object);
                     },
                     None => if path.is_empty() {
                         self.children.push(Self::new(name, object));
                     } else {
                         self.children.push(Self::new(name, Object::Scope));
-                        self.add_node(path, object);
+                        self.add_node(&path, object);
                     },
                 },
                 Segment::Parent => unreachable!(),
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
-                    self.add_node(path, object);
+                    self.add_node(&path, object);
                 },
             }
         }
@@ -152,7 +153,8 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn alias(original_path: Path) -> Self {
+    pub fn alias(original_path: &Path) -> Self {
+        let original_path: Path = original_path.clone();
         Self::Alias {
             original_path,
         }
@@ -317,7 +319,9 @@ pub struct RelativePath {
 }
 
 impl RelativePath {
-    pub fn new(current: Path, target: Path) -> Self {
+    pub fn new(current: &Path, target: &Path) -> Self {
+        let current: Path = current.clone();
+        let target: Path = target.clone();
         Self {
             current,
             target,

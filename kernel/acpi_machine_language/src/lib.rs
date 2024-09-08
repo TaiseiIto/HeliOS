@@ -1265,7 +1265,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     quote! {
                                                         if index == 0 {
                                                             current += (&element).into();
-                                                            root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                            root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                         }
                                                     }
                                                 },
@@ -1332,7 +1332,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, current.clone());
                                                         let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(current.clone(), crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {

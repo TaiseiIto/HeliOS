@@ -634,7 +634,7 @@ impl FirstReader for DefAlias {
         let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
-        root.add_node(current.clone(), semantics::Object::alias(original_path));
+        root.add_node(&current, semantics::Object::alias(&original_path));
         let name_strings: [NameString; 2] = [original_name, new_name];
         let def_alias = Self(
             alias_op,
@@ -1135,7 +1135,7 @@ impl FirstReader for DefMethod {
         let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::first_read(symbol_aml, root, current.clone());
         let current: semantics::Path = current + (&name_string).into();
         let number_of_arguments: usize = method_flags.arg_count() as usize;
-        root.add_node(current.clone(), semantics::Object::method(number_of_arguments));
+        root.add_node(&current, semantics::Object::method(number_of_arguments));
         let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::first_read(symbol_aml, root, current.clone());
         assert!(symbol_aml.is_empty());
         let symbol = Self(
@@ -2102,7 +2102,7 @@ impl FirstReader for MethodInvocation {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, current.clone());
-        let number_of_arguments: usize = semantics::RelativePath::new(current.clone(), (&name_string).into())
+        let number_of_arguments: usize = semantics::RelativePath::new(&current, &((&name_string).into()))
             .find_map(|method| root.number_of_arguments(&method))
             .unwrap();
         let mut symbol_aml: &[u8] = symbol_aml;
@@ -2436,7 +2436,7 @@ impl FirstReader for NamedField {
         let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::first_read(symbol_aml, root, current.clone());
         let path: semantics::Path = (&name_seg).into();
         let current: semantics::Path = current + path;
-        root.add_node(current.clone(), semantics::Object::NamedField);
+        root.add_node(&current, semantics::Object::NamedField);
         let pkg_length: PkgLength = symbol_aml.into();
         let named_field = Self(
             name_seg,
