@@ -2151,7 +2151,6 @@ pub struct MethodInvocation(
 
 impl FirstReader for MethodInvocation {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        crate::com2_println!("Read {:02x?} as MethodInvocation", &aml[0..core::cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2198,16 +2197,18 @@ impl Reader for MethodInvocation {
 
 impl SecondReader for MethodInvocation {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        crate::com2_println!("Read {:02x?} as MethodInvocation", &aml[0..core::cmp::min(10, aml.len())]);
+        com2_println!("Read {:02x?} as MethodInvocation", &aml[0..core::cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
         let method = semantics::RelativePath::new(&current, &method);
+        com2_println!("method = {:#x?}", method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
             .unwrap();
+        com2_println!("number_of_arguments = {:#x?}", number_of_arguments);
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)
