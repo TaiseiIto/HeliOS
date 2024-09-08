@@ -84,12 +84,19 @@ impl Node {
         }
     }
 
-    pub fn find_number_of_arguments_with_relative_path(&self, current: &Path, method: &Path) -> Option<usize> {
-        RelativePath::new(current, method)
-            .find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
+    pub fn find_number_of_arguments_with_relative_path(&self, method: &RelativePath) -> Option<usize> {
+        let mut method: RelativePath = self.original_path(method);
+        method.find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
     }
 
-    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<Path> {
+    pub fn original_path(&self, alias: &RelativePath) -> RelativePath {
+        match self.solve_relative_alias(alias) {
+            Some(alias) => self.original_path(&alias),
+            None => alias.clone(),
+        }
+    }
+
+    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<RelativePath> {
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
             Some(segment) => match segment {
@@ -110,9 +117,9 @@ impl Node {
         }
     }
 
-    pub fn solve_relative_alias(&self, current: &Path, alias: &Path) -> Option<Path> {
-        RelativePath::new(current, alias)
-            .find_map(|alias| self.solve_absolute_alias(&alias))
+    pub fn solve_relative_alias(&self, alias: &RelativePath) -> Option<RelativePath> {
+        let mut alias: RelativePath = alias.clone();
+        alias.find_map(|alias| self.solve_absolute_alias(&alias))
     }
 }
 
@@ -156,7 +163,7 @@ impl fmt::Debug for Node {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
     Alias {
-        original_path: Path,
+        original_path: RelativePath,
     },
     CreateBitField,
     CreateByteField,
@@ -183,8 +190,8 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn alias(original_path: &Path) -> Self {
-        let original_path: Path = original_path.clone();
+    pub fn alias(current: &Path, original_path: &Path) -> Self {
+        let original_path = RelativePath::new(current, original_path);
         Self::Alias {
             original_path,
         }
@@ -205,7 +212,7 @@ impl Object {
         }
     }
 
-    pub fn solve_alias(&self) -> Option<Path> {
+    pub fn solve_alias(&self) -> Option<RelativePath> {
         match self {
             Self::Alias {
                 original_path,
@@ -352,6 +359,7 @@ impl fmt::Debug for Path {
     }
 }
 
+#[derive(Clone, Debug, Eq)]
 pub struct RelativePath {
     current: Path,
     target: Path,
@@ -380,6 +388,12 @@ impl Iterator for RelativePath {
         current
             .pop_last_segment()
             .map(|_| absolute_path)
+    }
+}
+
+impl PartialEq for RelativePath {
+    fn eq(&self, other: &Self) -> bool {
+        self.current.clone() + self.target.clone() == other.current.clone() + other.target.clone()
     }
 }
 

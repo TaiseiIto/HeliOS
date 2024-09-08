@@ -635,7 +635,7 @@ impl FirstReader for DefAlias {
         let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
-        root.add_node(&current, semantics::Object::alias(&original_path));
+        root.add_node(&current, semantics::Object::alias(&current, &original_path));
         let name_strings: [NameString; 2] = [original_name, new_name];
         let def_alias = Self(
             alias_op,
@@ -2106,8 +2106,9 @@ impl FirstReader for MethodInvocation {
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
+        let method = semantics::RelativePath::new(&current, &method);
         let number_of_arguments: usize = root
-            .find_number_of_arguments_with_relative_path(&current, &method)
+            .find_number_of_arguments_with_relative_path(&method)
             .unwrap();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
