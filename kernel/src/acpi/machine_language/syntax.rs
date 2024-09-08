@@ -2229,9 +2229,22 @@ impl SecondReader for MethodInvocation {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(second_reader)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
+}
+
+impl SecondReader for MethodTermList {
+    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
+        let symbol_aml: &[u8] = aml;
+        let (term_list, symbol_aml): (TermList, &[u8]) = TermList::second_read(symbol_aml, root, &current);
+        let method_term_list = Self::SyntaxTree(term_list);
+        let aml: &[u8] = &aml[method_term_list.length()..];
+        (method_term_list, aml)
+    }
 }
 
 /// # MethodOp

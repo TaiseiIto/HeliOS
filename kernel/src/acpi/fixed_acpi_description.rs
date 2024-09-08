@@ -13,7 +13,10 @@ use {
         generic_address,
         machine_language::{
             self,
-            syntax::FirstReader,
+            syntax::{
+                FirstReader,
+                SecondReader,
+            },
         },
         system_description,
     },
@@ -121,8 +124,10 @@ impl Table {
         let dsdt: &[u8] = dsdt.definition_block();
         let mut semantic_tree = machine_language::semantics::Node::default();
         let current = machine_language::semantics::Path::root();
-        let (syntax_tree, dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
-        assert!(dsdt.is_empty());
+        let (syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
+        assert!(unread_dsdt.is_empty());
+        let (syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::second_read(dsdt, &mut semantic_tree, &current);
+        assert!(unread_dsdt.is_empty());
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
