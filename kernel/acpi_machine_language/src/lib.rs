@@ -2344,7 +2344,8 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             .iter()
                             .take(matching_elements)
                             .rev()
-                            .for_each(|field| {
+                            .enumerate()
+                            .for_each(|(index, field)| {
                                 let Field {
                                     attrs: _,
                                     vis: _,
@@ -2371,12 +2372,18 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     .unwrap();
                                                 (0..len)
                                                     .for_each(|_| {
-                                                        matches = quote! {
-                                                            if #elem::matches(aml) {
-                                                                let (_, aml): (#elem, &[u8]) = #elem::read(aml);
-                                                                #matches
-                                                            } else {
-                                                                false
+                                                        matches = if index == 0 {
+                                                            quote! {
+                                                                #elem::matches(aml)
+                                                            }
+                                                        } else {
+                                                            quote! {
+                                                                if #elem::matches(aml) {
+                                                                    let (_, aml): (#elem, &[u8]) = #elem::read(aml);
+                                                                    #matches
+                                                                } else {
+                                                                    false
+                                                                }
                                                             }
                                                         };
                                                     });
@@ -2413,12 +2420,18 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     .first()
                                                     .unwrap() {
                                                     GenericArgument::Type(element_type) => {
-                                                        matches = quote! {
-                                                            if #element_type::matches(aml) {
-                                                                let (_, aml): (#element_type, &[u8]) = #element_type::read(aml);
-                                                                #matches
-                                                            } else {
-                                                                false
+                                                        matches = if index == 0 {
+                                                            quote! {
+                                                                #element_type::matches(aml)
+                                                            }
+                                                        } else {
+                                                            quote! {
+                                                                if #element_type::matches(aml) {
+                                                                    let (_, aml): (#element_type, &[u8]) = #element_type::read(aml);
+                                                                    #matches
+                                                                } else {
+                                                                    false
+                                                                }
                                                             }
                                                         };
                                                     },
@@ -2450,12 +2463,18 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 _ => unimplemented!(),
                                             },
                                             _ => {
-                                                matches = quote! {
-                                                    if #ty::matches(aml) {
-                                                        let (_, aml): (#ty, &[u8]) = #ty::read(aml);
-                                                        #matches
-                                                    } else {
-                                                        false
+                                                matches = if index == 0 {
+                                                    quote! {
+                                                        #ty::matches(aml)
+                                                    }
+                                                } else {
+                                                    quote! {
+                                                        if #ty::matches(aml) {
+                                                            let (_, aml): (#ty, &[u8]) = #ty::read(aml);
+                                                            #matches
+                                                        } else {
+                                                            false
+                                                        }
                                                     }
                                                 };
                                             },
