@@ -111,7 +111,7 @@ impl Node {
                     .iter()
                     .find(|child| child.name == segment)
                     .and_then(|child| child.solve_absolute_alias(&alias)),
-                Segment::Parent => unreachable!(),
+                Segment::Parent => None,
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
                     self.solve_absolute_alias(&alias)
