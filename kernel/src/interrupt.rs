@@ -697,6 +697,7 @@ extern "x86-interrupt" fn handler_0x00(stack_frame: StackFrame) {
     com2_println!("Divide Error Exception (#DE)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Divide Error Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -713,6 +714,7 @@ extern "x86-interrupt" fn handler_0x01(stack_frame: StackFrame) {
     com2_println!("Debug Exception (#DB)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Debug Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -729,6 +731,7 @@ extern "x86-interrupt" fn handler_0x02(stack_frame: StackFrame) {
     com2_println!("NMI Interrupt");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("NMI Interrupt");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -745,6 +748,7 @@ extern "x86-interrupt" fn handler_0x03(stack_frame: StackFrame) {
     com2_println!("Breakpoint Exception (#BP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Breakpoint Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -761,6 +765,7 @@ extern "x86-interrupt" fn handler_0x04(stack_frame: StackFrame) {
     com2_println!("Overflow Exception (#OF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Overflow Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -777,6 +782,7 @@ extern "x86-interrupt" fn handler_0x05(stack_frame: StackFrame) {
     com2_println!("BOUND Range Exceeded Exception (#BR)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("BOUND Range Exceeded Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -793,6 +799,7 @@ extern "x86-interrupt" fn handler_0x06(stack_frame: StackFrame) {
     com2_println!("Invalid Opcode Exception (#UD)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Invalid Opcode Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -809,6 +816,7 @@ extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
     com2_println!("Device Not Available Exception (#NM)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Device Not Available Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -825,6 +833,7 @@ extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Double Fault Exception (#DF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Double Fault Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -841,6 +850,7 @@ extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
     com2_println!("Coprocessor Segment Overrun");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Coprocessor Segment Overrun");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -857,6 +867,7 @@ extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Invalid TSS Exception (#TS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Invalid TSS Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -873,6 +884,7 @@ extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Segment Not Present (#NP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Segment Not Present");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -889,6 +901,7 @@ extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Stack Fault Exception (#SS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Stack Fault Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -905,6 +918,7 @@ extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAnd
     com2_println!("General Protection Exception (#GP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("General Protection Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -921,6 +935,7 @@ extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Page-Fault Exception (#PF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Page-Fault Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -937,6 +952,7 @@ extern "x86-interrupt" fn handler_0x0f(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 0");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 0");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -953,6 +969,7 @@ extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
     com2_println!("x87 Floating-Point Error (#MF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("x87 Floating-Point Error");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -969,6 +986,7 @@ extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Alignment Check Exception (#AC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Alignment Check Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -985,6 +1003,7 @@ extern "x86-interrupt" fn handler_0x12(stack_frame: StackFrame) {
     com2_println!("Machine Check Exception (#MC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Machine Check Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1001,6 +1020,7 @@ extern "x86-interrupt" fn handler_0x13(stack_frame: StackFrame) {
     com2_println!("SIMD Floating-Point Exception (#XM)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("SIMD Floating-Point Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1017,6 +1037,7 @@ extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
     com2_println!("Virtualization Exception (#VE)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Virtualization Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1033,6 +1054,7 @@ extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Control Protection Exception (#CP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Control Protection Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1049,6 +1071,7 @@ extern "x86-interrupt" fn handler_0x16(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 1");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 1");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1065,6 +1088,7 @@ extern "x86-interrupt" fn handler_0x17(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 2");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 2");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1081,6 +1105,7 @@ extern "x86-interrupt" fn handler_0x18(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 3");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 3");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1097,6 +1122,7 @@ extern "x86-interrupt" fn handler_0x19(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 4");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 4");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1113,6 +1139,7 @@ extern "x86-interrupt" fn handler_0x1a(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 5");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 5");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1129,6 +1156,7 @@ extern "x86-interrupt" fn handler_0x1b(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 6");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 6");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1145,6 +1173,7 @@ extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
     com2_println!("Hypervisor Injection Exception (#HV)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Hypervisor Injection Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1161,6 +1190,7 @@ extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAnd
     com2_println!("VMM Communication Exception (#VC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("VMM Communication Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1177,6 +1207,7 @@ extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAnd
     com2_println!("Security Exception (#SX)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    panic!("Security Exception");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1193,6 +1224,7 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     com2_println!("Reserved Exception 7");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
     com2_println!("stack_frame = {:#x?}", stack_frame);
+    panic!("Reserved Exception 7");
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }

@@ -2222,6 +2222,8 @@ impl SecondReader for MethodInvocation {
                 .and_then(|segment| {
                     let method2number_of_arguments: BTreeMap<&str, usize> = BTreeMap::from([
                         ("_OS", 0),
+                        ("_OSI", 1),
+                        ("_REV", 0),
                     ]);
                     let segment: String = (&segment).into();
                     method2number_of_arguments
