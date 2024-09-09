@@ -2217,7 +2217,7 @@ impl SecondReader for MethodInvocation {
         com2_println!("method = {:#x?}", method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
-            .or(method
+            .or_else(|| method
                 .last_segment()
                 .and_then(|segment| {
                     let method2number_of_arguments: BTreeMap<&str, usize> = BTreeMap::from([
