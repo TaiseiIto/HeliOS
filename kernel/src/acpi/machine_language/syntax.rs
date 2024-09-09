@@ -5,7 +5,10 @@
 use {
     alloc::{
         boxed::Box,
-        collections::vec_deque::VecDeque,
+        collections::{
+            btree_map::BTreeMap,
+            vec_deque::VecDeque,
+        },
         string::String,
         vec::Vec,
     },
@@ -2216,12 +2219,14 @@ impl SecondReader for MethodInvocation {
             .find_number_of_arguments_with_relative_path(&method)
             .or(method
                 .last_segment()
-                .map(|segment| {
+                .and_then(|segment| {
+                    let method2number_of_arguments: BTreeMap<&str, usize> = BTreeMap::from([
+                        ("_OS", 0),
+                    ]);
                     let segment: String = (&segment).into();
-                    match segment.as_str() {
-                        "_OS" => Some(0),
-                        _ => None,
-                    }
+                    method2number_of_arguments
+                        .get(segment.as_str())
+                        .cloned()
                 }))
             .unwrap();
         com2_println!("number_of_arguments = {:#x?}", number_of_arguments);
