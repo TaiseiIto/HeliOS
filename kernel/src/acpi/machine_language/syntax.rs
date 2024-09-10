@@ -14,7 +14,6 @@ use {
     },
     bitfield_struct::bitfield,
     core::{
-        cmp,
         fmt,
         iter,
     },
