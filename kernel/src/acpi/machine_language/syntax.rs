@@ -18,7 +18,6 @@ use {
         fmt,
         iter,
     },
-    crate::com2_println,
     super::semantics,
 };
 
@@ -635,7 +634,6 @@ pub struct DefAlias(
 
 impl FirstReader for DefAlias {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as DefAlias", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -657,7 +655,6 @@ impl FirstReader for DefAlias {
 
 impl SecondReader for DefAlias {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as DefAlias", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -1159,7 +1156,6 @@ pub struct DefMethod(
 
 impl FirstReader for DefMethod {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as DefMethod", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -1186,7 +1182,6 @@ impl FirstReader for DefMethod {
 
 impl SecondReader for DefMethod {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as DefMethod", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2159,7 +2154,6 @@ pub struct MethodInvocation(
 
 impl FirstReader for MethodInvocation {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as MethodInvocation", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2194,7 +2188,6 @@ impl Matcher for MethodInvocation {
 
 impl Reader for MethodInvocation {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
-        com2_println!("Read {:02x?} as MethodInvocation", &aml[0..cmp::min(10, aml.len())]);
         let (name_string, aml): (NameString, &[u8]) = NameString::read(aml);
         let term_args: Vec<TermArg> = Vec::new();
         let method_invocation = Self(
@@ -2207,14 +2200,12 @@ impl Reader for MethodInvocation {
 
 impl SecondReader for MethodInvocation {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MethodInvocation", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
         let method = semantics::RelativePath::new(&current, &method);
-        com2_println!("method = {:#x?}", method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
             .or_else(|| method
@@ -2231,7 +2222,6 @@ impl SecondReader for MethodInvocation {
                         .cloned()
                 }))
             .unwrap();
-        com2_println!("number_of_arguments = {:#x?}", number_of_arguments);
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)
@@ -2261,7 +2251,6 @@ pub enum MethodTermList {
 
 impl SecondReader for MethodTermList {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MethodTermList", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2322,7 +2311,6 @@ pub struct MultiNamePath(
 
 impl FirstReader for MultiNamePath {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2363,7 +2351,6 @@ impl From<&MultiNamePath> for VecDeque<semantics::Segment> {
 
 impl Reader for MultiNamePath {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
-        com2_println!("Read {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let symbol_aml: &[u8] = aml;
         let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read(symbol_aml);
@@ -2388,7 +2375,6 @@ impl Reader for MultiNamePath {
 
 impl SecondReader for MultiNamePath {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2584,7 +2570,6 @@ pub struct NamedField(
 
 impl FirstReader for NamedField {
     fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as NamedField", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2604,7 +2589,6 @@ impl FirstReader for NamedField {
 
 impl SecondReader for NamedField {
     fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as NamedField", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
@@ -2897,7 +2881,6 @@ impl fmt::Debug for PkgLength {
 
 impl FirstReader for PkgLength {
     fn first_read<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("First Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
@@ -2924,7 +2907,6 @@ impl From<&[u8]> for PkgLength {
 
 impl Reader for PkgLength {
     fn read(aml: &[u8]) -> (Self, &[u8]) {
-        com2_println!("Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
@@ -2933,7 +2915,6 @@ impl Reader for PkgLength {
 
 impl SecondReader for PkgLength {
     fn second_read<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
