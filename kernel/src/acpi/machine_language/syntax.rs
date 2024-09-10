@@ -641,10 +641,10 @@ impl FirstReader for DefAlias {
         let symbol_aml: &[u8] = aml;
         let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::first_read(symbol_aml, root, &current);
         let (original_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
-        let (new_name, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
+        let (new_name, _symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
-        root.add_node(&current, semantics::Object::alias(&current, &original_path));
+        root.add_node(&new_path, semantics::Object::alias(&current, &original_path));
         let name_strings: [NameString; 2] = [original_name, new_name];
         let def_alias = Self(
             alias_op,
@@ -663,10 +663,10 @@ impl SecondReader for DefAlias {
         let symbol_aml: &[u8] = aml;
         let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::second_read(symbol_aml, root, &current);
         let (original_name, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
-        let (new_name, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
+        let (new_name, _symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
-        root.add_node(&current, semantics::Object::alias(&current, &original_path));
+        root.add_node(&new_path, semantics::Object::alias(&current, &original_path));
         let name_strings: [NameString; 2] = [original_name, new_name];
         let def_alias = Self(
             alias_op,
@@ -2265,7 +2265,7 @@ impl SecondReader for MethodTermList {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (term_list, symbol_aml): (TermList, &[u8]) = TermList::second_read(symbol_aml, root, &current);
+        let (term_list, _symbol_aml): (TermList, &[u8]) = TermList::second_read(symbol_aml, root, &current);
         let method_term_list = Self::SyntaxTree(term_list);
         let aml: &[u8] = &aml[method_term_list.length()..];
         (method_term_list, aml)
@@ -2896,7 +2896,7 @@ impl fmt::Debug for PkgLength {
 }
 
 impl FirstReader for PkgLength {
-    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
+    fn first_read<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
         com2_println!("First Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
@@ -2932,7 +2932,7 @@ impl Reader for PkgLength {
 }
 
 impl SecondReader for PkgLength {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
+    fn second_read<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
         com2_println!("Second Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
