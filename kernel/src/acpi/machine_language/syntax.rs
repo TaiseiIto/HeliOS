@@ -2145,7 +2145,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, matches, reader, second_reader)]
+#[manual(first_reader, reader, second_reader)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2176,12 +2176,6 @@ impl FirstReader for MethodInvocation {
         );
         let aml: &[u8] = &aml[method_invocation.length()..];
         (method_invocation, aml)
-    }
-}
-
-impl Matcher for MethodInvocation {
-    fn matches(aml: &[u8]) -> bool {
-        NameString::matches(aml) && !NullName::matches(aml)
     }
 }
 
@@ -2513,14 +2507,13 @@ pub enum NameSpaceModifierObj {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(matcher)]
 #[string]
 pub enum NameString {
     AbsolutePath(
         RootChar,
         NamePath,
     ),
-    #[matching_type = "ParentPrefixChar"]
-    #[matching_type = "NamePath"]
     RelativePath(
         PrefixPath,
         NamePath,
@@ -2554,6 +2547,16 @@ impl From<&NameString> for VecDeque<semantics::Segment> {
                     .collect()
             },
         }
+    }
+}
+
+impl Matcher for NameString {
+    fn matches(aml: &[u8]) -> bool {
+        DualNamePath::matches(aml)
+        || MultiNamePath::matches(aml)
+        || NameSeg::matches(aml)
+        || ParentPrefixChar::matches(aml)
+        || RootChar::matches(aml)
     }
 }
 

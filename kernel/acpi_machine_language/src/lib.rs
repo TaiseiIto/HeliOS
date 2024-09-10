@@ -62,7 +62,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let first_reader: proc_macro2::TokenStream = derive_first_reader(&derive_input);
     let iter: proc_macro2::TokenStream = derive_reference_to_symbol_iterator(&derive_input);
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
-    let matches: proc_macro2::TokenStream = derive_matcher(&derive_input);
+    let matcher: proc_macro2::TokenStream = derive_matcher(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let second_reader: proc_macro2::TokenStream = derive_second_reader(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
@@ -73,7 +73,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #first_reader
         #iter
         #length
-        #matches
+        #matcher
         #reader
         #second_reader
         #string_from_self
@@ -102,7 +102,7 @@ struct TypeAttribute {
     defined_object_name: Option<Ident>,
     derive_debug: bool,
     derive_first_reader: bool,
-    derive_matches: bool,
+    derive_matcher: bool,
     derive_reader: bool,
     derive_second_reader: bool,
     derive_string_from_self: bool,
@@ -216,7 +216,7 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => true,
                 }
             });
-        let derive_matches: bool = attrs
+        let derive_matcher: bool = attrs
             .iter()
             .all(|attribute| {
                 let Attribute {
@@ -251,7 +251,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .all(|token_tree| match token_tree {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "matches")
+                                        !matches!(manual_arg.as_str(), "matcher")
                                     },
                                     _ => true,
                                 }),
@@ -614,7 +614,7 @@ impl From<&DeriveInput> for TypeAttribute {
             defined_object_name,
             derive_debug,
             derive_first_reader,
-            derive_matches,
+            derive_matcher,
             derive_reader,
             derive_second_reader,
             derive_string_from_self,
@@ -815,7 +815,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -1021,7 +1021,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name,
         derive_debug: _,
         derive_first_reader,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -1520,7 +1520,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -1987,7 +1987,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -2180,7 +2180,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches,
+        derive_matcher,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -2490,7 +2490,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             _ => unimplemented!(),
         }
     };
-    if derive_matches {
+    if derive_matcher {
         quote! {
             impl crate::acpi::machine_language::syntax::Matcher for #ident {
                 fn matches(aml: &[u8]) -> bool {
@@ -2516,7 +2516,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader,
         derive_second_reader: _,
         derive_string_from_self: _,
@@ -2960,7 +2960,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         defined_object_name,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader,
         derive_string_from_self: _,
@@ -3459,7 +3459,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
-        derive_matches: _,
+        derive_matcher: _,
         derive_reader: _,
         derive_second_reader: _,
         derive_string_from_self,
