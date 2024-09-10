@@ -14,6 +14,7 @@ use {
         iter,
         ops::Add,
     },
+    crate::com2_println,
     super::syntax,
 };
 
@@ -63,6 +64,7 @@ impl Node {
     }
 
     pub fn find_number_of_arguments_with_absolute_path(&self, method: &Path) -> Option<usize> {
+        com2_println!("find_number_of_arguments_with_absolute_path(self.name = {:#x?}, method = {:#x?})", self.name, method);
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {
@@ -84,11 +86,13 @@ impl Node {
     }
 
     pub fn find_number_of_arguments_with_relative_path(&self, method: &RelativePath) -> Option<usize> {
+        com2_println!("find_number_of_arguments_with_relative_path(self.name = {:#x?}, method = {:#x?})", self.name, method);
         let mut method: RelativePath = self.original_path(method);
         method.find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
     }
 
     pub fn original_path(&self, alias: &RelativePath) -> RelativePath {
+        com2_println!("original_path(self.name = {:#x?}, alias = {:#x?})", self.name, alias);
         match self.solve_relative_alias(alias) {
             Some(alias) => self.original_path(&alias),
             None => alias.clone(),
@@ -96,6 +100,7 @@ impl Node {
     }
 
     pub fn solve_absolute_alias(&self, alias: &Path) -> Option<RelativePath> {
+        com2_println!("solve_absolute_alias(self.name = {:#x?}), alias = {:#x?}", self.name, alias);
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
             Some(segment) => match segment {
@@ -117,6 +122,7 @@ impl Node {
     }
 
     pub fn solve_relative_alias(&self, alias: &RelativePath) -> Option<RelativePath> {
+        com2_println!("solve_relative_alias(self.name = {:#x?}, alias = {:#x?})", self.name, alias);
         let mut alias: RelativePath = alias.clone();
         alias.find_map(|alias| self.solve_absolute_alias(&alias))
     }
