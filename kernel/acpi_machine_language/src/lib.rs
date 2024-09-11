@@ -64,7 +64,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
     let matcher: proc_macro2::TokenStream = derive_matcher(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
-    let second_reader: proc_macro2::TokenStream = derive_second_reader(&derive_input);
+    let reader_inside_method: proc_macro2::TokenStream = derive_reader_inside_method(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
@@ -75,7 +75,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #length
         #matcher
         #reader
-        #second_reader
+        #reader_inside_method
         #string_from_self
     }   .try_into()
         .unwrap()
@@ -104,7 +104,7 @@ struct TypeAttribute {
     derive_first_reader: bool,
     derive_matcher: bool,
     derive_reader: bool,
-    derive_second_reader: bool,
+    derive_reader_inside_method: bool,
     derive_string_from_self: bool,
     encoding: Option<Encoding>,
     flags: bool,
@@ -306,7 +306,7 @@ impl From<&DeriveInput> for TypeAttribute {
                     _ => true,
                 }
             });
-        let derive_second_reader: bool = attrs
+        let derive_reader_inside_method: bool = attrs
             .iter()
             .all(|attribute| {
                 let Attribute {
@@ -341,7 +341,7 @@ impl From<&DeriveInput> for TypeAttribute {
                                 .all(|token_tree| match token_tree {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "second_reader")
+                                        !matches!(manual_arg.as_str(), "reader_inside_method")
                                     },
                                     _ => true,
                                 }),
@@ -616,7 +616,7 @@ impl From<&DeriveInput> for TypeAttribute {
             derive_first_reader,
             derive_matcher,
             derive_reader,
-            derive_second_reader,
+            derive_reader_inside_method,
             derive_string_from_self,
             encoding,
             flags,
@@ -817,7 +817,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding: _,
         flags,
@@ -1023,7 +1023,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_first_reader,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1523,7 +1523,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1990,7 +1990,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2183,7 +2183,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_first_reader: _,
         derive_matcher,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2519,7 +2519,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2950,7 +2950,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
         vis: _,
@@ -2964,7 +2964,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader,
+        derive_reader_inside_method,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2972,8 +2972,8 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
         matching_elements: _,
         string: _,
     } = derive_input.into();
-    if derive_second_reader {
-        let second_read: proc_macro2::TokenStream = if flags {
+    if derive_reader_inside_method {
+        let read_inside_method: proc_macro2::TokenStream = if flags {
             quote! {
                 assert!(Self::matches(aml), "aml = {:02x?}", aml);
                 match aml {
@@ -3125,7 +3125,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                                 .first()
                                                                 .unwrap() {
                                                                 GenericArgument::Type(element_type) => quote! {
-                                                                    let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::second_read(symbol_aml, root, &current);
+                                                                    let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_inside_method(symbol_aml, root, &current);
                                                                     let #field_name: #ty = Box::new(#field_name);
                                                                 },
                                                                 _ => unimplemented!(),
@@ -3133,7 +3133,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                             _ => unimplemented!(),
                                                         }
                                                         _ => quote! {
-                                                            let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::second_read(symbol_aml, root, &current);
+                                                            let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
                                                         },
                                                     }
                                                 },
@@ -3268,7 +3268,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 #mutable_current
                                                 let (elements, symbol_aml): (alloc::vec::Vec<#elem>, &[u8]) = (0..#len)
                                                     .fold((alloc::vec::Vec::new(), symbol_aml), |(mut elements, symbol_aml), index| {
-                                                        let (element, symbol_aml): (#elem, &[u8]) = #elem::second_read(symbol_aml, root, &current);
+                                                        let (element, symbol_aml): (#elem, &[u8]) = #elem::read_inside_method(symbol_aml, root, &current);
                                                         elements.push(element);
                                                         #add_node
                                                         (elements, symbol_aml)
@@ -3306,7 +3306,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                         .first()
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
-                                                            let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::second_read(symbol_aml, root, &current);
+                                                            let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_inside_method(symbol_aml, root, &current);
                                                             let #field_name: #ty = Box::new(#field_name);
                                                         },
                                                         _ => unimplemented!(),
@@ -3315,14 +3315,14 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                 },
                                                 "NameString" => if has_field_list {
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::second_read(symbol_aml, root, &current);
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
                                                     }
                                                 } else {
                                                     let defined_object_name: &Ident = defined_object_name
                                                         .as_ref()
                                                         .unwrap();
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::second_read(symbol_aml, root, &current);
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
                                                         let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
                                                         root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
                                                     }
@@ -3338,7 +3338,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                         .unwrap() {
                                                         GenericArgument::Type(element_type) => quote! {
                                                             let (#field_name, symbol_aml): (Option<#element_type>, &[u8]) = if #element_type::matches(symbol_aml) {
-                                                                let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::second_read(symbol_aml, root, &current);
+                                                                let (#field_name, symbol_aml): (#element_type, &[u8]) = #element_type::read_inside_method(symbol_aml, root, &current);
                                                                 (Some(#field_name), symbol_aml)
                                                             } else {
                                                                 (None, symbol_aml)
@@ -3354,7 +3354,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::second_read(symbol_aml, root, &current);
+                                                        let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
                                                     }
                                                 },
                                                 "Vec" => match arguments {
@@ -3384,7 +3384,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                                 } else {
                                                                     #element_type::matches(symbol_aml)
                                                                 } {
-                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::second_read(symbol_aml, root, &current);
+                                                                    let (element, remaining_aml): (#element_type, &[u8]) = #element_type::read_inside_method(symbol_aml, root, &current);
                                                                     #debug
                                                                     symbol_aml = remaining_aml;
                                                                     #field_name.push(element);
@@ -3396,7 +3396,7 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
                                                     _ => unimplemented!(),
                                                 },
                                                 _ => quote! {
-                                                    let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::second_read(symbol_aml, root, &current);
+                                                    let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
                                                 },
                                             }
                                         },
@@ -3436,11 +3436,11 @@ fn derive_second_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream 
             }
         };
         quote! {
-            impl crate::acpi::machine_language::syntax::SecondReader for #ident {
-                fn second_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    crate::com2_println!("Second Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
+            impl crate::acpi::machine_language::syntax::ReaderInsideMethod for #ident {
+                fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
+                    crate::com2_println!("Read Inside Method {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     let current: crate::acpi::machine_language::semantics::Path = current.clone();
-                    #second_read
+                    #read_inside_method
                 }
             }
         }
@@ -3464,7 +3464,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         derive_first_reader: _,
         derive_matcher: _,
         derive_reader: _,
-        derive_second_reader: _,
+        derive_reader_inside_method: _,
         derive_string_from_self,
         encoding: _,
         flags: _,

@@ -22,7 +22,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: FirstReader + Matcher + Reader + ReferenceToSymbolIterator + SecondReader + WithLength {
+pub trait Analyzer: FirstReader + Matcher + Reader + ReaderInsideMethod + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
@@ -37,13 +37,13 @@ pub trait Reader {
     fn read(aml: &[u8]) -> (Self, &[u8]) where Self: Sized;
 }
 
+pub trait ReaderInsideMethod {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
+}
+
 pub trait ReferenceToSymbolIterator {
     fn iter(&self) -> SymbolIterator<'_>;
     fn iter_mut(&mut self) -> MutSymbolIterator<'_>;
-}
-
-pub trait SecondReader {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
 }
 
 pub trait WithLength {
@@ -634,7 +634,7 @@ pub struct DefAdd(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, second_reader)]
+#[manual(first_reader, reader_inside_method)]
 pub struct DefAlias(
     AliasOp,
     [NameString; 2],
@@ -662,15 +662,15 @@ impl FirstReader for DefAlias {
     }
 }
 
-impl SecondReader for DefAlias {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as DefAlias", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for DefAlias {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as DefAlias", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::second_read(symbol_aml, root, &current);
-        let (original_name, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
-        let (new_name, _symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
+        let (alias_op, symbol_aml): (AliasOp, &[u8]) = AliasOp::read_inside_method(symbol_aml, root, &current);
+        let (original_name, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
+        let (new_name, _symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
         let original_path: semantics::Path = current.clone() + (&original_name).into();
         let new_path: semantics::Path = current.clone() + (&new_name).into();
         root.add_node(&new_path, semantics::Object::alias(&current, &original_path));
@@ -921,7 +921,7 @@ pub struct DefEvent(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, second_reader)]
+#[manual(first_reader, reader_inside_method)]
 pub struct DefExternal(
     ExternalOp,
     NameString,
@@ -953,16 +953,16 @@ impl FirstReader for DefExternal {
     }
 }
 
-impl SecondReader for DefExternal {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as DefExternal", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for DefExternal {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as DefExternal", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::second_read(symbol_aml, root, &current);
-        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
-        let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::second_read(symbol_aml, root, &current);
-        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::second_read(symbol_aml, root, &current);
+        let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::read_inside_method(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
+        let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::read_inside_method(symbol_aml, root, &current);
+        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::read_inside_method(symbol_aml, root, &current);
         let current: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = (&argument_count).into();
         root.add_node(&current, semantics::Object::external(number_of_arguments));
@@ -1203,7 +1203,7 @@ pub struct DefMatch(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, second_reader)]
+#[manual(first_reader, reader_inside_method)]
 pub struct DefMethod(
     MethodOp,
     PkgLength,
@@ -1240,20 +1240,20 @@ impl FirstReader for DefMethod {
     }
 }
 
-impl SecondReader for DefMethod {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as DefMethod", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for DefMethod {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as DefMethod", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (method_op, symbol_aml): (MethodOp, &[u8]) = MethodOp::second_read(symbol_aml, root, &current);
-        let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::second_read(symbol_aml, root, &current);
-        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
-        let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::second_read(symbol_aml, root, &current);
+        let (method_op, symbol_aml): (MethodOp, &[u8]) = MethodOp::read_inside_method(symbol_aml, root, &current);
+        let (pkg_length, symbol_aml): (PkgLength, &[u8]) = PkgLength::read_inside_method(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
+        let (method_flags, symbol_aml): (MethodFlags, &[u8]) = MethodFlags::read_inside_method(symbol_aml, root, &current);
         let current: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = method_flags.arg_count() as usize;
         root.add_node(&current, semantics::Object::method(number_of_arguments));
-        let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::second_read(symbol_aml, root, &current);
+        let (method_term_list, symbol_aml): (MethodTermList, &[u8]) = MethodTermList::read_inside_method(symbol_aml, root, &current);
         assert!(symbol_aml.is_empty());
         let symbol = Self(
             method_op,
@@ -2207,7 +2207,7 @@ pub struct MethodFlags {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, reader, second_reader)]
+#[manual(first_reader, reader, reader_inside_method)]
 pub struct MethodInvocation(
     NameString,
     Vec<TermArg>,
@@ -2255,13 +2255,13 @@ impl Reader for MethodInvocation {
     }
 }
 
-impl SecondReader for MethodInvocation {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MethodInvocation", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for MethodInvocation {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as MethodInvocation", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
         let method = semantics::RelativePath::new(&current, &method);
         com2_println!("method = {:#x?}", method);
@@ -2286,7 +2286,7 @@ impl SecondReader for MethodInvocation {
         let mut term_args: Vec<TermArg> = Vec::new();
         (0..number_of_arguments)
             .for_each(|_| {
-                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::second_read(symbol_aml, root, &current);
+                let (term_arg, remaining_aml): (TermArg, &[u8]) = TermArg::read_inside_method(symbol_aml, root, &current);
                 symbol_aml = remaining_aml;
                 term_args.push(term_arg);
             });
@@ -2303,19 +2303,19 @@ impl SecondReader for MethodInvocation {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(second_reader)]
+#[manual(reader_inside_method)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
 }
 
-impl SecondReader for MethodTermList {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MethodTermList", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for MethodTermList {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as MethodTermList", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (term_list, _symbol_aml): (TermList, &[u8]) = TermList::second_read(symbol_aml, root, &current);
+        let (term_list, _symbol_aml): (TermList, &[u8]) = TermList::read_inside_method(symbol_aml, root, &current);
         let method_term_list = Self::SyntaxTree(term_list);
         let aml: &[u8] = &aml[method_term_list.length()..];
         (method_term_list, aml)
@@ -2359,7 +2359,7 @@ pub struct MsecTime(TermArg);
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, reader, second_reader)]
+#[manual(first_reader, reader, reader_inside_method)]
 #[string]
 pub struct MultiNamePath(
     #[not_string]
@@ -2436,20 +2436,20 @@ impl Reader for MultiNamePath {
     }
 }
 
-impl SecondReader for MultiNamePath {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for MultiNamePath {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as MultiNamePath", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::second_read(symbol_aml, root, &current);
-        let (seg_count, symbol_aml): (SegCount, &[u8]) = SegCount::second_read(symbol_aml, root, &current);
+        let (multi_name_prefix, symbol_aml): (MultiNamePrefix, &[u8]) = MultiNamePrefix::read_inside_method(symbol_aml, root, &current);
+        let (seg_count, symbol_aml): (SegCount, &[u8]) = SegCount::read_inside_method(symbol_aml, root, &current);
         let number_of_name_segs: usize = (&seg_count).into();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut name_segs: Vec<NameSeg> = Vec::new();
         (0..number_of_name_segs)
             .for_each(|_| {
-                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::second_read(symbol_aml, root, &current);
+                let (name_seg, remaining_aml): (NameSeg, &[u8]) = NameSeg::read_inside_method(symbol_aml, root, &current);
                 symbol_aml = remaining_aml;
                 name_segs.push(name_seg);
             });
@@ -2635,7 +2635,7 @@ impl Matcher for NameString {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, second_reader)]
+#[manual(first_reader, reader_inside_method)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
@@ -2661,13 +2661,13 @@ impl FirstReader for NamedField {
     }
 }
 
-impl SecondReader for NamedField {
-    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as NamedField", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for NamedField {
+    fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as NamedField", &aml[0..cmp::min(10, aml.len())]);
         assert!(Self::matches(aml), "aml = {:#x?}", aml);
         let current: semantics::Path = current.clone();
         let symbol_aml: &[u8] = aml;
-        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::second_read(symbol_aml, root, &current);
+        let (name_seg, symbol_aml): (NameSeg, &[u8]) = NameSeg::read_inside_method(symbol_aml, root, &current);
         let path: semantics::Path = (&name_seg).into();
         let current: semantics::Path = current.clone() + path;
         root.add_node(&current, semantics::Object::NamedField);
@@ -2923,7 +2923,7 @@ impl PkgLeadByte {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.4 Package Length Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(debug, first_reader, reader, second_reader)]
+#[manual(debug, first_reader, reader, reader_inside_method)]
 pub struct PkgLength(
     PkgLeadByte,
     Vec<ByteData>,
@@ -2990,9 +2990,9 @@ impl Reader for PkgLength {
     }
 }
 
-impl SecondReader for PkgLength {
-    fn second_read<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
-        com2_println!("Second Read {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
+impl ReaderInsideMethod for PkgLength {
+    fn read_inside_method<'a>(aml: &'a [u8], _root: &mut semantics::Node, _current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Read Inside Method {:02x?} as PkgLength", &aml[0..cmp::min(10, aml.len())]);
         let pkg_length: Self = aml.into();
         let aml: &[u8] = &aml[pkg_length.length()..pkg_length.pkg_length()];
         (pkg_length, aml)
