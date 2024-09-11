@@ -65,6 +65,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let matcher: proc_macro2::TokenStream = derive_matcher(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let reader_inside_method: proc_macro2::TokenStream = derive_reader_inside_method(&derive_input);
+    let reader_outside_method: proc_macro2::TokenStream = derive_reader_outside_method(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
@@ -76,6 +77,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #matcher
         #reader
         #reader_inside_method
+        #reader_outside_method
         #string_from_self
     }   .try_into()
         .unwrap()
@@ -3446,6 +3448,22 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         }
     } else {
         quote! {
+        }
+    }
+}
+
+fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
+            fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
+            }
         }
     }
 }

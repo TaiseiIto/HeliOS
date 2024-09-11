@@ -22,7 +22,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: FirstReader + Matcher + Reader + ReaderInsideMethod + ReferenceToSymbolIterator + WithLength {
+pub trait Analyzer: FirstReader + Matcher + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
@@ -39,6 +39,10 @@ pub trait Reader {
 
 pub trait ReaderInsideMethod {
     fn read_inside_method<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) where Self: Sized;
+}
+
+pub trait ReaderOutsideMethod {
+    fn read_outside_method(&mut self, root: &mut semantics::Node, current: &semantics::Path);
 }
 
 pub trait ReferenceToSymbolIterator {
