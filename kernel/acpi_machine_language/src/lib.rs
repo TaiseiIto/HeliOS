@@ -63,6 +63,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let iter: proc_macro2::TokenStream = derive_reference_to_symbol_iterator(&derive_input);
     let length: proc_macro2::TokenStream = derive_with_length(&derive_input);
     let matcher: proc_macro2::TokenStream = derive_matcher(&derive_input);
+    let path_getter: proc_macro2::TokenStream = derive_path_getter(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let reader_inside_method: proc_macro2::TokenStream = derive_reader_inside_method(&derive_input);
     let reader_outside_method: proc_macro2::TokenStream = derive_reader_outside_method(&derive_input);
@@ -75,6 +76,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #iter
         #length
         #matcher
+        #path_getter
         #reader
         #reader_inside_method
         #reader_outside_method
@@ -2530,6 +2532,23 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     } else {
         quote! {
+        }
+    }
+}
+
+fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::PathGetter for #ident {
+            fn get_path(&self) -> Option<crate::acpi::machine_language::semantics::Path> {
+                None
+            }
         }
     }
 }

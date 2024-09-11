@@ -22,7 +22,7 @@ use {
     super::semantics,
 };
 
-pub trait Analyzer: FirstReader + Matcher + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
+pub trait Analyzer: FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
@@ -31,6 +31,10 @@ pub trait FirstReader {
 
 pub trait Matcher {
     fn matches(aml: &[u8]) -> bool where Self: Sized;
+}
+
+pub trait PathGetter {
+    fn get_path(&self) -> Option<semantics::Path>;
 }
 
 pub trait Reader {
