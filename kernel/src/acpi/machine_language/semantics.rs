@@ -427,13 +427,25 @@ impl PartialEq for RelativePath {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum Segment {
     Child {
         name: String,
     },
     Parent,
     Root,
+}
+
+impl fmt::Debug for Segment {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Child {
+                name,
+            } => formatter.write_str(name),
+            Self::Parent => formatter.write_str("^"),
+            Self::Root => formatter.write_str("\\"),
+        }
+    }
 }
 
 impl From<&syntax::NameSeg> for Segment {
