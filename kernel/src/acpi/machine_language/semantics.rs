@@ -179,7 +179,9 @@ pub enum Object {
     DataRegion,
     Device,
     Event,
-    External,
+    External {
+        number_of_arguments: usize,
+    },
     Load,
     Method {
         number_of_arguments: usize,
@@ -202,6 +204,12 @@ impl Object {
         }
     }
 
+    pub fn external(number_of_arguments: usize) -> Self {
+        Self::External {
+            number_of_arguments,
+        }
+    }
+
     pub fn method(number_of_arguments: usize) -> Self {
         Self::Method {
             number_of_arguments,
@@ -210,6 +218,9 @@ impl Object {
 
     pub fn number_of_arguments(&self) -> usize {
         match self {
+            Self::External {
+                number_of_arguments,
+            } => *number_of_arguments,
             Self::Method {
                 number_of_arguments,
             } => *number_of_arguments,

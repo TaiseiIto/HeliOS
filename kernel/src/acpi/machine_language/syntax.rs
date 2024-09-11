@@ -181,6 +181,13 @@ pub struct ArgObject(TermArg);
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ArgumentCount(ByteData);
 
+impl From<&ArgumentCount> for usize {
+    fn from(argument_count: &ArgumentCount) -> Self {
+        let ArgumentCount(byte_data) = argument_count;
+        byte_data.into()
+    }
+}
+
 /// # AsciiChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -914,12 +921,61 @@ pub struct DefEvent(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(first_reader, second_reader)]
 pub struct DefExternal(
     ExternalOp,
     NameString,
     ObjectType,
     ArgumentCount,
 );
+
+impl FirstReader for DefExternal {
+    fn first_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("First Read {:02x?} as DefExternal", &aml[0..cmp::min(10, aml.len())]);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
+        let symbol_aml: &[u8] = aml;
+        let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::first_read(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
+        let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::first_read(symbol_aml, root, &current);
+        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::first_read(symbol_aml, root, &current);
+        let current: semantics::Path = current.clone() + (&name_string).into();
+        let number_of_arguments: usize = (&argument_count).into();
+        root.add_node(&current, semantics::Object::external(number_of_arguments));
+        let symbol = Self(
+            external_op,
+            name_string,
+            object_type,
+            argument_count,
+        );
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
+    }
+}
+
+impl SecondReader for DefExternal {
+    fn second_read<'a>(aml: &'a [u8], root: &mut semantics::Node, current: &semantics::Path) -> (Self, &'a [u8]) {
+        com2_println!("Second Read {:02x?} as DefExternal", &aml[0..cmp::min(10, aml.len())]);
+        assert!(Self::matches(aml), "aml = {:#x?}", aml);
+        let current: semantics::Path = current.clone();
+        let symbol_aml: &[u8] = aml;
+        let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::second_read(symbol_aml, root, &current);
+        let (name_string, symbol_aml): (NameString, &[u8]) = NameString::second_read(symbol_aml, root, &current);
+        let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::second_read(symbol_aml, root, &current);
+        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::second_read(symbol_aml, root, &current);
+        let current: semantics::Path = current.clone() + (&name_string).into();
+        let number_of_arguments: usize = (&argument_count).into();
+        root.add_node(&current, semantics::Object::external(number_of_arguments));
+        let symbol = Self(
+            external_op,
+            name_string,
+            object_type,
+            argument_count,
+        );
+        let aml: &[u8] = &aml[symbol.length()..];
+        (symbol, aml)
+    }
+}
 
 /// # DefFatal
 /// ## References
