@@ -112,6 +112,7 @@ struct TypeAttribute {
     encoding: Option<Encoding>,
     flags: bool,
     has_field_list: bool,
+    has_name_string: bool,
     matching_elements: usize,
     string: bool,
 }
@@ -598,6 +599,59 @@ impl From<&DeriveInput> for TypeAttribute {
                 }),
             _ => false,
         };
+        let has_name_string: bool = match data {
+            Data::Struct(DataStruct {
+                struct_token: _,
+                fields: Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }),
+                semi_token: _,
+            }) => unnamed
+                .iter()
+                .any(|field| {
+                    let Field {
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident: _,
+                        colon_token: _,
+                        ty,
+                    } = field;
+                    match ty {
+                        Type::Array(TypeArray {
+                            bracket_token: _,
+                            elem,
+                            semi_token: _,
+                            len: _,
+                        }) => elem
+                            .to_token_stream()
+                            .to_string()
+                            .as_str() == "NameString",
+                        Type::Path(TypePath {
+                            qself: _,
+                            path,
+                        }) => {
+                            let Path {
+                                leading_colon: _,
+                                segments,
+                            } = path;
+                            let PathSegment {
+                                ident,
+                                arguments: _,
+                            } = segments
+                                .iter()
+                                .last()
+                                .unwrap();
+                            ident
+                                .to_string()
+                                .as_str() == "NameString"
+                        },
+                        _ => false,
+                    }
+                }),
+            _ => false,
+        };
         let matching_elements: Option<usize> = attrs
             .iter()
             .find_map(|attribute| {
@@ -670,6 +724,7 @@ impl From<&DeriveInput> for TypeAttribute {
             encoding,
             flags,
             has_field_list,
+            has_name_string,
             matching_elements,
             string,
         }
@@ -823,6 +878,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         encoding: _,
         flags,
         has_field_list: _,
+        has_name_string: _,
         matching_elements: _,
         string,
     } = derive_input.into();
@@ -1030,6 +1086,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         encoding,
         flags,
         has_field_list,
+        has_name_string: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -1513,6 +1570,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         encoding,
         flags,
         has_field_list: _,
+        has_name_string: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -1981,6 +2039,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         encoding,
         flags,
         has_field_list: _,
+        has_name_string: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -2175,6 +2234,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         encoding,
         flags,
         has_field_list: _,
+        has_name_string: _,
         matching_elements,
         string: _,
     } = derive_input.into();
@@ -2494,6 +2554,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         encoding,
         flags,
         has_field_list: _,
+        has_name_string: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -2922,6 +2983,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         encoding,
         flags,
         has_field_list,
+        has_name_string: _,
         matching_elements: _,
         string: _,
     } = derive_input.into();
@@ -3393,10 +3455,33 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
         generics: _,
         data: _,
     } = derive_input;
-    quote! {
-        impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
-            fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
+    let TypeAttribute {
+        defined_object_name: _,
+        derive_debug: _,
+        derive_first_reader: _,
+        derive_matcher: _,
+        derive_reader: _,
+        derive_reader_inside_method: _,
+        derive_reader_outside_method,
+        derive_string_from_self: _,
+        encoding: _,
+        flags: _,
+        has_field_list: _,
+        has_name_string: _,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    if derive_reader_outside_method {
+        quote! {
+            impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
+                fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
+                    self.iter_mut()
+                        .for_each(|child| child.read_outside_method(root, current));
+                }
             }
+        }
+    } else {
+        quote! {
         }
     }
 }
@@ -3421,6 +3506,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         encoding: _,
         flags: _,
         has_field_list: _,
+        has_name_string: _,
         matching_elements: _,
         string,
     } = derive_input.into();
