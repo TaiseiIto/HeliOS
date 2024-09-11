@@ -676,55 +676,6 @@ impl From<&DeriveInput> for TypeAttribute {
     }
 }
 
-struct VariantAttribute {
-    matching_types: BTreeSet<String>,
-}
-
-impl From<&Variant> for VariantAttribute {
-    fn from(variant: &Variant) -> Self {
-        let Variant {
-            attrs,
-            ident: _,
-            fields: _,
-            discriminant: _,
-        } = variant;
-        let matching_types: BTreeSet<String> = attrs
-            .iter()
-            .filter_map(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token: _,
-                        value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "matching_type" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Str(matching_type),
-                            }) => Some(matching_type.value()),
-                            _ => None,
-                        },
-                        _ => None,
-                    },
-                    _ => None,
-                }
-            })
-            .collect();
-        Self {
-            matching_types,
-        }
-    }
-}
-
 struct FieldAttribute {
     debug: bool,
     delimiter: Option<String>,
@@ -1111,9 +1062,6 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 fields,
                                 discriminant: _,
                             } = variant;
-                            let VariantAttribute {
-                                matching_types,
-                            } = variant.into();
                             match fields {
                                 Fields::Unit => quote! {
                                     if true {
@@ -1136,62 +1084,47 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     } = unnamed
                                         .first()
                                         .unwrap();
-                                    let matches: proc_macro2::TokenStream = if matching_types.is_empty() {
-                                        match ty {
-                                            Type::Path(TypePath {
-                                                qself: _,
-                                                path,
-                                            }) => {
-                                                let Path {
-                                                    leading_colon: _,
-                                                    segments,
-                                                } = path;
-                                                let PathSegment {
-                                                    ident,
-                                                    arguments,
-                                                } = segments
-                                                    .iter()
-                                                    .last()
-                                                    .unwrap();
-                                                match ident
-                                                    .to_string()
-                                                    .as_str() {
-                                                    "Box" => match arguments {
-                                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                            colon2_token: _,
-                                                            lt_token: _,
-                                                            args,
-                                                            gt_token: _,
-                                                        }) => match args
-                                                            .first()
-                                                            .unwrap() {
-                                                            GenericArgument::Type(element_type) => quote! {
-                                                                #element_type::matches(aml)
-                                                            },
-                                                            _ => unimplemented!(),
-                                                        }
+                                    let matches: proc_macro2::TokenStream = match ty {
+                                        Type::Path(TypePath {
+                                            qself: _,
+                                            path,
+                                        }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments,
+                                            } = segments
+                                                .iter()
+                                                .last()
+                                                .unwrap();
+                                            match ident
+                                                .to_string()
+                                                .as_str() {
+                                                "Box" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            #element_type::matches(aml)
+                                                        },
                                                         _ => unimplemented!(),
-                                                    },
-                                                    _ => quote! {
-                                                        #ty::matches(aml)
-                                                    },
-                                                }
+                                                    }
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => quote! {
+                                                    #ty::matches(aml)
+                                                },
                                             }
-                                            _ => unimplemented!(),
                                         }
-                                    } else {
-                                        let matches: Vec<proc_macro2::TokenStream> = matching_types
-                                            .iter()
-                                            .map(|matching_type| {
-                                                let matching_type: Ident = format_ident!("{}", matching_type);
-                                                quote! {
-                                                    #matching_type::matches(aml)
-                                                }
-                                            })
-                                            .collect();
-                                        quote! {
-                                            #(#matches) || *
-                                        }
+                                        _ => unimplemented!(),
                                     };
                                     let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                         .iter()
@@ -2267,86 +2200,68 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             fields,
                             discriminant: _,
                         } = variant;
-                        let VariantAttribute {
-                            matching_types,
-                        } = variant.into();
-                        if matching_types.is_empty() {
-                            match fields {
-                                Fields::Unit => quote! {
-                                    true
-                                },
-                                Fields::Unnamed(FieldsUnnamed {
-                                    paren_token: _,
-                                    unnamed,
-                                }) => {
-                                    let Field {
-                                        attrs: _,
-                                        vis: _,
-                                        mutability: _,
-                                        ident: _,
-                                        colon_token: _,
-                                        ty,
-                                    } = unnamed
-                                        .first()
-                                        .unwrap();
-                                    match ty {
-                                        Type::Path(TypePath {
-                                            qself: _,
-                                            path,
-                                        }) => {
-                                            let Path {
-                                                leading_colon: _,
-                                                segments,
-                                            } = path;
-                                            let PathSegment {
-                                                ident,
-                                                arguments,
-                                            } = segments
-                                                .iter()
-                                                .last()
-                                                .unwrap();
-                                            match ident
-                                                .to_string()
-                                                .as_str() {
-                                                "Box" => match arguments {
-                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                        colon2_token: _,
-                                                        lt_token: _,
-                                                        args,
-                                                        gt_token: _,
-                                                    }) => match args
-                                                        .first()
-                                                        .unwrap() {
-                                                        GenericArgument::Type(element_type) => quote! {
-                                                            #element_type::matches(aml)
-                                                        },
-                                                        _ => unimplemented!(),
+                        match fields {
+                            Fields::Unit => quote! {
+                                true
+                            },
+                            Fields::Unnamed(FieldsUnnamed {
+                                paren_token: _,
+                                unnamed,
+                            }) => {
+                                let Field {
+                                    attrs: _,
+                                    vis: _,
+                                    mutability: _,
+                                    ident: _,
+                                    colon_token: _,
+                                    ty,
+                                } = unnamed
+                                    .first()
+                                    .unwrap();
+                                match ty {
+                                    Type::Path(TypePath {
+                                        qself: _,
+                                        path,
+                                    }) => {
+                                        let Path {
+                                            leading_colon: _,
+                                            segments,
+                                        } = path;
+                                        let PathSegment {
+                                            ident,
+                                            arguments,
+                                        } = segments
+                                            .iter()
+                                            .last()
+                                            .unwrap();
+                                        match ident
+                                            .to_string()
+                                            .as_str() {
+                                            "Box" => match arguments {
+                                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                    colon2_token: _,
+                                                    lt_token: _,
+                                                    args,
+                                                    gt_token: _,
+                                                }) => match args
+                                                    .first()
+                                                    .unwrap() {
+                                                    GenericArgument::Type(element_type) => quote! {
+                                                        #element_type::matches(aml)
                                                     },
                                                     _ => unimplemented!(),
                                                 },
-                                                _ => quote! {
-                                                    #ty::matches(aml)
-                                                },
-                                            }
-                                        },
-                                        _ => unimplemented!(),
-                                    }
-                                },
-                                _ => unimplemented!(),
-                            }
-                        } else {
-                            let matches: Vec<proc_macro2::TokenStream> = matching_types
-                                .iter()
-                                .map(|matching_type| {
-                                    let matching_type: Ident = format_ident!("{}", matching_type);
-                                    quote! {
-                                        #matching_type::matches(aml)
-                                    }
-                                })
-                                .collect();
-                            quote! {
-                                #(#matches) || *
-                            }
+                                                _ => unimplemented!(),
+                                            },
+                                            _ => quote! {
+                                                #ty::matches(aml)
+                                            },
+                                        }
+                                    },
+                                    _ => unimplemented!(),
+                                }
+                            },
+                            _ => unimplemented!(),
                         }
                     })
                     .collect();
@@ -2611,9 +2526,6 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 fields,
                                 discriminant: _,
                             } = variant;
-                            let VariantAttribute {
-                                matching_types,
-                            } = variant.into();
                             match fields {
                                 Fields::Unit => quote! {
                                     if true {
@@ -2636,62 +2548,47 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     } = unnamed
                                         .first()
                                         .unwrap();
-                                    let matches: proc_macro2::TokenStream = if matching_types.is_empty() {
-                                        match ty {
-                                            Type::Path(TypePath {
-                                                qself: _,
-                                                path,
-                                            }) => {
-                                                let Path {
-                                                    leading_colon: _,
-                                                    segments,
-                                                } = path;
-                                                let PathSegment {
-                                                    ident,
-                                                    arguments,
-                                                } = segments
-                                                    .iter()
-                                                    .last()
-                                                    .unwrap();
-                                                match ident
-                                                    .to_string()
-                                                    .as_str() {
-                                                    "Box" => match arguments {
-                                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                            colon2_token: _,
-                                                            lt_token: _,
-                                                            args,
-                                                            gt_token: _,
-                                                        }) => match args
-                                                            .first()
-                                                            .unwrap() {
-                                                            GenericArgument::Type(element_type) => quote! {
-                                                                #element_type::matches(aml)
-                                                            },
-                                                            _ => unimplemented!(),
-                                                        }
+                                    let matches: proc_macro2::TokenStream = match ty {
+                                        Type::Path(TypePath {
+                                            qself: _,
+                                            path,
+                                        }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments,
+                                            } = segments
+                                                .iter()
+                                                .last()
+                                                .unwrap();
+                                            match ident
+                                                .to_string()
+                                                .as_str() {
+                                                "Box" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            #element_type::matches(aml)
+                                                        },
                                                         _ => unimplemented!(),
-                                                    },
-                                                    _ => quote! {
-                                                        #ty::matches(aml)
-                                                    },
-                                                }
+                                                    }
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => quote! {
+                                                    #ty::matches(aml)
+                                                },
                                             }
-                                            _ => unimplemented!(),
                                         }
-                                    } else {
-                                        let matches: Vec<proc_macro2::TokenStream> = matching_types
-                                            .iter()
-                                            .map(|matching_type| {
-                                                let matching_type: Ident = format_ident!("{}", matching_type);
-                                                quote! {
-                                                    #matching_type::matches(aml)
-                                                }
-                                            })
-                                            .collect();
-                                        quote! {
-                                            #(#matches) || *
-                                        }
+                                        _ => unimplemented!(),
                                     };
                                     let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                         .iter()
@@ -3057,9 +2954,6 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                 fields,
                                 discriminant: _,
                             } = variant;
-                            let VariantAttribute {
-                                matching_types,
-                            } = variant.into();
                             match fields {
                                 Fields::Unit => quote! {
                                     if true {
@@ -3082,62 +2976,47 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                     } = unnamed
                                         .first()
                                         .unwrap();
-                                    let matches: proc_macro2::TokenStream = if matching_types.is_empty() {
-                                        match ty {
-                                            Type::Path(TypePath {
-                                                qself: _,
-                                                path,
-                                            }) => {
-                                                let Path {
-                                                    leading_colon: _,
-                                                    segments,
-                                                } = path;
-                                                let PathSegment {
-                                                    ident,
-                                                    arguments,
-                                                } = segments
-                                                    .iter()
-                                                    .last()
-                                                    .unwrap();
-                                                match ident
-                                                    .to_string()
-                                                    .as_str() {
-                                                    "Box" => match arguments {
-                                                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                            colon2_token: _,
-                                                            lt_token: _,
-                                                            args,
-                                                            gt_token: _,
-                                                        }) => match args
-                                                            .first()
-                                                            .unwrap() {
-                                                            GenericArgument::Type(element_type) => quote! {
-                                                                #element_type::matches(aml)
-                                                            },
-                                                            _ => unimplemented!(),
-                                                        }
+                                    let matches: proc_macro2::TokenStream = match ty {
+                                        Type::Path(TypePath {
+                                            qself: _,
+                                            path,
+                                        }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments,
+                                            } = segments
+                                                .iter()
+                                                .last()
+                                                .unwrap();
+                                            match ident
+                                                .to_string()
+                                                .as_str() {
+                                                "Box" => match arguments {
+                                                    PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    }) => match args
+                                                        .first()
+                                                        .unwrap() {
+                                                        GenericArgument::Type(element_type) => quote! {
+                                                            #element_type::matches(aml)
+                                                        },
                                                         _ => unimplemented!(),
-                                                    },
-                                                    _ => quote! {
-                                                        #ty::matches(aml)
-                                                    },
-                                                }
+                                                    }
+                                                    _ => unimplemented!(),
+                                                },
+                                                _ => quote! {
+                                                    #ty::matches(aml)
+                                                },
                                             }
-                                            _ => unimplemented!(),
                                         }
-                                    } else {
-                                        let matches: Vec<proc_macro2::TokenStream> = matching_types
-                                            .iter()
-                                            .map(|matching_type| {
-                                                let matching_type: Ident = format_ident!("{}", matching_type);
-                                                quote! {
-                                                    #matching_type::matches(aml)
-                                                }
-                                            })
-                                            .collect();
-                                        quote! {
-                                            #(#matches) || *
-                                        }
+                                        _ => unimplemented!(),
                                     };
                                     let (field_names, reads): (Vec<Ident>, Vec<proc_macro2::TokenStream>) = unnamed
                                         .iter()
