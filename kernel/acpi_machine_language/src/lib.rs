@@ -107,6 +107,7 @@ struct TypeAttribute {
     derive_matcher: bool,
     derive_reader: bool,
     derive_reader_inside_method: bool,
+    derive_reader_outside_method: bool,
     derive_string_from_self: bool,
     encoding: Option<Encoding>,
     flags: bool,
@@ -344,6 +345,51 @@ impl From<&DeriveInput> for TypeAttribute {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
                                         !matches!(manual_arg.as_str(), "reader_inside_method")
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_reader_outside_method: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "reader_outside_method")
                                     },
                                     _ => true,
                                 }),
@@ -619,6 +665,7 @@ impl From<&DeriveInput> for TypeAttribute {
             derive_matcher,
             derive_reader,
             derive_reader_inside_method,
+            derive_reader_outside_method,
             derive_string_from_self,
             encoding,
             flags,
@@ -820,6 +867,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding: _,
         flags,
@@ -1026,6 +1074,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1526,6 +1575,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -1993,6 +2043,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2186,6 +2237,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_matcher,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2522,6 +2574,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         derive_matcher: _,
         derive_reader,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -2967,6 +3020,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method,
+        derive_reader_outside_method: _,
         derive_string_from_self: _,
         encoding,
         flags,
@@ -3483,6 +3537,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         derive_matcher: _,
         derive_reader: _,
         derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
         derive_string_from_self,
         encoding: _,
         flags: _,
