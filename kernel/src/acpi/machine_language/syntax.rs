@@ -2321,7 +2321,7 @@ impl ReaderInsideMethod for MethodInvocation {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(reader_inside_method)]
+#[manual(reader_inside_method, reader_outside_method)]
 pub enum MethodTermList {
     Binary(ByteList),
     SyntaxTree(TermList),
@@ -2337,6 +2337,18 @@ impl ReaderInsideMethod for MethodTermList {
         let method_term_list = Self::SyntaxTree(term_list);
         let aml: &[u8] = &aml[method_term_list.length()..];
         (method_term_list, aml)
+    }
+}
+
+impl ReaderOutsideMethod for MethodTermList {
+    fn read_outside_method(&mut self, root: &mut semantics::Node, current: &semantics::Path) {
+        let aml: Vec<u8> = match self {
+            Self::Binary(byte_list) => (&*byte_list).into(),
+            Self::SyntaxTree(_) => unreachable!(),
+        };
+        let (term_list, aml): (TermList, &[u8]) = TermList::read_inside_method(&aml, root, current);
+        assert!(aml.is_empty());
+        *self = Self::SyntaxTree(term_list);
     }
 }
 

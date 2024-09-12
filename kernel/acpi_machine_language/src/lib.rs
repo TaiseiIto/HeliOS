@@ -3665,7 +3665,6 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
                     let current: crate::acpi::machine_language::semantics::Path = current.clone() + self
                         .get_path()
                         .unwrap_or_default();
-                    crate::com2_println!("current = {:#x?}", current);
                     self.iter_mut()
                         .for_each(|child| child.read_outside_method(root, &current));
                 }
