@@ -673,8 +673,8 @@ impl FirstReader for DefAlias {
 impl PathGetter for DefAlias {
     fn get_path(&self) -> Option<semantics::Path> {
         let Self(
-            alias_op,
-            [original_name, new_name],
+            _alias_op,
+            [original_name, _new_name],
         ) = self;
         Some(original_name.into())
     }
@@ -956,7 +956,7 @@ impl FirstReader for DefExternal {
         let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::first_read(symbol_aml, root, &current);
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::first_read(symbol_aml, root, &current);
-        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::first_read(symbol_aml, root, &current);
+        let (argument_count, _symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::first_read(symbol_aml, root, &current);
         let current: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = (&argument_count).into();
         root.add_node(&current, semantics::Object::external(number_of_arguments));
@@ -980,7 +980,7 @@ impl ReaderInsideMethod for DefExternal {
         let (external_op, symbol_aml): (ExternalOp, &[u8]) = ExternalOp::read_inside_method(symbol_aml, root, &current);
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
         let (object_type, symbol_aml): (ObjectType, &[u8]) = ObjectType::read_inside_method(symbol_aml, root, &current);
-        let (argument_count, symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::read_inside_method(symbol_aml, root, &current);
+        let (argument_count, _symbol_aml): (ArgumentCount, &[u8]) = ArgumentCount::read_inside_method(symbol_aml, root, &current);
         let current: semantics::Path = current.clone() + (&name_string).into();
         let number_of_arguments: usize = (&argument_count).into();
         root.add_node(&current, semantics::Object::external(number_of_arguments));

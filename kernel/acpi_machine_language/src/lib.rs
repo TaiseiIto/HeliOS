@@ -7,10 +7,7 @@ use {
         format_ident,
         quote,
     },
-    std::{
-        collections::BTreeSet,
-        ops::RangeInclusive,
-    },
+    std::ops::RangeInclusive,
     syn::{
         AngleBracketedGenericArguments,
         Attribute,
@@ -2618,83 +2615,78 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             match data {
                 Data::Struct(DataStruct {
                     struct_token: _,
-                    fields,
-                    semi_token: _,
-                }) => match fields {
-                    Fields::Unnamed(FieldsUnnamed {
+                    fields: Fields::Unnamed(FieldsUnnamed {
                         paren_token: _,
                         unnamed,
-                    }) => {
-                        let unpack: Vec<proc_macro2::TokenStream> = unnamed
-                            .iter()
-                            .enumerate()
-                            .map(|(index, field)| {
-                                let default_field_name: Ident = format_ident!("field{}", index);
-                                let Field {
-                                    attrs: _,
-                                    vis: _,
-                                    mutability: _,
-                                    ident: _,
-                                    colon_token: _,
-                                    ty,
-                                } = field;
-                                match ty {
-                                    Type::Array(TypeArray {
-                                        bracket_token: _,
-                                        elem,
-                                        semi_token: _,
-                                        len: Expr::Lit(ExprLit {
-                                            attrs: _,
-                                            lit: Lit::Int(lit_int),
-                                        }),
-                                    })  => match elem
-                                        .to_token_stream()
-                                        .to_string()
-                                        .as_str() {
-                                        "NameString" => {
-                                            let len: usize = lit_int
-                                                .base10_digits()
-                                                .parse()
-                                                .unwrap();
-                                            let elements: Vec<Ident> = (0..len)
-                                                .map(|index| match index {
-                                                    0 => format_ident!("name_string"),
-                                                    index => format_ident!("element{}", index),
-                                                })
-                                                .collect();
-                                            quote! {
-                                                [#(#elements),*]
-                                            }
-                                        },
-                                        _ => quote! {
-                                            #default_field_name
-                                        },
-                                    },
-                                    Type::Path(type_path) => match type_path
-                                        .to_token_stream()
-                                        .to_string()
-                                        .as_str() {
-                                        "NameString" => quote! {
-                                            name_string
-                                        },
-                                        _ => quote! {
-                                            #default_field_name
-                                        },
+                    }),
+                    semi_token: _,
+                }) => {
+                    let unpack: Vec<proc_macro2::TokenStream> = unnamed
+                        .iter()
+                        .enumerate()
+                        .map(|(index, field)| {
+                            let default_field_name: Ident = format_ident!("field{}", index);
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident: _,
+                                colon_token: _,
+                                ty,
+                            } = field;
+                            match ty {
+                                Type::Array(TypeArray {
+                                    bracket_token: _,
+                                    elem,
+                                    semi_token: _,
+                                    len: Expr::Lit(ExprLit {
+                                        attrs: _,
+                                        lit: Lit::Int(lit_int),
+                                    }),
+                                })  => match elem
+                                    .to_token_stream()
+                                    .to_string()
+                                    .as_str() {
+                                    "NameString" => {
+                                        let len: usize = lit_int
+                                            .base10_digits()
+                                            .parse()
+                                            .unwrap();
+                                        let elements: Vec<Ident> = (0..len)
+                                            .map(|index| match index {
+                                                0 => format_ident!("name_string"),
+                                                index => format_ident!("element{}", index),
+                                            })
+                                            .collect();
+                                        quote! {
+                                            [#(#elements),*]
+                                        }
                                     },
                                     _ => quote! {
                                         #default_field_name
                                     },
-                                }
-                            })
-                            .collect();
-                        quote! {
-                            let Self(#(#unpack),*) = self;
-                            Some(name_string.into())
-                        }
-                    },
-                    _ => quote! {
-                        None
-                    },
+                                },
+                                Type::Path(type_path) => match type_path
+                                    .to_token_stream()
+                                    .to_string()
+                                    .as_str() {
+                                    "NameString" => quote! {
+                                        name_string
+                                    },
+                                    _ => quote! {
+                                        #default_field_name
+                                    },
+                                },
+                                _ => quote! {
+                                    #default_field_name
+                                },
+                            }
+                        })
+                        .collect();
+                    quote! {
+                        let Self(#(#unpack),*) = self;
+                        Some(name_string.into())
+                    }
                 },
                 _ => quote! {
                     None
