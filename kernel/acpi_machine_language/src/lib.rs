@@ -3662,8 +3662,12 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
                 fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
+                    let current: crate::acpi::machine_language::semantics::Path = current.clone() + self
+                        .get_path()
+                        .unwrap_or_default();
+                    crate::com2_println!("current = {:#x?}", current);
                     self.iter_mut()
-                        .for_each(|child| child.read_outside_method(root, current));
+                        .for_each(|child| child.read_outside_method(root, &current));
                 }
             }
         }

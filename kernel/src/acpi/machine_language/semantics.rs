@@ -244,7 +244,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
