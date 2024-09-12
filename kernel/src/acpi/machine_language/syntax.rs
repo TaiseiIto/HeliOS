@@ -642,7 +642,7 @@ pub struct DefAdd(
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.1 Namespace Modifier Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, reader_inside_method)]
+#[manual(first_reader, path_getter, reader_inside_method)]
 pub struct DefAlias(
     AliasOp,
     [NameString; 2],
@@ -667,6 +667,16 @@ impl FirstReader for DefAlias {
         );
         let aml: &[u8] = &aml[def_alias.length()..];
         (def_alias, aml)
+    }
+}
+
+impl PathGetter for DefAlias {
+    fn get_path(&self) -> Option<semantics::Path> {
+        let Self(
+            alias_op,
+            [original_name, new_name],
+        ) = self;
+        Some(original_name.into())
     }
 }
 
@@ -2643,7 +2653,7 @@ impl Matcher for NameString {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, reader_inside_method)]
+#[manual(first_reader, path_getter, reader_inside_method)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
@@ -2666,6 +2676,16 @@ impl FirstReader for NamedField {
         );
         let aml: &[u8] = &aml[named_field.length()..];
         (named_field, aml)
+    }
+}
+
+impl PathGetter for NamedField {
+    fn get_path(&self) -> Option<semantics::Path> {
+        let Self(
+            name_seg,
+            _pkg_length,
+        ) = self;
+        Some(name_seg.into())
     }
 }
 
