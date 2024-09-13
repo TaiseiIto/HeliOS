@@ -126,6 +126,8 @@ impl Table {
         let current = machine_language::semantics::Path::root();
         let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
         assert!(unread_dsdt.is_empty());
+        com2_println!("semantic_tree = {:#x?}", semantic_tree);
+        com2_println!("syntax_tree = {:#x?}", syntax_tree);
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
