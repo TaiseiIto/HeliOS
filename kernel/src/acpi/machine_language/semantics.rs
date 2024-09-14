@@ -42,7 +42,11 @@ impl Node {
                         self.children.push(Self::new(name, object));
                     } else {
                         self.children.push(Self::new(name, Object::Scope));
-                        self.add_node(&path, object);
+                        self.children
+                            .iter_mut()
+                            .find(|child| child.name == name)
+                            .unwrap()
+                            .add_node(&path, object);
                     },
                 },
                 Segment::Parent => unreachable!(),
