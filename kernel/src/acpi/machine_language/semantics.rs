@@ -41,7 +41,7 @@ impl Node {
                     None => if path.is_empty() {
                         self.children.push(Self::new(name, object));
                     } else {
-                        self.children.push(Self::new(name, Object::Scope));
+                        self.children.push(Self::new(name.clone(), Object::Scope));
                         self.children
                             .iter_mut()
                             .find(|child| child.name == name)
