@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-acpi_machine_language = { path = "acpi_machine_language" }
 bitfield-struct = "0.5"
 naked-function = "0.1.5"
+
+[dependencies.acpi_machine_language]
+path = "acpi_machine_language"
 
 [profile.dev]
 panic = "abort"
