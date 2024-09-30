@@ -89,13 +89,13 @@ impl Node {
         }
     }
 
-    pub fn find_number_of_arguments_with_relative_path(&self, method: &RelativePath) -> Option<usize> {
+    pub fn find_number_of_arguments_with_relative_path(&self, method: &AbsolutePath) -> Option<usize> {
         com2_println!("find_number_of_arguments_with_relative_path(self.name = {:#x?}, method = {:#x?})", self.name, method);
-        let mut method: RelativePath = self.original_path(method);
+        let mut method: AbsolutePath = self.original_path(method);
         method.find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
     }
 
-    pub fn original_path(&self, alias: &RelativePath) -> RelativePath {
+    pub fn original_path(&self, alias: &AbsolutePath) -> AbsolutePath {
         com2_println!("original_path(self.name = {:#x?}, alias = {:#x?})", self.name, alias);
         match self.solve_relative_alias(alias) {
             Some(alias) => self.original_path(&alias),
@@ -103,7 +103,7 @@ impl Node {
         }
     }
 
-    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<RelativePath> {
+    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<AbsolutePath> {
         com2_println!("solve_absolute_alias(self.name = {:#x?}), alias = {:#x?}", self.name, alias);
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
@@ -125,9 +125,9 @@ impl Node {
         }
     }
 
-    pub fn solve_relative_alias(&self, alias: &RelativePath) -> Option<RelativePath> {
+    pub fn solve_relative_alias(&self, alias: &AbsolutePath) -> Option<AbsolutePath> {
         com2_println!("solve_relative_alias(self.name = {:#x?}, alias = {:#x?})", self.name, alias);
-        let mut alias: RelativePath = alias.clone();
+        let mut alias: AbsolutePath = alias.clone();
         alias.find_map(|alias| self.solve_absolute_alias(&alias))
     }
 }
@@ -172,7 +172,7 @@ impl fmt::Debug for Node {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Object {
     Alias {
-        original_path: RelativePath,
+        original_path: AbsolutePath,
     },
     CreateBitField,
     CreateByteField,
@@ -202,7 +202,7 @@ pub enum Object {
 
 impl Object {
     pub fn alias(current: &Path, original_path: &Path) -> Self {
-        let original_path = RelativePath::new(current, original_path);
+        let original_path = AbsolutePath::new(current, original_path);
         Self::Alias {
             original_path,
         }
@@ -232,7 +232,7 @@ impl Object {
         }
     }
 
-    pub fn solve_alias(&self) -> Option<RelativePath> {
+    pub fn solve_alias(&self) -> Option<AbsolutePath> {
         match self {
             Self::Alias {
                 original_path,
@@ -386,59 +386,59 @@ impl fmt::Debug for Path {
 }
 
 #[derive(Clone, Eq)]
-pub struct RelativePath {
+pub struct AbsolutePath {
     current: Path,
-    target: Path,
+    relative: Path,
 }
 
-impl RelativePath {
+impl AbsolutePath {
     pub fn last_segment(&self) -> Option<Segment> {
         let Self {
             current,
-            target,
+            relative,
         } = self;
-        let absolute_path: Path = current.clone() + target.clone();
+        let absolute_path: Path = current.clone() + relative.clone();
         absolute_path.last_segment()
     }
 
-    pub fn new(current: &Path, target: &Path) -> Self {
+    pub fn new(current: &Path, relative: &Path) -> Self {
         let current: Path = current.clone();
-        let target: Path = target.clone();
+        let relative: Path = relative.clone();
         Self {
             current,
-            target,
+            relative,
         }
     }
 }
 
-impl fmt::Debug for RelativePath {
+impl fmt::Debug for AbsolutePath {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             current,
-            target,
+            relative,
         } = self;
-        write!(formatter, "{:#x?}:{:#x?}", current, target)
+        write!(formatter, "{:#x?}:{:#x?}", current, relative)
     }
 }
 
-impl Iterator for RelativePath {
+impl Iterator for AbsolutePath {
     type Item = Path;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Self {
             current,
-            target,
+            relative,
         } = self;
-        let absolute_path: Path = current.clone() + target.clone();
+        let absolute_path: Path = current.clone() + relative.clone();
         current
             .pop_last_segment()
             .map(|_| absolute_path)
     }
 }
 
-impl PartialEq for RelativePath {
+impl PartialEq for AbsolutePath {
     fn eq(&self, other: &Self) -> bool {
-        self.current.clone() + self.target.clone() == other.current.clone() + other.target.clone()
+        self.current.clone() + self.relative.clone() == other.current.clone() + other.relative.clone()
     }
 }
 

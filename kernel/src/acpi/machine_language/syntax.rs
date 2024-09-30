@@ -2239,7 +2239,7 @@ impl FirstReader for MethodInvocation {
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::first_read(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
-        let method = semantics::RelativePath::new(&current, &method);
+        let method = semantics::AbsolutePath::new(&current, &method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
             .unwrap();
@@ -2281,7 +2281,7 @@ impl ReaderInsideMethod for MethodInvocation {
         let symbol_aml: &[u8] = aml;
         let (name_string, symbol_aml): (NameString, &[u8]) = NameString::read_inside_method(symbol_aml, root, &current);
         let method: semantics::Path = (&name_string).into();
-        let method = semantics::RelativePath::new(&current, &method);
+        let method = semantics::AbsolutePath::new(&current, &method);
         com2_println!("method = {:#x?}", method);
         let number_of_arguments: usize = root
             .find_number_of_arguments_with_relative_path(&method)
