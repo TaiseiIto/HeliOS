@@ -1586,7 +1586,6 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         quote! {
             impl crate::acpi::machine_language::syntax::FirstReader for #ident {
                 fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    crate::com2_println!("First Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     let current: crate::acpi::machine_language::semantics::Path = current.clone();
                     #first_read
                 }
@@ -3129,7 +3128,6 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         quote! {
             impl crate::acpi::machine_language::syntax::Reader for #ident {
                 fn read(aml: &[u8]) -> (Self, &[u8]) {
-                    crate::com2_println!("Read {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     #read
                 }
             }
@@ -3613,7 +3611,6 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderInsideMethod for #ident {
                 fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    crate::com2_println!("Read Inside Method {:02x?} as {}", &aml[0..core::cmp::min(10, aml.len())], stringify!(#ident));
                     let current: crate::acpi::machine_language::semantics::Path = current.clone();
                     #read_inside_method
                 }
