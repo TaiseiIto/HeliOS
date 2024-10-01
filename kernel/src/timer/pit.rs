@@ -9,7 +9,7 @@ pub mod control;
 
 const BASE_OSCILATOR_FREQUENCY: usize = 14318180;
 
-pub fn set_periodic_interrupt(hz: usize) -> u8 {
+pub fn enable_periodic_interrupt(hz: usize) -> u8 {
     let counter: u8 = 0;
     let irq: u8 = 0;
     let divisor: usize = BASE_OSCILATOR_FREQUENCY / (12 * hz);

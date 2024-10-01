@@ -11,7 +11,7 @@ pub struct Register {
     count_size_cap: bool,
     #[bits(access = RO)]
     reserved0: bool,
-    leg_route_cap: bool,
+    leg_rt_cap: bool,
     vendor_id: u16,
     counter_clk_period: u32,
 }

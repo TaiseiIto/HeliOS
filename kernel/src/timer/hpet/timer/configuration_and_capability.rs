@@ -34,15 +34,11 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn is_enable(&self) -> bool {
-        self.tn_int_enb_cnf()
+    pub fn disable_periodic_interrupt(self) -> Self {
+        self.with_tn_int_enb_cnf(false)
     }
 
-    pub fn irq(&self) -> u8 {
-        self.tn_int_route_cnf()
-    }
-
-    pub fn set_periodic_interrupt(self) -> Self {
+    pub fn enable_periodic_interrupt(self) -> Self {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
@@ -53,8 +49,7 @@ impl Register {
                 .madt_mut()
                 .io_apic_mut()
                 .registers_mut()
-                .redirection_table_entries()
-                .into_iter())
+                .redirection_table_entries())
             .find(|(irq, redirection_table_entry)| tn_int_route_cap & (1 << irq) != 0 && !redirection_table_entry.is_enabled())
             .unwrap().0 as u8;
         let interrupt_destination = InterruptDestination::IoApic {
@@ -66,6 +61,14 @@ impl Register {
             .with_tn_val_set_cnf(true)
             .with_tn_32mode_cnf(Mode::Bit64.into())
             .with_interrupt_destination(&interrupt_destination)
+    }
+
+    pub fn is_enable(&self) -> bool {
+        self.tn_int_enb_cnf()
+    }
+
+    pub fn irq(&self) -> u8 {
+        self.tn_int_route_cnf()
     }
 
     pub fn supports_periodic_interrupt(&self) -> bool {
@@ -89,10 +92,15 @@ impl Register {
 
 #[derive(Debug)]
 pub struct Controller {
+    #[allow(dead_code)]
     periodic_interrupt_capable: bool,
+    #[allow(dead_code)]
     size: Size,
+    #[allow(dead_code)]
     resetting_comparator_value: bool,
+    #[allow(dead_code)]
     available_irq_numbers: BTreeSet<u8>,
+    #[allow(dead_code)]
     interrupt: Interrupt,
 }
 
@@ -102,7 +110,8 @@ impl From<&Register> for Controller {
         let size: Size = register.tn_size_cap().into();
         let resetting_comparator_value: bool = register.tn_val_set_cnf();
         let available_irq_numbers: BTreeSet<u8> = (0..u32::BITS)
-            .filter_map(|irq| (register.tn_int_route_cap() & (1 << irq) != 0).then(|| irq as u8))
+            .filter(|irq| register.tn_int_route_cap() & (1 << irq) != 0)
+            .map(|irq| irq as u8)
             .collect();
         let interrupt: Interrupt = register.into();
         Self {
@@ -119,9 +128,13 @@ impl From<&Register> for Controller {
 enum Interrupt {
     Disable,
     Enable {
+        #[allow(dead_code)]
         interrupt_type: InterruptType,
+        #[allow(dead_code)]
         timer_type: Type,
+        #[allow(dead_code)]
         mode: Mode,
+        #[allow(dead_code)]
         interrupt_destination: InterruptDestination,
     },
 }

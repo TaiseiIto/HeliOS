@@ -4,9 +4,12 @@ use crate::interrupt;
 pub enum Content {
     BootCompleted,
     Char(char),
+    #[allow(dead_code)]
     HpetInterrupt,
     Initialized,
+    #[allow(dead_code)]
     PitInterrupt,
+    #[allow(dead_code)]
     RtcInterrupt,
 }
 
@@ -23,10 +26,10 @@ impl Content {
         Self::Initialized
     }
 
-    pub fn process(self) {
+    pub fn process(self, _sender_local_apic_id: u8) {
         match self {
             Self::BootCompleted => unimplemented!(),
-            Self::Char(character) => unimplemented!(),
+            Self::Char(_character) => unimplemented!(),
             Self::HpetInterrupt => interrupt::Event::push(interrupt::Event::Hpet),
             Self::Initialized => unimplemented!(),
             Self::PitInterrupt => interrupt::Event::push(interrupt::Event::Pit),

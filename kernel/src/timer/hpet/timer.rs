@@ -21,16 +21,21 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn is_enable(&self) -> bool {
-        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
-        configuration_and_capability.is_enable()
+    pub fn disable_periodic_interrupt(&mut self) {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability.disable_periodic_interrupt();
+        self.configuration_and_capability = configuration_and_capability;
     }
 
-    pub fn set_periodic_interrupt(&mut self, period: u64) -> u8 {
-        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability.set_periodic_interrupt();
+    pub fn enable_periodic_interrupt(&mut self, period: u64) -> u8 {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability.enable_periodic_interrupt();
         self.configuration_and_capability = configuration_and_capability;
         self.comparator = comparator::Register::create(period);
         configuration_and_capability.irq()
+    }
+
+    pub fn is_enable(&self) -> bool {
+        let configuration_and_capability: configuration_and_capability::Register = self.configuration_and_capability;
+        configuration_and_capability.is_enable()
     }
 
     pub fn supports_periodic_interrupt(&self) -> bool {

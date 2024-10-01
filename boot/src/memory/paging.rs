@@ -3,7 +3,6 @@ mod level4;
 use {
     core::ops::Range,
     crate::{
-        com2_print,
         com2_println,
         x64,
     },

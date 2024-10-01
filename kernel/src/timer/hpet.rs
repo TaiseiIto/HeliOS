@@ -37,7 +37,19 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn set_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
+    pub fn disable_periodic_interrupt(&mut self) {
+        self.timers_mut()
+            .iter_mut()
+            .filter(|timer| timer.is_enable())
+            .for_each(|timer| timer.disable_periodic_interrupt());
+    }
+
+    pub fn enable_legacy_replacement_route(&mut self) {
+        let general_configuration: general_configuration::Register = self.general_configuration;
+        self.general_configuration = general_configuration.enable_legacy_replacement_route();
+    }
+
+    pub fn enable_periodic_interrupt(&mut self, milliseconds: usize) -> u8 {
         self.stop();
         let main_counter_value: u64 = 0;
         self.main_counter_value = main_counter_value::Register::create(main_counter_value);
@@ -46,7 +58,7 @@ impl Registers {
             .iter_mut()
             .find(|timer| timer.supports_periodic_interrupt() && !timer.is_enable())
             .unwrap()
-            .set_periodic_interrupt(comparator)
+            .enable_periodic_interrupt(comparator)
     }
 
     pub fn start(&mut self) {

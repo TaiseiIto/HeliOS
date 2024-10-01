@@ -45,11 +45,7 @@ pub struct Header {
 
 impl Header {
     pub fn is_correct(&self) -> bool {
-        let header: *const Self = self as *const Self;
-        let first_byte: *const u8 = header as *const u8;
-        let table: &[u8] = unsafe {
-            slice::from_raw_parts(first_byte, self.length as usize)
-        };
+        let table: &[u8] = self.into();
         table
             .iter()
             .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
@@ -96,6 +92,17 @@ impl fmt::Debug for Header {
     }
 }
 
+impl<'a> From<&'a Header> for &'a [u8] {
+    fn from(header: &'a Header) -> Self {
+        let length: usize = header.length as usize;
+        let header: *const Header = header as *const Header;
+        let first_byte: *const u8 = header as *const u8;
+        unsafe {
+            slice::from_raw_parts(first_byte, length)
+        }
+    }
+}
+
 /// # ACPI System Description Tables
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2 ACPI System Description Tables
@@ -124,6 +131,31 @@ pub enum Table<'a> {
 }
 
 impl Table<'_> {
+    pub fn definition_block(&self) -> &[u8] {
+        match self {
+            Self::Bgrt(_table) => unimplemented!(),
+            Self::Dbg2(_table) => unimplemented!(),
+            Self::Dbgp(_table) => unimplemented!(),
+            Self::Dmar(_table) => unimplemented!(),
+            Self::Dsdt(table) => table.definition_block(),
+            Self::Fadt(_table) => unimplemented!(),
+            Self::Fpdt(_table) => unimplemented!(),
+            Self::Hpet(_table) => unimplemented!(),
+            Self::Lpit(_table) => unimplemented!(),
+            Self::Madt(_table) => unimplemented!(),
+            Self::Mcfg(_table) => unimplemented!(),
+            Self::Other(_table) => unimplemented!(),
+            Self::Rsdt(_table) => unimplemented!(),
+            Self::Srat(_table) => unimplemented!(),
+            Self::Ssdt(table) => table.definition_block(),
+            Self::Tpm2(_table) => unimplemented!(),
+            Self::Waet(_table) => unimplemented!(),
+            Self::Wdat(_table) => unimplemented!(),
+            Self::Wsmt(_table) => unimplemented!(),
+            Self::Xsdt(_table) => unimplemented!(),
+        }
+    }
+
     pub fn is_correct(&self) -> bool {
         match self {
             Self::Bgrt(table) => table.is_correct(),
@@ -308,6 +340,33 @@ impl<'a> From<&'a Header> for Table<'a> {
                 Self::Xsdt(table)
             },
             _ => Self::Other(header),
+        }
+    }
+}
+
+impl<'a> From<&'a Table<'a>> for &'a [u8] {
+    fn from(table: &'a Table<'a>) -> Self {
+        match table {
+            Table::Bgrt(_table) => unimplemented!(),
+            Table::Dbg2(_table) => unimplemented!(),
+            Table::Dbgp(_table) => unimplemented!(),
+            Table::Dmar(_table) => unimplemented!(),
+            Table::Dsdt(table) => (*table).into(),
+            Table::Fadt(_table) => unimplemented!(),
+            Table::Fpdt(_table) => unimplemented!(),
+            Table::Hpet(_table) => unimplemented!(),
+            Table::Lpit(_table) => unimplemented!(),
+            Table::Madt(_table) => unimplemented!(),
+            Table::Mcfg(_table) => unimplemented!(),
+            Table::Other(_table) => unimplemented!(),
+            Table::Rsdt(_table) => unimplemented!(),
+            Table::Srat(_table) => unimplemented!(),
+            Table::Ssdt(_table) => unimplemented!(),
+            Table::Tpm2(_table) => unimplemented!(),
+            Table::Waet(_table) => unimplemented!(),
+            Table::Wdat(_table) => unimplemented!(),
+            Table::Wsmt(_table) => unimplemented!(),
+            Table::Xsdt(_table) => unimplemented!(),
         }
     }
 }

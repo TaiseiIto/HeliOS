@@ -1,16 +1,10 @@
 break main
 run
-
-# AP to BSP
-# break apic_deliver if vector_num == 0x99
-# continue
-# break ../hw/intc/apic.c:730
-# continue
-# backtrace
-# print "s->irr"
-# p/x s->irr
-
-break apic_set_irq if vector_num == 0x99
+break memory_region_dispatch_write if mr->ops->write==hpet_ram_write && addr==0x108
 continue
 backtrace
+print "mr->ops->impl.min_access_size"
+p/x mr->ops->impl.min_access_size
+print "mr->ops->impl.max_access_size"
+p/x mr->ops->impl.max_access_size
 

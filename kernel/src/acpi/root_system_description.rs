@@ -33,6 +33,10 @@ impl Pointer {
         self.checksum() && self.extended_checksum() && self.rsdt().is_correct() && self.xsdt().is_correct()
     }
 
+    pub fn oemid(&self) -> &str {
+        str::from_utf8(self.oemid.as_slice()).unwrap()
+    }
+
     pub fn xsdt(&self) -> &extended_system_description::Table {
         let xsdt: usize = self.xsdt as usize;
         let xsdt: *const extended_system_description::Table = xsdt as *const extended_system_description::Table;
@@ -67,10 +71,6 @@ impl Pointer {
         };
         rsdp.iter()
             .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
-    }
-
-    fn oemid(&self) -> &str {
-        str::from_utf8(self.oemid.as_slice()).unwrap()
     }
 
     fn signature(&self) -> &str {

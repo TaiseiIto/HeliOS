@@ -19,6 +19,7 @@ use {
 static mut EVENTS: VecDeque<Event> = VecDeque::new();
 
 pub enum Event {
+    #[allow(dead_code)]
     ApicTimer,
     Hpet,
     Interprocessor {
@@ -57,7 +58,7 @@ impl Event {
             Self::Interprocessor {
                 sender_local_apic_id,
                 message,
-            } => message.process(),
+            } => message.process(sender_local_apic_id),
             Self::Pit => bsp_println!("PIT event."),
             Self::Rtc => bsp_println!("RTC event."),
         }
@@ -2746,7 +2747,7 @@ extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
 }
 
 /// # Interprocessor interrupt
-extern "x86-interrupt" fn handler_0x99(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }

@@ -4,10 +4,20 @@ use {
         fmt,
         mem,
     },
-    crate::io,
+    crate::{
+        com2_println,
+        io,
+    },
     super::{
         firmware_acpi_control,
         generic_address,
+        machine_language::{
+            self,
+            syntax::{
+                FirstReader,
+                ReaderOutsideMethod,
+            },
+        },
         system_description,
     },
 };
@@ -101,6 +111,28 @@ impl Table {
 
     pub fn is_correct(&self) -> bool {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
+    }
+
+    pub fn shutdown(&self) {
+        let pm1a_cnt_blk: u32 = self.pm1a_cnt_blk;
+        let pm1b_cnt_blk: u32 = self.pm1b_cnt_blk;
+        let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
+        let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
+        let dsdt: system_description::Table = self
+            .dsdt()
+            .unwrap();
+        let dsdt: &[u8] = dsdt.definition_block();
+        let mut semantic_tree = machine_language::semantics::Node::default();
+        let current = machine_language::semantics::Path::root();
+        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
+        assert!(unread_dsdt.is_empty());
+        syntax_tree.read_outside_method(&mut semantic_tree, &current);
+        com2_println!("semantic_tree = {:#x?}", semantic_tree);
+        com2_println!("syntax_tree = {:#x?}", syntax_tree);
+        com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
+        com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
+        com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
+        com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
     }
 
     pub fn timer_bits(&self) -> usize {

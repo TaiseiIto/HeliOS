@@ -16,11 +16,7 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn is_correct(&self) -> bool {
-        self.header.is_correct()
-    }
-
-    fn definition_block(&self) -> &[u8] {
+    pub fn definition_block(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
         let table: usize = table as usize;
         let definition_block: usize = table + size_of::<Self>();
@@ -29,6 +25,10 @@ impl Table {
         unsafe {
             slice::from_raw_parts(definition_block, definition_block_size)
         }
+    }
+
+    pub fn is_correct(&self) -> bool {
+        self.header.is_correct()
     }
 }
 
@@ -39,6 +39,12 @@ impl fmt::Debug for Table {
             .field("header", &self.header)
             .field("definition_block", &self.definition_block())
             .finish()
+    }
+}
+
+impl<'a> From<&'a Table> for &'a [u8] {
+    fn from(table: &'a Table) -> Self {
+        (&table.header).into()
     }
 }
 

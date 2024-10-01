@@ -12,14 +12,14 @@ use {
 
 pub const DISABLE: u8 = 0x80;
 
-static mut enabled: UnsafeCell<bool> = UnsafeCell::new(true);
+static mut ENABLED: UnsafeCell<bool> = UnsafeCell::new(true);
 
 pub fn disable() {
     task::Controller::get_current_mut()
         .unwrap()
         .cli();
     unsafe {
-        *enabled.get_mut() = false;
+        *ENABLED.get_mut() = false;
     }
     let address: u8 = x64::port::inb(x64::cmos::ADDRESS_PORT);
     let address: u8 = address | DISABLE;
@@ -35,7 +35,7 @@ pub fn enable() {
         .unwrap()
         .cli();
     unsafe {
-        *enabled.get_mut() = true;
+        *ENABLED.get_mut() = true;
     }
     let address: u8 = x64::port::inb(x64::cmos::ADDRESS_PORT);
     let address: u8 = address & !DISABLE;
@@ -48,7 +48,7 @@ pub fn enable() {
 
 pub fn is_enabled() -> bool {
     unsafe {
-        *enabled.get()
+        *ENABLED.get()
     }
 }
 

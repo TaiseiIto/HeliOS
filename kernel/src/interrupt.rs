@@ -8,7 +8,6 @@ use {
     alloc::collections::VecDeque,
     crate::{
         Argument,
-        com2_print,
         com2_println,
         memory,
         processor,
@@ -701,6 +700,7 @@ extern "x86-interrupt" fn handler_0x00(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Divide Error Exception");
 }
 
 /// # Debug Exception (\#DB)
@@ -717,6 +717,7 @@ extern "x86-interrupt" fn handler_0x01(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Debug Exception");
 }
 
 /// # NMI Interrupt
@@ -733,6 +734,7 @@ extern "x86-interrupt" fn handler_0x02(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("NMI Interrupt");
 }
 
 /// # Breakpoint Exception (\#BP)
@@ -749,6 +751,7 @@ extern "x86-interrupt" fn handler_0x03(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Breakpoint Exception");
 }
 
 /// # Overflow Exception (\#OF)
@@ -765,6 +768,7 @@ extern "x86-interrupt" fn handler_0x04(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Overflow Exception");
 }
 
 /// # BOUND Range Exceeded Exception (\#BR)
@@ -781,6 +785,7 @@ extern "x86-interrupt" fn handler_0x05(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("BOUND Range Exceeded Exception");
 }
 
 /// # Invalid Opcode Exception (\#UD)
@@ -797,6 +802,7 @@ extern "x86-interrupt" fn handler_0x06(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Invalid Opcode Exception");
 }
 
 /// # Device Not Available Exception (\#NM)
@@ -813,6 +819,7 @@ extern "x86-interrupt" fn handler_0x07(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Device Not Available Exception");
 }
 
 /// # Double Fault Exception (\#DF)
@@ -829,6 +836,7 @@ extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Double Fault Exception");
 }
 
 /// # Coprocessor Segment Overrun
@@ -845,6 +853,7 @@ extern "x86-interrupt" fn handler_0x09(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Coprocessor Segment Overrun");
 }
 
 /// # Invalid TSS Exception (\#TS)
@@ -861,6 +870,7 @@ extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Invalid TSS Exception");
 }
 
 /// # Segment Not Present (\#NP)
@@ -877,6 +887,7 @@ extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Segment Not Present");
 }
 
 /// # Stack Fault Exception (\#SS)
@@ -893,6 +904,7 @@ extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Stack Fault Exception");
 }
 
 /// # General Protection Exception (\#GP)
@@ -909,6 +921,7 @@ extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("General Protection Exception");
 }
 
 /// # Page-Fault Exception (\#PF)
@@ -925,6 +938,7 @@ extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Page-Fault Exception");
 }
 
 /// # Reserved Exception 0
@@ -941,6 +955,7 @@ extern "x86-interrupt" fn handler_0x0f(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 0");
 }
 
 /// # x87 Floating-Point Error (\#MF)
@@ -957,6 +972,7 @@ extern "x86-interrupt" fn handler_0x10(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("x87 Floating-Point Error");
 }
 
 /// # Alignment Check Exception (\#AC)
@@ -973,6 +989,7 @@ extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Alignment Check Exception");
 }
 
 /// # Machine Check Exception (\#MC)
@@ -989,6 +1006,7 @@ extern "x86-interrupt" fn handler_0x12(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Machine Check Exception");
 }
 
 /// # SIMD Floating-Point Exception (\#XM)
@@ -1005,6 +1023,7 @@ extern "x86-interrupt" fn handler_0x13(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("SIMD Floating-Point Exception");
 }
 
 /// # Virtualization Exception (\#VE)
@@ -1021,6 +1040,7 @@ extern "x86-interrupt" fn handler_0x14(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Virtualization Exception");
 }
 
 /// # Control Protection Exception (\#CP)
@@ -1037,6 +1057,7 @@ extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Control Protection Exception");
 }
 
 /// # Reserved Exception 1
@@ -1053,6 +1074,7 @@ extern "x86-interrupt" fn handler_0x16(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 1");
 }
 
 /// # Reserved Exception 2
@@ -1069,6 +1091,7 @@ extern "x86-interrupt" fn handler_0x17(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 2");
 }
 
 /// # Reserved Exception 3
@@ -1085,6 +1108,7 @@ extern "x86-interrupt" fn handler_0x18(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 3");
 }
 
 /// # Reserved Exception 4
@@ -1101,6 +1125,7 @@ extern "x86-interrupt" fn handler_0x19(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 4");
 }
 
 /// # Reserved Exception 5
@@ -1117,6 +1142,7 @@ extern "x86-interrupt" fn handler_0x1a(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 5");
 }
 
 /// # Reserved Exception 6
@@ -1133,6 +1159,7 @@ extern "x86-interrupt" fn handler_0x1b(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 6");
 }
 
 /// # Hypervisor Injection Exception (\#HV)
@@ -1149,6 +1176,7 @@ extern "x86-interrupt" fn handler_0x1c(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Hypervisor Injection Exception");
 }
 
 /// # VMM Communication Exception (\#VC)
@@ -1165,6 +1193,7 @@ extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("VMM Communication Exception");
 }
 
 /// # Security Exception (\#SX)
@@ -1181,6 +1210,7 @@ extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAnd
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Security Exception");
 }
 
 /// # Reserved Exception 7
@@ -1197,11 +1227,11 @@ extern "x86-interrupt" fn handler_0x1f(stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
+    panic!("Reserved Exception 7");
 }
 
 /// # IRQ 0x00 PIT interrupt
-extern "x86-interrupt" fn handler_0x20(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x20;
+extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -1229,8 +1259,7 @@ extern "x86-interrupt" fn handler_0x21(stack_frame: StackFrame) {
 }
 
 /// # IRQ 0x02 HPET interrupt
-extern "x86-interrupt" fn handler_0x22(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x22;
+extern "x86-interrupt" fn handler_0x22(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -1310,8 +1339,7 @@ extern "x86-interrupt" fn handler_0x27(stack_frame: StackFrame) {
 }
 
 /// # IRQ 0x08 RIC
-extern "x86-interrupt" fn handler_0x28(stack_frame: StackFrame) {
-    let interrupt_number: u8 = 0x28;
+extern "x86-interrupt" fn handler_0x28(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
@@ -2770,7 +2798,7 @@ extern "x86-interrupt" fn handler_0x97(stack_frame: StackFrame) {
 }
 
 /// # APIC timer interrupt
-extern "x86-interrupt" fn handler_0x98(stack_frame: StackFrame) {
+extern "x86-interrupt" fn handler_0x98(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
