@@ -163,7 +163,7 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Object {
     Alias {
         original_path: AbsolutePath,
