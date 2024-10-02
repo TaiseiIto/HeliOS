@@ -121,6 +121,8 @@ impl Table {
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
+        let iasl_input: &[u8] = (&dsdt).into();
+        com2_println!("iasl_input = {:02x?}", iasl_input);
         let dsdt: &[u8] = dsdt.definition_block();
         let mut semantic_tree = machine_language::semantics::Node::default();
         let current = machine_language::semantics::Path::root();
