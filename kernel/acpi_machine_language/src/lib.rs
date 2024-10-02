@@ -1329,17 +1329,29 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
@@ -2925,17 +2937,29 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
@@ -3354,17 +3378,29 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
