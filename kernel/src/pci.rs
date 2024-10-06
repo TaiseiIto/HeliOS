@@ -208,6 +208,34 @@ impl Function {
         }
     }
 
+    pub fn primary_bus_number(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[6].to_le_bytes()[0]),
+        }
+    }
+
+    pub fn secondary_bus_number(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[6].to_le_bytes()[1]),
+        }
+    }
+
+    pub fn subordinate_bus_number(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[6].to_le_bytes()[2]),
+        }
+    }
+
+    pub fn secondary_latency_timer(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[6].to_le_bytes()[3]),
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -262,6 +290,18 @@ impl fmt::Debug for Function {
         }
         if let Some(expansion_rom_base_address) = self.expansion_rom_base_address() {
             debug.field("expansion_rom_base_address", &expansion_rom_base_address);
+        }
+        if let Some(primary_bus_number) = self.primary_bus_number() {
+            debug.field("primary_bus_number", &primary_bus_number);
+        }
+        if let Some(secondary_bus_number) = self.secondary_bus_number() {
+            debug.field("secondary_bus_number", &secondary_bus_number);
+        }
+        if let Some(subordinate_bus_number) = self.subordinate_bus_number() {
+            debug.field("subordinate_bus_number", &subordinate_bus_number);
+        }
+        if let Some(secondary_latency_timer) = self.secondary_latency_timer() {
+            debug.field("secondary_latency_timer", &secondary_latency_timer);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
