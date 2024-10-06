@@ -4,6 +4,7 @@
 
 pub mod base_address;
 pub mod bist;
+pub mod bridge_control;
 pub mod class;
 pub mod command;
 pub mod expansion_rom_base_address;
@@ -380,6 +381,19 @@ impl Function {
         match self.into() {
             header_type::Type::Zero => Some(self.space[15].to_le_bytes()[3]),
             header_type::Type::One => None,
+        }
+    }
+
+    pub fn bridge_control(&self) -> Option<bridge_control::Register> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let interrupt_line_and_interrupt_pin_and_bridge_control: u32 = self.space[15];
+                let interrupt_line_and_interrupt_pin_and_bridge_control: [u16; 2] = unsafe {
+                    mem::transmute(interrupt_line_and_interrupt_pin_and_bridge_control)
+                };
+                Some(interrupt_line_and_interrupt_pin_and_bridge_control[1].into())
+            },
         }
     }
 }
