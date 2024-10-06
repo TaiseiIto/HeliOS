@@ -5,6 +5,7 @@
 pub mod base_address;
 pub mod bist;
 pub mod command;
+pub mod expansion_rom_base_address;
 pub mod header_type;
 pub mod status;
 
@@ -191,6 +192,13 @@ impl Function {
         }
     }
 
+    pub fn expansion_rom_base_address(&self) -> Option<expansion_rom_base_address::Register> {
+        match self.into() {
+            header_type::Type::Zero => Some(self.space[12].into()),
+            header_type::Type::One => None,
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -230,6 +238,9 @@ impl fmt::Debug for Function {
         }
         if let Some(subsystem_id) = self.subsystem_id() {
             debug.field("subsystem_id", &subsystem_id);
+        }
+        if let Some(expansion_rom_base_address) = self.expansion_rom_base_address() {
+            debug.field("expansion_rom_base_address", &expansion_rom_base_address);
         }
         debug
             .field("capabilities_pointer", &self.capabilities_pointer());
