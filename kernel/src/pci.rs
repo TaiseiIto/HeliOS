@@ -316,6 +316,20 @@ impl Function {
         }
     }
 
+    pub fn prefetchable_memory_base_upper_32bits(&self) -> Option<u32> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[10]),
+        }
+    }
+
+    pub fn prefetchable_memory_limit_upper_32bits(&self) -> Option<u32> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[11]),
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -403,6 +417,12 @@ impl fmt::Debug for Function {
         }
         if let Some(prefetchable_memory_limit) = self.prefetchable_memory_limit() {
             debug.field("prefetchable_memory_limit", &prefetchable_memory_limit);
+        }
+        if let Some(prefetchable_memory_base_upper_32bits) = self.prefetchable_memory_base_upper_32bits() {
+            debug.field("prefetchable_memory_base_upper_32bits", &prefetchable_memory_base_upper_32bits);
+        }
+        if let Some(prefetchable_memory_limit_upper_32bits) = self.prefetchable_memory_limit_upper_32bits() {
+            debug.field("prefetchable_memory_limit_upper_32bits", &prefetchable_memory_limit_upper_32bits);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
