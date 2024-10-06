@@ -165,6 +165,32 @@ impl Function {
         }
     }
 
+    pub fn subsystem_vendor_id(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => {
+                let subsystem: u32 = self.space[11];
+                let subsystem: [u16; 2] = unsafe {
+                    mem::transmute(subsystem)
+                };
+                Some(subsystem[0])
+            },
+            header_type::Type::One => None,
+        }
+    }
+
+    pub fn subsystem_id(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => {
+                let subsystem: u32 = self.space[11];
+                let subsystem: [u16; 2] = unsafe {
+                    mem::transmute(subsystem)
+                };
+                Some(subsystem[1])
+            },
+            header_type::Type::One => None,
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -198,6 +224,12 @@ impl fmt::Debug for Function {
             .field("base_address_registers", &self.base_address_registers());
         if let Some(cardbus_cis_pointer) = self.cardbus_cis_pointer() {
             debug.field("cardbus_cis_pointer", &cardbus_cis_pointer);
+        }
+        if let Some(subsystem_vendor_id) = self.subsystem_vendor_id() {
+            debug.field("subsystem_vendor_id", &subsystem_vendor_id);
+        }
+        if let Some(subsystem_id) = self.subsystem_id() {
+            debug.field("subsystem_id", &subsystem_id);
         }
         debug
             .field("capabilities_pointer", &self.capabilities_pointer());
