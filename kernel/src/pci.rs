@@ -94,36 +94,36 @@ impl Function {
     }
 
     pub fn revision_id(&self) -> u8 {
-        (self.space[2] & (u8::MAX as u32)) as u8
+        self.space[2].to_le_bytes()[0]
     }
 
     pub fn programming_interface(&self) -> u8 {
-        ((self.space[2] >> u8::BITS) & (u8::MAX as u32)) as u8
+        self.space[2].to_le_bytes()[1]
     }
 
     pub fn sub_class_code(&self) -> u8 {
-        ((self.space[2] >> (2 * u8::BITS)) & (u8::MAX as u32)) as u8
+        self.space[2].to_le_bytes()[2]
     }
 
     pub fn base_class_code(&self) -> u8 {
-        ((self.space[2] >> (3 * u8::BITS)) & (u8::MAX as u32)) as u8
+        self.space[2].to_le_bytes()[3]
     }
 
     pub fn cache_line_size(&self) -> u8 {
-        (self.space[3] & (u8::MAX as u32)) as u8
+        self.space[3].to_le_bytes()[0]
     }
 
     pub fn latency_timer(&self) -> u8 {
-        ((self.space[3] >> u8::BITS) & (u8::MAX as u32)) as u8
+        self.space[3].to_le_bytes()[1]
     }
 
     pub fn header_type(&self) -> header_type::Register {
-        let header_type: u8 = ((self.space[3] >> (2 * u8::BITS)) & (u8::MAX as u32)) as u8;
+        let header_type: u8 = self.space[3].to_le_bytes()[2];
         header_type.into()
     }
 
     pub fn bist(&self) -> bist::Register {
-        let bist: u8 = ((self.space[3] >> (3 * u8::BITS)) & (u8::MAX as u32)) as u8;
+        let bist: u8 = self.space[3].to_le_bytes()[3];
         bist.into()
     }
 }
