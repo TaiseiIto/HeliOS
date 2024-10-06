@@ -148,8 +148,7 @@ impl Function {
     }
 
     pub fn base_address_registers(&self) -> Vec<base_address::Register> {
-        let header_type: header_type::Register = self.header_type();
-        let header_type: header_type::Type = (&header_type).into();
+        let header_type: header_type::Type = self.into();
         let end_index: usize = match header_type {
             header_type::Type::Zero => 10,
             header_type::Type::One => 6,
@@ -157,6 +156,13 @@ impl Function {
         (4..end_index)
             .map(|index| self.space[index].into())
             .collect()
+    }
+
+    pub fn cardbus_cis_pointer(&self) -> Option<u32> {
+        match self.into() {
+            header_type::Type::Zero => Some(self.space[10]),
+            header_type::Type::One => None,
+        }
     }
 
     pub fn capabilities_pointer(&self) -> u8 {
@@ -190,6 +196,9 @@ impl fmt::Debug for Function {
             .field("header_type", &header_type)
             .field("bist", &self.bist())
             .field("base_address_registers", &self.base_address_registers());
+        if let Some(cardbus_cis_pointer) = self.cardbus_cis_pointer() {
+            debug.field("cardbus_cis_pointer", &cardbus_cis_pointer);
+        }
         debug
             .field("capabilities_pointer", &self.capabilities_pointer());
         debug

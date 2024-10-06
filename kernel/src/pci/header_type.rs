@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    super::Function,
+};
 
 /// # Header Type Register
 /// ## References
@@ -22,6 +25,13 @@ impl From<&Register> for Type {
             0x01 => Self::One,
             _ => unreachable!(),
         }
+    }
+}
+
+impl From<&Function> for Type {
+    fn from(function: &Function) -> Self {
+        let register: Register = function.header_type();
+        (&register).into()
     }
 }
 
