@@ -68,16 +68,17 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
-    pub fn read(bus: u8, device: u8, function: u8) -> Self {
+    pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
             .map(|register| Address::create(bus, device, function, register).read())
             .collect();
         let space: [u32; Self::LENGTH] = space
             .try_into()
             .unwrap();
-        Self {
+        let function = Self {
             space
-        }
+        };
+        (function.vendor_id() != 0xffff).then_some(function)
     }
 
     pub fn vendor_id(&self) -> u16 {
