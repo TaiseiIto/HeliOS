@@ -10,7 +10,10 @@ pub mod status;
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+    },
     crate::x64,
 };
 
@@ -76,20 +79,36 @@ impl Function {
     }
 
     pub fn vendor_id(&self) -> u16 {
-        (self.space[0] & (u16::MAX as u32)) as u16
+        let vendor_id_and_device_id: u32 = self.space[0];
+        let vendor_id_and_device_id: [u16; 2] = unsafe {
+            mem::transmute(vendor_id_and_device_id)
+        };
+        vendor_id_and_device_id[0]
     }
 
     pub fn device_id(&self) -> u16 {
-        (self.space[0] >> u16::BITS) as u16
+        let vendor_id_and_device_id: u32 = self.space[0];
+        let vendor_id_and_device_id: [u16; 2] = unsafe {
+            mem::transmute(vendor_id_and_device_id)
+        };
+        vendor_id_and_device_id[1]
     }
 
     pub fn command(&self) -> command::Register {
-        let command: u16 = (self.space[1] & (u16::MAX as u32)) as u16;
+        let command_and_status: u32 = self.space[1];
+        let command_and_status: [u16; 2] = unsafe {
+            mem::transmute(command_and_status)
+        };
+        let command: u16 = command_and_status[0];
         command.into()
     }
 
     pub fn status(&self) -> status::Register {
-        let status: u16 = (self.space[1] >> u16::BITS) as u16;
+        let command_and_status: u32 = self.space[1];
+        let command_and_status: [u16; 2] = unsafe {
+            mem::transmute(command_and_status)
+        };
+        let status: u16 = command_and_status[1];
         status.into()
     }
 
