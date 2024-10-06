@@ -4,6 +4,7 @@
 
 pub mod base_address;
 pub mod bist;
+pub mod class;
 pub mod command;
 pub mod expansion_rom_base_address;
 pub mod header_type;
@@ -119,15 +120,22 @@ impl Function {
         self.space[2].to_le_bytes()[0]
     }
 
+	pub fn class_code(&self) -> class::Code {
+		let base_class: u8 = self.base_class();
+		let sub_class: u8 = self.sub_class();
+		let programming_interface: u8 = self.programming_interface();
+		class::Code::new(base_class, sub_class, programming_interface)
+	}
+
     pub fn programming_interface(&self) -> u8 {
         self.space[2].to_le_bytes()[1]
     }
 
-    pub fn sub_class_code(&self) -> u8 {
+    pub fn sub_class(&self) -> u8 {
         self.space[2].to_le_bytes()[2]
     }
 
-    pub fn base_class_code(&self) -> u8 {
+    pub fn base_class(&self) -> u8 {
         self.space[2].to_le_bytes()[3]
     }
 
@@ -237,9 +245,7 @@ impl fmt::Debug for Function {
             .field("command", &self.command())
             .field("status", &self.status())
             .field("revision_id", &self.revision_id())
-            .field("programming_interface", &self.programming_interface())
-            .field("sub_class_code", &self.sub_class_code())
-            .field("base_class_code", &self.base_class_code())
+            .field("class_code", &self.class_code())
             .field("cache_line_size", &self.cache_line_size())
             .field("latency_timer", &self.latency_timer())
             .field("header_type", &header_type)
