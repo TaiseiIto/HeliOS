@@ -9,12 +9,13 @@ extern crate alloc;
 mod acpi;
 mod application;
 mod argument;
-mod processor;
 mod efi;
 mod elf;
 mod interrupt;
 mod io;
 mod memory;
+mod pci;
+mod processor;
 mod rs232c;
 mod sync;
 mod syscall;
@@ -309,6 +310,10 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
+    let pci_configuration_address = pci::configuration::Address::create(0, 0, 0, 0);
+    let pci_test: u32 = pci_configuration_address.read();
+    com2_println!("pci_test = {:#x?}", pci_test);
+    unimplemented!();
     // Shutdown.
     Argument::get()
         .efi_system_table()
