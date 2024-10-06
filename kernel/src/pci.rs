@@ -210,6 +210,20 @@ impl Function {
     pub fn interrupt_pin(&self) -> u8 {
         self.space[15].to_le_bytes()[1]
     }
+
+    pub fn min_gnt(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => Some(self.space[15].to_le_bytes()[2]),
+            header_type::Type::One => None,
+        }
+    }
+
+    pub fn min_lat(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => Some(self.space[15].to_le_bytes()[3]),
+            header_type::Type::One => None,
+        }
+    }
 }
 
 impl fmt::Debug for Function {
@@ -242,13 +256,17 @@ impl fmt::Debug for Function {
         if let Some(expansion_rom_base_address) = self.expansion_rom_base_address() {
             debug.field("expansion_rom_base_address", &expansion_rom_base_address);
         }
-        debug
-            .field("capabilities_pointer", &self.capabilities_pointer());
+        debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
             .field("interrupt_line", &self.interrupt_line())
             .field("interrupt_pin", &self.interrupt_pin());
-        debug
-            .finish()
+        if let Some(min_gnt) = self.min_gnt() {
+            debug.field("min_gnt", &min_gnt);
+        }
+        if let Some(min_lat) = self.min_lat() {
+            debug.field("min_lat", &min_lat);
+        }
+        debug.finish()
     }
 }
 
