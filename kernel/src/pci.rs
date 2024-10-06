@@ -330,6 +330,32 @@ impl Function {
         }
     }
 
+    pub fn io_base_upper_16bits(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let io_base_upper_16bits_and_io_limit_upper_16bits: u32 = self.space[12];
+                let io_base_upper_16bits_and_io_limit_upper_16bits: [u16; 2] = unsafe {
+                    mem::transmute(io_base_upper_16bits_and_io_limit_upper_16bits)
+                };
+                Some(io_base_upper_16bits_and_io_limit_upper_16bits[0])
+            },
+        }
+    }
+
+    pub fn io_limit_upper_16bits(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let io_base_upper_16bits_and_io_limit_upper_16bits: u32 = self.space[12];
+                let io_base_upper_16bits_and_io_limit_upper_16bits: [u16; 2] = unsafe {
+                    mem::transmute(io_base_upper_16bits_and_io_limit_upper_16bits)
+                };
+                Some(io_base_upper_16bits_and_io_limit_upper_16bits[1])
+            },
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -423,6 +449,12 @@ impl fmt::Debug for Function {
         }
         if let Some(prefetchable_memory_limit_upper_32bits) = self.prefetchable_memory_limit_upper_32bits() {
             debug.field("prefetchable_memory_limit_upper_32bits", &prefetchable_memory_limit_upper_32bits);
+        }
+        if let Some(io_base_upper_16bits) = self.io_base_upper_16bits() {
+            debug.field("io_base_upper_16bits", &io_base_upper_16bits);
+        }
+        if let Some(io_limit_upper_16bits) = self.io_limit_upper_16bits() {
+            debug.field("io_limit_upper_16bits", &io_limit_upper_16bits);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
