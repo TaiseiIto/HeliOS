@@ -79,6 +79,22 @@ impl Function {
         status.into()
     }
 
+    pub fn revision_id(&self) -> u8 {
+        (self.space[2] & (u8::MAX as u32)) as u8
+    }
+
+    pub fn programming_interface(&self) -> u8 {
+        ((self.space[2] >> u8::BITS) & (u8::MAX as u32)) as u8
+    }
+
+    pub fn sub_class_code(&self) -> u8 {
+        ((self.space[2] >> (2 * u8::BITS)) & (u8::MAX as u32)) as u8
+    }
+
+    pub fn base_class_code(&self) -> u8 {
+        ((self.space[2] >> (3 * u8::BITS)) & (u8::MAX as u32)) as u8
+    }
+
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
             .map(|register| Address::create(bus, device, function, register).read())
@@ -100,6 +116,10 @@ impl fmt::Debug for Function {
             .field("device_id", &self.device_id())
             .field("command", &self.command())
             .field("status", &self.status())
+            .field("revision_id", &self.revision_id())
+            .field("programming_interface", &self.programming_interface())
+            .field("sub_class_code", &self.sub_class_code())
+            .field("base_class_code", &self.base_class_code())
             .finish()
     }
 }
