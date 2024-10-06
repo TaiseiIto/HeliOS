@@ -95,6 +95,14 @@ impl Function {
         ((self.space[2] >> (3 * u8::BITS)) & (u8::MAX as u32)) as u8
     }
 
+    pub fn cache_line_size(&self) -> u8 {
+        (self.space[3] & (u8::MAX as u32)) as u8
+    }
+
+    pub fn latency_timer(&self) -> u8 {
+        ((self.space[3] >> u8::BITS) & (u8::MAX as u32)) as u8
+    }
+
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
             .map(|register| Address::create(bus, device, function, register).read())
@@ -120,6 +128,8 @@ impl fmt::Debug for Function {
             .field("programming_interface", &self.programming_interface())
             .field("sub_class_code", &self.sub_class_code())
             .field("base_class_code", &self.base_class_code())
+            .field("cache_line_size", &self.cache_line_size())
+            .field("latency_timer", &self.latency_timer())
             .finish()
     }
 }
