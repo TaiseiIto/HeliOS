@@ -145,6 +145,18 @@ impl Function {
         let bist: u8 = self.space[3].to_le_bytes()[3];
         bist.into()
     }
+
+    pub fn capabilities_pointer(&self) -> u8 {
+        self.space[13].to_le_bytes()[0]
+    }
+
+    pub fn interrupt_line(&self) -> u8 {
+        self.space[15].to_le_bytes()[0]
+    }
+
+    pub fn interrupt_pin(&self) -> u8 {
+        self.space[15].to_le_bytes()[1]
+    }
 }
 
 impl fmt::Debug for Function {
@@ -163,6 +175,9 @@ impl fmt::Debug for Function {
             .field("latency_timer", &self.latency_timer())
             .field("header_type", &self.header_type())
             .field("bist", &self.bist())
+            .field("capabilities_pointer", &self.capabilities_pointer())
+            .field("interrupt_line", &self.interrupt_line())
+            .field("interrupt_pin", &self.interrupt_pin())
             .finish()
     }
 }
