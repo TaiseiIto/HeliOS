@@ -2,7 +2,9 @@
 //! ## References
 //! * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 
+pub mod bist;
 pub mod command;
+pub mod header_type;
 pub mod status;
 
 use {
@@ -61,6 +63,18 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
+    pub fn read(bus: u8, device: u8, function: u8) -> Self {
+        let space: Vec<u32> = (0u8..Self::LENGTH as u8)
+            .map(|register| Address::create(bus, device, function, register).read())
+            .collect();
+        let space: [u32; Self::LENGTH] = space
+            .try_into()
+            .unwrap();
+        Self {
+            space
+        }
+    }
+
     pub fn vendor_id(&self) -> u16 {
         (self.space[0] & (u16::MAX as u32)) as u16
     }
@@ -103,16 +117,14 @@ impl Function {
         ((self.space[3] >> u8::BITS) & (u8::MAX as u32)) as u8
     }
 
-    pub fn read(bus: u8, device: u8, function: u8) -> Self {
-        let space: Vec<u32> = (0u8..Self::LENGTH as u8)
-            .map(|register| Address::create(bus, device, function, register).read())
-            .collect();
-        let space: [u32; Self::LENGTH] = space
-            .try_into()
-            .unwrap();
-        Self {
-            space
-        }
+    pub fn header_type(&self) -> header_type::Register {
+        let header_type: u8 = ((self.space[3] >> (2 * u8::BITS)) & (u8::MAX as u32)) as u8;
+        header_type.into()
+    }
+
+    pub fn bist(&self) -> bist::Register {
+        let bist: u8 = ((self.space[3] >> (3 * u8::BITS)) & (u8::MAX as u32)) as u8;
+        bist.into()
     }
 }
 
@@ -130,6 +142,8 @@ impl fmt::Debug for Function {
             .field("base_class_code", &self.base_class_code())
             .field("cache_line_size", &self.cache_line_size())
             .field("latency_timer", &self.latency_timer())
+            .field("header_type", &self.header_type())
+            .field("bist", &self.bist())
             .finish()
     }
 }
