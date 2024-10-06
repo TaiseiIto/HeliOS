@@ -2,6 +2,7 @@
 //! ## References
 //! * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 
+pub mod base_address;
 pub mod bist;
 pub mod command;
 pub mod header_type;
@@ -146,6 +147,18 @@ impl Function {
         bist.into()
     }
 
+    pub fn base_address_registers(&self) -> Vec<base_address::Register> {
+        let header_type: header_type::Register = self.header_type();
+        let header_type: header_type::Type = (&header_type).into();
+        let end_index: usize = match header_type {
+            header_type::Type::Zero => 10,
+            header_type::Type::One => 6,
+        };
+        (4..end_index)
+            .map(|index| self.space[index].into())
+            .collect()
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -161,8 +174,9 @@ impl Function {
 
 impl fmt::Debug for Function {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Function")
+        let mut debug: fmt::DebugStruct = formatter.debug_struct("Function");
+        let header_type: header_type::Register = self.header_type();
+        debug
             .field("vendor_id", &self.vendor_id())
             .field("device_id", &self.device_id())
             .field("command", &self.command())
@@ -173,11 +187,15 @@ impl fmt::Debug for Function {
             .field("base_class_code", &self.base_class_code())
             .field("cache_line_size", &self.cache_line_size())
             .field("latency_timer", &self.latency_timer())
-            .field("header_type", &self.header_type())
+            .field("header_type", &header_type)
             .field("bist", &self.bist())
-            .field("capabilities_pointer", &self.capabilities_pointer())
+            .field("base_address_registers", &self.base_address_registers());
+        debug
+            .field("capabilities_pointer", &self.capabilities_pointer());
+        debug
             .field("interrupt_line", &self.interrupt_line())
-            .field("interrupt_pin", &self.interrupt_pin())
+            .field("interrupt_pin", &self.interrupt_pin());
+        debug
             .finish()
     }
 }

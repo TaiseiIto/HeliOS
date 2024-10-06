@@ -10,3 +10,18 @@ pub struct Register {
     multi_function_device: bool,
 }
 
+pub enum Type {
+    Zero,
+    One,
+}
+
+impl From<&Register> for Type {
+    fn from(register: &Register) -> Self {
+        match register.header_layout() {
+            0x00 => Self::Zero,
+            0x01 => Self::One,
+            _ => unreachable!(),
+        }
+    }
+}
+
