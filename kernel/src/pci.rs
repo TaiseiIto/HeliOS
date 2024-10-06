@@ -3,6 +3,7 @@
 //! * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 
 pub mod command;
+pub mod status;
 
 use {
     alloc::vec::Vec,
@@ -73,6 +74,11 @@ impl Function {
         command.into()
     }
 
+    pub fn status(&self) -> status::Register {
+        let status: u16 = (self.space[1] >> u16::BITS) as u16;
+        status.into()
+    }
+
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
             .map(|register| Address::create(bus, device, function, register).read())
@@ -93,6 +99,7 @@ impl fmt::Debug for Function {
             .field("vendor_id", &self.vendor_id())
             .field("device_id", &self.device_id())
             .field("command", &self.command())
+            .field("status", &self.status())
             .finish()
     }
 }
