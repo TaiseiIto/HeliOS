@@ -3,6 +3,7 @@
 //! * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     crate::x64,
 };
@@ -43,6 +44,30 @@ impl Address {
         let address: u32 = self.into();
         x64::port::outl(Self::ADDRESS_PORT, address);
         x64::port::inl(Self::DATA_PORT)
+    }
+}
+
+/// # PCI Function
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1 Type 0/1 Common Configuration Space Figure 7-4 Common Configuration Space Header
+#[derive(Debug)]
+pub struct Function {
+    space: [u32; Self::LENGTH],
+}
+
+impl Function {
+    const LENGTH: usize = 0x40;
+
+    pub fn read(bus: u8, device: u8, function: u8) -> Self {
+        let space: Vec<u32> = (0u8..Self::LENGTH as u8)
+            .map(|register| Address::create(bus, device, function, register).read())
+            .collect();
+        let space: [u32; Self::LENGTH] = space
+            .try_into()
+            .unwrap();
+        Self {
+            space
+        }
     }
 }
 
