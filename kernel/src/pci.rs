@@ -8,6 +8,7 @@ pub mod class;
 pub mod command;
 pub mod expansion_rom_base_address;
 pub mod header_type;
+pub mod secondary_status;
 pub mod status;
 
 use {
@@ -236,6 +237,33 @@ impl Function {
         }
     }
 
+    pub fn io_base(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[7].to_le_bytes()[0]),
+        }
+    }
+
+    pub fn io_limit(&self) -> Option<u8> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => Some(self.space[7].to_le_bytes()[1]),
+        }
+    }
+
+    pub fn secondary_status(&self) -> Option<secondary_status::Register> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let io_base_and_io_limit_and_secondary_status: u32 = self.space[7];
+                let io_base_and_io_limit_and_secondary_status: [u16; 2] = unsafe {
+                    mem::transmute(io_base_and_io_limit_and_secondary_status)
+                };
+                Some(io_base_and_io_limit_and_secondary_status[1].into())
+            },
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -302,6 +330,15 @@ impl fmt::Debug for Function {
         }
         if let Some(secondary_latency_timer) = self.secondary_latency_timer() {
             debug.field("secondary_latency_timer", &secondary_latency_timer);
+        }
+        if let Some(io_base) = self.io_base() {
+            debug.field("io_base", &io_base);
+        }
+        if let Some(io_limit) = self.io_limit() {
+            debug.field("io_limit", &io_limit);
+        }
+        if let Some(secondary_status) = self.secondary_status() {
+            debug.field("secondary_status", &secondary_status);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
