@@ -264,6 +264,58 @@ impl Function {
         }
     }
 
+    pub fn memory_base(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let memory_base_and_memory_limit: u32 = self.space[8];
+                let memory_base_and_memory_limit: [u16; 2] = unsafe {
+                    mem::transmute(memory_base_and_memory_limit)
+                };
+                Some(memory_base_and_memory_limit[0])
+            },
+        }
+    }
+
+    pub fn memory_limit(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let memory_base_and_memory_limit: u32 = self.space[8];
+                let memory_base_and_memory_limit: [u16; 2] = unsafe {
+                    mem::transmute(memory_base_and_memory_limit)
+                };
+                Some(memory_base_and_memory_limit[1])
+            },
+        }
+    }
+
+    pub fn prefetchable_memory_base(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let prefetchable_memory_base_and_prefetchable_memory_limit: u32 = self.space[9];
+                let prefetchable_memory_base_and_prefetchable_memory_limit: [u16; 2] = unsafe {
+                    mem::transmute(prefetchable_memory_base_and_prefetchable_memory_limit)
+                };
+                Some(prefetchable_memory_base_and_prefetchable_memory_limit[0])
+            },
+        }
+    }
+
+    pub fn prefetchable_memory_limit(&self) -> Option<u16> {
+        match self.into() {
+            header_type::Type::Zero => None,
+            header_type::Type::One => {
+                let prefetchable_memory_base_and_prefetchable_memory_limit: u32 = self.space[9];
+                let prefetchable_memory_base_and_prefetchable_memory_limit: [u16; 2] = unsafe {
+                    mem::transmute(prefetchable_memory_base_and_prefetchable_memory_limit)
+                };
+                Some(prefetchable_memory_base_and_prefetchable_memory_limit[1])
+            },
+        }
+    }
+
     pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
@@ -339,6 +391,18 @@ impl fmt::Debug for Function {
         }
         if let Some(secondary_status) = self.secondary_status() {
             debug.field("secondary_status", &secondary_status);
+        }
+        if let Some(memory_base) = self.memory_base() {
+            debug.field("memory_base", &memory_base);
+        }
+        if let Some(memory_limit) = self.memory_limit() {
+            debug.field("memory_limit", &memory_limit);
+        }
+        if let Some(prefetchable_memory_base) = self.prefetchable_memory_base() {
+            debug.field("prefetchable_memory_base", &prefetchable_memory_base);
+        }
+        if let Some(prefetchable_memory_limit) = self.prefetchable_memory_limit() {
+            debug.field("prefetchable_memory_limit", &prefetchable_memory_limit);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
         debug
