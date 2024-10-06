@@ -310,7 +310,7 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
-    let pci_test = pci::configuration::Function::read(0, 0, 0);
+    let pci_test = pci::Function::read(0, 0, 0);
     com2_println!("pci_test = {:#x?}", pci_test);
     unimplemented!();
     // Shutdown.
