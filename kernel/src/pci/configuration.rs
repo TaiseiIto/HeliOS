@@ -5,6 +5,7 @@
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
+    core::fmt,
     crate::x64,
 };
 
@@ -50,13 +51,20 @@ impl Address {
 /// # PCI Function
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1 Type 0/1 Common Configuration Space Figure 7-4 Common Configuration Space Header
-#[derive(Debug)]
 pub struct Function {
     space: [u32; Self::LENGTH],
 }
 
 impl Function {
     const LENGTH: usize = 0x40;
+
+    pub fn vendor_id(&self) -> u16 {
+        (self.space[0] & (u16::MAX as u32)) as u16
+    }
+
+    pub fn device_id(&self) -> u16 {
+        (self.space[0] >> u16::BITS) as u16
+    }
 
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
@@ -68,6 +76,16 @@ impl Function {
         Self {
             space
         }
+    }
+}
+
+impl fmt::Debug for Function {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Function")
+            .field("vendor_id", &self.vendor_id())
+            .field("device_id", &self.device_id())
+            .finish()
     }
 }
 
