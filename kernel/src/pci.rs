@@ -202,11 +202,12 @@ impl Function {
         }
     }
 
-    pub fn expansion_rom_base_address(&self) -> Option<expansion_rom_base_address::Register> {
-        match self.into() {
-            header_type::Type::Zero => Some(self.space[12].into()),
-            header_type::Type::One => None,
-        }
+    pub fn expansion_rom_base_address(&self) -> expansion_rom_base_address::Register {
+        let index: usize = match self.into() {
+            header_type::Type::Zero => 12,
+            header_type::Type::One => 14,
+        };
+        self.space[index].into()
     }
 
     pub fn primary_bus_number(&self) -> Option<u8> {
@@ -408,8 +409,8 @@ impl fmt::Debug for Function {
         if let Some(subsystem_id) = self.subsystem_id() {
             debug.field("subsystem_id", &subsystem_id);
         }
-        if let Some(expansion_rom_base_address) = self.expansion_rom_base_address() {
-            debug.field("expansion_rom_base_address", &expansion_rom_base_address);
+        if let header_type::Type::Zero = self.into() {
+            debug.field("expansion_rom_base_address", &self.expansion_rom_base_address());
         }
         if let Some(primary_bus_number) = self.primary_bus_number() {
             debug.field("primary_bus_number", &primary_bus_number);
@@ -457,6 +458,9 @@ impl fmt::Debug for Function {
             debug.field("io_limit_upper_16bits", &io_limit_upper_16bits);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
+        if let header_type::Type::One = self.into() {
+            debug.field("expansion_rom_base_address", &self.expansion_rom_base_address());
+        }
         debug
             .field("interrupt_line", &self.interrupt_line())
             .field("interrupt_pin", &self.interrupt_pin());
