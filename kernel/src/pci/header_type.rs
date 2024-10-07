@@ -13,6 +13,12 @@ pub struct Register {
     multi_function_device: bool,
 }
 
+impl Register {
+    pub fn is_multi_function_device(&self) -> bool {
+        self.multi_function_device()
+    }
+}
+
 pub enum Type {
     Zero,
     One,

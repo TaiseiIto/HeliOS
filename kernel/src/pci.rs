@@ -13,7 +13,10 @@ pub mod secondary_status;
 pub mod status;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collection::btree_map::BTreeMap,
+        vec::Vec,
+    },
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -59,6 +62,20 @@ impl Address {
         x64::port::outl(Self::ADDRESS_PORT, address);
         x64::port::inl(Self::DATA_PORT)
     }
+}
+
+/// # PCI Bus
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
+pub struct Bus {
+    devices: BTreeMap<u8, Device>,
+}
+
+/// # PCI Device
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
+pub struct Device {
+    functions: BTreeMap<u8, Function>,
 }
 
 /// # PCI Function
