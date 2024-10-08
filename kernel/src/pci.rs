@@ -14,7 +14,7 @@ pub mod status;
 
 use {
     alloc::{
-        collection::btree_map::BTreeMap,
+        collections::btree_map::BTreeMap,
         vec::Vec,
     },
     bitfield_struct::bitfield,
@@ -64,18 +64,104 @@ impl Address {
     }
 }
 
+/// # PCI
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
+#[derive(Debug, Default)]
+pub struct Pci {
+    buses: BTreeMap<u8, Bus>,
+}
+
+impl Pci {
+    pub fn read() -> Self {
+        let buses: BTreeMap<u8, Bus> = BTreeMap::new();
+        let mut pci = Self {
+            buses,
+        };
+        let bus_number: u8 = 0;
+        let device_number: u8 = 0;
+        let function_number: u8 = 0;
+        pci.scan(bus_number, device_number, function_number);
+        pci
+    }
+
+    fn add(&mut self, bus_number: u8, device_number: u8, function_number: u8, function: Function) {
+        self.buses
+            .entry(bus_number)
+            .or_default()
+            .add(device_number, function_number, function);
+    }
+
+    fn has(&self, bus_number: u8, device_number: u8, function_number: u8) -> bool {
+        self.buses
+            .get(&bus_number)
+            .map_or(false, |bus| bus.has(device_number, function_number))
+    }
+
+    fn scan(&mut self, bus_number: u8, device_number: u8, function_number: u8) {
+        if !self.has(bus_number, device_number, function_number) {
+            if let Some(function) = Function::read(bus_number, device_number, function_number) {
+                match function.class_code() {
+                    class::Code::HostBridge => {
+                        let bus_number: u8 = function_number;
+                        let function_number: u8 = 0;
+                    },
+                    class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => if let Some(secondary_bus_number) = function.secondary_bus_number() {
+                        let bus_number: u8 = secondary_bus_number;
+                        let function_number: u8 = 0;
+                    },
+                    _ => {},
+                }
+                if function_number == 0 && function.is_multi_function_device() {
+                }
+                self.add(bus_number, device_number, function_number, function);
+            }
+        }
+    }
+}
+
 /// # PCI Bus
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
+#[derive(Debug, Default)]
 pub struct Bus {
     devices: BTreeMap<u8, Device>,
+}
+
+impl Bus {
+    fn add(&mut self, device_number: u8, function_number: u8, function: Function) {
+        self.devices
+            .entry(device_number)
+            .or_default()
+            .add(function_number, function);
+    }
+
+    fn has(&self, device_number: u8, function_number: u8) -> bool {
+        self.devices
+            .get(&device_number)
+            .map_or(false, |device| device.has(function_number))
+    }
 }
 
 /// # PCI Device
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
+#[derive(Debug, Default)]
 pub struct Device {
     functions: BTreeMap<u8, Function>,
+}
+
+impl Device {
+    fn add(&mut self, function_number: u8, function: Function) {
+        self.functions
+            .insert(function_number, function);
+    }
+
+    fn has(&self, function_number: u8) -> bool {
+        self.functions
+            .get(&function_number)
+            .is_some()
+    }
 }
 
 /// # PCI Function
@@ -101,7 +187,12 @@ impl Function {
         (function.vendor_id() != 0xffff).then_some(function)
     }
 
-    pub fn vendor_id(&self) -> u16 {
+    pub fn is_multi_function_device(&self) -> bool {
+        self.header_type()
+            .is_multi_function_device()
+    }
+
+    fn vendor_id(&self) -> u16 {
         let vendor_id_and_device_id: u32 = self.space[0];
         let vendor_id_and_device_id: [u16; 2] = unsafe {
             mem::transmute(vendor_id_and_device_id)
@@ -109,7 +200,7 @@ impl Function {
         vendor_id_and_device_id[0]
     }
 
-    pub fn device_id(&self) -> u16 {
+    fn device_id(&self) -> u16 {
         let vendor_id_and_device_id: u32 = self.space[0];
         let vendor_id_and_device_id: [u16; 2] = unsafe {
             mem::transmute(vendor_id_and_device_id)
@@ -117,7 +208,7 @@ impl Function {
         vendor_id_and_device_id[1]
     }
 
-    pub fn command(&self) -> command::Register {
+    fn command(&self) -> command::Register {
         let command_and_status: u32 = self.space[1];
         let command_and_status: [u16; 2] = unsafe {
             mem::transmute(command_and_status)
@@ -126,7 +217,7 @@ impl Function {
         command.into()
     }
 
-    pub fn status(&self) -> status::Register {
+    fn status(&self) -> status::Register {
         let command_and_status: u32 = self.space[1];
         let command_and_status: [u16; 2] = unsafe {
             mem::transmute(command_and_status)
@@ -135,48 +226,48 @@ impl Function {
         status.into()
     }
 
-    pub fn revision_id(&self) -> u8 {
+    fn revision_id(&self) -> u8 {
         self.space[2].to_le_bytes()[0]
     }
 
-	pub fn class_code(&self) -> class::Code {
+	fn class_code(&self) -> class::Code {
 		let base_class: u8 = self.base_class();
 		let sub_class: u8 = self.sub_class();
 		let programming_interface: u8 = self.programming_interface();
 		class::Code::new(base_class, sub_class, programming_interface)
 	}
 
-    pub fn programming_interface(&self) -> u8 {
+    fn programming_interface(&self) -> u8 {
         self.space[2].to_le_bytes()[1]
     }
 
-    pub fn sub_class(&self) -> u8 {
+    fn sub_class(&self) -> u8 {
         self.space[2].to_le_bytes()[2]
     }
 
-    pub fn base_class(&self) -> u8 {
+    fn base_class(&self) -> u8 {
         self.space[2].to_le_bytes()[3]
     }
 
-    pub fn cache_line_size(&self) -> u8 {
+    fn cache_line_size(&self) -> u8 {
         self.space[3].to_le_bytes()[0]
     }
 
-    pub fn latency_timer(&self) -> u8 {
+    fn latency_timer(&self) -> u8 {
         self.space[3].to_le_bytes()[1]
     }
 
-    pub fn header_type(&self) -> header_type::Register {
+    fn header_type(&self) -> header_type::Register {
         let header_type: u8 = self.space[3].to_le_bytes()[2];
         header_type.into()
     }
 
-    pub fn bist(&self) -> bist::Register {
+    fn bist(&self) -> bist::Register {
         let bist: u8 = self.space[3].to_le_bytes()[3];
         bist.into()
     }
 
-    pub fn base_address_registers(&self) -> Vec<base_address::Register> {
+    fn base_address_registers(&self) -> Vec<base_address::Register> {
         let header_type: header_type::Type = self.into();
         let end_index: usize = match header_type {
             header_type::Type::Zero => 10,
@@ -187,14 +278,14 @@ impl Function {
             .collect()
     }
 
-    pub fn cardbus_cis_pointer(&self) -> Option<u32> {
+    fn cardbus_cis_pointer(&self) -> Option<u32> {
         match self.into() {
             header_type::Type::Zero => Some(self.space[10]),
             header_type::Type::One => None,
         }
     }
 
-    pub fn subsystem_vendor_id(&self) -> Option<u16> {
+    fn subsystem_vendor_id(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => {
                 let subsystem: u32 = self.space[11];
@@ -207,7 +298,7 @@ impl Function {
         }
     }
 
-    pub fn subsystem_id(&self) -> Option<u16> {
+    fn subsystem_id(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => {
                 let subsystem: u32 = self.space[11];
@@ -220,7 +311,7 @@ impl Function {
         }
     }
 
-    pub fn expansion_rom_base_address(&self) -> expansion_rom_base_address::Register {
+    fn expansion_rom_base_address(&self) -> expansion_rom_base_address::Register {
         let index: usize = match self.into() {
             header_type::Type::Zero => 12,
             header_type::Type::One => 14,
@@ -228,49 +319,49 @@ impl Function {
         self.space[index].into()
     }
 
-    pub fn primary_bus_number(&self) -> Option<u8> {
+    fn primary_bus_number(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[6].to_le_bytes()[0]),
         }
     }
 
-    pub fn secondary_bus_number(&self) -> Option<u8> {
+    fn secondary_bus_number(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[6].to_le_bytes()[1]),
         }
     }
 
-    pub fn subordinate_bus_number(&self) -> Option<u8> {
+    fn subordinate_bus_number(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[6].to_le_bytes()[2]),
         }
     }
 
-    pub fn secondary_latency_timer(&self) -> Option<u8> {
+    fn secondary_latency_timer(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[6].to_le_bytes()[3]),
         }
     }
 
-    pub fn io_base(&self) -> Option<u8> {
+    fn io_base(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[7].to_le_bytes()[0]),
         }
     }
 
-    pub fn io_limit(&self) -> Option<u8> {
+    fn io_limit(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[7].to_le_bytes()[1]),
         }
     }
 
-    pub fn secondary_status(&self) -> Option<secondary_status::Register> {
+    fn secondary_status(&self) -> Option<secondary_status::Register> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -283,7 +374,7 @@ impl Function {
         }
     }
 
-    pub fn memory_base(&self) -> Option<u16> {
+    fn memory_base(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -296,7 +387,7 @@ impl Function {
         }
     }
 
-    pub fn memory_limit(&self) -> Option<u16> {
+    fn memory_limit(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -309,7 +400,7 @@ impl Function {
         }
     }
 
-    pub fn prefetchable_memory_base(&self) -> Option<u16> {
+    fn prefetchable_memory_base(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -322,7 +413,7 @@ impl Function {
         }
     }
 
-    pub fn prefetchable_memory_limit(&self) -> Option<u16> {
+    fn prefetchable_memory_limit(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -335,21 +426,21 @@ impl Function {
         }
     }
 
-    pub fn prefetchable_memory_base_upper_32bits(&self) -> Option<u32> {
+    fn prefetchable_memory_base_upper_32bits(&self) -> Option<u32> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[10]),
         }
     }
 
-    pub fn prefetchable_memory_limit_upper_32bits(&self) -> Option<u32> {
+    fn prefetchable_memory_limit_upper_32bits(&self) -> Option<u32> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => Some(self.space[11]),
         }
     }
 
-    pub fn io_base_upper_16bits(&self) -> Option<u16> {
+    fn io_base_upper_16bits(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -362,7 +453,7 @@ impl Function {
         }
     }
 
-    pub fn io_limit_upper_16bits(&self) -> Option<u16> {
+    fn io_limit_upper_16bits(&self) -> Option<u16> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -375,33 +466,33 @@ impl Function {
         }
     }
 
-    pub fn capabilities_pointer(&self) -> u8 {
+    fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
 
-    pub fn interrupt_line(&self) -> u8 {
+    fn interrupt_line(&self) -> u8 {
         self.space[15].to_le_bytes()[0]
     }
 
-    pub fn interrupt_pin(&self) -> u8 {
+    fn interrupt_pin(&self) -> u8 {
         self.space[15].to_le_bytes()[1]
     }
 
-    pub fn min_gnt(&self) -> Option<u8> {
+    fn min_gnt(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => Some(self.space[15].to_le_bytes()[2]),
             header_type::Type::One => None,
         }
     }
 
-    pub fn min_lat(&self) -> Option<u8> {
+    fn min_lat(&self) -> Option<u8> {
         match self.into() {
             header_type::Type::Zero => Some(self.space[15].to_le_bytes()[3]),
             header_type::Type::One => None,
         }
     }
 
-    pub fn bridge_control(&self) -> Option<bridge_control::Register> {
+    fn bridge_control(&self) -> Option<bridge_control::Register> {
         match self.into() {
             header_type::Type::Zero => None,
             header_type::Type::One => {
@@ -500,6 +591,9 @@ impl fmt::Debug for Function {
         }
         if let Some(min_lat) = self.min_lat() {
             debug.field("min_lat", &min_lat);
+        }
+        if let Some(bridge_control) = self.bridge_control() {
+            debug.field("bridge_control", &bridge_control);
         }
         debug.finish()
     }

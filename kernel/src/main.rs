@@ -23,7 +23,10 @@ mod task;
 mod timer;
 mod x64;
 
-pub use argument::Argument;
+pub use {
+    argument::Argument,
+    pci::Pci,
+};
 
 use {
     alloc::{
@@ -310,8 +313,9 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("Local APIC ID = {:#x?}", local_apic_id);
             com2_println!("{}", log);
         });
-    let pci_test: Option<pci::Function> = pci::Function::read(0, 0, 0);
-    com2_println!("pci_test = {:#x?}", pci_test);
+    // Enumerate PCI devices.
+    let pci = Pci::read();
+    com2_println!("pci = {:#x?}", pci);
     unimplemented!();
     // Shutdown.
     Argument::get()
