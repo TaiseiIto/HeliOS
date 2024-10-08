@@ -316,7 +316,6 @@ fn main(argument: &'static mut Argument<'static>) {
     // Enumerate PCI devices.
     let pci = Pci::read();
     com2_println!("pci = {:#x?}", pci);
-    unimplemented!();
     // Shutdown.
     Argument::get()
         .efi_system_table()
