@@ -14,22 +14,29 @@ pub mod status;
 
 use {
     alloc::{
-        collections::btree_map::BTreeMap,
+        collections::{
+            btree_map::BTreeMap,
+            btree_set::BTreeSet,
+        },
         vec::Vec,
     },
     bitfield_struct::bitfield,
     core::{
         fmt,
         mem,
+        ops,
     },
-    crate::x64,
+    crate::{
+        com2_println,
+        x64,
+    },
 };
 
 /// # CFGADR - Configuration Address Register
 /// ## References
 /// * [Intel E8500 Chipset North Bridge (NB)](https://www.intel.co.jp/content/dam/doc/datasheet/e8500-chipset-north-bridge-datasheet.pdf) 4.6.1 CFGADR - Configuration Address Register
 #[bitfield(u32)]
-pub struct Address {
+struct Address {
     #[bits(2, access = RO)]
     reserved0: u8,
     #[bits(6)]
@@ -48,7 +55,7 @@ impl Address {
     const ADDRESS_PORT: u16 = 0x0cf8;
     const DATA_PORT: u16 = 0x0cfc;
 
-    pub fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
+    fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
         Self::new()
             .with_enable(true)
             .with_bus(bus)
@@ -57,7 +64,15 @@ impl Address {
             .with_register(register)
     }
 
-    pub fn read(self) -> u32 {
+    fn device_range() -> ops::RangeInclusive<u8> {
+        0..=(1 << Self::DEVICE_BITS) - 1
+    }
+
+    fn function_range() -> ops::RangeInclusive<u8> {
+        0..=(1 << Self::FUNCTION_BITS) - 1
+    }
+
+    fn read(self) -> u32 {
         let address: u32 = self.into();
         x64::port::outl(Self::ADDRESS_PORT, address);
         x64::port::inl(Self::DATA_PORT)
@@ -101,20 +116,34 @@ impl Pci {
     fn scan(&mut self, bus_number: u8, device_number: u8, function_number: u8) {
         if !self.has(bus_number, device_number, function_number) {
             if let Some(function) = Function::read(bus_number, device_number, function_number) {
+                com2_println!("Scan PCI ({:#x?}, {:#x?}, {:#x?})", bus_number, device_number, function_number);
+                let mut next_addresses: BTreeSet<(u8, u8, u8)> = BTreeSet::new();
                 match function.class_code() {
                     class::Code::HostBridge => {
                         let bus_number: u8 = function_number;
                         let function_number: u8 = 0;
+                        next_addresses
+                            .extend(Address::device_range()
+                                .map(|device_number| (bus_number, device_number, function_number)));
                     },
                     class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => if let Some(secondary_bus_number) = function.secondary_bus_number() {
                         let bus_number: u8 = secondary_bus_number;
                         let function_number: u8 = 0;
+                        next_addresses
+                            .extend(Address::device_range()
+                                .map(|device_number| (bus_number, device_number, function_number)));
                     },
                     _ => {},
                 }
                 if function_number == 0 && function.is_multi_function_device() {
+                    next_addresses
+                        .extend(Address::function_range()
+                            .map(|function_number| (bus_number, device_number, function_number)));
                 }
                 self.add(bus_number, device_number, function_number, function);
+                next_addresses
+                    .into_iter()
+                    .for_each(|(bus_number, device_number, function_number)| self.scan(bus_number, device_number, function_number));
             }
         }
     }
