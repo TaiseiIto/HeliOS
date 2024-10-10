@@ -83,11 +83,11 @@ impl Address {
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 #[derive(Debug, Default)]
-pub struct Pci {
+pub struct Configuration {
     buses: BTreeMap<u8, Bus>,
 }
 
-impl Pci {
+impl Configuration {
     pub fn read() -> Self {
         let buses: BTreeMap<u8, Bus> = BTreeMap::new();
         let mut pci = Self {

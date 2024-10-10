@@ -23,10 +23,7 @@ mod task;
 mod timer;
 mod x64;
 
-pub use {
-    argument::Argument,
-    pci::Pci,
-};
+pub use argument::Argument;
 
 use {
     alloc::{
@@ -314,7 +311,7 @@ fn main(argument: &'static mut Argument<'static>) {
             com2_println!("{}", log);
         });
     // Enumerate PCI devices.
-    let pci = Pci::read();
+    let pci = pci::Configuration::read();
     com2_println!("pci = {:#x?}", pci);
     // Shutdown.
     Argument::get()
