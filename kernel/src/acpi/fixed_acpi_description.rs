@@ -129,8 +129,10 @@ impl Table {
         let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
-        com2_println!("semantic_tree = {:#x?}", semantic_tree);
+        let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
+        com2_println!("semantic_tree = {:#x?}", semantic_tree);
+        com2_println!("reference_tree = {:#x?}", reference_tree);
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
