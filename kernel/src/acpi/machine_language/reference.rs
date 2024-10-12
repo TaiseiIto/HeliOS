@@ -21,6 +21,19 @@ pub struct Node<'a> {
     children: Vec<Self>,
 }
 
+impl<'a> From<&'a syntax::TermList> for Node<'a> {
+    fn from(term_list: &'a syntax::TermList) -> Self {
+        let name: name::Segment = name::Segment::Root;
+        let objects: Vec<Object<'a>> = Vec::default();
+        let children: Vec<Self> = Vec::default();
+        Self {
+            name,
+            objects,
+            children,
+        }
+    }
+}
+
 impl fmt::Debug for Node<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
