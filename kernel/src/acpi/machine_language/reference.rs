@@ -21,6 +21,45 @@ pub struct Node<'a> {
     children: Vec<Self>,
 }
 
+impl<'a> Node<'a> {
+    pub fn add_node(&mut self, path: &name::Path, object: Object<'a>) {
+        let mut path: name::Path = path.clone();
+        match path.pop_first_segment() {
+            Some(name) => match name {
+                name::Segment::Child {
+                    name: _,
+                } => match self
+                    .children
+                    .iter_mut()
+                    .find(|child| child.name == name) {
+                        Some(child) => {
+                            child.add_node(&path, object);
+                        },
+                        None => {
+                            let mut objects: Vec<Object<'a>> = Vec::default();
+                            let children: Vec<Self> = Vec::default();
+                            let mut child = Self {
+                                name,
+                                objects,
+                                children,
+                            };
+                            child.add_node(&path, object);
+                            self.children.push(child);
+                        },
+                    },
+                name::Segment::Parent => unreachable!(),
+                name::Segment::Root => {
+                    assert_eq!(self.name, name::Segment::Root);
+                    self.add_node(&path, object);
+                },
+            },
+            None => {
+                self.objects.push(object);
+            },
+        }
+    }
+}
+
 impl<'a> From<&'a syntax::TermList> for Node<'a> {
     fn from(term_list: &'a syntax::TermList) -> Self {
         let name: name::Segment = name::Segment::Root;
