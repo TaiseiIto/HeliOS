@@ -15,10 +15,29 @@ use {
     },
 };
 
+#[derive(Default)]
+pub struct Nodes<'a>(Vec<Node<'a>>);
+
+impl<'a> Nodes<'a> {
+    pub fn iter(&self) -> impl Iterator<Item = &Node<'a>> {
+        let Self(nodes) = self;
+        nodes.iter()
+    }
+}
+
+impl fmt::Debug for Nodes<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_list()
+            .entries(self.iter())
+            .finish()
+    }
+}
+
 pub struct Node<'a> {
     name: name::Segment,
     object: Object<'a>,
-    children: Vec<Self>,
+    children: Nodes<'a>,
 }
 
 impl fmt::Debug for Node<'_> {
