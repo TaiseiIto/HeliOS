@@ -1397,7 +1397,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let mut current: crate::acpi::machine_language::semantics::Path = current.clone();
+                                                        let mut current: crate::acpi::machine_language::name::Path = current.clone();
                                                     }
                                                 },
                                                 _ => quote! {
@@ -1417,7 +1417,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     quote! {
                                                         if index == 0 {
                                                             current += (&element).into();
-                                                            root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                            root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                         }
                                                     }
                                                 },
@@ -1483,8 +1483,8 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         .unwrap();
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
-                                                        let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        let current: crate::acpi::machine_language::name::Path = current + (&#field_name).into();
+                                                        root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {
@@ -1597,8 +1597,8 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         };
         quote! {
             impl crate::acpi::machine_language::syntax::FirstReader for #ident {
-                fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone();
+                fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) -> (Self, &'a [u8]) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone();
                     #first_read
                 }
             }
@@ -2710,7 +2710,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         };
         quote! {
             impl crate::acpi::machine_language::syntax::PathGetter for #ident {
-                fn get_path(&self) -> Option<crate::acpi::machine_language::semantics::Path> {
+                fn get_path(&self) -> Option<crate::acpi::machine_language::name::Path> {
                     #get_path
                 }
             }
@@ -3446,7 +3446,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let mut current: crate::acpi::machine_language::semantics::Path = current.clone();
+                                                        let mut current: crate::acpi::machine_language::name::Path = current.clone();
                                                     }
                                                 },
                                                 _ => quote! {
@@ -3466,7 +3466,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                     quote! {
                                                         if index == 0 {
                                                             current += (&element).into();
-                                                            root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                            root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                         }
                                                     }
                                                 },
@@ -3532,8 +3532,8 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                         .unwrap();
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
-                                                        let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        let current: crate::acpi::machine_language::name::Path = current + (&#field_name).into();
+                                                        root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {
@@ -3646,8 +3646,8 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         };
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderInsideMethod for #ident {
-                fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone();
+                fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) -> (Self, &'a [u8]) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone();
                     #read_inside_method
                 }
             }
@@ -3686,8 +3686,8 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
     if derive_reader_outside_method {
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
-                fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone() + self
+                fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
                         .get_path()
                         .unwrap_or_default();
                     self.iter_mut()
