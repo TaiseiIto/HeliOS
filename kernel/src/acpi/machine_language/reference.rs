@@ -15,42 +15,26 @@ use {
     },
 };
 
-#[derive(Default)]
-pub struct Nodes<'a>(Vec<Node<'a>>);
-
-impl<'a> Nodes<'a> {
-    pub fn iter(&self) -> impl Iterator<Item = &Node<'a>> {
-        let Self(nodes) = self;
-        nodes.iter()
-    }
-}
-
-impl fmt::Debug for Nodes<'_> {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_list()
-            .entries(self.iter())
-            .finish()
-    }
-}
-
 pub struct Node<'a> {
     name: name::Segment,
-    object: Object<'a>,
-    children: Nodes<'a>,
+    objects: Vec<Object<'a>>,
+    children: Vec<Self>,
 }
 
 impl fmt::Debug for Node<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             name,
-            object,
+            objects,
             children,
         } = self;
         let name: String = name.into();
-        let object: &str = object.type_name();
-        let header: String = format!("{} {}", object, name);
-        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(header.as_str());
+        let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
+        objects
+            .iter()
+            .for_each(|object| {
+                debug_tuple.field(object);
+            });
         children
             .iter()
             .for_each(|child| {
@@ -109,6 +93,12 @@ impl Object<'_> {
             Self::Scope(_) => "Scope",
             Self::ThermalZone(_) => "ThermalZone",
         }
+    }
+}
+
+impl fmt::Debug for Object<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.type_name())
     }
 }
 
