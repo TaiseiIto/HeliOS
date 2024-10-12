@@ -54,6 +54,7 @@ use {
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let analyzer: proc_macro2::TokenStream = derive_analyzer(&derive_input);
+    let borrower: proc_macro2::TokenStream = derive_borrower(&derive_input);
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let first_reader: proc_macro2::TokenStream = derive_first_reader(&derive_input);
@@ -67,6 +68,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
+        #borrower
         #char_from_self
         #debug
         #first_reader
@@ -853,6 +855,24 @@ fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     quote! {
         impl crate::acpi::machine_language::syntax::Analyzer for #ident {
+        }
+    }
+}
+
+fn derive_borrower(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    quote! {
+        impl crate::acpi::machine_language::syntax::Borrower for #ident {
+            fn borrow<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>) {
+                self.iter()
+                    .for_each(|child| child.borrow(root));
+            }
         }
     }
 }

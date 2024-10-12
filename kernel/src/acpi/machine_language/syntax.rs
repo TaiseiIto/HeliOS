@@ -17,10 +17,17 @@ use {
         fmt,
         iter,
     },
-    super::name,
+    super::{
+        name,
+        reference,
+    },
 };
 
-pub trait Analyzer: FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
+pub trait Analyzer: Borrower + FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
+}
+
+pub trait Borrower {
+    fn borrow<'a>(&'a self, root: &mut reference::Node<'a>);
 }
 
 pub trait FirstReader {

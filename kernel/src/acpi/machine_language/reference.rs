@@ -12,6 +12,7 @@ use {
     super::{
         name,
         syntax,
+        syntax::Borrower,
     },
 };
 
@@ -65,11 +66,13 @@ impl<'a> From<&'a syntax::TermList> for Node<'a> {
         let name: name::Segment = name::Segment::Root;
         let objects: Vec<Object<'a>> = Vec::default();
         let children: Vec<Self> = Vec::default();
-        Self {
+        let mut node = Self {
             name,
             objects,
             children,
-        }
+        };
+        term_list.borrow(&mut node);
+        node
     }
 }
 
