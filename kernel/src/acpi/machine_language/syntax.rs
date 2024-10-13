@@ -2655,7 +2655,7 @@ impl Matcher for NameString {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
-#[manual(first_reader, path_getter, reader_inside_method)]
+#[manual(first_reader, lender, path_getter, reader_inside_method)]
 pub struct NamedField(
     NameSeg,
     PkgLength,
@@ -2677,6 +2677,18 @@ impl FirstReader for NamedField {
         );
         let aml: &[u8] = &aml[named_field.length()..];
         (named_field, aml)
+    }
+}
+
+impl Lender for NamedField {
+    fn lend<'a>(&'a self, root: &mut reference::Node<'a>, current: &name::Path) {
+        let current: name::Path = current.clone() + self
+            .get_path()
+            .unwrap_or_default();
+        let object = reference::Object::NamedField(self);
+        root.add_node(&current, object);
+        self.iter()
+            .for_each(|child| child.lend(root, &current));
     }
 }
 

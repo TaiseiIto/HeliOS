@@ -105,6 +105,7 @@ struct TypeAttribute {
     defined_object_name: Option<Ident>,
     derive_debug: bool,
     derive_first_reader: bool,
+    derive_lender: bool,
     derive_matcher: bool,
     derive_path_getter: bool,
     derive_reader: bool,
@@ -213,6 +214,51 @@ impl From<&DeriveInput> for TypeAttribute {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
                                         !matches!(manual_arg.as_str(), "first_reader")
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_lender: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "lender")
                                     },
                                     _ => true,
                                 }),
@@ -763,6 +809,7 @@ impl From<&DeriveInput> for TypeAttribute {
             defined_object_name,
             derive_debug,
             derive_first_reader,
+            derive_lender,
             derive_matcher,
             derive_path_getter,
             derive_reader,
@@ -867,15 +914,52 @@ fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         generics: _,
         data: _,
     } = derive_input;
-    quote! {
-        impl crate::acpi::machine_language::syntax::Lender for #ident {
-            fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
-                let current: crate::acpi::machine_language::name::Path = current.clone() + self
-                    .get_path()
-                    .unwrap_or_default();
-                self.iter()
-                    .for_each(|child| child.lend(root, &current));
+    let TypeAttribute {
+        defined_object_name,
+        derive_debug: _,
+        derive_first_reader: _,
+        derive_lender,
+        derive_matcher: _,
+        derive_path_getter: _,
+        derive_reader: _,
+        derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
+        derive_string_from_self: _,
+        encoding: _,
+        flags: _,
+        has_field_list: _,
+        has_name_string,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    if derive_lender {
+        let add_node: proc_macro2::TokenStream = if has_name_string {
+            match defined_object_name {
+                Some(defined_object_name) => quote! {
+                    let object = crate::acpi::machine_language::reference::Object::#defined_object_name(self);
+                    root.add_node(&current, object);
+                },
+                None => quote! {
+                },
             }
+        } else {
+            quote! {
+            }
+        };
+        quote! {
+            impl crate::acpi::machine_language::syntax::Lender for #ident {
+                fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
+                        .get_path()
+                        .unwrap_or_default();
+                    #add_node
+                    self.iter()
+                        .for_each(|child| child.lend(root, &current));
+                }
+            }
+        }
+    } else {
+        quote! {
         }
     }
 }
@@ -939,6 +1023,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -1148,6 +1233,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name,
         derive_debug: _,
         derive_first_reader,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -1644,6 +1730,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -2114,6 +2201,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -2310,6 +2398,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher,
         derive_path_getter: _,
         derive_reader: _,
@@ -2631,6 +2720,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter,
         derive_reader: _,
@@ -2756,6 +2846,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader,
@@ -3197,6 +3288,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         defined_object_name,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -3693,6 +3785,7 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -3736,6 +3829,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
