@@ -869,9 +869,9 @@ fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     } = derive_input;
     quote! {
         impl crate::acpi::machine_language::syntax::Lender for #ident {
-            fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>) {
+            fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
                 self.iter()
-                    .for_each(|child| child.lend(root));
+                    .for_each(|child| child.lend(root, current));
             }
         }
     }

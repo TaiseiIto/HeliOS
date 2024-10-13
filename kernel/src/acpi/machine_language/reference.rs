@@ -71,7 +71,8 @@ impl<'a> From<&'a syntax::TermList> for Node<'a> {
             objects,
             children,
         };
-        term_list.lend(&mut node);
+        let current = name::Path::root();
+        term_list.lend(&mut node, &current);
         node
     }
 }

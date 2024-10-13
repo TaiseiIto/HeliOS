@@ -27,7 +27,7 @@ pub trait Analyzer: Lender + FirstReader + Matcher + PathGetter + Reader + Reade
 }
 
 pub trait Lender {
-    fn lend<'a>(&'a self, root: &mut reference::Node<'a>);
+    fn lend<'a>(&'a self, root: &mut reference::Node<'a>, current: &name::Path);
 }
 
 pub trait FirstReader {
