@@ -266,6 +266,27 @@ impl Path {
         self.segments.pop_back()
     }
 
+    pub fn push_segment(&mut self, segment: Segment) {
+        let Self {
+            segments,
+        } = self;
+        match segment {
+            Segment::Child {
+                name: _,
+            } => {
+                segments.push_back(segment);
+            },
+            Segment::Parent => if segments.is_empty() {
+                segments.push_back(segment);
+            } else {
+                segments.pop_back();
+            },
+            Segment::Root => {
+                *segments = iter::once(segment).collect();
+            },
+        }
+    }
+
     pub fn root() -> Self {
         let segments: VecDeque<Segment> = iter::once(Segment::Root).collect();
         Self {
@@ -278,32 +299,56 @@ impl Add for Path {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        let mut segments: VecDeque<Segment> = VecDeque::new();
+        let mut sum: Self::Output = Self::Output::root();
         self.segments
-            .iter()
+            .into_iter()
             .chain(other
                 .segments
-                .iter())
-            .for_each(|segment| match segment {
-                Segment::Child {
-                    name: _,
-                } => {
-                    segments.push_back(segment.clone());
+                .into_iter())
+            .for_each(|segment| sum.push_segment(segment));
+        sum
+    }
+}
+
+impl From<&str> for Path {
+    fn from(path_str: &str) -> Self {
+        let mut path: Self = Self::root();
+        let mut segment: String = String::new();
+        path_str
+            .chars()
+            .for_each(|character| match character {
+                '\\' => {
+                    if !segment.is_empty() {
+                        let segment: Segment = segment
+                            .as_str()
+                            .into();
+                        path.push_segment(segment);
+                    }
+                    path.push_segment(Segment::Root);
+                    segment = String::new();
                 },
-                Segment::Parent => if segments.is_empty() {
-                    segments.push_back(segment.clone());
-                } else {
-                    segments.pop_back();
+                '^' => {
+                    if !segment.is_empty() {
+                        let segment: Segment = segment
+                            .as_str()
+                            .into();
+                        path.push_segment(segment);
+                    }
+                    path.push_segment(Segment::Parent);
+                    segment = String::new();
                 },
-                Segment::Root => {
-                    segments = iter::once(segment)
-                        .cloned()
-                        .collect();
+                character => {
+                    assert!(character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_');
+                    segment.push(character);
                 },
             });
-        Self::Output {
-            segments,
+        if !segment.is_empty() {
+            let segment: Segment = segment
+                .as_str()
+                .into();
+            path.push_segment(segment);
         }
+        path
     }
 }
 
