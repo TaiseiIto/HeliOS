@@ -457,6 +457,29 @@ impl fmt::Debug for Segment {
     }
 }
 
+impl From<&str> for Segment {
+    fn from(segment: &str) -> Self {
+        match segment {
+            "\\" => Self::Root,
+            "^" => Self::Parent,
+            name => {
+                let valid: bool = name.chars()
+                    .enumerate()
+                    .all(|(index, character)| match index {
+                        0 => character.is_ascii_uppercase() || character == '_',
+                        1..=3 => character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_',
+                        _ => false,
+                    });
+                assert!(valid);
+                let name: String = String::from(name);
+                Self::Child {
+                    name,
+                }
+            },
+        }
+    }
+}
+
 impl From<&syntax::NameSeg> for Segment {
     fn from(name_seg: &syntax::NameSeg) -> Self {
         let name: String = name_seg.into();
