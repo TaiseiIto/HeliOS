@@ -81,10 +81,15 @@ impl fmt::Debug for Node<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             name,
-            objects: _,
+            objects,
             children,
         } = self;
         let name: String = name.into();
+        let objects: Vec<&str> = objects
+            .iter()
+            .map(|object| object.type_name())
+            .collect();
+        let name: String = format!("{:#x?} {}", name, objects.join(" "));
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
         children
             .iter()
