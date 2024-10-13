@@ -37,7 +37,7 @@ impl<'a> Node<'a> {
                             child.add_node(&path, object);
                         },
                         None => {
-                            let mut objects: Vec<Object<'a>> = Vec::default();
+                            let objects: Vec<Object<'a>> = Vec::default();
                             let children: Vec<Self> = Vec::default();
                             let mut child = Self {
                                 name,

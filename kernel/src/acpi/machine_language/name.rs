@@ -302,9 +302,7 @@ impl Add for Path {
         let mut sum: Self::Output = Self::Output::root();
         self.segments
             .into_iter()
-            .chain(other
-                .segments
-                .into_iter())
+            .chain(other.segments)
             .for_each(|segment| sum.push_segment(segment));
         sum
     }
