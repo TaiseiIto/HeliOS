@@ -23,11 +23,11 @@ use {
     },
 };
 
-pub trait Analyzer: Borrower + FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
+pub trait Analyzer: Lender + FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
 }
 
-pub trait Borrower {
-    fn borrow<'a>(&'a self, root: &mut reference::Node<'a>);
+pub trait Lender {
+    fn lend<'a>(&'a self, root: &mut reference::Node<'a>);
 }
 
 pub trait FirstReader {

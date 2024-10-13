@@ -12,7 +12,7 @@ use {
     super::{
         name,
         syntax,
-        syntax::Borrower,
+        syntax::Lender,
     },
 };
 
@@ -71,7 +71,7 @@ impl<'a> From<&'a syntax::TermList> for Node<'a> {
             objects,
             children,
         };
-        term_list.borrow(&mut node);
+        term_list.lend(&mut node);
         node
     }
 }
