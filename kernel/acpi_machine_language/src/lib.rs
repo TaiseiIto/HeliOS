@@ -906,64 +906,6 @@ fn derive_analyzer(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     }
 }
 
-fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
-    let DeriveInput {
-        attrs: _,
-        vis: _,
-        ident,
-        generics: _,
-        data: _,
-    } = derive_input;
-    let TypeAttribute {
-        defined_object_name,
-        derive_debug: _,
-        derive_first_reader: _,
-        derive_lender,
-        derive_matcher: _,
-        derive_path_getter: _,
-        derive_reader: _,
-        derive_reader_inside_method: _,
-        derive_reader_outside_method: _,
-        derive_string_from_self: _,
-        encoding: _,
-        flags: _,
-        has_field_list: _,
-        has_name_string,
-        matching_elements: _,
-        string: _,
-    } = derive_input.into();
-    if derive_lender {
-        let add_node: proc_macro2::TokenStream = if has_name_string {
-            match defined_object_name {
-                Some(defined_object_name) => quote! {
-                    let object = crate::acpi::machine_language::reference::Object::#defined_object_name(self);
-                    root.add_node(&current, object);
-                },
-                None => quote! {
-                },
-            }
-        } else {
-            quote! {
-            }
-        };
-        quote! {
-            impl crate::acpi::machine_language::syntax::Lender for #ident {
-                fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
-                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
-                        .get_path()
-                        .unwrap_or_default();
-                    #add_node
-                    self.iter()
-                        .for_each(|child| child.lend(root, &current));
-                }
-            }
-        }
-    } else {
-        quote! {
-        }
-    }
-}
-
 fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
     let DeriveInput {
         attrs: _,
@@ -1709,6 +1651,64 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) -> (Self, &'a [u8]) {
                     let current: crate::acpi::machine_language::name::Path = current.clone();
                     #first_read
+                }
+            }
+        }
+    } else {
+        quote! {
+        }
+    }
+}
+
+fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    let TypeAttribute {
+        defined_object_name,
+        derive_debug: _,
+        derive_first_reader: _,
+        derive_lender,
+        derive_matcher: _,
+        derive_path_getter: _,
+        derive_reader: _,
+        derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
+        derive_string_from_self: _,
+        encoding: _,
+        flags: _,
+        has_field_list,
+        has_name_string,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    if derive_lender {
+        let add_node: proc_macro2::TokenStream = if has_name_string && !has_field_list {
+            match defined_object_name {
+                Some(defined_object_name) => quote! {
+                    let object = crate::acpi::machine_language::reference::Object::#defined_object_name(self);
+                    root.add_node(&current, object);
+                },
+                None => quote! {
+                },
+            }
+        } else {
+            quote! {
+            }
+        };
+        quote! {
+            impl crate::acpi::machine_language::syntax::Lender for #ident {
+                fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
+                        .get_path()
+                        .unwrap_or_default();
+                    #add_node
+                    self.iter()
+                        .for_each(|child| child.lend(root, &current));
                 }
             }
         }
