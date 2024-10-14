@@ -1,4 +1,7 @@
-use crate::x64::port;
+use {
+    core::mem,
+    crate::x64::port,
+};
 
 /// # Generic Address Structure
 /// ## References
@@ -121,9 +124,89 @@ impl Structure {
             SpaceId::SystemIoSpace => {
                 let low_port: u16 = self.address as u16;
                 let low: u64 = port::inl(low_port) as u64;
-                let high_port: u16 = low_port + 1;
+                let high_port: u16 = low_port + (mem::size_of::<u32>() as u16);
                 let high: u64 = port::inl(high_port) as u64;
                 low + (high << u32::BITS)
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn write_byte(&mut self, data: u8) {
+        assert_eq!(self.access_size(), 1);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *mut u8 = address as *mut u8;
+                let address: &mut u8 = unsafe {
+                    &mut *address
+                };
+                *address = data;
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::outb(port, data);
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn write_word(&mut self, data: u16) {
+        assert_eq!(self.access_size(), 1);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *mut u16 = address as *mut u16;
+                let address: &mut u16 = unsafe {
+                    &mut *address
+                };
+                *address = data;
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::outw(port, data);
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn write_dword(&mut self, data: u32) {
+        assert_eq!(self.access_size(), 1);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *mut u32 = address as *mut u32;
+                let address: &mut u32 = unsafe {
+                    &mut *address
+                };
+                *address = data;
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::outl(port, data);
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn write_qword(&mut self, data: u64) {
+        assert_eq!(self.access_size(), 1);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *mut u64 = address as *mut u64;
+                let address: &mut u64 = unsafe {
+                    &mut *address
+                };
+                *address = data;
+            },
+            SpaceId::SystemIoSpace => {
+                let low_port: u16 = self.address as u16;
+                let low: u32 = (data & ((1 << u32::BITS) - 1)) as u32;
+                port::outl(low_port, low);
+                let high_port: u16 = low_port + (mem::size_of::<u32>() as u16);
+                let high: u32 = (data >> u32::BITS) as u32;
+                port::outl(high_port, high);
             },
             _ => unimplemented!(),
         }
