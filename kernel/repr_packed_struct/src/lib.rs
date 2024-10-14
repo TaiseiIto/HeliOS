@@ -127,7 +127,7 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
                                 .unwrap();
                             let previous_getter_name: Ident = format_ident!("{}_offset", ident);
                             quote! {
-                                self.#previous_getter_name() + core::mem::size_of::<#ty>()
+                                Self::#previous_getter_name() + core::mem::size_of::<#ty>()
                             }
                         },
                         None => quote! {
@@ -135,7 +135,7 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
                         },
                     };
                     quote! {
-                        pub fn #getter_name(&self) -> usize {
+                        pub const fn #getter_name() -> usize {
                             #getter
                         }
                     }
