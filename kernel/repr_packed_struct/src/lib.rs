@@ -2,10 +2,20 @@ extern crate proc_macro;
 
 use {
     proc_macro2::TokenTree,
-    quote::quote,
+    quote::{
+        format_ident,
+        quote,
+    },
+    std::iter,
     syn::{
         Attribute,
+        Data,
+        DataStruct,
         DeriveInput,
+        Field,
+        Fields,
+        FieldsNamed,
+        Ident,
         Meta,
         MetaList,
         Path,
@@ -69,7 +79,75 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
             }
         });
     assert!(repr_packed);
+    let getters: Vec<proc_macro2::TokenStream> = match data {
+        Data::Struct(DataStruct {
+            struct_token: _,
+            fields: Fields::Named(FieldsNamed {
+                brace_token: _,
+                named,
+            }),
+            semi_token: _,
+        }) => {
+            let fields: Vec<&Field> = named
+                .iter()
+                .collect();
+            let previous_fields: Vec<Option<&Field>> = iter::once(None)
+                .chain(fields[..fields.len() - 1]
+                    .iter()
+                    .map(|field| Some(*field)))
+                .collect();
+            fields
+                .into_iter()
+                .zip(previous_fields.into_iter())
+                .map(|(field, previous_field)| {
+                    let Field {
+                        attrs: _,
+                        vis: _,
+                        mutability: _,
+                        ident,
+                        colon_token: _,
+                        ty,
+                    } = field;
+                    let ident: &Ident = ident
+                        .as_ref()
+                        .unwrap();
+                    let getter_name: Ident = format_ident!("{}_offset", ident);
+                    let getter: proc_macro2::TokenStream = match previous_field {
+                        Some(previous_field) => {
+                            let Field {
+                                attrs: _,
+                                vis: _,
+                                mutability: _,
+                                ident,
+                                colon_token: _,
+                                ty: _,
+                            } = previous_field;
+                            let ident: &Ident = ident
+                                .as_ref()
+                                .unwrap();
+                            let previous_getter_name: Ident = format_ident!("{}_offset", ident);
+                            quote! {
+                                self.#previous_getter_name() + core::mem::size_of::<#ty>()
+                            }
+                        },
+                        None => quote! {
+                            0
+                        },
+                    };
+                    quote! {
+                        pub fn #getter_name(&self) -> usize {
+                            #getter
+                        }
+                    }
+                })
+                .collect()
+        },
+        _ => unreachable!(),
+    };
     quote! {
+        impl #ident {
+            #(#getters)*
+        }
     }   .try_into()
         .unwrap()
 }
