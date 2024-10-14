@@ -115,10 +115,10 @@ impl Table {
     }
 
     pub fn shutdown(&self) {
-        let pm1a_cnt_blk: u32 = self.pm1a_cnt_blk;
-        let pm1b_cnt_blk: u32 = self.pm1b_cnt_blk;
-        let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
-        let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
+        let pm1a_cnt_blk: Option<u32> = self.pm1a_cnt_blk();
+        let pm1b_cnt_blk: Option<u32> = self.pm1b_cnt_blk();
+        let x_pm1a_cnt_blk: Option<generic_address::Structure> = self.x_pm1a_cnt_blk();
+        let x_pm1b_cnt_blk: Option<generic_address::Structure> = self.x_pm1b_cnt_blk();
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
@@ -185,6 +185,28 @@ impl Table {
                     &*firmware_ctrl
                 }
             })
+    }
+
+    fn pm1a_cnt_blk(&self) -> Option<u32> {
+        (Self::pm1a_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1a_cnt_blk)
+            .and_then(|pm1a_cnt_blk| (pm1a_cnt_blk != 0).then_some(pm1a_cnt_blk))
+    }
+
+    fn pm1b_cnt_blk(&self) -> Option<u32> {
+        (Self::pm1b_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1b_cnt_blk)
+            .and_then(|pm1b_cnt_blk| (pm1b_cnt_blk != 0).then_some(pm1b_cnt_blk))
+    }
+
+    fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1a_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1a_cnt_blk)
+    }
+
+    fn x_pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1b_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1b_cnt_blk)
     }
 }
 
