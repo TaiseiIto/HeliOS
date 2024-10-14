@@ -68,6 +68,66 @@ impl Structure {
             _ => unimplemented!(),
         }
     }
+
+    pub fn read_word(&self) -> u16 {
+        assert_eq!(self.access_size(), 2);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *const u16 = address as *const u16;
+                let address: &u16 = unsafe {
+                    &*address
+                };
+                *address
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::inw(port)
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn read_dword(&self) -> u32 {
+        assert_eq!(self.access_size(), 4);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *const u32 = address as *const u32;
+                let address: &u32 = unsafe {
+                    &*address
+                };
+                *address
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::inl(port)
+            },
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn read_qword(&self) -> u64 {
+        assert_eq!(self.access_size(), 8);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *const u64 = address as *const u64;
+                let address: &u64 = unsafe {
+                    &*address
+                };
+                *address
+            },
+            SpaceId::SystemIoSpace => {
+                let low_port: u16 = self.address as u16;
+                let low: u64 = port::inl(low_port) as u64;
+                let high_port: u16 = low_port + 1;
+                let high: u64 = port::inl(high_port) as u64;
+                low + (high << u32::BITS)
+            },
+            _ => unimplemented!(),
+        }
+    }
 }
 
 /// # Address Space ID
