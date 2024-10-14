@@ -106,7 +106,7 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
                         mutability: _,
                         ident,
                         colon_token: _,
-                        ty,
+                        ty: _,
                     } = field;
                     let ident: &Ident = ident
                         .as_ref()
@@ -120,7 +120,7 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
                                 mutability: _,
                                 ident,
                                 colon_token: _,
-                                ty: _,
+                                ty,
                             } = previous_field;
                             let ident: &Ident = ident
                                 .as_ref()
