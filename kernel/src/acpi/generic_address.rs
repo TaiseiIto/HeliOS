@@ -9,13 +9,9 @@ use {
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Structure {
-    #[allow(dead_code)]
     address_space_id: u8,
-    #[allow(dead_code)]
     register_bit_width: u8,
-    #[allow(dead_code)]
     register_bit_offset: u8,
-    #[allow(dead_code)]
     access_size: u8,
     address: u64,
 }
@@ -132,6 +128,22 @@ impl Structure {
         }
     }
 
+    pub fn system_io(port: u16, access_size: usize) -> Self {
+        assert!(access_size.is_power_of_two());
+        let address_space_id: u8 = SpaceId::SystemIoSpace.into();
+        let register_bit_width: u8 = 0;
+        let register_bit_offset: u8 = 0;
+        let access_size: u8 = (access_size.ilog2() + 1) as u8;
+        let address: u64 = port as u64;
+        Self {
+            address_space_id,
+            register_bit_width,
+            register_bit_offset,
+            access_size,
+            address,
+        }
+    }
+
     pub fn write_byte(&mut self, data: u8) {
         assert_eq!(self.access_size(), 1);
         match self.address_space_id.into() {
@@ -152,7 +164,7 @@ impl Structure {
     }
 
     pub fn write_word(&mut self, data: u16) {
-        assert_eq!(self.access_size(), 1);
+        assert_eq!(self.access_size(), 2);
         match self.address_space_id.into() {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
@@ -171,7 +183,7 @@ impl Structure {
     }
 
     pub fn write_dword(&mut self, data: u32) {
-        assert_eq!(self.access_size(), 1);
+        assert_eq!(self.access_size(), 4);
         match self.address_space_id.into() {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
@@ -190,7 +202,7 @@ impl Structure {
     }
 
     pub fn write_qword(&mut self, data: u64) {
-        assert_eq!(self.access_size(), 1);
+        assert_eq!(self.access_size(), 8);
         match self.address_space_id.into() {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
@@ -253,6 +265,28 @@ impl From<u8> for SpaceId {
             space_id @ 0x0c..=0x7e => Self::Reserved(space_id),
             0x7f => Self::FunctionalFixedHardware,
             space_id @ 0x80..=0xff => Self::OemDefined(space_id),
+        }
+    }
+}
+
+impl From<SpaceId> for u8 {
+    fn from(space_id: SpaceId) -> Self {
+        match space_id {
+            SpaceId::SystemMemorySpace => 0x00,
+            SpaceId::SystemIoSpace => 0x01,
+            SpaceId::PciConfigurationSpace => 0x02,
+            SpaceId::EmbeddedController => 0x03,
+            SpaceId::SmBus => 0x04,
+            SpaceId::SystemCmos => 0x05,
+            SpaceId::PciBarTarget => 0x06,
+            SpaceId::Ipmi => 0x07,
+            SpaceId::GeneralPurposeIo => 0x08,
+            SpaceId::GenericSerialBus => 0x09,
+            SpaceId::PlatformCommunicationsChannel => 0x0a,
+            SpaceId::PlatformRuntimeMechanism => 0x0b,
+            SpaceId::Reserved(space_id) => space_id,
+            SpaceId::FunctionalFixedHardware => 0x7f,
+            SpaceId::OemDefined(space_id) => space_id,
         }
     }
 }
