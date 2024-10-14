@@ -33,21 +33,21 @@ impl<'a> Node<'a> {
                     .children
                     .iter_mut()
                     .find(|child| child.name == name) {
-                        Some(child) => {
-                            child.add_node(&path, object);
-                        },
-                        None => {
-                            let objects: Vec<Object<'a>> = Vec::default();
-                            let children: Vec<Self> = Vec::default();
-                            let mut child = Self {
-                                name,
-                                objects,
-                                children,
-                            };
-                            child.add_node(&path, object);
-                            self.children.push(child);
-                        },
+                    Some(child) => {
+                        child.add_node(&path, object);
                     },
+                    None => {
+                        let objects: Vec<Object<'a>> = Vec::default();
+                        let children: Vec<Self> = Vec::default();
+                        let mut child = Self {
+                            name,
+                            objects,
+                            children,
+                        };
+                        child.add_node(&path, object);
+                        self.children.push(child);
+                    },
+                },
                 name::Segment::Parent => unreachable!(),
                 name::Segment::Root => {
                     assert_eq!(self.name, name::Segment::Root);
@@ -57,6 +57,40 @@ impl<'a> Node<'a> {
             None => {
                 self.objects.push(object);
             },
+        }
+    }
+
+    pub fn get_methods(&self, path: &name::Path) -> Vec<&'a syntax::DefMethod> {
+        match self.get_objects(path) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::Method(method) => Some(*method),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    pub fn get_objects(&self, path: &name::Path) -> Option<&[Object<'a>]> {
+        let mut path: name::Path = path.clone();
+        match path.pop_first_segment() {
+            Some(name) => match name {
+                name::Segment::Child {
+                    name: _,
+                } => self
+                    .children
+                    .iter()
+                    .find(|child| child.name == name)
+                    .and_then(|child| child.get_objects(&path)),
+                name::Segment::Parent => unreachable!(),
+                name::Segment::Root => {
+                    assert_eq!(self.name, name::Segment::Root);
+                    self.get_objects(&path)
+                },
+            },
+            None => Some(&self.objects),
         }
     }
 }
