@@ -1,3 +1,5 @@
+use crate::x64::port;
+
 /// # Generic Address Structure
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.3.2 Generic Address Structure
@@ -16,15 +18,17 @@ pub struct Structure {
 }
 
 impl Structure {
+    pub fn access_size(&self) -> usize {
+        1 << (self.access_size - 1)
+    }
+
     pub fn address(&self) -> usize {
         self.address as usize
     }
 
-    pub fn is_null(&self) -> bool {
-        self.address == 0
-    }
-
     pub fn get<T>(&self) -> &T {
+        let address_space_id: SpaceId = self.address_space_id.into();
+        assert_eq!(address_space_id, SpaceId::SystemMemorySpace);
         let address: usize = self.address as usize;
         let address: *const T = address as *const T;
         unsafe {
@@ -33,10 +37,35 @@ impl Structure {
     }
 
     pub fn get_mut<T>(&mut self) -> &mut T {
+        let address_space_id: SpaceId = self.address_space_id.into();
+        assert_eq!(address_space_id, SpaceId::SystemMemorySpace);
         let address: usize = self.address as usize;
         let address: *mut T = address as *mut T;
         unsafe {
             &mut *address
+        }
+    }
+
+    pub fn is_null(&self) -> bool {
+        self.address == 0
+    }
+
+    pub fn read_byte(&self) -> u8 {
+        assert_eq!(self.access_size(), 1);
+        match self.address_space_id.into() {
+            SpaceId::SystemMemorySpace => {
+                let address: usize = self.address as usize;
+                let address: *const u8 = address as *const u8;
+                let address: &u8 = unsafe {
+                    &*address
+                };
+                *address
+            },
+            SpaceId::SystemIoSpace => {
+                let port: u16 = self.address as u16;
+                port::inb(port)
+            },
+            _ => unimplemented!(),
         }
     }
 }
@@ -44,6 +73,7 @@ impl Structure {
 /// # Address Space ID
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.3.2 Generic Address Structure
+#[derive(Debug, Eq, PartialEq)]
 pub enum SpaceId {
     SystemMemorySpace,
     SystemIoSpace,
