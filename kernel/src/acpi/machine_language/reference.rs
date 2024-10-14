@@ -60,7 +60,27 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_methods(&self, path: &name::Path) -> Vec<&'a syntax::DefMethod> {
+    pub fn get_method(&self, path: &name::Path) -> Option<&'a syntax::DefMethod> {
+        let mut methods: Vec<&'a syntax::DefMethod> = self.get_methods(path);
+        let method: Option<&'a syntax::DefMethod> = methods.pop();
+        if methods.is_empty() {
+            method
+        } else {
+            None
+        }
+    }
+
+    pub fn get_name(&self, path: &name::Path) -> Option<&'a syntax::DefName> {
+        let mut names: Vec<&'a syntax::DefName> = self.get_names(path);
+        let name: Option<&'a syntax::DefName> = names.pop();
+        if names.is_empty() {
+            name
+        } else {
+            None
+        }
+    }
+
+    fn get_methods(&self, path: &name::Path) -> Vec<&'a syntax::DefMethod> {
         match self.get_objects(path) {
             Some(objects) => objects
                 .iter()
@@ -73,7 +93,20 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_objects(&self, path: &name::Path) -> Option<&[Object<'a>]> {
+    fn get_names(&self, path: &name::Path) -> Vec<&'a syntax::DefName> {
+        match self.get_objects(path) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::Name(name) => Some(*name),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    fn get_objects(&self, path: &name::Path) -> Option<&[Object<'a>]> {
         let mut path: name::Path = path.clone();
         match path.pop_first_segment() {
             Some(name) => match name {

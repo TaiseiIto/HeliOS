@@ -1,5 +1,4 @@
 use {
-    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -132,14 +131,17 @@ impl Table {
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
         let tts: machine_language::name::Path = "\\_TTS".into();
-        let tts: Vec<&machine_language::syntax::DefMethod> = reference_tree.get_methods(&tts);
+        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts);
         let pts: machine_language::name::Path = "\\_PTS".into();
-        let pts: Vec<&machine_language::syntax::DefMethod> = reference_tree.get_methods(&pts);
+        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts);
+        let s5: machine_language::name::Path = "\\_S5".into();
+        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);
         com2_println!("tts = {:#x?}", tts);
         com2_println!("pts = {:#x?}", pts);
+        com2_println!("s5 = {:#x?}", s5);
         com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
         com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
         com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
