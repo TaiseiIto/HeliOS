@@ -25,6 +25,7 @@ use {
 /// # FADT
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.9 Fixed ACPI Description Table (FADT)
+#[derive(repr_packed_struct::OffsetGetter)]
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
