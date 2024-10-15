@@ -24,6 +24,15 @@ pub enum Data {
     Zero,
 }
 
+impl Data {
+    pub fn concatenate(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::Byte(low), Self::Byte(high)) => Self::Word(((high as u16) << u8::BITS) + (low as u16)),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct StackFrame {
     args: [Option<Data>; 0x07],

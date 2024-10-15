@@ -3681,6 +3681,17 @@ pub struct WordData(
     [ByteData; 2],
 );
 
+impl interpreter::Evaluator for WordData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self([low, high]) = self;
+        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        low
+            .zip(high)
+            .map(|(low, high)| low.concatenate(high))
+    }
+}
+
 /// # WordPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
