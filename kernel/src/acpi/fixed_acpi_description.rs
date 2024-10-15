@@ -117,10 +117,12 @@ impl Table {
     }
 
     pub fn shutdown(&self) {
-        let pm1a_evt: Option<pm1::status::Register> = self.pm1a_evt();
-        let pm1b_evt: Option<pm1::status::Register> = self.pm1b_evt();
-        let pm1a_cnt: Option<pm1::control::Register> = self.pm1a_cnt();
-        let pm1b_cnt: Option<pm1::control::Register> = self.pm1b_cnt();
+        let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
+        let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
+        let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
+        let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
+        let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
+        let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
@@ -145,10 +147,12 @@ impl Table {
         com2_println!("tts = {:#x?}", tts);
         com2_println!("pts = {:#x?}", pts);
         com2_println!("s5 = {:#x?}", s5);
-        com2_println!("pm1a_evt = {:#x?}", pm1a_evt);
-        com2_println!("pm1b_evt = {:#x?}", pm1b_evt);
-        com2_println!("pm1a_cnt = {:#x?}", pm1a_cnt);
-        com2_println!("pm1b_cnt = {:#x?}", pm1b_cnt);
+        com2_println!("pm1a_status = {:#x?}", pm1a_status);
+        com2_println!("pm1b_status = {:#x?}", pm1b_status);
+        com2_println!("pm1a_enable = {:#x?}", pm1a_enable);
+        com2_println!("pm1b_enable = {:#x?}", pm1b_enable);
+        com2_println!("pm1a_control = {:#x?}", pm1a_control);
+        com2_println!("pm1b_control = {:#x?}", pm1b_control);
     }
 
     pub fn timer_bits(&self) -> usize {
@@ -189,22 +193,6 @@ impl Table {
             })
     }
 
-    fn pm1a_cnt(&self) -> Option<pm1::control::Register> {
-        self.x_pm1a_cnt_blk()
-            .or(self.pm1a_cnt_blk())
-            .map(|pm1a_cnt_blk| pm1a_cnt_blk
-                .read_word()
-                .into())
-    }
-
-    fn pm1b_cnt(&self) -> Option<pm1::control::Register> {
-        self.x_pm1b_cnt_blk()
-            .or(self.pm1b_cnt_blk())
-            .map(|pm1b_cnt_blk| pm1b_cnt_blk
-                .read_word()
-                .into())
-    }
-
     fn pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::pm1a_cnt_blk_offset() < self.header.table_size())
             .then_some(self.pm1a_cnt_blk)
@@ -225,22 +213,6 @@ impl Table {
             })
     }
 
-    fn pm1a_evt(&self) -> Option<pm1::status::Register> {
-        self.x_pm1a_evt_blk()
-            .or(self.pm1a_evt_blk())
-            .map(|pm1a_evt_blk| pm1a_evt_blk
-                .read_word()
-                .into())
-    }
-
-    fn pm1b_evt(&self) -> Option<pm1::status::Register> {
-        self.x_pm1b_evt_blk()
-            .or(self.pm1b_evt_blk())
-            .map(|pm1b_evt_blk| pm1b_evt_blk
-                .read_word()
-                .into())
-    }
-
     fn pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
         (Self::pm1a_evt_blk_offset() < self.header.table_size())
             .then_some(self.pm1a_evt_blk)
@@ -259,6 +231,56 @@ impl Table {
                 let access_size: usize = mem::size_of::<u16>();
                 generic_address::Structure::system_io(pm1b_evt_blk as u16, access_size)
             })
+    }
+
+    fn read_pm1a_control(&self) -> Option<pm1::control::Register> {
+        self.x_pm1a_cnt_blk()
+            .or(self.pm1a_cnt_blk())
+            .map(|pm1a_cnt_blk| pm1a_cnt_blk
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1b_control(&self) -> Option<pm1::control::Register> {
+        self.x_pm1b_cnt_blk()
+            .or(self.pm1b_cnt_blk())
+            .map(|pm1b_cnt_blk| pm1b_cnt_blk
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1a_enable(&self) -> Option<pm1::enable::Register> {
+        self.x_pm1a_evt_blk()
+            .or(self.pm1a_evt_blk())
+            .map(|pm1a_evt_blk| pm1a_evt_blk
+                .add((self.pm1_evt_len as usize) / 2)
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1b_enable(&self) -> Option<pm1::enable::Register> {
+        self.x_pm1b_evt_blk()
+            .or(self.pm1b_evt_blk())
+            .map(|pm1b_evt_blk| pm1b_evt_blk
+                .add((self.pm1_evt_len as usize) / 2)
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1a_status(&self) -> Option<pm1::status::Register> {
+        self.x_pm1a_evt_blk()
+            .or(self.pm1a_evt_blk())
+            .map(|pm1a_evt_blk| pm1a_evt_blk
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1b_status(&self) -> Option<pm1::status::Register> {
+        self.x_pm1b_evt_blk()
+            .or(self.pm1b_evt_blk())
+            .map(|pm1b_evt_blk| pm1b_evt_blk
+                .read_word()
+                .into())
     }
 
     fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {

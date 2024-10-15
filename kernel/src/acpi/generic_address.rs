@@ -21,6 +21,24 @@ impl Structure {
         1 << (self.access_size - 1)
     }
 
+    pub fn add(self, offset: usize) -> Self {
+        let Self {
+            address_space_id,
+            register_bit_width,
+            register_bit_offset,
+            access_size,
+            address,
+        } = self;
+        let address: u64 = address + (offset as u64);
+        Self {
+            address_space_id,
+            register_bit_width,
+            register_bit_offset,
+            access_size,
+            address,
+        }
+    }
+
     pub fn address(&self) -> usize {
         self.address as usize
     }
