@@ -437,6 +437,21 @@ pub enum ComputationalData {
     WordConst(WordConst),
 }
 
+impl interpreter::Evaluator for ComputationalData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::AmlString(aml_string) => aml_string.evaluate(stack_frame, root, current),
+            Self::ByteConst(byte_const) => byte_const.evaluate(stack_frame, root, current),
+            Self::ConstObj(const_obj) => const_obj.evaluate(stack_frame, root, current),
+            Self::DWordConst(dword_const) => dword_const.evaluate(stack_frame, root, current),
+            Self::DefBuffer(def_buffer) => def_buffer.evaluate(stack_frame, root, current),
+            Self::QWordConst(qword_const) => qword_const.evaluate(stack_frame, root, current),
+            Self::RevisionOp(revision_op) => revision_op.evaluate(stack_frame, root, current),
+            Self::WordConst(word_const) => word_const.evaluate(stack_frame, root, current),
+        }
+    }
+}
+
 /// # ConcatOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -515,6 +530,16 @@ pub enum ConstObj {
     One(OneOp),
     Ones(OnesOp),
     Zero(ZeroOp),
+}
+
+impl interpreter::Evaluator for ConstObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::One(one_op) => one_op.evaluate(stack_frame, root, current),
+            Self::Ones(ones_op) => ones_op.evaluate(stack_frame, root, current),
+            Self::Zero(zero_op) => zero_op.evaluate(stack_frame, root, current),
+        }
+    }
 }
 
 /// # CreateBitFieldOp
