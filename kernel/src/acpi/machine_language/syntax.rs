@@ -330,6 +330,16 @@ pub struct ByteConst(
     ByteData,
 );
 
+impl interpreter::Evaluator for ByteConst {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self(
+            _byte_prefix,
+            byte_data,
+        ) = self;
+        byte_data.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # ByteData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -353,7 +363,7 @@ impl From<&ByteData> for usize {
 }
 
 impl interpreter::Evaluator for ByteData {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
         let Self(byte) = self;
         Some(interpreter::Data::Byte(*byte))
     }
@@ -544,6 +554,16 @@ pub struct DWordConst(
     DWordData,
 );
 
+impl interpreter::Evaluator for DWordConst {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self(
+            _dword_prefix,
+            dword_data,
+        ) = self;
+        dword_data.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # DWordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -551,6 +571,17 @@ pub struct DWordConst(
 pub struct DWordData(
     [WordData; 2],
 );
+
+impl interpreter::Evaluator for DWordData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self([low, high]) = self;
+        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        low
+            .zip(high)
+            .map(|(low, high)| low.concatenate(high))
+    }
+}
 
 /// # DWordPrefix
 /// ## References
@@ -2868,7 +2899,7 @@ pub struct ObjectTypeOp;
 pub struct OneOp;
 
 impl interpreter::Evaluator for OneOp {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
         Some(interpreter::Data::One)
     }
 }
@@ -2881,7 +2912,7 @@ impl interpreter::Evaluator for OneOp {
 pub struct OnesOp;
 
 impl interpreter::Evaluator for OnesOp {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
         Some(interpreter::Data::Ones)
     }
 }
@@ -3129,6 +3160,16 @@ pub struct QWordConst(
     QWordData,
 );
 
+impl interpreter::Evaluator for QWordConst {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self(
+            _qword_prefix,
+            qword_data,
+        ) = self;
+        qword_data.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # QWordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -3136,6 +3177,17 @@ pub struct QWordConst(
 pub struct QWordData(
     [DWordData; 2],
 );
+
+impl interpreter::Evaluator for QWordData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self([low, high]) = self;
+        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        low
+            .zip(high)
+            .map(|(low, high)| low.concatenate(high))
+    }
+}
 
 /// # QWordPrefix
 /// ## References
@@ -3267,7 +3319,7 @@ pub struct RevisionOp(
 );
 
 impl interpreter::Evaluator for RevisionOp {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
         Some(interpreter::Data::Revision)
     }
 }
@@ -3673,6 +3725,16 @@ pub struct WordConst(
     WordData,
 );
 
+impl interpreter::Evaluator for WordConst {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self(
+            _word_prefix,
+            word_data,
+        ) = self;
+        word_data.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # WordData
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -3714,7 +3776,7 @@ pub struct XOrOp;
 pub struct ZeroOp;
 
 impl interpreter::Evaluator for ZeroOp {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
         Some(interpreter::Data::Zero)
     }
 }

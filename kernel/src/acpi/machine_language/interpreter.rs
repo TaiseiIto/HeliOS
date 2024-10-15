@@ -27,7 +27,14 @@ pub enum Data {
 impl Data {
     pub fn concatenate(self, other: Self) -> Self {
         match (self, other) {
-            (Self::Byte(low), Self::Byte(high)) => Self::Word(((high as u16) << u8::BITS) + (low as u16)),
+            (Self::Byte(low), Self::Byte(high)) => Self::Word((low as u16) + ((high as u16) << u8::BITS)),
+            (Self::Word(low), Self::Word(high)) => Self::DWord((low as u32) + ((high as u32) << u16::BITS)),
+            (Self::DWord(low), Self::DWord(high)) => Self::QWord((low as u64) + ((high as u64) << u32::BITS)),
+            (Self::Buffer(first), Self::Buffer(second)) => Self::Buffer(first
+                .into_iter()
+                .chain(second.into_iter())
+                .collect()),
+            (Self::String(first), Self::String(second)) => Self::String(first + &second),
             _ => unimplemented!(),
         }
     }
