@@ -23,15 +23,15 @@ use {
     },
 };
 
-pub trait Analyzer: Lender + FirstReader + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
-}
-
-pub trait Lender {
-    fn lend<'a>(&'a self, root: &mut reference::Node<'a>, current: &name::Path);
+pub trait Analyzer: FirstReader + Lender + Matcher + PathGetter + Reader + ReaderInsideMethod + ReaderOutsideMethod + ReferenceToSymbolIterator + WithLength {
 }
 
 pub trait FirstReader {
     fn first_read<'a>(aml: &'a [u8], root: &mut name::Node, current: &name::Path) -> (Self, &'a [u8]) where Self: Sized;
+}
+
+pub trait Lender {
+    fn lend<'a>(&'a self, root: &mut reference::Node<'a>, current: &name::Path);
 }
 
 pub trait Matcher {
