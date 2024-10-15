@@ -131,7 +131,7 @@ impl Structure {
     pub fn system_io(port: u16, access_size: usize) -> Self {
         assert!(access_size.is_power_of_two());
         let address_space_id: u8 = SpaceId::SystemIoSpace.into();
-        let register_bit_width: u8 = 0;
+        let register_bit_width: u8 = (access_size as u8) * (u8::BITS as u8);
         let register_bit_offset: u8 = 0;
         let access_size: u8 = (access_size.ilog2() + 1) as u8;
         let address: u64 = port as u64;

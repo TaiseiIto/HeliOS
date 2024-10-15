@@ -190,29 +190,33 @@ impl Table {
     fn pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::pm1a_cnt_blk_offset() < self.header.table_size())
             .then_some(self.pm1a_cnt_blk)
-            .and_then(|pm1a_cnt_blk| (pm1a_cnt_blk != 0).then_some({
+            .filter(|pm1a_cnt_blk| *pm1a_cnt_blk != 0)
+            .map(|pm1a_cnt_blk| {
                 let access_size: usize = mem::size_of::<u16>();
                 generic_address::Structure::system_io(pm1a_cnt_blk as u16, access_size)
-            }))
+            })
     }
 
     fn pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::pm1b_cnt_blk_offset() < self.header.table_size())
             .then_some(self.pm1b_cnt_blk)
-            .and_then(|pm1b_cnt_blk| (pm1b_cnt_blk != 0).then_some({
+            .filter(|pm1b_cnt_blk| *pm1b_cnt_blk != 0)
+            .map(|pm1b_cnt_blk| {
                 let access_size: usize = mem::size_of::<u16>();
                 generic_address::Structure::system_io(pm1b_cnt_blk as u16, access_size)
-            }))
+            })
     }
 
     fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::x_pm1a_cnt_blk_offset() < self.header.table_size())
             .then_some(self.x_pm1a_cnt_blk)
+            .filter(|x_pm1a_cnt_blk| x_pm1a_cnt_blk.address() != 0)
     }
 
     fn x_pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::x_pm1b_cnt_blk_offset() < self.header.table_size())
             .then_some(self.x_pm1b_cnt_blk)
+            .filter(|x_pm1b_cnt_blk| x_pm1b_cnt_blk.address() != 0)
     }
 }
 
