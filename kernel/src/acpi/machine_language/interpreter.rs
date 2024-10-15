@@ -11,6 +11,7 @@ use {
 
 #[derive(Debug)]
 pub enum Data {
+    Bool(bool),
     Buffer(Vec<u8>),
     Byte(u8),
     DWord(u32),

@@ -352,6 +352,13 @@ impl From<&ByteData> for usize {
     }
 }
 
+impl interpreter::Evaluator for ByteData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        let Self(byte) = self;
+        Some(interpreter::Data::Byte(*byte))
+    }
+}
+
 /// # ByteIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2873,6 +2880,12 @@ impl interpreter::Evaluator for OneOp {
 #[encoding_value = 0xff]
 pub struct OnesOp;
 
+impl interpreter::Evaluator for OnesOp {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        Some(interpreter::Data::Ones)
+    }
+}
+
 /// # OpRegionOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -3252,6 +3265,13 @@ pub struct RevisionOp(
     ExtOpPrefix,
     RevisionOpSuffix,
 );
+
+impl interpreter::Evaluator for RevisionOp {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        Some(interpreter::Data::Revision)
+    }
+}
+
 
 /// # RevisionOpSuffix
 /// ## References
@@ -3681,4 +3701,10 @@ pub struct XOrOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x00]
 pub struct ZeroOp;
+
+impl interpreter::Evaluator for ZeroOp {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        Some(interpreter::Data::Zero)
+    }
+}
 
