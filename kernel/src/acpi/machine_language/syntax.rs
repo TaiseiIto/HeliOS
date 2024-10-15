@@ -18,6 +18,7 @@ use {
         iter,
     },
     super::{
+        interpreter,
         name,
         reference,
     },
@@ -2858,6 +2859,12 @@ pub struct ObjectTypeOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 #[encoding_value = 0x01]
 pub struct OneOp;
+
+impl interpreter::Evaluator for OneOp {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+        Some(interpreter::Data::One)
+    }
+}
 
 /// # OnesOp
 /// ## References
