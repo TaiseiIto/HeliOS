@@ -1,5 +1,6 @@
 use {
     alloc::{
+        collections::BTreeMap,
         string::String,
         vec::Vec,
     },
@@ -10,10 +11,11 @@ use {
 };
 
 #[derive(Debug)]
-pub enum Data {
+pub enum Value {
     Bool(bool),
     Buffer(Vec<u8>),
     Byte(u8),
+    Char(char),
     DWord(u32),
     One,
     Ones,
@@ -24,7 +26,7 @@ pub enum Data {
     Zero,
 }
 
-impl Data {
+impl Value {
     pub fn concatenate(self, other: Self) -> Self {
         match (self, other) {
             (Self::Byte(low), Self::Byte(high)) => Self::Word((low as u16) + ((high as u16) << u8::BITS)),
@@ -38,15 +40,24 @@ impl Data {
             _ => unimplemented!(),
         }
     }
+
+    pub fn get_byte(&self) -> Option<u8> {
+        match self {
+            Self::Byte(byte) => Some(*byte),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Default)]
 pub struct StackFrame {
-    args: [Option<Data>; 0x07],
-    locals: [Option<Data>; 0x08],
+    args: [Option<Value>; 0x07],
+    locals: [Option<Value>; 0x08],
+    named_locals: BTreeMap<String, Value>,
+    return_value: Option<Value>,
 }
 
 pub trait Evaluator {
-    fn evaluate(&self, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Option<Data>;
+    fn evaluate(&self, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Option<Value>;
 }
 

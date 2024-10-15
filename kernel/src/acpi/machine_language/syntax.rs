@@ -168,6 +168,12 @@ pub struct AmlString(
     NullChar,
 );
 
+impl interpreter::Evaluator for AmlString {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::String(self.into()))
+    }
+}
+
 /// # AndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -217,6 +223,12 @@ pub struct AsciiChar(char);
 #[matching_elements = 0]
 #[string]
 pub struct AsciiCharList(Vec<AsciiChar>);
+
+impl interpreter::Evaluator for AsciiCharList {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::String(self.into()))
+    }
+}
 
 /// # AsciiUppercase
 /// ## References
@@ -331,7 +343,7 @@ pub struct ByteConst(
 );
 
 impl interpreter::Evaluator for ByteConst {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _byte_prefix,
             byte_data,
@@ -363,9 +375,9 @@ impl From<&ByteData> for usize {
 }
 
 impl interpreter::Evaluator for ByteData {
-    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(byte) = self;
-        Some(interpreter::Data::Byte(*byte))
+        Some(interpreter::Value::Byte(*byte))
     }
 }
 
@@ -388,6 +400,18 @@ impl From<&ByteList> for Vec<u8> {
             .iter()
             .map(|byte_data| byte_data.into())
             .collect()
+    }
+}
+
+impl interpreter::Evaluator for ByteList {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(byte_list) = self;
+        Some(interpreter::Value::Buffer(byte_list
+            .iter()
+            .filter_map(|byte_data| byte_data
+                .evaluate(stack_frame, root, current)
+                .and_then(|byte_data| byte_data.get_byte()))
+            .collect()))
     }
 }
 
@@ -555,7 +579,7 @@ pub struct DWordConst(
 );
 
 impl interpreter::Evaluator for DWordConst {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _dword_prefix,
             dword_data,
@@ -573,10 +597,10 @@ pub struct DWordData(
 );
 
 impl interpreter::Evaluator for DWordData {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
-        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
-        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
             .map(|(low, high)| low.concatenate(high))
@@ -791,6 +815,18 @@ pub struct DefBuffer(
     #[no_leftover]
     ByteList,
 );
+
+impl interpreter::Evaluator for DefBuffer {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _buffer_op,
+            _pkg_length,
+            _buffer_size,
+            byte_list,
+        ) = self;
+        byte_list.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DefCondRefOf
 /// ## References
@@ -2899,8 +2935,8 @@ pub struct ObjectTypeOp;
 pub struct OneOp;
 
 impl interpreter::Evaluator for OneOp {
-    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
-        Some(interpreter::Data::One)
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::One)
     }
 }
 
@@ -2912,8 +2948,8 @@ impl interpreter::Evaluator for OneOp {
 pub struct OnesOp;
 
 impl interpreter::Evaluator for OnesOp {
-    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
-        Some(interpreter::Data::Ones)
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::Ones)
     }
 }
 
@@ -3161,7 +3197,7 @@ pub struct QWordConst(
 );
 
 impl interpreter::Evaluator for QWordConst {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _qword_prefix,
             qword_data,
@@ -3179,10 +3215,10 @@ pub struct QWordData(
 );
 
 impl interpreter::Evaluator for QWordData {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
-        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
-        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
             .map(|(low, high)| low.concatenate(high))
@@ -3319,8 +3355,8 @@ pub struct RevisionOp(
 );
 
 impl interpreter::Evaluator for RevisionOp {
-    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
-        Some(interpreter::Data::Revision)
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::Revision)
     }
 }
 
@@ -3726,7 +3762,7 @@ pub struct WordConst(
 );
 
 impl interpreter::Evaluator for WordConst {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _word_prefix,
             word_data,
@@ -3744,10 +3780,10 @@ pub struct WordData(
 );
 
 impl interpreter::Evaluator for WordData {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Data> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
-        let low: Option<interpreter::Data> = low.evaluate(stack_frame, root, current);
-        let high: Option<interpreter::Data> = high.evaluate(stack_frame, root, current);
+        let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
+        let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
             .map(|(low, high)| low.concatenate(high))
@@ -3776,8 +3812,8 @@ pub struct XOrOp;
 pub struct ZeroOp;
 
 impl interpreter::Evaluator for ZeroOp {
-    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Data> {
-        Some(interpreter::Data::Zero)
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::Zero)
     }
 }
 
