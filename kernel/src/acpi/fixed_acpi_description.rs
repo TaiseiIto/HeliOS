@@ -117,6 +117,8 @@ impl Table {
     }
 
     pub fn shutdown(&self) {
+        let pm1a_evt: Option<pm1::status::Register> = self.pm1a_evt();
+        let pm1b_evt: Option<pm1::status::Register> = self.pm1b_evt();
         let pm1a_cnt: Option<pm1::control::Register> = self.pm1a_cnt();
         let pm1b_cnt: Option<pm1::control::Register> = self.pm1b_cnt();
         let dsdt: system_description::Table = self
@@ -143,6 +145,8 @@ impl Table {
         com2_println!("tts = {:#x?}", tts);
         com2_println!("pts = {:#x?}", pts);
         com2_println!("s5 = {:#x?}", s5);
+        com2_println!("pm1a_evt = {:#x?}", pm1a_evt);
+        com2_println!("pm1b_evt = {:#x?}", pm1b_evt);
         com2_println!("pm1a_cnt = {:#x?}", pm1a_cnt);
         com2_println!("pm1b_cnt = {:#x?}", pm1b_cnt);
     }
@@ -221,6 +225,42 @@ impl Table {
             })
     }
 
+    fn pm1a_evt(&self) -> Option<pm1::status::Register> {
+        self.x_pm1a_evt_blk()
+            .or(self.pm1a_evt_blk())
+            .map(|pm1a_evt_blk| pm1a_evt_blk
+                .read_word()
+                .into())
+    }
+
+    fn pm1b_evt(&self) -> Option<pm1::status::Register> {
+        self.x_pm1b_evt_blk()
+            .or(self.pm1b_evt_blk())
+            .map(|pm1b_evt_blk| pm1b_evt_blk
+                .read_word()
+                .into())
+    }
+
+    fn pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1a_evt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1a_evt_blk)
+            .filter(|pm1a_evt_blk| *pm1a_evt_blk != 0)
+            .map(|pm1a_evt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1a_evt_blk as u16, access_size)
+            })
+    }
+
+    fn pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1b_evt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1b_evt_blk)
+            .filter(|pm1b_evt_blk| *pm1b_evt_blk != 0)
+            .map(|pm1b_evt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1b_evt_blk as u16, access_size)
+            })
+    }
+
     fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
         (Self::x_pm1a_cnt_blk_offset() < self.header.table_size())
             .then_some(self.x_pm1a_cnt_blk)
@@ -231,6 +271,18 @@ impl Table {
         (Self::x_pm1b_cnt_blk_offset() < self.header.table_size())
             .then_some(self.x_pm1b_cnt_blk)
             .filter(|x_pm1b_cnt_blk| x_pm1b_cnt_blk.address() != 0)
+    }
+
+    fn x_pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1a_evt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1a_evt_blk)
+            .filter(|x_pm1a_evt_blk| x_pm1a_evt_blk.address() != 0)
+    }
+
+    fn x_pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1b_evt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1b_evt_blk)
+            .filter(|x_pm1b_evt_blk| x_pm1b_evt_blk.address() != 0)
     }
 }
 
