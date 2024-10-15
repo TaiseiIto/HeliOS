@@ -1,3 +1,5 @@
+pub mod pm1;
+
 use {
     bitfield_struct::bitfield,
     core::{
@@ -115,10 +117,8 @@ impl Table {
     }
 
     pub fn shutdown(&self) {
-        let pm1a_cnt_blk: Option<generic_address::Structure> = self.pm1a_cnt_blk();
-        let pm1b_cnt_blk: Option<generic_address::Structure> = self.pm1b_cnt_blk();
-        let x_pm1a_cnt_blk: Option<generic_address::Structure> = self.x_pm1a_cnt_blk();
-        let x_pm1b_cnt_blk: Option<generic_address::Structure> = self.x_pm1b_cnt_blk();
+        let pm1a_cnt: Option<pm1::control::Register> = self.pm1a_cnt();
+        let pm1b_cnt: Option<pm1::control::Register> = self.pm1b_cnt();
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
@@ -143,10 +143,8 @@ impl Table {
         com2_println!("tts = {:#x?}", tts);
         com2_println!("pts = {:#x?}", pts);
         com2_println!("s5 = {:#x?}", s5);
-        com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
-        com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
-        com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
-        com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
+        com2_println!("pm1a_cnt = {:#x?}", pm1a_cnt);
+        com2_println!("pm1b_cnt = {:#x?}", pm1b_cnt);
     }
 
     pub fn timer_bits(&self) -> usize {
@@ -185,6 +183,22 @@ impl Table {
                     &*firmware_ctrl
                 }
             })
+    }
+
+    fn pm1a_cnt(&self) -> Option<pm1::control::Register> {
+        self.x_pm1a_cnt_blk()
+            .or(self.pm1a_cnt_blk())
+            .map(|pm1a_cnt_blk| pm1a_cnt_blk
+                .read_word()
+                .into())
+    }
+
+    fn pm1b_cnt(&self) -> Option<pm1::control::Register> {
+        self.x_pm1b_cnt_blk()
+            .or(self.pm1b_cnt_blk())
+            .map(|pm1b_cnt_blk| pm1b_cnt_blk
+                .read_word()
+                .into())
     }
 
     fn pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
