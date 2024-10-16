@@ -662,6 +662,16 @@ pub enum DataObject {
     DefVarPackage(DefVarPackage),
 }
 
+impl interpreter::Evaluator for DataObject {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::ComputationalData(computational_data) => computational_data.evaluate(stack_frame, root, current),
+            Self::DefPackage(def_package) => def_package.evaluate(stack_frame, root, current),
+            Self::DefVarPackage(def_var_package) => def_var_package.evaluate(stack_frame, root, current),
+        }
+    }
+}
+
 /// # DataRefObject
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -669,6 +679,15 @@ pub enum DataObject {
 pub enum DataRefObject {
     DataObject(DataObject),
     ObjReference(ObjReference),
+}
+
+impl interpreter::Evaluator for DataRefObject {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::DataObject(data_object) => data_object.evaluate(stack_frame, root, current),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 /// # DataRegionOp
@@ -1463,6 +1482,17 @@ pub struct DefName(
     DataRefObject,
 );
 
+impl interpreter::Evaluator for DefName {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _name_op,
+            _name_string,
+            data_ref_object,
+        ) = self;
+        data_ref_object.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # DefNoop
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -1531,6 +1561,18 @@ pub struct DefPackage(
     #[no_leftover]
     PackageElementList,
 );
+
+impl interpreter::Evaluator for DefPackage {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _package_op,
+            _pkg_length,
+            _num_elements,
+            package_element_list,
+        ) = self;
+        package_element_list.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DefPowerRes
 /// ## References
@@ -1779,6 +1821,18 @@ pub struct DefVarPackage(
     #[no_leftover]
     PackageElementList,
 );
+
+impl interpreter::Evaluator for DefVarPackage {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _var_package_op,
+            _pkg_length,
+            _var_num_elements,
+            package_element_list,
+        ) = self;
+        package_element_list.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DefWait
 /// ## References
@@ -3031,11 +3085,30 @@ pub enum PackageElement {
     DataRefObject(DataRefObject),
 }
 
+impl interpreter::Evaluator for PackageElement {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::DataRefObject(data_ref_object) => data_ref_object.evaluate(stack_frame, root, current),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 /// # PackageElementList
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct PackageElementList(Vec<PackageElement>);
+
+impl interpreter::Evaluator for PackageElementList {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(package_elements) = self;
+        Some(interpreter::Value::Package(package_elements
+            .iter()
+            .filter_map(|package_element| package_element.evaluate(stack_frame, root, current))
+            .collect()))
+    }
+}
 
 /// # PackageOp
 /// ## References

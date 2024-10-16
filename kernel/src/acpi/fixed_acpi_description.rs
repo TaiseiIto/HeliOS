@@ -14,6 +14,7 @@ use {
         firmware_acpi_control,
         generic_address,
         machine_language::{
+            interpreter::Evaluator,
             self,
             syntax::{
                 FirstReader,
@@ -135,12 +136,13 @@ impl Table {
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
-        let tts: machine_language::name::Path = "\\_TTS".into();
-        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts);
-        let pts: machine_language::name::Path = "\\_PTS".into();
-        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts);
-        let s5: machine_language::name::Path = "\\_S5".into();
-        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
+        let tts_path: machine_language::name::Path = "\\_TTS".into();
+        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
+        let pts_path: machine_language::name::Path = "\\_PTS".into();
+        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
+        let s5_path: machine_language::name::Path = "\\_S5".into();
+        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5_path);
+        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &s5_path));
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);

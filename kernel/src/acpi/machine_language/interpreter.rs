@@ -19,6 +19,7 @@ pub enum Value {
     DWord(u32),
     One,
     Ones,
+    Package(Vec<Self>),
     QWord(u64),
     Revision,
     String(String),
@@ -33,6 +34,10 @@ impl Value {
             (Self::Word(low), Self::Word(high)) => Self::DWord((low as u32) + ((high as u32) << u16::BITS)),
             (Self::DWord(low), Self::DWord(high)) => Self::QWord((low as u64) + ((high as u64) << u32::BITS)),
             (Self::Buffer(first), Self::Buffer(second)) => Self::Buffer(first
+                .into_iter()
+                .chain(second.into_iter())
+                .collect()),
+            (Self::Package(first), Self::Package(second)) => Self::Package(first
                 .into_iter()
                 .chain(second.into_iter())
                 .collect()),
