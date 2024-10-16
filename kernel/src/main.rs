@@ -315,10 +315,10 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("pci = {:#x?}", pci);
     // Shutdown.
     Argument::get()
-        .efi_system_table()
-        .rsdp()
-        .xsdt()
-        .fadt()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .fadt_mut()
         .shutdown();
     unreachable!();
 }

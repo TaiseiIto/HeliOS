@@ -9,6 +9,7 @@ use {
     crate::{
         com2_println,
         io,
+        x64,
     },
     super::{
         firmware_acpi_control,
@@ -117,7 +118,7 @@ impl Table {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
     }
 
-    pub fn shutdown(&self) {
+    pub fn shutdown(&mut self) {
         let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
         let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
         let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
@@ -165,6 +166,15 @@ impl Table {
         com2_println!("pm1b_control = {:#x?}", pm1b_control);
         com2_println!("pm1a_cnt_slp_typ = {:#x?}", pm1a_cnt_slp_typ);
         com2_println!("pm1b_cnt_slp_typ = {:#x?}", pm1b_cnt_slp_typ);
+        if let Some((pm1a_control, pm1a_cnt_slp_typ)) = pm1a_control.zip(pm1a_cnt_slp_typ) {
+            self.write_pm1a_control(pm1a_control.sleep(pm1a_cnt_slp_typ));
+        }
+        if let Some((pm1b_control, pm1b_cnt_slp_typ)) = pm1b_control.zip(pm1b_cnt_slp_typ) {
+            self.write_pm1b_control(pm1b_control.sleep(pm1b_cnt_slp_typ));
+        }
+        loop {
+            x64::pause();
+        }
     }
 
     pub fn timer_bits(&self) -> usize {
@@ -293,6 +303,22 @@ impl Table {
             .map(|pm1b_evt_blk| pm1b_evt_blk
                 .read_word()
                 .into())
+    }
+
+    fn write_pm1a_control(&mut self, pm1a_cnt: pm1::control::Register) {
+        if let Some(mut pm1a_cnt_blk) = self
+            .x_pm1a_cnt_blk()
+            .or(self.pm1a_cnt_blk()) {
+            pm1a_cnt_blk.write_word(pm1a_cnt.into());
+        }
+    }
+
+    fn write_pm1b_control(&mut self, pm1b_cnt: pm1::control::Register) {
+        if let Some(mut pm1b_cnt_blk) = self
+            .x_pm1b_cnt_blk()
+            .or(self.pm1b_cnt_blk()) {
+            pm1b_cnt_blk.write_word(pm1b_cnt.into());
+        }
     }
 
     fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {

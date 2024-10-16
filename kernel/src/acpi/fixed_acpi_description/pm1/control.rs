@@ -18,3 +18,10 @@ pub struct Register {
     reserved1: u8,
 }
 
+impl Register {
+    pub fn sleep(self, slp_typx: u8) -> Self {
+        self.with_slp_typx(slp_typx)
+            .with_slp_en(true)
+    }
+}
+
