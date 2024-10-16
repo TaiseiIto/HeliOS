@@ -35,11 +35,11 @@ impl Value {
             (Self::DWord(low), Self::DWord(high)) => Self::QWord((low as u64) + ((high as u64) << u32::BITS)),
             (Self::Buffer(first), Self::Buffer(second)) => Self::Buffer(first
                 .into_iter()
-                .chain(second.into_iter())
+                .chain(second)
                 .collect()),
             (Self::Package(first), Self::Package(second)) => Self::Package(first
                 .into_iter()
-                .chain(second.into_iter())
+                .chain(second)
                 .collect()),
             (Self::String(first), Self::String(second)) => Self::String(first + &second),
             _ => unimplemented!(),
@@ -60,14 +60,15 @@ impl Value {
         match self {
             Self::Buffer(bytes) => bytes
                 .get(index)
-                .map(|byte| Self::Byte(*byte)),
+                .cloned()
+                .map(Self::Byte),
             Self::Package(elements) => elements
                 .get(index)
                 .cloned(),
             Self::String(characters) => characters
                 .chars()
                 .nth(index)
-                .map(|character| Self::Char(character)),
+                .map(Self::Char),
             _ => None,
         }
     }

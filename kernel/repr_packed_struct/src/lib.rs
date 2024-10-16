@@ -98,7 +98,7 @@ pub fn derive_offset_getter(input: proc_macro::TokenStream) -> proc_macro::Token
                 .collect();
             fields
                 .into_iter()
-                .zip(previous_fields.into_iter())
+                .zip(previous_fields)
                 .map(|(field, previous_field)| {
                     let Field {
                         attrs: _,
