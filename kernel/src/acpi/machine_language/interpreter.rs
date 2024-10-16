@@ -44,6 +44,9 @@ impl Value {
     pub fn get_byte(&self) -> Option<u8> {
         match self {
             Self::Byte(byte) => Some(*byte),
+            Self::Zero => Some(0x00),
+            Self::One => Some(0x01),
+            Self::Ones => Some(0xff),
             _ => None,
         }
     }
