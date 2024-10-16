@@ -143,6 +143,14 @@ impl Table {
         let s5_path: machine_language::name::Path = "\\_S5".into();
         let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5_path);
         let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &s5_path));
+        let pm1a_cnt_slp_typ: Option<u8> = s5
+            .as_ref()
+            .and_then(|s5| s5.get_element(0))
+            .and_then(|pm1a_cnt_slp_typ| pm1a_cnt_slp_typ.get_byte());
+        let pm1b_cnt_slp_typ: Option<u8> = s5
+            .as_ref()
+            .and_then(|s5| s5.get_element(1))
+            .and_then(|pm1b_cnt_slp_typ| pm1b_cnt_slp_typ.get_byte());
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);
@@ -155,6 +163,8 @@ impl Table {
         com2_println!("pm1b_enable = {:#x?}", pm1b_enable);
         com2_println!("pm1a_control = {:#x?}", pm1a_control);
         com2_println!("pm1b_control = {:#x?}", pm1b_control);
+        com2_println!("pm1a_cnt_slp_typ = {:#x?}", pm1a_cnt_slp_typ);
+        com2_println!("pm1b_cnt_slp_typ = {:#x?}", pm1b_cnt_slp_typ);
     }
 
     pub fn timer_bits(&self) -> usize {

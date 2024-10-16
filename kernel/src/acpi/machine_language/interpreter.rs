@@ -55,6 +55,22 @@ impl Value {
             _ => None,
         }
     }
+
+    pub fn get_element(&self, index: usize) -> Option<Self> {
+        match self {
+            Self::Buffer(bytes) => bytes
+                .get(index)
+                .map(|byte| Self::Byte(*byte)),
+            Self::Package(elements) => elements
+                .get(index)
+                .cloned(),
+            Self::String(characters) => characters
+                .chars()
+                .nth(index)
+                .map(|character| Self::Char(character)),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Default)]

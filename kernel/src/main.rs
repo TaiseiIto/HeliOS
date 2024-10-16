@@ -320,7 +320,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .xsdt()
         .fadt()
         .shutdown();
-    unimplemented!();
+    unreachable!();
 }
 
 /// # A panic handler of the kernel
