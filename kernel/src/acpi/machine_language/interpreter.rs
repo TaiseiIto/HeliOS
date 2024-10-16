@@ -10,7 +10,7 @@ use {
     },
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Value {
     Bool(bool),
     Buffer(Vec<u8>),
@@ -51,10 +51,20 @@ impl Value {
 
 #[derive(Debug, Default)]
 pub struct StackFrame {
-    args: [Option<Value>; 0x07],
-    locals: [Option<Value>; 0x08],
-    named_locals: BTreeMap<String, Value>,
+    argument_objects: [Option<Value>; 0x07],
+    local_objects: [Option<Value>; 0x08],
+    named_local_objects: BTreeMap<String, Value>,
     return_value: Option<Value>,
+}
+
+impl StackFrame {
+    pub fn argument_object(&self, index: usize) -> Option<Value> {
+        self.argument_objects[index].clone()
+    }
+
+    pub fn local_object(&self, index: usize) -> Option<Value> {
+        self.local_objects[index].clone()
+    }
 }
 
 pub trait Evaluator {
