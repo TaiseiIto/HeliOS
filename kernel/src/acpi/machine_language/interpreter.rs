@@ -76,19 +76,48 @@ impl Value {
 
 #[derive(Debug, Default)]
 pub struct StackFrame {
-    argument_objects: [Option<Value>; 0x07],
-    local_objects: [Option<Value>; 0x08],
-    named_local_objects: BTreeMap<String, Value>,
+    argument_values: [Option<Value>; 0x07],
+    local_values: [Option<Value>; 0x08],
+    named_local_values: BTreeMap<String, Value>,
     return_value: Option<Value>,
 }
 
 impl StackFrame {
-    pub fn argument_object(&self, index: usize) -> Option<Value> {
-        self.argument_objects[index].clone()
+    pub fn argument_value(&self, index: usize) -> Option<Value> {
+        self.argument_values[index].clone()
     }
 
-    pub fn local_object(&self, index: usize) -> Option<Value> {
-        self.local_objects[index].clone()
+    pub fn local_value(&self, index: usize) -> Option<Value> {
+        self.local_values[index].clone()
+    }
+
+    pub fn set_arguments(self, arguments: Vec<Value>) -> Self {
+        let Self {
+            argument_values,
+            local_values,
+            named_local_values,
+            return_value,
+        } = self;
+        let argument_values: Vec<Value> = arguments
+            .into_iter()
+            .map(Some)
+            .chain(argument_values
+                .as_slice()
+                .iter()
+                .map(|_| None))
+            .take(argument_values
+                .as_slice()
+                .len())
+            .collect();
+        let argument_values = argument_values
+            .try_into()
+            .unwrap();
+        Self {
+            argument_values,
+            local_values,
+            named_local_values,
+            return_value,
+        }
     }
 }
 

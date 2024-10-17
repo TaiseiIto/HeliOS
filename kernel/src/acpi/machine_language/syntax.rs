@@ -192,7 +192,7 @@ pub struct ArgObj(u8);
 impl interpreter::Evaluator for ArgObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
-        stack_frame.argument_object(*index as usize)
+        stack_frame.argument_value(*index as usize)
     }
 }
 
@@ -2358,7 +2358,7 @@ pub struct LocalObj(u8);
 impl interpreter::Evaluator for LocalObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
-        stack_frame.local_object(*index as usize)
+        stack_frame.local_value(*index as usize)
     }
 }
 

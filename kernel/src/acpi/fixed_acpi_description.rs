@@ -1,6 +1,7 @@
 pub mod pm1;
 
 use {
+    alloc::vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -119,12 +120,6 @@ impl Table {
     }
 
     pub fn shutdown(&mut self) {
-        let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
-        let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
-        let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
-        let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
-        let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
-        let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
@@ -137,10 +132,17 @@ impl Table {
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
+        let stack_frame = machine_language::interrupt::StackFrame::default().set_arguments(vec![machine_language::interrupt::Value::Byte(0x05)]);
         let tts_path: machine_language::name::Path = "\\_TTS".into();
         let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
         let pts_path: machine_language::name::Path = "\\_PTS".into();
         let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
+        let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
+        let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
+        let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
+        let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
+        let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
+        let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
         let s5_path: machine_language::name::Path = "\\_S5".into();
         let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5_path);
         let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &s5_path));
@@ -155,6 +157,7 @@ impl Table {
         com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);
+        com2_println!("stack_frame = {:#x?}", stack_frame);
         com2_println!("tts = {:#x?}", tts);
         com2_println!("pts = {:#x?}", pts);
         com2_println!("s5 = {:#x?}", s5);
