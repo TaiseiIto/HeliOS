@@ -132,7 +132,7 @@ impl Table {
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
-        let stack_frame = machine_language::interrupt::StackFrame::default().set_arguments(vec![machine_language::interrupt::Value::Byte(0x05)]);
+        let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
         let tts_path: machine_language::name::Path = "\\_TTS".into();
         let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
         let pts_path: machine_language::name::Path = "\\_PTS".into();

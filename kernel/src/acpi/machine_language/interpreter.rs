@@ -98,7 +98,7 @@ impl StackFrame {
             named_local_values,
             return_value,
         } = self;
-        let argument_values: Vec<Value> = arguments
+        let argument_values: Vec<Option<Value>> = arguments
             .into_iter()
             .map(Some)
             .chain(argument_values
