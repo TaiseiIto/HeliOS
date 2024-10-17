@@ -685,7 +685,7 @@ impl interpreter::Evaluator for DataRefObject {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::DataObject(data_object) => data_object.evaluate(stack_frame, root, current),
-            Self::ObjReference(_) => unimplemented!(),
+            Self::ObjReference(obj_reference) => unimplemented!("obj_reference = {:#x?}", obj_reference),
         }
     }
 }
@@ -3114,7 +3114,7 @@ pub enum PackageElement {
 impl interpreter::Evaluator for PackageElement {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
-            Self::NameString(_) => unimplemented!(),
+            Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
             Self::DataRefObject(data_ref_object) => data_ref_object.evaluate(stack_frame, root, current),
         }
     }
@@ -3764,7 +3764,7 @@ pub enum TermObj {
 
 impl interpreter::Evaluator for TermObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!()
+        unimplemented!("self = {:#x?}", self)
     }
 }
 

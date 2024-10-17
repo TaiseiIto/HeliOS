@@ -132,48 +132,48 @@ impl Table {
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
+        com2_println!("syntax_tree = {:#x?}", syntax_tree);
+        com2_println!("semantic_tree = {:#x?}", semantic_tree);
+        com2_println!("reference_tree = {:#x?}", reference_tree);
         let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
+        com2_println!("stack_frame = {:#x?}", stack_frame);
         let tts: machine_language::name::Path = "\\_TTS".into();
         let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts);
+        com2_println!("tts = {:#x?}", tts);
         if let Some(tts) = tts {
             tts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
         }
         let pts: machine_language::name::Path = "\\_PTS".into();
         let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts);
+        com2_println!("pts = {:#x?}", pts);
         if let Some(pts) = pts {
             pts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
         }
         let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
+        com2_println!("pm1a_status = {:#x?}", pm1a_status);
         let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
+        com2_println!("pm1b_status = {:#x?}", pm1b_status);
         let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
+        com2_println!("pm1a_enable = {:#x?}", pm1a_enable);
         let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
+        com2_println!("pm1b_enable = {:#x?}", pm1b_enable);
         let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
+        com2_println!("pm1a_control = {:#x?}", pm1a_control);
         let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
+        com2_println!("pm1b_control = {:#x?}", pm1b_control);
         let s5: machine_language::name::Path = "\\_S5".into();
         let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
         let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &current));
+        com2_println!("s5 = {:#x?}", s5);
         let pm1a_cnt_slp_typ: Option<u8> = s5
             .as_ref()
             .and_then(|s5| s5.get_element(0))
             .and_then(|pm1a_cnt_slp_typ| pm1a_cnt_slp_typ.get_byte());
+        com2_println!("pm1a_cnt_slp_typ = {:#x?}", pm1a_cnt_slp_typ);
         let pm1b_cnt_slp_typ: Option<u8> = s5
             .as_ref()
             .and_then(|s5| s5.get_element(1))
             .and_then(|pm1b_cnt_slp_typ| pm1b_cnt_slp_typ.get_byte());
-        com2_println!("syntax_tree = {:#x?}", syntax_tree);
-        com2_println!("semantic_tree = {:#x?}", semantic_tree);
-        com2_println!("reference_tree = {:#x?}", reference_tree);
-        com2_println!("stack_frame = {:#x?}", stack_frame);
-        com2_println!("tts = {:#x?}", tts);
-        com2_println!("pts = {:#x?}", pts);
-        com2_println!("s5 = {:#x?}", s5);
-        com2_println!("pm1a_status = {:#x?}", pm1a_status);
-        com2_println!("pm1b_status = {:#x?}", pm1b_status);
-        com2_println!("pm1a_enable = {:#x?}", pm1a_enable);
-        com2_println!("pm1b_enable = {:#x?}", pm1b_enable);
-        com2_println!("pm1a_control = {:#x?}", pm1a_control);
-        com2_println!("pm1b_control = {:#x?}", pm1b_control);
-        com2_println!("pm1a_cnt_slp_typ = {:#x?}", pm1a_cnt_slp_typ);
         com2_println!("pm1b_cnt_slp_typ = {:#x?}", pm1b_cnt_slp_typ);
         if let Some((pm1a_control, pm1a_cnt_slp_typ)) = pm1a_control.zip(pm1a_cnt_slp_typ) {
             self.write_pm1a_control(pm1a_control.sleep(pm1a_cnt_slp_typ));
