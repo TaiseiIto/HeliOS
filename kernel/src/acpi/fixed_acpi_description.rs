@@ -133,19 +133,25 @@ impl Table {
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
         let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
-        let tts_path: machine_language::name::Path = "\\_TTS".into();
-        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
-        let pts_path: machine_language::name::Path = "\\_PTS".into();
-        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
+        let tts: machine_language::name::Path = "\\_TTS".into();
+        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts);
+        if let Some(tts) = tts {
+            tts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
+        }
+        let pts: machine_language::name::Path = "\\_PTS".into();
+        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts);
+        if let Some(pts) = pts {
+            pts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
+        }
         let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
         let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
         let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
         let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
         let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
         let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
-        let s5_path: machine_language::name::Path = "\\_S5".into();
-        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5_path);
-        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &s5_path));
+        let s5: machine_language::name::Path = "\\_S5".into();
+        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
+        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &current));
         let pm1a_cnt_slp_typ: Option<u8> = s5
             .as_ref()
             .and_then(|s5| s5.get_element(0))

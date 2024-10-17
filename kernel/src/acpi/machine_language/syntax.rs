@@ -685,7 +685,7 @@ impl interpreter::Evaluator for DataRefObject {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::DataObject(data_object) => data_object.evaluate(stack_frame, root, current),
-            _ => unimplemented!(),
+            Self::ObjReference(_) => unimplemented!(),
         }
     }
 }
@@ -1410,6 +1410,21 @@ impl ReaderInsideMethod for DefMethod {
     }
 }
 
+impl interpreter::Evaluator for DefMethod {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _method_op,
+            _pkg_length,
+            name_string,
+            _method_flags,
+            method_term_list,
+        ) = self;
+        let name_string: name::Path = name_string.into();
+        let current: name::Path = current.clone() + name_string;
+        method_term_list.evaluate(stack_frame, root, &current)
+    }
+}
+
 /// # DefMid
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1486,10 +1501,12 @@ impl interpreter::Evaluator for DefName {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _name_op,
-            _name_string,
+            name_string,
             data_ref_object,
         ) = self;
-        data_ref_object.evaluate(stack_frame, root, current)
+        let name_string: name::Path = name_string.into();
+        let current: name::Path = current.clone() + name_string;
+        data_ref_object.evaluate(stack_frame, root, &current)
     }
 }
 
@@ -2513,6 +2530,15 @@ impl ReaderOutsideMethod for MethodTermList {
     }
 }
 
+impl interpreter::Evaluator for MethodTermList {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::Binary(_) => unreachable!(),
+            Self::SyntaxTree(term_list) => term_list.evaluate(stack_frame, root, current),
+        }
+    }
+}
+
 /// # MethodOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -3088,8 +3114,8 @@ pub enum PackageElement {
 impl interpreter::Evaluator for PackageElement {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
+            Self::NameString(_) => unimplemented!(),
             Self::DataRefObject(data_ref_object) => data_ref_object.evaluate(stack_frame, root, current),
-            _ => unimplemented!(),
         }
     }
 }
@@ -3712,6 +3738,20 @@ pub struct TermList(
     Vec<TermObj>,
 );
 
+impl interpreter::Evaluator for TermList {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_objs) = self;
+        term_objs
+            .iter()
+            .for_each(|term_obj| if stack_frame.return_value().is_none() {
+                term_obj.evaluate(stack_frame, root, current);
+            });
+        stack_frame
+            .return_value()
+            .cloned()
+    }
+}
+
 /// # TermObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
@@ -3720,6 +3760,12 @@ pub enum TermObj {
     ExpressionOpcode(ExpressionOpcode),
     Object(Object),
     StatementOpcode(StatementOpcode),
+}
+
+impl interpreter::Evaluator for TermObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        unimplemented!()
+    }
 }
 
 /// # ThermalZoneOp

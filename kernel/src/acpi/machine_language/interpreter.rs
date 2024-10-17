@@ -74,7 +74,7 @@ impl Value {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct StackFrame {
     argument_values: [Option<Value>; 0x07],
     local_values: [Option<Value>; 0x08],
@@ -89,6 +89,11 @@ impl StackFrame {
 
     pub fn local_value(&self, index: usize) -> Option<Value> {
         self.local_values[index].clone()
+    }
+
+    pub fn return_value(&self) -> Option<&Value> {
+        self.return_value
+            .as_ref()
     }
 
     pub fn set_arguments(self, arguments: Vec<Value>) -> Self {
