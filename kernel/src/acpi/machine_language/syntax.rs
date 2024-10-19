@@ -2071,7 +2071,10 @@ pub enum ExpressionOpcode {
 
 impl interpreter::Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!("self = {:#x?}", self)
+        match self {
+            Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
+            _ => unimplemented!("self = {:#x?}", self),
+        }
     }
 }
 
@@ -2510,6 +2513,21 @@ impl ReaderInsideMethod for MethodInvocation {
         );
         let aml: &[u8] = &aml[method_invocation.length()..];
         (method_invocation, aml)
+    }
+}
+
+impl interpreter::Evaluator for MethodInvocation {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            name_string,
+            term_args,
+        ) = self;
+        let method: name::Path = name_string.into();
+        let method = name::AbsolutePath::new(current, &method);
+        let method: &DefMethod = root
+            .get_method_from_current(&method)
+            .unwrap();
+        unimplemented!("method = {:#x?}\nterm_args = {:#x?}", method, term_args)
     }
 }
 
