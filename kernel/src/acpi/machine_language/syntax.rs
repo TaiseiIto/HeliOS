@@ -767,6 +767,17 @@ pub struct DefAlias(
     [NameString; 2],
 );
 
+impl DefAlias {
+    pub fn solve(&self, current: &name::Path) -> name::AbsolutePath {
+        let Self(
+            _alias_op,
+            [original_name, _new_name],
+        ) = self;
+        let original_path: name::Path = original_name.into();
+        name::AbsolutePath::new(current, &original_path)
+    }
+}
+
 impl FirstReader for DefAlias {
     fn first_read<'a>(aml: &'a [u8], root: &mut name::Node, current: &name::Path) -> (Self, &'a [u8]) {
         assert!(Self::matches(aml), "aml = {:#x?}", aml);

@@ -70,8 +70,28 @@ impl<'a> Node<'a> {
         }
     }
 
+    pub fn get_method_from_current(&self, method: &name::AbsolutePath) -> Option<&'a syntax::DefMethod> {
+        let mut methods: Vec<&'a syntax::DefMethod> = self.get_methods_from_current(method);
+        let method: Option<&'a syntax::DefMethod> = methods.pop();
+        if methods.is_empty() {
+            method
+        } else {
+            None
+        }
+    }
+
     pub fn get_name(&self, name: &name::Path) -> Option<&'a syntax::DefName> {
         let mut names: Vec<&'a syntax::DefName> = self.get_names(name);
+        let name: Option<&'a syntax::DefName> = names.pop();
+        if names.is_empty() {
+            name
+        } else {
+            None
+        }
+    }
+
+    pub fn get_name_from_current(&self, name: &name::AbsolutePath) -> Option<&'a syntax::DefName> {
+        let mut names: Vec<&'a syntax::DefName> = self.get_names_from_current(name);
         let name: Option<&'a syntax::DefName> = names.pop();
         if names.is_empty() {
             name
@@ -93,8 +113,34 @@ impl<'a> Node<'a> {
         }
     }
 
+    fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Vec<&'a syntax::DefMethod> {
+        match self.get_objects_from_current(method) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::Method(method) => Some(*method),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
     fn get_names(&self, name: &name::Path) -> Vec<&'a syntax::DefName> {
         match self.get_objects(name) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::Name(name) => Some(*name),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    fn get_names_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::DefName> {
+        match self.get_objects_from_current(name) {
             Some(objects) => objects
                 .iter()
                 .filter_map(|object| match object {
@@ -125,6 +171,30 @@ impl<'a> Node<'a> {
             },
             None => Some(&self.objects),
         }
+    }
+
+    fn get_objects_from_current(&self, object: &name::AbsolutePath) -> Option<&[Object<'a>]> {
+        let mut object: name::AbsolutePath = self.original_path(object);
+        object.find_map(|object| self.get_objects(&object))
+    }
+
+    fn original_path(&self, alias: &name::AbsolutePath) -> name::AbsolutePath {
+        match self.solve_alias_from_current(alias) {
+            Some(alias) => self.original_path(&alias),
+            None => alias.clone(),
+        }
+    }
+
+    fn solve_alias(&self, alias: &name::Path) -> Option<name::AbsolutePath> {
+        self.get_objects(alias)
+            .and_then(|objects| objects
+                .iter()
+                .find_map(|object| object.solve_alias(alias)))
+    }
+
+    fn solve_alias_from_current(&self, alias: &name::AbsolutePath) -> Option<name::AbsolutePath> {
+        let mut alias: name::AbsolutePath = alias.clone();
+        alias.find_map(|alias| self.solve_alias(&alias))
     }
 }
 
@@ -189,6 +259,16 @@ pub enum Object<'a> {
     Processor(&'a syntax::DefProcessor),
     Scope(&'a syntax::DefScope),
     ThermalZone(&'a syntax::DefThermalZone),
+}
+
+impl Object<'_> {
+    fn solve_alias(&self, current: &name::Path) -> Option<name::AbsolutePath> {
+        if let Self::Alias(def_alias) = self {
+            Some(def_alias.solve(current))
+        } else {
+            None
+        }
+    }
 }
 
 impl Object<'_> {
