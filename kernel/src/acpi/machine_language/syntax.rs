@@ -2058,6 +2058,12 @@ pub enum ExpressionOpcode {
     XOr(DefXOr),
 }
 
+impl interpreter::Evaluator for ExpressionOpcode {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        unimplemented!("self = {:#x?}", self)
+    }
+}
+
 /// # ExtOpPrefix
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -3015,6 +3021,12 @@ pub enum Object {
     NamedObj(NamedObj),
 }
 
+impl interpreter::Evaluator for Object {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        unimplemented!("self = {:#x?}", self)
+    }
+}
+
 /// # ObjectList
 /// ## References
 /// * [Advanced Configuration and Power Interface Specification](https://uefi.org/sites/default/files/resources/ACPI_5_1release.pdf) 20.2.5 Term Objects Encoding
@@ -3637,6 +3649,12 @@ pub enum StatementOpcode {
     While(DefWhile),
 }
 
+impl interpreter::Evaluator for StatementOpcode {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        unimplemented!("self = {:#x?}", self)
+    }
+}
+
 /// # StallOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -3764,7 +3782,11 @@ pub enum TermObj {
 
 impl interpreter::Evaluator for TermObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!("self = {:#x?}", self)
+        match self {
+            Self::ExpressionOpcode(expression_opcode) => expression_opcode.evaluate(stack_frame, root, current),
+            Self::Object(object) => object.evaluate(stack_frame, root, current),
+            Self::StatementOpcode(statement_opcode) => statement_opcode.evaluate(stack_frame, root, current),
+        }
     }
 }
 
