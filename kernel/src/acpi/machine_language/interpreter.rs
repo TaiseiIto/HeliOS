@@ -74,6 +74,30 @@ impl Value {
     }
 }
 
+impl From<&Value> for bool {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Bool(value) => *value,
+            Value::Buffer(buffer) => buffer
+                .iter()
+                .any(|byte| *byte != 0),
+            Value::Byte(byte) => *byte != 0,
+            Value::Char(character) => (*character as u32) != 0,
+            Value::DWord(dword) => *dword != 0,
+            Value::One => true,
+            Value::Ones => true,
+            Value::Package(package) => package
+                .iter()
+                .any(|value| value.into()),
+            Value::QWord(qword) => *qword != 0,
+            Value::Revision => unreachable!(),
+            Value::String(string) => !string.is_empty(),
+            Value::Word(word) => *word != 0,
+            Value::Zero => false,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct StackFrame {
     argument_values: [Option<Value>; 0x07],

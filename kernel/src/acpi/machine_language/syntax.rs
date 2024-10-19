@@ -1066,6 +1066,17 @@ pub struct DefElse(
     TermList,
 );
 
+impl interpreter::Evaluator for DefElse {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _else_op,
+            _pkg_length,
+            term_list,
+        ) = self;
+        term_list.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # DefEvent
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1207,6 +1218,30 @@ pub struct DefIfElse(
     DefIf,
     Option<DefElse>,
 );
+
+impl interpreter::Evaluator for DefIfElse {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            DefIf(
+                _if_op,
+                _pkg_length,
+                predicate,
+                term_list,
+            ),
+            def_else,
+        ) = self;
+        let predicate: interpreter::Value = predicate
+            .evaluate(stack_frame, root, current)
+            .unwrap();
+        if (&predicate).into() {
+            term_list.evaluate(stack_frame, root, current)
+        } else {
+            def_else
+                .as_ref()
+                .and_then(|def_else| def_else.evaluate(stack_frame, root, current))
+        }
+    }
+}
 
 /// # DefIncrement
 /// ## References
@@ -3325,6 +3360,13 @@ pub struct PowerResOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Predicate(TermArg);
 
+impl interpreter::Evaluator for Predicate {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # PrefixPath
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -3680,7 +3722,10 @@ pub enum StatementOpcode {
 
 impl interpreter::Evaluator for StatementOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!("self = {:#x?}", self)
+        match self {
+            Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
+            _ => unimplemented!("self = {:#x?}", self),
+        }
     }
 }
 
@@ -3774,6 +3819,12 @@ pub enum TermArg {
     DataObject(Box::<DataObject>),
     ArgObj(ArgObj),
     LocalObj(LocalObj),
+}
+
+impl interpreter::Evaluator for TermArg {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        unimplemented!("self = {:#x?}", self)
+    }
 }
 
 /// # TermList
