@@ -2430,7 +2430,7 @@ impl FirstReader for MethodInvocation {
         let method: name::Path = (&name_string).into();
         let method = name::AbsolutePath::new(&current, &method);
         let number_of_arguments: usize = root
-            .find_number_of_arguments_with_relative_path(&method)
+            .find_number_of_arguments_from_current(&method)
             .unwrap();
         let mut symbol_aml: &[u8] = symbol_aml;
         let mut term_args: Vec<TermArg> = Vec::new();
@@ -2470,7 +2470,7 @@ impl ReaderInsideMethod for MethodInvocation {
         let method: name::Path = (&name_string).into();
         let method = name::AbsolutePath::new(&current, &method);
         let number_of_arguments: usize = root
-            .find_number_of_arguments_with_relative_path(&method)
+            .find_number_of_arguments_from_current(&method)
             .or_else(|| method
                 .last_segment()
                 .and_then(|segment| {

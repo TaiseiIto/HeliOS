@@ -66,7 +66,7 @@ impl Node {
         }
     }
 
-    pub fn find_number_of_arguments_with_absolute_path(&self, method: &Path) -> Option<usize> {
+    pub fn find_number_of_arguments(&self, method: &Path) -> Option<usize> {
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {
@@ -76,20 +76,20 @@ impl Node {
                     .children
                     .iter()
                     .find(|child| child.name == method_segment)
-                    .and_then(|child| child.find_number_of_arguments_with_absolute_path(&method)),
+                    .and_then(|child| child.find_number_of_arguments(&method)),
                 Segment::Parent => unreachable!(),
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
-                    self.find_number_of_arguments_with_absolute_path(&method)
+                    self.find_number_of_arguments(&method)
                 },
             },
             None => Some(self.object.number_of_arguments()),
         }
     }
 
-    pub fn find_number_of_arguments_with_relative_path(&self, method: &AbsolutePath) -> Option<usize> {
+    pub fn find_number_of_arguments_from_current(&self, method: &AbsolutePath) -> Option<usize> {
         let mut method: AbsolutePath = self.original_path(method);
-        method.find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
+        method.find_map(|method| self.find_number_of_arguments(&method))
     }
 
     pub fn original_path(&self, alias: &AbsolutePath) -> AbsolutePath {
