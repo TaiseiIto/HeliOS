@@ -93,13 +93,13 @@ impl Node {
     }
 
     pub fn original_path(&self, alias: &AbsolutePath) -> AbsolutePath {
-        match self.solve_relative_alias(alias) {
+        match self.solve_alias_from_current(alias) {
             Some(alias) => self.original_path(&alias),
             None => alias.clone(),
         }
     }
 
-    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<AbsolutePath> {
+    pub fn solve_alias(&self, alias: &Path) -> Option<AbsolutePath> {
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
             Some(segment) => match segment {
@@ -109,20 +109,20 @@ impl Node {
                     .children
                     .iter()
                     .find(|child| child.name == segment)
-                    .and_then(|child| child.solve_absolute_alias(&alias)),
+                    .and_then(|child| child.solve_alias(&alias)),
                 Segment::Parent => None,
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
-                    self.solve_absolute_alias(&alias)
+                    self.solve_alias(&alias)
                 },
             },
             None => self.object.solve_alias(),
         }
     }
 
-    pub fn solve_relative_alias(&self, alias: &AbsolutePath) -> Option<AbsolutePath> {
+    pub fn solve_alias_from_current(&self, alias: &AbsolutePath) -> Option<AbsolutePath> {
         let mut alias: AbsolutePath = alias.clone();
-        alias.find_map(|alias| self.solve_absolute_alias(&alias))
+        alias.find_map(|alias| self.solve_alias(&alias))
     }
 }
 
