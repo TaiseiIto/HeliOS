@@ -60,8 +60,8 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_method(&self, path: &name::Path) -> Option<&'a syntax::DefMethod> {
-        let mut methods: Vec<&'a syntax::DefMethod> = self.get_methods(path);
+    pub fn get_method(&self, method: &name::Path) -> Option<&'a syntax::DefMethod> {
+        let mut methods: Vec<&'a syntax::DefMethod> = self.get_methods(method);
         let method: Option<&'a syntax::DefMethod> = methods.pop();
         if methods.is_empty() {
             method
@@ -70,8 +70,8 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_name(&self, path: &name::Path) -> Option<&'a syntax::DefName> {
-        let mut names: Vec<&'a syntax::DefName> = self.get_names(path);
+    pub fn get_name(&self, name: &name::Path) -> Option<&'a syntax::DefName> {
+        let mut names: Vec<&'a syntax::DefName> = self.get_names(name);
         let name: Option<&'a syntax::DefName> = names.pop();
         if names.is_empty() {
             name
@@ -80,8 +80,8 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_methods(&self, path: &name::Path) -> Vec<&'a syntax::DefMethod> {
-        match self.get_objects(path) {
+    fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
+        match self.get_objects(method) {
             Some(objects) => objects
                 .iter()
                 .filter_map(|object| match object {
@@ -93,8 +93,8 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_names(&self, path: &name::Path) -> Vec<&'a syntax::DefName> {
-        match self.get_objects(path) {
+    fn get_names(&self, name: &name::Path) -> Vec<&'a syntax::DefName> {
+        match self.get_objects(name) {
             Some(objects) => objects
                 .iter()
                 .filter_map(|object| match object {
@@ -106,9 +106,9 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_objects(&self, path: &name::Path) -> Option<&[Object<'a>]> {
-        let mut path: name::Path = path.clone();
-        match path.pop_first_segment() {
+    fn get_objects(&self, object: &name::Path) -> Option<&[Object<'a>]> {
+        let mut object: name::Path = object.clone();
+        match object.pop_first_segment() {
             Some(name) => match name {
                 name::Segment::Child {
                     name: _,
@@ -116,11 +116,11 @@ impl<'a> Node<'a> {
                     .children
                     .iter()
                     .find(|child| child.name == name)
-                    .and_then(|child| child.get_objects(&path)),
+                    .and_then(|child| child.get_objects(&object)),
                 name::Segment::Parent => unreachable!(),
                 name::Segment::Root => {
                     assert_eq!(self.name, name::Segment::Root);
-                    self.get_objects(&path)
+                    self.get_objects(&object)
                 },
             },
             None => Some(&self.objects),
