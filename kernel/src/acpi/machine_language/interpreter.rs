@@ -4,6 +4,7 @@ use {
         string::String,
         vec::Vec,
     },
+    core::ops::Add,
     super::{
         name,
         reference,
@@ -177,7 +178,6 @@ impl StackFrame {
         } = self;
         let arguments: Vec<Option<Value>> = arguments
             .into_iter()
-            .map(Some)
             .chain(arguments
                 .as_slice()
                 .iter()
@@ -202,7 +202,7 @@ impl StackFrame {
         value
     }
 
-    pub fn write_local(&mut self, index; usize, value: Value) -> Value {
+    pub fn write_local(&mut self, index: usize, value: Value) -> Value {
         self.locals[index] = Some(value.clone());
         value
     }

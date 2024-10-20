@@ -19,7 +19,11 @@ use {
     },
     crate::com2_println,
     super::{
-        interpreter,
+        interpreter::{
+            Evaluator,
+            Holder,
+            self,
+        },
         name,
         reference,
     },
@@ -169,7 +173,7 @@ pub struct AmlString(
     NullChar,
 );
 
-impl interpreter::Evaluator for AmlString {
+impl Evaluator for AmlString {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::String(self.into()))
     }
@@ -190,14 +194,14 @@ pub struct AndOp;
 #[encoding_value_max = 0x6e]
 pub struct ArgObj(u8);
 
-impl interpreter::Evaluator for ArgObj {
+impl Evaluator for ArgObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
         stack_frame.read_argument(*index as usize)
     }
 }
 
-impl interpreter::Holder for ArgObj {
+impl Holder for ArgObj {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let Self(index) = self;
         stack_frame.write_argument(*index as usize, value)
@@ -239,7 +243,7 @@ pub struct AsciiChar(char);
 #[string]
 pub struct AsciiCharList(Vec<AsciiChar>);
 
-impl interpreter::Evaluator for AsciiCharList {
+impl Evaluator for AsciiCharList {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::String(self.into()))
     }
@@ -357,7 +361,7 @@ pub struct ByteConst(
     ByteData,
 );
 
-impl interpreter::Evaluator for ByteConst {
+impl Evaluator for ByteConst {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _byte_prefix,
@@ -389,7 +393,7 @@ impl From<&ByteData> for usize {
     }
 }
 
-impl interpreter::Evaluator for ByteData {
+impl Evaluator for ByteData {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(byte) = self;
         Some(interpreter::Value::Byte(*byte))
@@ -418,7 +422,7 @@ impl From<&ByteList> for Vec<u8> {
     }
 }
 
-impl interpreter::Evaluator for ByteList {
+impl Evaluator for ByteList {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(byte_list) = self;
         Some(interpreter::Value::Buffer(byte_list
@@ -452,7 +456,7 @@ pub enum ComputationalData {
     WordConst(WordConst),
 }
 
-impl interpreter::Evaluator for ComputationalData {
+impl Evaluator for ComputationalData {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::AmlString(aml_string) => aml_string.evaluate(stack_frame, root, current),
@@ -547,7 +551,7 @@ pub enum ConstObj {
     Zero(ZeroOp),
 }
 
-impl interpreter::Evaluator for ConstObj {
+impl Evaluator for ConstObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::One(one_op) => one_op.evaluate(stack_frame, root, current),
@@ -618,7 +622,7 @@ pub struct DWordConst(
     DWordData,
 );
 
-impl interpreter::Evaluator for DWordConst {
+impl Evaluator for DWordConst {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _dword_prefix,
@@ -636,7 +640,7 @@ pub struct DWordData(
     [WordData; 2],
 );
 
-impl interpreter::Evaluator for DWordData {
+impl Evaluator for DWordData {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
         let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
@@ -670,7 +674,7 @@ pub enum DataObject {
     DefVarPackage(DefVarPackage),
 }
 
-impl interpreter::Evaluator for DataObject {
+impl Evaluator for DataObject {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::ComputationalData(computational_data) => computational_data.evaluate(stack_frame, root, current),
@@ -689,7 +693,7 @@ pub enum DataRefObject {
     ObjReference(ObjReference),
 }
 
-impl interpreter::Evaluator for DataRefObject {
+impl Evaluator for DataRefObject {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::DataObject(data_object) => data_object.evaluate(stack_frame, root, current),
@@ -721,7 +725,7 @@ pub struct DataRegionOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DebugObj(DebugOp);
 
-impl interpreter::Holder for DebugObj {
+impl Holder for DebugObj {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         com2_println!("AML DebugObj = {:#x?}", value);
         value
@@ -772,7 +776,7 @@ pub struct DefAdd(
     Target,
 );
 
-impl interpreter::Evaluator for DefAdd {
+impl Evaluator for DefAdd {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _add_op,
@@ -909,7 +913,7 @@ pub struct DefBuffer(
     ByteList,
 );
 
-impl interpreter::Evaluator for DefBuffer {
+impl Evaluator for DefBuffer {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _buffer_op,
@@ -1097,7 +1101,7 @@ pub struct DefElse(
     TermList,
 );
 
-impl interpreter::Evaluator for DefElse {
+impl Evaluator for DefElse {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _else_op,
@@ -1250,7 +1254,7 @@ pub struct DefIfElse(
     Option<DefElse>,
 );
 
-impl interpreter::Evaluator for DefIfElse {
+impl Evaluator for DefIfElse {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             DefIf(
@@ -1487,7 +1491,7 @@ impl ReaderInsideMethod for DefMethod {
     }
 }
 
-impl interpreter::Evaluator for DefMethod {
+impl Evaluator for DefMethod {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _method_op,
@@ -1574,7 +1578,7 @@ pub struct DefName(
     DataRefObject,
 );
 
-impl interpreter::Evaluator for DefName {
+impl Evaluator for DefName {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _name_op,
@@ -1656,7 +1660,7 @@ pub struct DefPackage(
     PackageElementList,
 );
 
-impl interpreter::Evaluator for DefPackage {
+impl Evaluator for DefPackage {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _package_op,
@@ -1916,7 +1920,7 @@ pub struct DefVarPackage(
     PackageElementList,
 );
 
-impl interpreter::Evaluator for DefVarPackage {
+impl Evaluator for DefVarPackage {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _var_package_op,
@@ -2135,7 +2139,7 @@ pub enum ExpressionOpcode {
     XOr(DefXOr),
 }
 
-impl interpreter::Evaluator for ExpressionOpcode {
+impl Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
@@ -2459,14 +2463,14 @@ pub enum LeadNameChar {
 #[encoding_value_max = 0x67]
 pub struct LocalObj(u8);
 
-impl interpreter::Evaluator for LocalObj {
+impl Evaluator for LocalObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
         stack_frame.read_local(*index as usize)
     }
 }
 
-impl interpreter::Holder for LocalObj {
+impl Holder for LocalObj {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let Self(index) = self;
         stack_frame.write_argument(*index as usize, value)
@@ -2590,7 +2594,7 @@ impl ReaderInsideMethod for MethodInvocation {
     }
 }
 
-impl interpreter::Evaluator for MethodInvocation {
+impl Evaluator for MethodInvocation {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             name_string,
@@ -2645,7 +2649,7 @@ impl ReaderOutsideMethod for MethodTermList {
     }
 }
 
-impl interpreter::Evaluator for MethodTermList {
+impl Evaluator for MethodTermList {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Binary(_) => unreachable!(),
@@ -3130,7 +3134,7 @@ pub enum Object {
     NamedObj(NamedObj),
 }
 
-impl interpreter::Evaluator for Object {
+impl Evaluator for Object {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         unimplemented!("self = {:#x?}", self)
     }
@@ -3174,7 +3178,7 @@ pub struct ObjectTypeOp;
 #[encoding_value = 0x01]
 pub struct OneOp;
 
-impl interpreter::Evaluator for OneOp {
+impl Evaluator for OneOp {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::One)
     }
@@ -3187,7 +3191,7 @@ impl interpreter::Evaluator for OneOp {
 #[encoding_value = 0xff]
 pub struct OnesOp;
 
-impl interpreter::Evaluator for OnesOp {
+impl Evaluator for OnesOp {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::Ones)
     }
@@ -3216,6 +3220,13 @@ pub struct OpRegionOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Operand(TermArg);
 
+impl Evaluator for Operand {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # OrOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -3232,7 +3243,7 @@ pub enum PackageElement {
     DataRefObject(DataRefObject),
 }
 
-impl interpreter::Evaluator for PackageElement {
+impl Evaluator for PackageElement {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
@@ -3247,7 +3258,7 @@ impl interpreter::Evaluator for PackageElement {
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct PackageElementList(Vec<PackageElement>);
 
-impl interpreter::Evaluator for PackageElementList {
+impl Evaluator for PackageElementList {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(package_elements) = self;
         Some(interpreter::Value::Package(package_elements
@@ -3405,7 +3416,7 @@ pub struct PowerResOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Predicate(TermArg);
 
-impl interpreter::Evaluator for Predicate {
+impl Evaluator for Predicate {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(term_arg) = self;
         term_arg.evaluate(stack_frame, root, current)
@@ -3462,7 +3473,7 @@ pub struct QWordConst(
     QWordData,
 );
 
-impl interpreter::Evaluator for QWordConst {
+impl Evaluator for QWordConst {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _qword_prefix,
@@ -3480,7 +3491,7 @@ pub struct QWordData(
     [DWordData; 2],
 );
 
-impl interpreter::Evaluator for QWordData {
+impl Evaluator for QWordData {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
         let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
@@ -3620,7 +3631,7 @@ pub struct RevisionOp(
     RevisionOpSuffix,
 );
 
-impl interpreter::Evaluator for RevisionOp {
+impl Evaluator for RevisionOp {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::Revision)
     }
@@ -3714,12 +3725,12 @@ pub enum SimpleName {
     LocalObj(LocalObj),
 }
 
-impl interpreter::Holder for SimpleName {
+impl Holder for SimpleName {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         match self {
             Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
             Self::ArgObj(arg_obj) => arg_obj.hold(value, stack_frame, root, current),
-            Self::LocalObj(local_obj) => arg_obj.hold(value, stack_frame, root, current),
+            Self::LocalObj(local_obj) => local_obj.hold(value, stack_frame, root, current),
         }
     }
 }
@@ -3775,7 +3786,7 @@ pub enum StatementOpcode {
     While(DefWhile),
 }
 
-impl interpreter::Evaluator for StatementOpcode {
+impl Evaluator for StatementOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
@@ -3838,7 +3849,7 @@ pub enum SuperName {
     SimpleName(SimpleName),
 }
 
-impl interpreter::Holder for SuperName {
+impl Holder for SuperName {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         match self {
             Self::DebugObj(debug_obj) => debug_obj.hold(value, stack_frame, root, current),
@@ -3875,7 +3886,7 @@ pub enum Target {
     SuperName(Box::<SuperName>),
 }
 
-impl interpreter::Holder for Target {
+impl Holder for Target {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         match self {
             Self::NullName(_) => value,
@@ -3895,7 +3906,7 @@ pub enum TermArg {
     LocalObj(LocalObj),
 }
 
-impl interpreter::Evaluator for TermArg {
+impl Evaluator for TermArg {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::ExpressionOpcode(expression_opcode) => expression_opcode.evaluate(stack_frame, root, current),
@@ -3915,7 +3926,7 @@ pub struct TermList(
     Vec<TermObj>,
 );
 
-impl interpreter::Evaluator for TermList {
+impl Evaluator for TermList {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(term_objs) = self;
         term_objs
@@ -3939,7 +3950,7 @@ pub enum TermObj {
     StatementOpcode(StatementOpcode),
 }
 
-impl interpreter::Evaluator for TermObj {
+impl Evaluator for TermObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::ExpressionOpcode(expression_opcode) => expression_opcode.evaluate(stack_frame, root, current),
@@ -4100,7 +4111,7 @@ pub struct WordConst(
     WordData,
 );
 
-impl interpreter::Evaluator for WordConst {
+impl Evaluator for WordConst {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self(
             _word_prefix,
@@ -4118,7 +4129,7 @@ pub struct WordData(
     [ByteData; 2],
 );
 
-impl interpreter::Evaluator for WordData {
+impl Evaluator for WordData {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         let Self([low, high]) = self;
         let low: Option<interpreter::Value> = low.evaluate(stack_frame, root, current);
@@ -4150,7 +4161,7 @@ pub struct XOrOp;
 #[encoding_value = 0x00]
 pub struct ZeroOp;
 
-impl interpreter::Evaluator for ZeroOp {
+impl Evaluator for ZeroOp {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         Some(interpreter::Value::Zero)
     }
