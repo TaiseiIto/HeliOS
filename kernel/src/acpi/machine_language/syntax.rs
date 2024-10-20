@@ -17,6 +17,7 @@ use {
         fmt,
         iter,
     },
+    crate::com2_println,
     super::{
         interpreter,
         name,
@@ -192,7 +193,14 @@ pub struct ArgObj(u8);
 impl interpreter::Evaluator for ArgObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
-        stack_frame.argument_value(*index as usize)
+        stack_frame.read_argument(*index as usize)
+    }
+}
+
+impl interpreter::Holder for ArgObj {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        let Self(index) = self;
+        stack_frame.write_argument(*index as usize, value)
     }
 }
 
@@ -713,6 +721,13 @@ pub struct DataRegionOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DebugObj(DebugOp);
 
+impl interpreter::Holder for DebugObj {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        com2_println!("AML DebugObj = {:#x?}", value);
+        value
+    }
+}
+
 /// # DebugOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.6.3 Debug Opects Encoding
@@ -756,6 +771,22 @@ pub struct DefAdd(
     [Operand; 2],
     Target,
 );
+
+impl interpreter::Evaluator for DefAdd {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _add_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        let evaluation: Option<interpreter::Value> = left
+            .zip(right)
+            .map(|(left, right)| left + right);
+        evaluation.map(|evaluation| target.hold(evaluation, stack_frame, root, current))
+    }
+}
 
 /// # DefAlias
 /// ## References
@@ -2107,6 +2138,7 @@ pub enum ExpressionOpcode {
 impl interpreter::Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
+            Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
@@ -2430,7 +2462,14 @@ pub struct LocalObj(u8);
 impl interpreter::Evaluator for LocalObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         let Self(index) = self;
-        stack_frame.local_value(*index as usize)
+        stack_frame.read_local(*index as usize)
+    }
+}
+
+impl interpreter::Holder for LocalObj {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        let Self(index) = self;
+        stack_frame.write_argument(*index as usize, value)
     }
 }
 
@@ -2562,7 +2601,13 @@ impl interpreter::Evaluator for MethodInvocation {
         let method: &DefMethod = root
             .get_method_from_current(&method)
             .unwrap();
-        unimplemented!("method = {:#x?}\nterm_args = {:#x?}", method, term_args)
+        let term_args: Vec<interpreter::Value> = term_args
+            .iter()
+            .filter_map(|term_arg| term_arg.evaluate(stack_frame, root, current))
+            .collect();
+        let mut stack_frame = interpreter::StackFrame::default()
+            .set_arguments(term_args);
+        method.evaluate(&mut stack_frame, root, current)
     }
 }
 
@@ -3669,6 +3714,16 @@ pub enum SimpleName {
     LocalObj(LocalObj),
 }
 
+impl interpreter::Holder for SimpleName {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        match self {
+            Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
+            Self::ArgObj(arg_obj) => arg_obj.hold(value, stack_frame, root, current),
+            Self::LocalObj(local_obj) => arg_obj.hold(value, stack_frame, root, current),
+        }
+    }
+}
+
 /// # SizeOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -3783,6 +3838,16 @@ pub enum SuperName {
     SimpleName(SimpleName),
 }
 
+impl interpreter::Holder for SuperName {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        match self {
+            Self::DebugObj(debug_obj) => debug_obj.hold(value, stack_frame, root, current),
+            Self::ReferenceTypeOpcode(reference_type_opcode) => unimplemented!("reference_type_opcode = {:#x?}", reference_type_opcode),
+            Self::SimpleName(simple_name) => simple_name.hold(value, stack_frame, root, current),
+        }
+    }
+}
+
 /// # SyncFlags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -3810,6 +3875,15 @@ pub enum Target {
     SuperName(Box::<SuperName>),
 }
 
+impl interpreter::Holder for Target {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        match self {
+            Self::NullName(_) => value,
+            Self::SuperName(super_name) => super_name.hold(value, stack_frame, root, current),
+        }
+    }
+}
+
 /// # TermArg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5 Term Objects Encoding
@@ -3823,7 +3897,12 @@ pub enum TermArg {
 
 impl interpreter::Evaluator for TermArg {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!("self = {:#x?}", self)
+        match self {
+            Self::ExpressionOpcode(expression_opcode) => expression_opcode.evaluate(stack_frame, root, current),
+            Self::DataObject(data_object) => data_object.evaluate(stack_frame, root, current),
+            Self::ArgObj(arg_obj) => arg_obj.evaluate(stack_frame, root, current),
+            Self::LocalObj(local_obj) => local_obj.evaluate(stack_frame, root, current),
+        }
     }
 }
 
@@ -3841,11 +3920,11 @@ impl interpreter::Evaluator for TermList {
         let Self(term_objs) = self;
         term_objs
             .iter()
-            .for_each(|term_obj| if stack_frame.return_value().is_none() {
+            .for_each(|term_obj| if stack_frame.read_return().is_none() {
                 term_obj.evaluate(stack_frame, root, current);
             });
         stack_frame
-            .return_value()
+            .read_return()
             .cloned()
     }
 }

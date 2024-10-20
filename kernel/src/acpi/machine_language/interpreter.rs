@@ -72,6 +72,54 @@ impl Value {
             _ => None,
         }
     }
+
+    fn match_type(self, other: Self) -> (Self, Self) {
+        match (self, other) {
+            (Self::Byte(left), Self::Zero) => (Self::Byte(left), Self::Byte(0x00)),
+            (Self::Byte(left), Self::One) => (Self::Byte(left), Self::Byte(0x01)),
+            (Self::Byte(left), Self::Ones) => (Self::Byte(left), Self::Byte(0xff)),
+            (Self::Byte(left), Self::Byte(right)) => (Self::Byte(left), Self::Byte(right)),
+            (Self::Byte(left), Self::Word(right)) => (Self::Word(left as u16), Self::Word(right)),
+            (Self::Byte(left), Self::DWord(right)) => (Self::DWord(left as u32), Self::DWord(right)),
+            (Self::Byte(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
+            (Self::Word(left), Self::Zero) => (Self::Word(left), Self::Word(0x0000)),
+            (Self::Word(left), Self::One) => (Self::Word(left), Self::Word(0x0001)),
+            (Self::Word(left), Self::Ones) => (Self::Word(left), Self::Word(0xffff)),
+            (Self::Word(left), Self::Byte(right)) => (Self::Word(left), Self::Word(right as u16)),
+            (Self::Word(left), Self::Word(right)) => (Self::Word(left), Self::Word(right)),
+            (Self::Word(left), Self::DWord(right)) => (Self::DWord(left as u32), Self::DWord(right)),
+            (Self::Word(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
+            (Self::DWord(left), Self::Zero) => (Self::DWord(left), Self::DWord(0x00000000)),
+            (Self::DWord(left), Self::One) => (Self::DWord(left), Self::DWord(0x00000001)),
+            (Self::DWord(left), Self::Ones) => (Self::DWord(left), Self::DWord(0xffffffff)),
+            (Self::DWord(left), Self::Byte(right)) => (Self::DWord(left), Self::DWord(right as u32)),
+            (Self::DWord(left), Self::Word(right)) => (Self::DWord(left), Self::DWord(right as u32)),
+            (Self::DWord(left), Self::DWord(right)) => (Self::DWord(left), Self::DWord(right)),
+            (Self::DWord(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
+            (Self::QWord(left), Self::Zero) => (Self::QWord(left), Self::QWord(0x0000000000000000)),
+            (Self::QWord(left), Self::One) => (Self::QWord(left), Self::QWord(0x0000000000000001)),
+            (Self::QWord(left), Self::Ones) => (Self::QWord(left), Self::QWord(0xffffffffffffffff)),
+            (Self::QWord(left), Self::Byte(right)) => (Self::QWord(left), Self::QWord(right as u64)),
+            (Self::QWord(left), Self::Word(right)) => (Self::QWord(left), Self::QWord(right as u64)),
+            (Self::QWord(left), Self::DWord(right)) => (Self::QWord(left), Self::QWord(right as u64)),
+            (Self::QWord(left), Self::QWord(right)) => (Self::QWord(left), Self::QWord(right)),
+            _ => unimplemented!("self = {:#x?}\nother = {:#x?}", self, other),
+        }
+    }
+}
+
+impl Add for Value {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        match self.match_type(other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left.wrapping_add(right)),
+            (Self::Word(left), Self::Word(right)) => Self::Word(left.wrapping_add(right)),
+            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left.wrapping_add(right)),
+            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left.wrapping_add(right)),
+            _ => unimplemented!("self = {:#x?}\nother = {:#x?}", self, other),
+        }
+    }
 }
 
 impl From<&Value> for bool {
@@ -100,57 +148,71 @@ impl From<&Value> for bool {
 
 #[derive(Clone, Debug, Default)]
 pub struct StackFrame {
-    argument_values: [Option<Value>; 0x07],
-    local_values: [Option<Value>; 0x08],
-    named_local_values: BTreeMap<String, Value>,
+    arguments: [Option<Value>; 0x07],
+    locals: [Option<Value>; 0x08],
+    named_locals: BTreeMap<String, Value>,
     return_value: Option<Value>,
 }
 
 impl StackFrame {
-    pub fn argument_value(&self, index: usize) -> Option<Value> {
-        self.argument_values[index].clone()
+    pub fn read_argument(&self, index: usize) -> Option<Value> {
+        self.arguments[index].clone()
     }
 
-    pub fn local_value(&self, index: usize) -> Option<Value> {
-        self.local_values[index].clone()
+    pub fn read_local(&self, index: usize) -> Option<Value> {
+        self.locals[index].clone()
     }
 
-    pub fn return_value(&self) -> Option<&Value> {
+    pub fn read_return(&self) -> Option<&Value> {
         self.return_value
             .as_ref()
     }
 
     pub fn set_arguments(self, arguments: Vec<Value>) -> Self {
         let Self {
-            argument_values,
-            local_values,
-            named_local_values,
+            arguments,
+            locals,
+            named_locals,
             return_value,
         } = self;
-        let argument_values: Vec<Option<Value>> = arguments
+        let arguments: Vec<Option<Value>> = arguments
             .into_iter()
             .map(Some)
-            .chain(argument_values
+            .chain(arguments
                 .as_slice()
                 .iter()
                 .map(|_| None))
-            .take(argument_values
+            .take(arguments
                 .as_slice()
                 .len())
             .collect();
-        let argument_values = argument_values
+        let arguments = arguments
             .try_into()
             .unwrap();
         Self {
-            argument_values,
-            local_values,
-            named_local_values,
+            arguments,
+            locals,
+            named_locals,
             return_value,
         }
+    }
+
+    pub fn write_argument(&mut self, index: usize, value: Value) -> Value {
+        self.arguments[index] = Some(value.clone());
+        value
+    }
+
+    pub fn write_local(&mut self, index; usize, value: Value) -> Value {
+        self.locals[index] = Some(value.clone());
+        value
     }
 }
 
 pub trait Evaluator {
     fn evaluate(&self, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Option<Value>;
+}
+
+pub trait Holder {
+    fn hold(&self, value: Value, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Value;
 }
 
