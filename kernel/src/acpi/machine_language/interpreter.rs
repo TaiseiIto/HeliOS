@@ -4,7 +4,10 @@ use {
         string::String,
         vec::Vec,
     },
-    core::ops::Add,
+    core::{
+        iter,
+        ops::Add,
+    },
     super::{
         name,
         reference,
@@ -104,7 +107,7 @@ impl Value {
             (Self::QWord(left), Self::Word(right)) => (Self::QWord(left), Self::QWord(right as u64)),
             (Self::QWord(left), Self::DWord(right)) => (Self::QWord(left), Self::QWord(right as u64)),
             (Self::QWord(left), Self::QWord(right)) => (Self::QWord(left), Self::QWord(right)),
-            _ => unimplemented!("self = {:#x?}\nother = {:#x?}", self, other),
+            (left, right)  => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
 }
@@ -118,7 +121,7 @@ impl Add for Value {
             (Self::Word(left), Self::Word(right)) => Self::Word(left.wrapping_add(right)),
             (Self::DWord(left), Self::DWord(right)) => Self::DWord(left.wrapping_add(right)),
             (Self::QWord(left), Self::QWord(right)) => Self::QWord(left.wrapping_add(right)),
-            _ => unimplemented!("self = {:#x?}\nother = {:#x?}", self, other),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
 }
@@ -176,15 +179,13 @@ impl StackFrame {
             named_locals,
             return_value,
         } = self;
+        let num_of_arguments: usize = arguments
+            .as_slice()
+            .len();
         let arguments: Vec<Option<Value>> = arguments
             .into_iter()
-            .chain(arguments
-                .as_slice()
-                .iter()
-                .map(|_| None))
-            .take(arguments
-                .as_slice()
-                .len())
+            .chain(iter::repeat(None).take(num_of_arguments))
+            .take(num_of_arguments)
             .collect();
         let arguments = arguments
             .try_into()
