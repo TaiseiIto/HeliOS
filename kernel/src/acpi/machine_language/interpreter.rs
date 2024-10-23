@@ -5,6 +5,7 @@ use {
         vec::Vec,
     },
     core::{
+        cmp::Ordering,
         iter,
         ops::Add,
     },
@@ -14,7 +15,7 @@ use {
     },
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq)]
 pub enum Value {
     Bool(bool),
     Buffer(Vec<u8>),
@@ -77,36 +78,63 @@ impl Value {
         }
     }
 
-    fn match_type(self, other: Self) -> (Self, Self) {
+    fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
-            (Self::Byte(left), Self::Zero) => (Self::Byte(left), Self::Byte(0x00)),
-            (Self::Byte(left), Self::One) => (Self::Byte(left), Self::Byte(0x01)),
-            (Self::Byte(left), Self::Ones) => (Self::Byte(left), Self::Byte(0xff)),
-            (Self::Byte(left), Self::Byte(right)) => (Self::Byte(left), Self::Byte(right)),
-            (Self::Byte(left), Self::Word(right)) => (Self::Word(left as u16), Self::Word(right)),
-            (Self::Byte(left), Self::DWord(right)) => (Self::DWord(left as u32), Self::DWord(right)),
-            (Self::Byte(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
-            (Self::Word(left), Self::Zero) => (Self::Word(left), Self::Word(0x0000)),
-            (Self::Word(left), Self::One) => (Self::Word(left), Self::Word(0x0001)),
-            (Self::Word(left), Self::Ones) => (Self::Word(left), Self::Word(0xffff)),
-            (Self::Word(left), Self::Byte(right)) => (Self::Word(left), Self::Word(right as u16)),
-            (Self::Word(left), Self::Word(right)) => (Self::Word(left), Self::Word(right)),
-            (Self::Word(left), Self::DWord(right)) => (Self::DWord(left as u32), Self::DWord(right)),
-            (Self::Word(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
-            (Self::DWord(left), Self::Zero) => (Self::DWord(left), Self::DWord(0x00000000)),
-            (Self::DWord(left), Self::One) => (Self::DWord(left), Self::DWord(0x00000001)),
-            (Self::DWord(left), Self::Ones) => (Self::DWord(left), Self::DWord(0xffffffff)),
-            (Self::DWord(left), Self::Byte(right)) => (Self::DWord(left), Self::DWord(right as u32)),
-            (Self::DWord(left), Self::Word(right)) => (Self::DWord(left), Self::DWord(right as u32)),
-            (Self::DWord(left), Self::DWord(right)) => (Self::DWord(left), Self::DWord(right)),
-            (Self::DWord(left), Self::QWord(right)) => (Self::QWord(left as u64), Self::QWord(right)),
-            (Self::QWord(left), Self::Zero) => (Self::QWord(left), Self::QWord(0x0000000000000000)),
-            (Self::QWord(left), Self::One) => (Self::QWord(left), Self::QWord(0x0000000000000001)),
-            (Self::QWord(left), Self::Ones) => (Self::QWord(left), Self::QWord(0xffffffffffffffff)),
-            (Self::QWord(left), Self::Byte(right)) => (Self::QWord(left), Self::QWord(right as u64)),
-            (Self::QWord(left), Self::Word(right)) => (Self::QWord(left), Self::QWord(right as u64)),
-            (Self::QWord(left), Self::DWord(right)) => (Self::QWord(left), Self::QWord(right as u64)),
-            (Self::QWord(left), Self::QWord(right)) => (Self::QWord(left), Self::QWord(right)),
+            (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
+            (Self::Buffer(left), Self::Buffer(right)) => (Self::Buffer(left.clone()), Self::Buffer(right.clone())),
+            (Self::Byte(left), Self::Byte(right)) => (Self::Byte(*left), Self::Byte(*right)),
+            (Self::Byte(left), Self::DWord(right)) => (Self::DWord(*left as u32), Self::DWord(*right)),
+            (Self::Byte(left), Self::One) => (Self::Byte(*left), Self::Byte(0x01)),
+            (Self::Byte(left), Self::Ones) => (Self::Byte(*left), Self::Byte(0xff)),
+            (Self::Byte(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
+            (Self::Byte(left), Self::Word(right)) => (Self::Word(*left as u16), Self::Word(*right)),
+            (Self::Byte(left), Self::Zero) => (Self::Byte(*left), Self::Byte(0x00)),
+            (Self::Char(left), Self::Char(right)) => (Self::Char(*left), Self::Char(*right)),
+            (Self::DWord(left), Self::Byte(right)) => (Self::DWord(*left), Self::DWord(*right as u32)),
+            (Self::DWord(left), Self::DWord(right)) => (Self::DWord(*left), Self::DWord(*right)),
+            (Self::DWord(left), Self::One) => (Self::DWord(*left), Self::DWord(0x00000001)),
+            (Self::DWord(left), Self::Ones) => (Self::DWord(*left), Self::DWord(0xffffffff)),
+            (Self::DWord(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
+            (Self::DWord(left), Self::Word(right)) => (Self::DWord(*left), Self::DWord(*right as u32)),
+            (Self::DWord(left), Self::Zero) => (Self::DWord(*left), Self::DWord(0x00000000)),
+            (Self::One, Self::Byte(right)) => (Self::Byte(0x01), Self::Byte(*right)),
+            (Self::One, Self::DWord(right)) => (Self::DWord(0x00000001), Self::DWord(*right)),
+            (Self::One, Self::One) => (Self::One, Self::One),
+            (Self::One, Self::Ones) => (Self::One, Self::Ones),
+            (Self::One, Self::QWord(right)) => (Self::QWord(0x0000000000000001), Self::QWord(*right)),
+            (Self::One, Self::Word(right)) => (Self::Word(0x0001), Self::Word(*right)),
+            (Self::One, Self::Zero) => (Self::One, Self::Zero),
+            (Self::Ones, Self::Byte(right)) => (Self::Byte(0xff), Self::Byte(*right)),
+            (Self::Ones, Self::DWord(right)) => (Self::DWord(0xffffffff), Self::DWord(*right)),
+            (Self::Ones, Self::One) => (Self::Ones, Self::One),
+            (Self::Ones, Self::Ones) => (Self::Ones, Self::Ones),
+            (Self::Ones, Self::QWord(right)) => (Self::QWord(0xffffffffffffffff), Self::QWord(*right)),
+            (Self::Ones, Self::Word(right)) => (Self::Word(0xffff), Self::Word(*right)),
+            (Self::Ones, Self::Zero) => (Self::Ones, Self::Zero),
+            (Self::Package(left), Self::Package(right)) => (Self::Package(left.clone()), Self::Package(right.clone())),
+            (Self::QWord(left), Self::Byte(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
+            (Self::QWord(left), Self::DWord(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
+            (Self::QWord(left), Self::One) => (Self::QWord(*left), Self::QWord(0x0000000000000001)),
+            (Self::QWord(left), Self::Ones) => (Self::QWord(*left), Self::QWord(0xffffffffffffffff)),
+            (Self::QWord(left), Self::QWord(right)) => (Self::QWord(*left), Self::QWord(*right)),
+            (Self::QWord(left), Self::Word(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
+            (Self::QWord(left), Self::Zero) => (Self::QWord(*left), Self::QWord(0x0000000000000000)),
+            (Self::Revision, Self::Revision) => (Self::Revision, Self::Revision),
+            (Self::String(left), Self::String(right)) => (Self::String(left.clone()), Self::String(right.clone())),
+            (Self::Word(left), Self::Byte(right)) => (Self::Word(*left), Self::Word(*right as u16)),
+            (Self::Word(left), Self::DWord(right)) => (Self::DWord(*left as u32), Self::DWord(*right)),
+            (Self::Word(left), Self::One) => (Self::Word(*left), Self::Word(0x0001)),
+            (Self::Word(left), Self::Ones) => (Self::Word(*left), Self::Word(0xffff)),
+            (Self::Word(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
+            (Self::Word(left), Self::Word(right)) => (Self::Word(*left), Self::Word(*right)),
+            (Self::Word(left), Self::Zero) => (Self::Word(*left), Self::Word(0x0000)),
+            (Self::Zero, Self::Byte(right)) => (Self::Byte(0x00), Self::Byte(*right)),
+            (Self::Zero, Self::DWord(right)) => (Self::DWord(0x00000000), Self::DWord(*right)),
+            (Self::Zero, Self::One) => (Self::Zero, Self::One),
+            (Self::Zero, Self::Ones) => (Self::Zero, Self::Ones),
+            (Self::Zero, Self::QWord(right)) => (Self::QWord(0x0000000000000000), Self::QWord(*right)),
+            (Self::Zero, Self::Word(right)) => (Self::Word(0x0000), Self::Word(*right)),
+            (Self::Zero, Self::Zero) => (Self::Zero, Self::Zero),
             (left, right)  => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
@@ -116,11 +144,71 @@ impl Add for Value {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        match self.match_type(other) {
+        match self.match_type(&other) {
             (Self::Byte(left), Self::Byte(right)) => Self::Byte(left.wrapping_add(right)),
             (Self::Word(left), Self::Word(right)) => Self::Word(left.wrapping_add(right)),
             (Self::DWord(left), Self::DWord(right)) => Self::DWord(left.wrapping_add(right)),
             (Self::QWord(left), Self::QWord(right)) => Self::QWord(left.wrapping_add(right)),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+        }
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<Vec<u8>> for Value {
+    fn from(value: Vec<u8>) -> Self {
+        Self::Buffer(value)
+    }
+}
+
+impl From<bool> for Value {
+    fn from(value: bool) -> Self {
+        Self::Bool(value)
+    }
+}
+
+impl From<char> for Value {
+    fn from(value: char) -> Self {
+        Self::Char(value)
+    }
+}
+
+impl From<u8> for Value {
+    fn from(value: u8) -> Self {
+        Self::Byte(value)
+    }
+}
+
+impl From<u16> for Value {
+    fn from(value: u16) -> Self {
+        Self::Word(value)
+    }
+}
+
+impl From<u32> for Value {
+    fn from(value: u32) -> Self {
+        Self::DWord(value)
+    }
+}
+
+impl From<u64> for Value {
+    fn from(value: u64) -> Self {
+        Self::QWord(value)
+    }
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.match_type(other) {
+            (Self::Byte(left), Self::Byte(right)) => left.partial_cmp(&right),
+            (Self::Word(left), Self::Word(right)) => left.partial_cmp(&right),
+            (Self::DWord(left), Self::DWord(right)) => left.partial_cmp(&right),
+            (Self::QWord(left), Self::QWord(right)) => left.partial_cmp(&right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }

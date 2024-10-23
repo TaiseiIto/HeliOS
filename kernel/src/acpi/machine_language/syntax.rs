@@ -1347,6 +1347,20 @@ pub struct DefLGreaterEqual(
     [Operand; 2],
 );
 
+impl Evaluator for DefLGreaterEqual {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _l_greater_equal_op,
+            [left, right],
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| (left >= right).into())
+    }
+}
+
 /// # DefLLess
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1817,6 +1831,19 @@ pub struct DefStore(
     SuperName,
 );
 
+impl Evaluator for DefStore {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _store_op,
+            term_arg,
+            super_name,
+        ) = self;
+        term_arg
+            .evaluate(stack_frame, root, current)
+            .map(|term_arg| super_name.hold(term_arg, stack_frame, root, current))
+    }
+}
+
 /// # DefSubtract
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2144,6 +2171,7 @@ impl Evaluator for ExpressionOpcode {
         match self {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
+            Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }
