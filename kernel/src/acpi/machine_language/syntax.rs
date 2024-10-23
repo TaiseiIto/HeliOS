@@ -2170,6 +2170,7 @@ impl Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
+            Self::LGreaderEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
