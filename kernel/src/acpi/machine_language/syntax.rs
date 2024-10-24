@@ -359,6 +359,13 @@ pub struct BufferOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BufferSize(TermArg);
 
+impl Evaluator for BufferSize {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # ByteConst
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -925,10 +932,27 @@ impl Evaluator for DefBuffer {
         let Self(
             _buffer_op,
             _pkg_length,
-            _buffer_size,
+            buffer_size,
             byte_list,
         ) = self;
-        byte_list.evaluate(stack_frame, root, current)
+        let buffer_size: usize = buffer_size
+            .evaluate(stack_frame, root, current)
+            .as_ref()
+            .unwrap()
+            .into();
+        let byte_list: Vec<u8> = byte_list
+            .evaluate(stack_frame, root, current)
+            .as_ref()
+            .unwrap()
+            .into();
+        let buffer: Vec<u8> = byte_list
+            .into_iter()
+            .chain(iter::repeat(0)
+                .take(buffer_size))
+            .take(buffer_size)
+            .collect();
+        let buffer: interpreter::Value = buffer.into();
+        Some(buffer)
     }
 }
 
@@ -1606,9 +1630,15 @@ impl Evaluator for DefName {
             name_string,
             data_ref_object,
         ) = self;
-        let name_string: name::Path = name_string.into();
-        let current: name::Path = current.clone() + name_string;
-        data_ref_object.evaluate(stack_frame, root, &current)
+        let path: name::Path = name_string.into();
+        let current: name::Path = current.clone() + path;
+        let name: String = name_string.into();
+        let data_ref_object: Option<interpreter::Value> = data_ref_object.evaluate(stack_frame, root, &current);
+        if let Some(data_ref_object) = data_ref_object.as_ref() {
+            stack_frame.add_named_local(&name, data_ref_object);
+        }
+        com2_println!("stack_frame = {:#x?}", stack_frame);
+        data_ref_object
     }
 }
 
@@ -2969,6 +2999,16 @@ pub enum NameSpaceModifierObj {
     Scope(DefScope),
 }
 
+impl Evaluator for NameSpaceModifierObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::Alias(def_alias) => unimplemented!("def_alias = {:#x?}", def_alias),
+            Self::Name(def_name) => def_name.evaluate(stack_frame, root, current),
+            Self::Scope(def_scope) => unimplemented!("def_scope = {:#x?}", def_scope),
+        }
+    }
+}
+
 /// # NameString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -3198,7 +3238,10 @@ pub enum Object {
 
 impl Evaluator for Object {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        unimplemented!("self = {:#x?}", self)
+        match self {
+            Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.evaluate(stack_frame, root, current),
+            Self::NamedObj(named_obj) => unimplemented!("named_obj = {:#x?}", named_obj),
+        }
     }
 }
 

@@ -226,6 +226,15 @@ impl PartialOrd for Value {
     }
 }
 
+impl From<&Value> for Vec<u8> {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Buffer(buffer) => buffer.clone(),
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
 impl From<&Value> for bool {
     fn from(value: &Value) -> Self {
         match value {
@@ -250,6 +259,21 @@ impl From<&Value> for bool {
     }
 }
 
+impl From<&Value> for usize {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Byte(byte) => *byte as Self,
+            Value::DWord(dword) => *dword as Self,
+            Value::One => 1,
+            Value::Ones => usize::MAX,
+            Value::QWord(qword) => *qword as Self,
+            Value::Word(word) => *word as Self,
+            Value::Zero => 0,
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct StackFrame {
     arguments: [Option<Value>; 0x07],
@@ -259,6 +283,10 @@ pub struct StackFrame {
 }
 
 impl StackFrame {
+    pub fn add_named_local(&mut self, name: &str, value: &Value) {
+        self.named_locals.insert(name.into(), value.clone());
+    }
+
     pub fn read_argument(&self, index: usize) -> Option<Value> {
         self.arguments[index].clone()
     }
