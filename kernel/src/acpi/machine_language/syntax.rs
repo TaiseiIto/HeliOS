@@ -214,6 +214,13 @@ impl Holder for ArgObj {
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ArgObject(TermArg);
 
+impl Evaluator for ArgObject {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # ArgumentCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1750,6 +1757,18 @@ pub struct DefReturn(
     ReturnOp,
     ArgObject,
 );
+
+impl Evaluator for DefReturn {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _return_op,
+            arg_object,
+        ) = self;
+        arg_object
+            .evaluate(stack_frame, root, current)
+            .map(|arg_object| stack_frame.write_return(arg_object))
+    }
+}
 
 /// # DefScope
 /// ## References
@@ -3819,6 +3838,7 @@ impl Evaluator for StatementOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
+            Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }

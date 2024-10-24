@@ -296,6 +296,11 @@ impl StackFrame {
         self.locals[index] = Some(value.clone());
         value
     }
+
+    pub fn write_return(&mut self, value: Value) -> Value {
+        self.return_value = Some(value.clone());
+        value
+    }
 }
 
 pub trait Evaluator {
