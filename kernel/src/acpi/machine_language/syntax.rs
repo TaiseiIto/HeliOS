@@ -1822,6 +1822,19 @@ pub struct DefSizeOf(
     SuperName,
 );
 
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.124 SizeOf (Get Data Object Size)
+impl Evaluator for DefSizeOf {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _size_of_op,
+            super_name,
+        ) = self;
+        super_name
+            .evaluate(stack_frame, root, current)
+            .map(|super_name| super_name.size())
+    }
+}
+
 /// # DefSleep
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -3773,6 +3786,16 @@ pub enum SimpleName {
     LocalObj(LocalObj),
 }
 
+impl Evaluator for SimpleName {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
+            Self::ArgObj(arg_obj) => arg_obj.evaluate(stack_frame, root, current),
+            Self::LocalObj(local_obj) => local_obj.evaluate(stack_frame, root, current),
+        }
+    }
+}
+
 impl Holder for SimpleName {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         match self {
@@ -3896,6 +3919,16 @@ pub enum SuperName {
     DebugObj(DebugObj),
     ReferenceTypeOpcode(ReferenceTypeOpcode),
     SimpleName(SimpleName),
+}
+
+impl Evaluator for SuperName {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::DebugObj(debug_obj) => unreachable!("debug_obj = {:#x?}", debug_obj),
+            Self::ReferenceTypeOpcode(reference_type_opcode) => unimplemented!("reference_type_opcode = {:#x?}", reference_type_opcode),
+            Self::SimpleName(simple_name) => simple_name.evaluate(stack_frame, root, current),
+        }
+    }
 }
 
 impl Holder for SuperName {

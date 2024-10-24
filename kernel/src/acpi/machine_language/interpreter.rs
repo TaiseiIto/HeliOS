@@ -78,6 +78,18 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.124 SizeOf (Get Data Object Size)
+    pub fn size(&self) -> Self {
+        let size: usize = match self {
+            Self::Buffer(buffer) => buffer.len(),
+            Self::String(string) => string.len(),
+            Self::Package(package) => package.len(),
+            value => unreachable!("value = {:#x?}", value),
+        };
+        let size: u64 = size as u64;
+        Self::QWord(size)
+    }
+
     fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
