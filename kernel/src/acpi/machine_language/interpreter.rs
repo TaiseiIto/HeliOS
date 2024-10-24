@@ -260,7 +260,7 @@ impl StackFrame {
             .as_ref()
     }
 
-    pub fn set_arguments(self, arguments: Vec<Value>) -> Self {
+    pub fn set_arguments(self, new_arguments: Vec<Value>) -> Self {
         let Self {
             arguments,
             locals,
@@ -270,8 +270,9 @@ impl StackFrame {
         let num_of_arguments: usize = arguments
             .as_slice()
             .len();
-        let arguments: Vec<Option<Value>> = arguments
+        let arguments: Vec<Option<Value>> = new_arguments
             .into_iter()
+            .map(Some)
             .chain(iter::repeat(None).take(num_of_arguments))
             .take(num_of_arguments)
             .collect();
