@@ -2339,6 +2339,7 @@ impl Evaluator for ExpressionOpcode {
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
+            Self::DerefOf(def_deref_of) => def_deref_of.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }
