@@ -1308,10 +1308,9 @@ impl Evaluator for DefIfElse {
             ),
             def_else,
         ) = self;
-        let predicate: interpreter::Value = predicate
+        if predicate
             .evaluate(stack_frame, root, current)
-            .unwrap();
-        if (&predicate).into() {
+            .map_or(false, |predicate| (&predicate).into()) {
             term_list.evaluate(stack_frame, root, current)
         } else {
             def_else
@@ -2065,6 +2064,23 @@ pub struct DefWhile(
     #[no_leftover]
     TermList,
 );
+
+impl Evaluator for DefWhile {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _while_op,
+            _pkg_length,
+            predicate,
+            term_list,
+        ) = self;
+        while predicate
+            .evaluate(stack_frame, root, current)
+            .map_or(false, |predicate| (&predicate).into()) {
+            term_list.evaluate(stack_frame, root, current);
+        }
+        None
+    }
+}
 
 /// # DefXOr
 /// ## References
@@ -3944,6 +3960,7 @@ impl Evaluator for StatementOpcode {
         match self {
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
+            Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }
