@@ -9,6 +9,7 @@ use {
         iter,
         ops::{
             Add,
+            BitAnd,
             Sub,
         },
     },
@@ -174,6 +175,20 @@ impl Add for Value {
             (Self::Word(left), Self::Word(right)) => Self::Word(left + right),
             (Self::DWord(left), Self::DWord(right)) => Self::DWord(left + right),
             (Self::QWord(left), Self::QWord(right)) => Self::QWord(left + right),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+        }
+    }
+}
+
+impl BitAnd for Value {
+    type Output = Self;
+
+    fn bitand(self, other: Self) -> Self {
+        match self.match_type(&other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left & right),
+            (Self::Word(left), Self::Word(right)) => Self::Word(left & right),
+            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left & right),
+            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left & right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }

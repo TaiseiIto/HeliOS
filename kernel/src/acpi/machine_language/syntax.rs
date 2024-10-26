@@ -924,6 +924,22 @@ pub struct DefAnd(
     Target,
 );
 
+impl Evaluator for DefAnd {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _and_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        let value: Option<interpreter::Value> = left
+            .zip(right)
+            .map(|(left, right)| left & right);
+        value.map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
+
 /// # DefBankField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2332,6 +2348,7 @@ impl Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
+            Self::And(def_and) => def_and.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
