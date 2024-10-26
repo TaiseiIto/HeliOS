@@ -64,7 +64,9 @@ impl Value {
         }
     }
 
-    pub fn get_element(&self, index: usize) -> Option<Self> {
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.62 Index (Indexed Reference To Member Object)
+    pub fn index(&self, index: &Self) -> Option<Self> {
+        let index: usize = index.into();
         match self {
             Self::Buffer(bytes) => bytes
                 .get(index)

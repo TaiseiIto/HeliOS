@@ -308,17 +308,38 @@ pub struct BankFieldOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BankValue(TermArg);
 
+impl Evaluator for BankValue {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # BcdValue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BcdValue(TermArg);
 
+impl Evaluator for BcdValue {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # BitIndex
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BitIndex(TermArg);
+
+impl Evaluator for BitIndex {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # BreakOp
 /// ## References
@@ -340,11 +361,25 @@ pub struct BreakPointOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BufData(TermArg);
 
+impl Evaluator for BufData {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # BuffPkgStrObj
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct BuffPkgStrObj(TermArg);
+
+impl Evaluator for BuffPkgStrObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # BufferOp
 /// ## References
@@ -799,10 +834,10 @@ impl Evaluator for DefAdd {
         ) = self;
         let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
         let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
-        let evaluation: Option<interpreter::Value> = left
+        let value: Option<interpreter::Value> = left
             .zip(right)
             .map(|(left, right)| left + right);
-        evaluation.map(|evaluation| target.hold(evaluation, stack_frame, root, current))
+        value.map(|value| target.hold(value, stack_frame, root, current))
     }
 }
 
@@ -1109,6 +1144,16 @@ pub struct DefDerefOf(
     ObjReference,
 );
 
+impl Evaluator for DefDerefOf {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _deref_of_op,
+            obj_reference,
+        ) = self;
+        obj_reference.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # DefDevice
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -1351,6 +1396,23 @@ pub struct DefIndex(
     IndexValue,
     Target,
 );
+
+impl Evaluator for DefIndex {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _index_op,
+            buff_pkg_str_obj,
+            index_value,
+            target,
+        ) = self;
+        let buff_pkg_str_obj: Option<interpreter::Value> = buff_pkg_str_obj.evaluate(stack_frame, root, current);
+        let index_value: Option<interpreter::Value> = index_value.evaluate(stack_frame, root, current);
+        let value: Option<interpreter::Value> = buff_pkg_str_obj
+            .zip(index_value)
+            .and_then(|(buff_pkg_str_obj, index_value)| buff_pkg_str_obj.index(&index_value));
+        value.map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
 
 /// # DefIndexField
 /// ## References
@@ -2466,6 +2528,13 @@ pub struct IndexOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct IndexValue(TermArg);
 
+impl Evaluator for IndexValue {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # LAndOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2543,6 +2612,13 @@ pub struct LOrOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct LengthArg(TermArg);
+
+impl Evaluator for LengthArg {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # LoadOp
 /// ## References
@@ -2808,6 +2884,13 @@ pub struct MethodOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MidObj(TermArg);
 
+impl Evaluator for MidObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # MidOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2827,6 +2910,13 @@ pub struct ModOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MsecTime(TermArg);
+
+impl Evaluator for MsecTime {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # MultiNamePath
 /// ## References
@@ -3249,6 +3339,13 @@ pub struct NotifyOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NotifyValue(TermArg);
 
+impl Evaluator for NotifyValue {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # NullChar
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.3 Data Objects Encoding
@@ -3269,6 +3366,12 @@ pub struct NullName(char);
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct NumBits(TermArg);
 
+impl Evaluator for NumBits {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 /// # NumElements
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -3280,6 +3383,13 @@ pub struct NumElements(ByteData);
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ObjReference(TermArg);
+
+impl Evaluator for ObjReference {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # Object
 /// ## References
@@ -3697,11 +3807,25 @@ pub struct RefOfOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct RegionLen(TermArg);
 
+impl Evaluator for RegionLen {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # RegionOffset
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct RegionOffset(TermArg);
+
+impl Evaluator for RegionOffset {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # RegionSpace
 /// ## References
@@ -3824,6 +3948,13 @@ pub struct ScopeOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SearchPkg(TermArg);
 
+impl Evaluator for SearchPkg {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # SegCount
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
@@ -3842,6 +3973,13 @@ impl From<&SegCount> for usize {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.2 Name Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct ShiftCount(TermArg);
+
+impl Evaluator for ShiftCount {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # ShiftLeftOp
 /// ## References
@@ -3934,6 +4072,13 @@ pub struct SleepOpSuffix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct SourceBuff(TermArg);
 
+impl Evaluator for SourceBuff {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # StatementOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -3988,6 +4133,13 @@ pub struct StallOpSuffix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct StartIndex(TermArg);
+
+impl Evaluator for StartIndex {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # StoreOp
 /// ## References
@@ -4246,6 +4398,13 @@ pub struct Underscore(char);
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct UsecTime(TermArg);
 
+impl Evaluator for UsecTime {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # VarPackageOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -4258,6 +4417,13 @@ pub struct VarPackageOp;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct VarNumElements(TermArg);
+
+impl Evaluator for VarNumElements {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # WaitOp
 /// ## References

@@ -167,12 +167,12 @@ impl Table {
         com2_println!("s5 = {:#x?}", s5);
         let pm1a_cnt_slp_typ: Option<u8> = s5
             .as_ref()
-            .and_then(|s5| s5.get_element(0))
+            .and_then(|s5| s5.index(&machine_language::interpreter::Value::QWord(0)))
             .and_then(|pm1a_cnt_slp_typ| pm1a_cnt_slp_typ.get_byte());
         com2_println!("pm1a_cnt_slp_typ = {:#x?}", pm1a_cnt_slp_typ);
         let pm1b_cnt_slp_typ: Option<u8> = s5
             .as_ref()
-            .and_then(|s5| s5.get_element(1))
+            .and_then(|s5| s5.index(&machine_language::interpreter::Value::QWord(1)))
             .and_then(|pm1b_cnt_slp_typ| pm1b_cnt_slp_typ.get_byte());
         com2_println!("pm1b_cnt_slp_typ = {:#x?}", pm1b_cnt_slp_typ);
         if let Some((pm1a_control, pm1a_cnt_slp_typ)) = pm1a_control.zip(pm1a_cnt_slp_typ) {
