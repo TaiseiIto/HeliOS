@@ -982,8 +982,7 @@ impl Evaluator for DefBuffer {
             .into();
         let buffer: Vec<u8> = byte_list
             .into_iter()
-            .chain(iter::repeat(0)
-                .take(buffer_size))
+            .chain(iter::repeat(0))
             .take(buffer_size)
             .collect();
         let buffer: interpreter::Value = buffer.into();

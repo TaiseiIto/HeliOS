@@ -346,7 +346,7 @@ impl StackFrame {
         let arguments: Vec<Option<Value>> = new_arguments
             .into_iter()
             .map(Some)
-            .chain(iter::repeat(None).take(num_of_arguments))
+            .chain(iter::repeat(None))
             .take(num_of_arguments)
             .collect();
         let arguments = arguments
