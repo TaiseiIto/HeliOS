@@ -242,7 +242,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
@@ -479,7 +479,7 @@ impl PartialEq for AbsolutePath {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Segment {
     Child {
         name: String,
