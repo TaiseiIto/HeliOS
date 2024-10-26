@@ -295,16 +295,18 @@ impl StackFrame {
         self.named_locals.insert(name.clone(), value);
     }
 
-    pub fn has_local(&self, name: &name::Path) -> bool {
-        self.named_locals.contains_key(name)
-    }
-
     pub fn read_argument(&self, index: usize) -> Option<Value> {
         self.arguments[index].clone()
     }
 
     pub fn read_local(&self, index: usize) -> Option<Value> {
         self.locals[index].clone()
+    }
+
+    pub fn read_named_local(&self, name: &name::Path) -> Option<Value> {
+        self.named_locals
+            .get(name)
+            .cloned()
     }
 
     pub fn read_return(&self) -> Option<&Value> {
