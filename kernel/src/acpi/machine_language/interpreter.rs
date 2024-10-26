@@ -94,6 +94,14 @@ impl Value {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
             (Self::Buffer(left), Self::Buffer(right)) => (Self::Buffer(left.clone()), Self::Buffer(right.clone())),
+            (Self::Buffer(left), Self::String(right)) => {
+                let right: Vec<u8> = right
+                    .bytes()
+                    .chain(iter::repeat(0x00))
+                    .take(left.len())
+                    .collect();
+                (Self::Buffer(left), Self::Buffer(right))
+            },
             (Self::Byte(left), Self::Byte(right)) => (Self::Byte(*left), Self::Byte(*right)),
             (Self::Byte(left), Self::DWord(right)) => (Self::DWord(*left as u32), Self::DWord(*right)),
             (Self::Byte(left), Self::One) => (Self::Byte(*left), Self::Byte(0x01)),
