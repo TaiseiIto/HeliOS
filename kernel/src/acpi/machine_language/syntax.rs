@@ -3060,8 +3060,8 @@ impl Holder for NameString {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let name: String = self.into();
         stack_frame
-            .write_named_local(&name, value)
-            .unwrap_or(unimplemented!("self = {:#x?}, value = {:#x?}", self, value))
+            .write_named_local(&name, value.clone())
+            .unwrap_or_else(|| unimplemented!("self = {:#x?}, value = {:#x?}", self, value))
     }
 }
 

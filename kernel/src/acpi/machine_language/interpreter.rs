@@ -346,7 +346,7 @@ impl StackFrame {
             .get_mut(name)
             .map(|named_local| {
                 let (_named_local, value): (Value, Value) = named_local
-                    .match_type(value);
+                    .match_type(&value);
                 *named_local = value.clone();
                 value
             })
