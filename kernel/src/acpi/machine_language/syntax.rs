@@ -1632,7 +1632,7 @@ impl Evaluator for DefName {
         ) = self;
         let path: name::Path = name_string.into();
         let current: name::Path = current.clone() + path;
-        let name: String = name_string.into();
+        let name: name::Path = name_string.into();
         let data_ref_object: Option<interpreter::Value> = data_ref_object.evaluate(stack_frame, root, &current);
         if let Some(data_ref_object) = data_ref_object.as_ref() {
             stack_frame.add_named_local(&name, data_ref_object.clone());
@@ -3058,7 +3058,7 @@ impl From<&NameString> for VecDeque<name::Segment> {
 
 impl Holder for NameString {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
-        let name: String = self.into();
+        let name: name::Path = self.into();
         stack_frame
             .write_named_local(&name, value.clone())
             .unwrap_or_else(|| unimplemented!("self = {:#x?}, value = {:#x?}", self, value))

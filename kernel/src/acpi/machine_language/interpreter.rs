@@ -286,16 +286,16 @@ impl From<&Value> for usize {
 pub struct StackFrame {
     arguments: [Option<Value>; 0x07],
     locals: [Option<Value>; 0x08],
-    named_locals: BTreeMap<String, Value>,
+    named_locals: BTreeMap<name::Path, Value>,
     return_value: Option<Value>,
 }
 
 impl StackFrame {
-    pub fn add_named_local(&mut self, name: &str, value: Value) {
-        self.named_locals.insert(name.into(), value);
+    pub fn add_named_local(&mut self, name: &name::Path, value: Value) {
+        self.named_locals.insert(name.clone(), value);
     }
 
-    pub fn has_local(&self, name: &str) -> bool {
+    pub fn has_local(&self, name: &name::Path) -> bool {
         self.named_locals.contains_key(name)
     }
 
@@ -349,7 +349,7 @@ impl StackFrame {
         value
     }
 
-    pub fn write_named_local(&mut self, name: &str, value: Value) -> Option<Value> {
+    pub fn write_named_local(&mut self, name: &name::Path, value: Value) -> Option<Value> {
         self.named_locals
             .get_mut(name)
             .map(|named_local| {
