@@ -2335,6 +2335,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
+            Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
