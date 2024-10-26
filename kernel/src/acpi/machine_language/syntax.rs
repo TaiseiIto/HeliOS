@@ -2565,7 +2565,7 @@ impl Evaluator for LocalObj {
 impl Holder for LocalObj {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let Self(index) = self;
-        stack_frame.write_argument(*index as usize, value)
+        stack_frame.write_local(*index as usize, value)
     }
 }
 
