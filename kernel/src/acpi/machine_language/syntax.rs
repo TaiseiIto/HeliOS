@@ -1088,6 +1088,18 @@ pub struct DefDecrement(
     SuperName,
 );
 
+impl Evaluator for DefDecrement {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _decrement_op,
+            super_name,
+        ) = self;
+        super_name
+            .evaluate(stack_frame, root, current)
+            .map(|super_name| super_name - interpreter::Value::One)
+    }
+}
+
 /// # DefDerefOf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1317,6 +1329,18 @@ pub struct DefIncrement(
     IncrementOp,
     SuperName,
 );
+
+impl Evaluator for DefIncrement {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _decrement_op,
+            super_name,
+        ) = self;
+        super_name
+            .evaluate(stack_frame, root, current)
+            .map(|super_name| super_name + interpreter::Value::One)
+    }
+}
 
 /// # DefIndex
 /// ## References
@@ -1637,7 +1661,6 @@ impl Evaluator for DefName {
         if let Some(data_ref_object) = data_ref_object.as_ref() {
             stack_frame.add_named_local(&name, data_ref_object.clone());
         }
-        com2_println!("stack_frame = {:#x?}", stack_frame);
         data_ref_object
     }
 }
