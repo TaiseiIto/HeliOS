@@ -1635,7 +1635,7 @@ impl Evaluator for DefName {
         let name: String = name_string.into();
         let data_ref_object: Option<interpreter::Value> = data_ref_object.evaluate(stack_frame, root, &current);
         if let Some(data_ref_object) = data_ref_object.as_ref() {
-            stack_frame.add_named_local(&name, data_ref_object);
+            stack_frame.add_named_local(&name, data_ref_object.clone());
         }
         com2_println!("stack_frame = {:#x?}", stack_frame);
         data_ref_object
@@ -3056,6 +3056,15 @@ impl From<&NameString> for VecDeque<name::Segment> {
     }
 }
 
+impl Holder for NameString {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        let name: String = self.into();
+        stack_frame
+            .write_named_local(&name, value)
+            .unwrap_or(unimplemented!("self = {:#x?}, value = {:#x?}", self, value))
+    }
+}
+
 impl Matcher for NameString {
     fn matches(aml: &[u8]) -> bool {
         DualNamePath::matches(aml)
@@ -3843,7 +3852,7 @@ impl Evaluator for SimpleName {
 impl Holder for SimpleName {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         match self {
-            Self::NameString(name_string) => unimplemented!("name_string = {:#x?}", name_string),
+            Self::NameString(name_string) => name_string.hold(value, stack_frame, root, current),
             Self::ArgObj(arg_obj) => arg_obj.hold(value, stack_frame, root, current),
             Self::LocalObj(local_obj) => local_obj.hold(value, stack_frame, root, current),
         }

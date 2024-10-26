@@ -283,8 +283,12 @@ pub struct StackFrame {
 }
 
 impl StackFrame {
-    pub fn add_named_local(&mut self, name: &str, value: &Value) {
-        self.named_locals.insert(name.into(), value.clone());
+    pub fn add_named_local(&mut self, name: &str, value: Value) {
+        self.named_locals.insert(name.into(), value);
+    }
+
+    pub fn has_local(&self, name: &str) -> bool {
+        self.named_locals.contains_key(name)
     }
 
     pub fn read_argument(&self, index: usize) -> Option<Value> {
@@ -335,6 +339,17 @@ impl StackFrame {
     pub fn write_local(&mut self, index: usize, value: Value) -> Value {
         self.locals[index] = Some(value.clone());
         value
+    }
+
+    pub fn write_named_local(&mut self, name: &str, value: Value) -> Option<Value> {
+        self.named_locals
+            .get_mut(name)
+            .map(|named_local| {
+                let (_named_local, value): (Value, Value) = named_local
+                    .match_type(value);
+                *named_local = value.clone();
+                value
+            })
     }
 
     pub fn write_return(&mut self, value: Value) -> Value {
