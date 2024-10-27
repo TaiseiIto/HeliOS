@@ -696,7 +696,7 @@ impl Evaluator for DWordData {
         let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
-            .map(|(low, high)| low.concatenate(high))
+            .map(|(low, high)| low.concatenate(&high))
     }
 }
 
@@ -712,6 +712,13 @@ pub struct DWordPrefix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Data(TermArg);
+
+impl Evaluator for Data {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DataObject
 /// ## References
@@ -1025,6 +1032,22 @@ pub struct DefConcat(
     [Data; 2],
     Target,
 );
+
+impl Evaluator for DefConcat {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _concat_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        let value: Option<interpreter::Value> = left
+            .zip(right)
+            .map(|(left, right)| left.concatenate(&right));
+        value.map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
 
 /// # DefConcatRes
 /// ## References
@@ -2349,6 +2372,7 @@ impl Evaluator for ExpressionOpcode {
         match self {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::And(def_and) => def_and.evaluate(stack_frame, root, current),
+            Self::Buffer(def_buffer) => def_buffer.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
@@ -3785,7 +3809,7 @@ impl Evaluator for QWordData {
         let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
-            .map(|(low, high)| low.concatenate(high))
+            .map(|(low, high)| low.concatenate(&high))
     }
 }
 
@@ -4501,7 +4525,7 @@ impl Evaluator for WordData {
         let high: Option<interpreter::Value> = high.evaluate(stack_frame, root, current);
         low
             .zip(high)
-            .map(|(low, high)| low.concatenate(high))
+            .map(|(low, high)| low.concatenate(&high))
     }
 }
 

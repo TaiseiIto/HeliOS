@@ -37,20 +37,22 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn concatenate(self, other: Self) -> Self {
+    pub fn concatenate(&self, other: &Self) -> Self {
         match (self, other) {
-            (Self::Byte(low), Self::Byte(high)) => Self::Word((low as u16) + ((high as u16) << u8::BITS)),
-            (Self::Word(low), Self::Word(high)) => Self::DWord((low as u32) + ((high as u32) << u16::BITS)),
-            (Self::DWord(low), Self::DWord(high)) => Self::QWord((low as u64) + ((high as u64) << u32::BITS)),
+            (Self::Byte(low), Self::Byte(high)) => Self::Word((*low as u16) + ((*high as u16) << u8::BITS)),
+            (Self::Word(low), Self::Word(high)) => Self::DWord((*low as u32) + ((*high as u32) << u16::BITS)),
+            (Self::DWord(low), Self::DWord(high)) => Self::QWord((*low as u64) + ((*high as u64) << u32::BITS)),
             (Self::Buffer(first), Self::Buffer(second)) => Self::Buffer(first
-                .into_iter()
-                .chain(second)
+                .iter()
+                .chain(second.iter())
+                .cloned()
                 .collect()),
             (Self::Package(first), Self::Package(second)) => Self::Package(first
-                .into_iter()
-                .chain(second)
+                .iter()
+                .chain(second.iter())
+                .cloned()
                 .collect()),
-            (Self::String(first), Self::String(second)) => Self::String(first + &second),
+            (Self::String(first), Self::String(second)) => Self::String(String::from(first) + second),
             _ => unimplemented!(),
         }
     }
