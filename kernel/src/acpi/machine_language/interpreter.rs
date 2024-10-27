@@ -58,6 +58,32 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.54 From BCD (Convert BCD To Integer)
+    pub fn from_bcd(&self) -> Self {
+        match self {
+            Self::Byte(byte) => {
+                let bits: Vec<bool> = (0..u8::BITS)
+                    .map(|shift| byte & (1 << shift) != 0)
+                    .collect();
+                let byte: u8 = bits
+                    .as_slice()
+                    .chunks(4)
+                    .map(|digit| digit
+                        .iter()
+                        .rev()
+                        .fold(0, |digit, bit| (digit << 1) + if *bit {
+                            1
+                        } else {
+                            0
+                        }))
+                    .rev()
+                    .fold(0, |byte, digit| 10 * byte + digit);
+                Self::Byte(byte)
+            },
+            value => unreachable!("value = {:#x?}", value),
+        }
+    }
+
     pub fn get_byte(&self) -> Option<u8> {
         match self {
             Self::Byte(byte) => Some(*byte),

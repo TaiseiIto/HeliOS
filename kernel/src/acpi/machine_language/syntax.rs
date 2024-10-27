@@ -1433,6 +1433,19 @@ pub struct DefFromBcd(
     Target,
 );
 
+impl Evaluator for DefFromBcd {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _from_bcd_op,
+            bcd_value,
+            target,
+        ) = self;
+        bcd_value
+            .evaluate(stack_frame, root, current)
+            .map(|bcd_value| target.hold(bcd_value.from_bcd(), stack_frame, root, current))
+    }
+}
+
 /// # DefIf
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2469,6 +2482,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Divide(def_divide) => def_divide.evaluate(stack_frame, root, current),
             Self::FindSetLeftBit(def_find_set_left_bit) => def_find_set_left_bit.evaluate(stack_frame, root, current),
             Self::FindSetRightBit(def_find_set_right_bit) => def_find_set_right_bit.evaluate(stack_frame, root, current),
+            Self::FromBcd(def_from_bcd) => def_from_bcd.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
