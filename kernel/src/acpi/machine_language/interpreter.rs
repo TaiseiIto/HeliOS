@@ -21,6 +21,39 @@ use {
     },
 };
 
+/// # Match Operator
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.80 Match (Find Object Match)
+pub enum MatchOperator {
+    True,
+    Eq,
+    Le,
+    Lt,
+    Ge,
+    Gt,
+}
+
+impl From<u8> for MatchOperator {
+    fn from(match_operator: u8) -> Self {
+        match match_operator {
+            0 => Self::True,
+            1 => Self::Eq,
+            2 => Self::Le,
+            3 => Self::Lt,
+            4 => Self::Ge,
+            5 => Self::Gt,
+            match_operator => unimplemented!("match_operator = {:#x?}", match_operator),
+        }
+    }
+}
+
+impl From<&Value> for MatchOperator {
+    fn from(match_operator: &Value) -> Self {
+        let match_operator: u8 = match_operator.into();
+        match_operator.into()
+    }
+}
+
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Value {
     Bool(bool),
@@ -418,6 +451,48 @@ impl From<&Value> for bool {
             Value::String(string) => !string.is_empty(),
             Value::Word(word) => *word != 0,
             Value::Zero => false,
+        }
+    }
+}
+
+impl From<&Value> for u8 {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Byte(byte) => *byte,
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
+impl From<&Value> for u16 {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Byte(byte) => *byte as Self,
+            Value::Word(word) => *word,
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
+impl From<&Value> for u32 {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Byte(byte) => *byte as Self,
+            Value::Word(word) => *word as Self,
+            Value::DWord(dword) => *dword,
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
+impl From<&Value> for u64 {
+    fn from(value: &Value) -> Self {
+        match value {
+            Value::Byte(byte) => *byte as Self,
+            Value::Word(word) => *word as Self,
+            Value::DWord(dword) => *dword as Self,
+            Value::QWord(qword) => *qword,
+            value => unimplemented!("value = {:#x?}", value),
         }
     }
 }

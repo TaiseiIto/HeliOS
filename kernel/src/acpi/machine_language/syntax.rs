@@ -2967,6 +2967,13 @@ pub struct MatchOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct MatchOpcode(ByteData);
 
+impl Evaluator for MatchOpcode {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(byte_data) = self;
+        byte_data.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # MethodFlags
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
