@@ -202,7 +202,7 @@ impl Evaluator for ArgObj {
 }
 
 impl Holder for ArgObj {
-    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> interpreter::Value {
         let Self(index) = self;
         stack_frame.write_argument(*index as usize, value)
     }
@@ -782,7 +782,7 @@ pub struct DataRegionOpSuffix;
 pub struct DebugObj(DebugOp);
 
 impl Holder for DebugObj {
-    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+    fn hold(&self, value: interpreter::Value, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> interpreter::Value {
         com2_println!("AML DebugObj = {:#x?}", value);
         value
     }
@@ -2447,7 +2447,6 @@ impl Evaluator for ExpressionOpcode {
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
-            Self::DerefOf(def_deref_of) => def_deref_of.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }
@@ -2789,7 +2788,7 @@ impl Evaluator for LocalObj {
 }
 
 impl Holder for LocalObj {
-    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> interpreter::Value {
         let Self(index) = self;
         stack_frame.write_local(*index as usize, value)
     }
@@ -3301,7 +3300,7 @@ impl From<&NameString> for VecDeque<name::Segment> {
 }
 
 impl Holder for NameString {
-    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> interpreter::Value {
         let name: name::Path = self.into();
         stack_frame
             .write_named_local(&name, value.clone())

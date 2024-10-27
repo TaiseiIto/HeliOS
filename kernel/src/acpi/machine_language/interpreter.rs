@@ -5,7 +5,6 @@ use {
         vec::Vec,
     },
     core::{
-        cmp::Ordering,
         iter,
         ops::{
             Add,
@@ -21,7 +20,7 @@ use {
     },
 };
 
-#[derive(Clone, Debug, Eq, Ord, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Value {
     Bool(bool),
     Buffer(Vec<u8>),
@@ -304,18 +303,6 @@ impl From<&Value> for usize {
             Value::Word(word) => *word as Self,
             Value::Zero => 0,
             value => unimplemented!("value = {:#x?}", value),
-        }
-    }
-}
-
-impl PartialOrd for Value {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match self.match_type(other) {
-            (Self::Byte(left), Self::Byte(right)) => left.partial_cmp(&right),
-            (Self::Word(left), Self::Word(right)) => left.partial_cmp(&right),
-            (Self::DWord(left), Self::DWord(right)) => left.partial_cmp(&right),
-            (Self::QWord(left), Self::QWord(right)) => left.partial_cmp(&right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
 }
