@@ -1245,6 +1245,25 @@ pub struct DefDivide(
     Quotient,
 );
 
+impl Evaluator for DefDivide {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _divide_op,
+            dividend,
+            divisor,
+            remainder,
+            quotient,
+        ) = self;
+        let dividend: Option<interpreter::Value> = dividend.evaluate(stack_frame, root, current);
+        let divisor: Option<interpreter::Value> = divisor.evaluate(stack_frame, root, current);
+        if let (Some(dividend), Some(divisor)) = (dividend, divisor) {
+            remainder.hold(dividend.clone() % divisor.clone(), stack_frame, root, current);
+            quotient.hold(dividend.clone() / divisor.clone(), stack_frame, root, current);
+        }
+        None
+    }
+}
+
 /// # DefElse
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2266,11 +2285,25 @@ pub struct DivideOp;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Dividend(TermArg);
 
+impl Evaluator for Dividend {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # Divisor
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Divisor(TermArg);
+
+impl Evaluator for Divisor {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DualNamePath
 /// ## References
@@ -2406,6 +2439,8 @@ impl Evaluator for ExpressionOpcode {
             Self::ConcatRes(def_concat_res) => def_concat_res.evaluate(stack_frame, root, current),
             Self::CopyObject(def_copy_object) => def_copy_object.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
+            Self::DerefOf(def_deref_of) => def_deref_of.evaluate(stack_frame, root, current),
+            Self::Divide(def_divide) => def_divide.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
@@ -3858,6 +3893,13 @@ pub struct QWordPrefix;
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Quotient(Target);
 
+impl Holder for Quotient {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        let Self(target) = self;
+        target.hold(value, stack_frame, root, current)
+    }
+}
+
 /// # ReferenceTypeOpcode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -3931,6 +3973,13 @@ pub struct ReleaseOpSuffix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct Remainder(Target);
+
+impl Holder for Remainder {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
+        let Self(target) = self;
+        target.hold(value, stack_frame, root, current)
+    }
+}
 
 /// # ReservedField
 /// ## References

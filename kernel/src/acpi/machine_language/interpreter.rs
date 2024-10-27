@@ -10,6 +10,8 @@ use {
         ops::{
             Add,
             BitAnd,
+            Div,
+            Rem,
             Sub,
         },
     },
@@ -196,6 +198,20 @@ impl BitAnd for Value {
     }
 }
 
+impl Div for Value {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        match self.match_type(&other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left / right),
+            (Self::Word(left), Self::Word(right)) => Self::Word(left / right),
+            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left / right),
+            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left / right),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+        }
+    }
+}
+
 impl From<String> for Value {
     fn from(value: String) -> Self {
         Self::String(value)
@@ -299,6 +315,20 @@ impl PartialOrd for Value {
             (Self::Word(left), Self::Word(right)) => left.partial_cmp(&right),
             (Self::DWord(left), Self::DWord(right)) => left.partial_cmp(&right),
             (Self::QWord(left), Self::QWord(right)) => left.partial_cmp(&right),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+        }
+    }
+}
+
+impl Rem for Value {
+    type Output = Self;
+
+    fn rem(self, other: Self) -> Self {
+        match self.match_type(&other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left % right),
+            (Self::Word(left), Self::Word(right)) => Self::Word(left % right),
+            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left % right),
+            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left % right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
