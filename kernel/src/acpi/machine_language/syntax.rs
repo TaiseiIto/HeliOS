@@ -1091,6 +1091,19 @@ pub struct DefCopyObject(
     SimpleName,
 );
 
+impl Evaluator for DefCopyObject {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _copy_object_op,
+            term_arg,
+            simple_name,
+        ) = self;
+        term_arg
+            .evaluate(stack_frame, root, current)
+            .map(|term_arg| simple_name.hold(term_arg, stack_frame, root, current))
+    }
+}
+
 /// # DefCreateBitField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2391,6 +2404,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Buffer(def_buffer) => def_buffer.evaluate(stack_frame, root, current),
             Self::Concat(def_concat) => def_concat.evaluate(stack_frame, root, current),
             Self::ConcatRes(def_concat_res) => def_concat_res.evaluate(stack_frame, root, current),
+            Self::CopyObject(def_copy_object) => def_copy_object.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
