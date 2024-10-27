@@ -1790,6 +1790,41 @@ pub struct DefMatch(
     StartIndex,
 );
 
+impl Evaluator for DefMatch {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _match_op,
+            search_pkg,
+            match_opcode0,
+            operand0,
+            match_opcode1,
+            operand1,
+            start_index,
+        ) = self;
+        let search_pkg: Option<interpreter::Value> = search_pkg.evaluate(stack_frame, root, current);
+        let match_opcode0: Option<interpreter::Value> = match_opcode0.evaluate(stack_frame, root, current);
+        let operand0: Option<interpreter::Value> = operand0.evaluate(stack_frame, root, current);
+        let match_opcode1: Option<interpreter::Value> = match_opcode1.evaluate(stack_frame, root, current);
+        let operand1: Option<interpreter::Value> = operand1.evaluate(stack_frame, root, current);
+        let start_index: Option<interpreter::Value> = start_index.evaluate(stack_frame, root, current);
+        match (search_pkg, match_opcode0, operand0, match_opcode1, operand1, start_index) {
+            (Some(search_pkg), Some(match_opcode0), Some(operand0), Some(match_opcode1), Some(operand1), Some(start_index)) => {
+                let search_pkg_size: interpreter::Value = search_pkg.size();
+                let search_pkg_size: usize = (&search_pkg_size).into();
+                let match_opcode0: interpreter::MatchOperator = (&match_opcode0).into();
+                let match_opcode1: interpreter::MatchOperator = (&match_opcode1).into();
+                let start_index: usize = (&start_index).into();
+                (start_index..search_pkg_size)
+                    .find(|index| search_pkg
+                        .index(&interpreter::Value::QWord(*index as u64))
+                        .map_or(false, |element| match_opcode0.compare(&element, &operand0) && match_opcode1.compare(&element, &operand1)))
+                    .map(|index| index.into())
+            },
+            _ => None,
+        }
+    }
+}
+
 /// # DefMethod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -2604,6 +2639,7 @@ impl Evaluator for ExpressionOpcode {
             Self::LNot(def_l_not) => def_l_not.evaluate(stack_frame, root, current),
             Self::LNotEqual(def_l_not_equal) => def_l_not_equal.evaluate(stack_frame, root, current),
             Self::LOr(def_l_or) => def_l_or.evaluate(stack_frame, root, current),
+            Self::Match(def_match) => def_match.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),

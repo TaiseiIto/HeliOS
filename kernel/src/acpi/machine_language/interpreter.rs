@@ -33,6 +33,19 @@ pub enum MatchOperator {
     Gt,
 }
 
+impl MatchOperator {
+    pub fn compare(&self, left: &Value, right: &Value) -> bool {
+        match self {
+            Self::True => true,
+            Self::Eq => left == right,
+            Self::Le => left <= right,
+            Self::Lt => left < right,
+            Self::Ge => left >= right,
+            Self::Gt => left > right,
+        }
+    }
+}
+
 impl From<u8> for MatchOperator {
     fn from(match_operator: u8) -> Self {
         match match_operator {
@@ -419,6 +432,12 @@ impl From<u32> for Value {
 impl From<u64> for Value {
     fn from(value: u64) -> Self {
         Self::QWord(value)
+    }
+}
+
+impl From<usize> for Value {
+    fn from(value: usize) -> Self {
+        Self::QWord(value as u64)
     }
 }
 
