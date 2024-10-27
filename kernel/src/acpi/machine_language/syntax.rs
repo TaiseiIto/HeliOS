@@ -1387,6 +1387,19 @@ pub struct DefFindSetLeftBit(
     Target,
 );
 
+impl Evaluator for DefFindSetLeftBit {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _find_set_left_bit_op,
+            operand,
+            target,
+        ) = self;
+        operand
+            .evaluate(stack_frame, root, current)
+            .map(|operand| target.hold(operand.leftest_one_bit_shift(), stack_frame, root, current))
+    }
+}
+
 /// # DefFindSetRightBit
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2441,6 +2454,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::DerefOf(def_deref_of) => def_deref_of.evaluate(stack_frame, root, current),
             Self::Divide(def_divide) => def_divide.evaluate(stack_frame, root, current),
+            Self::FindSetLeftBit(def_find_set_left_bit) => def_find_set_left_bit.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),

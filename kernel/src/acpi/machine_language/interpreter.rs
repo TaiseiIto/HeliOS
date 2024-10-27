@@ -87,6 +87,29 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.48 FindSetLeftBit (Find First Set Left Bit)
+    pub fn leftest_one_bit_shift(&self) -> Self {
+        match self {
+            Self::Byte(byte) => Self::Byte((0..u8::BITS)
+                .filter(|shift| byte >> shift != 0)
+                .max()
+                .map_or(0, |shift| (shift as u8) + 1)),
+            Self::Word(word) => Self::Byte((0..u16::BITS)
+                .filter(|shift| word >> shift != 0)
+                .max()
+                .map_or(0, |shift| (shift as u8) + 1)),
+            Self::DWord(dword) => Self::Byte((0..u32::BITS)
+                .filter(|shift| dword >> shift != 0)
+                .max()
+                .map_or(0, |shift| (shift as u8) + 1)),
+            Self::QWord(qword) => Self::Byte((0..u32::BITS)
+                .filter(|shift| qword >> shift != 0)
+                .max()
+                .map_or(0, |shift| (shift as u8) + 1)),
+            value => unreachable!("value = {:#x?}", value),
+        }
+    }
+
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.124 SizeOf (Get Data Object Size)
     pub fn size(&self) -> Self {
         let size: usize = match self {
