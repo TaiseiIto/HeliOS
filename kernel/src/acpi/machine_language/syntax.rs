@@ -1699,6 +1699,18 @@ pub struct DefLNot(
     Operand,
 );
 
+impl Evaluator for DefLNot {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _l_not_op,
+            operand,
+        ) = self;
+        operand
+            .evaluate(stack_frame, root, current)
+            .map(|operand| !operand)
+    }
+}
+
 /// # DefLNotEqual
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2561,6 +2573,7 @@ impl Evaluator for ExpressionOpcode {
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
             Self::LLess(def_l_less) => def_l_less.evaluate(stack_frame, root, current),
             Self::LLessEqual(def_l_less_equal) => def_l_less_equal.evaluate(stack_frame, root, current),
+            Self::LNot(def_l_not) => def_l_not.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),

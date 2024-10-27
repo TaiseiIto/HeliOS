@@ -10,6 +10,7 @@ use {
             Add,
             BitAnd,
             Div,
+            Not,
             Rem,
             Sub,
         },
@@ -137,7 +138,7 @@ impl Value {
                     .fold(0, |qword, digit| 10 * qword + digit);
                 Self::QWord(qword)
             },
-            value => unreachable!("value = {:#x?}", value),
+            value => unimplemented!("value = {:#x?}", value),
         }
     }
 
@@ -189,7 +190,7 @@ impl Value {
                 .filter(|shift| qword >> shift != 0)
                 .max()
                 .map_or(0, |shift| (shift as u8) + 1)),
-            value => unreachable!("value = {:#x?}", value),
+            value => unimplemented!("value = {:#x?}", value),
         }
     }
 
@@ -212,7 +213,7 @@ impl Value {
                 .filter(|shift| qword << shift != 0)
                 .max()
                 .map_or(0, |shift| 8 - (shift as u8))),
-            value => unreachable!("value = {:#x?}", value),
+            value => unimplemented!("value = {:#x?}", value),
         }
     }
 
@@ -222,7 +223,7 @@ impl Value {
             Self::Buffer(buffer) => buffer.len(),
             Self::String(string) => string.len(),
             Self::Package(package) => package.len(),
-            value => unreachable!("value = {:#x?}", value),
+            value => unimplemented!("value = {:#x?}", value),
         };
         let size: u64 = size as u64;
         Self::QWord(size)
@@ -301,12 +302,12 @@ impl Value {
 impl Add for Value {
     type Output = Self;
 
-    fn add(self, other: Self) -> Self {
+    fn add(self, other: Self) -> Self::Output {
         match self.match_type(&other) {
-            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left + right),
-            (Self::Word(left), Self::Word(right)) => Self::Word(left + right),
-            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left + right),
-            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left + right),
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left + right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left + right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left + right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left + right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
@@ -315,12 +316,12 @@ impl Add for Value {
 impl BitAnd for Value {
     type Output = Self;
 
-    fn bitand(self, other: Self) -> Self {
+    fn bitand(self, other: Self) -> Self::Output {
         match self.match_type(&other) {
-            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left & right),
-            (Self::Word(left), Self::Word(right)) => Self::Word(left & right),
-            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left & right),
-            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left & right),
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left & right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left & right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left & right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left & right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
@@ -329,12 +330,12 @@ impl BitAnd for Value {
 impl Div for Value {
     type Output = Self;
 
-    fn div(self, other: Self) -> Self {
+    fn div(self, other: Self) -> Self::Output {
         match self.match_type(&other) {
-            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left / right),
-            (Self::Word(left), Self::Word(right)) => Self::Word(left / right),
-            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left / right),
-            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left / right),
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left / right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left / right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left / right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left / right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
@@ -413,7 +414,7 @@ impl From<&Value> for bool {
                 .iter()
                 .any(|value| value.into()),
             Value::QWord(qword) => *qword != 0,
-            Value::Revision => unreachable!(),
+            Value::Revision => unimplemented!(),
             Value::String(string) => !string.is_empty(),
             Value::Word(word) => *word != 0,
             Value::Zero => false,
@@ -436,15 +437,39 @@ impl From<&Value> for usize {
     }
 }
 
+impl Not for Value {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Bool(value) => Self::Output::Bool(!value),
+            Self::Buffer(buffer) => Self::Output::Buffer(buffer
+                .into_iter()
+                .map(|byte| !byte)
+                .collect()),
+            Self::Byte(byte) => Self::Output::Byte(!byte),
+            Self::DWord(dword) => Self::Output::DWord(!dword),
+            Self::Ones => Self::Zero,
+            Self::Package(package) => Self::Output::Package(package
+                .into_iter()
+                .map(|element| !element)
+                .collect()),
+            Self::QWord(qword) => Self::Output::QWord(!qword),
+            Self::Word(word) => Self::Output::Word(!word),
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+}
+
 impl Rem for Value {
     type Output = Self;
 
-    fn rem(self, other: Self) -> Self {
+    fn rem(self, other: Self) -> Self::Output {
         match self.match_type(&other) {
-            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left % right),
-            (Self::Word(left), Self::Word(right)) => Self::Word(left % right),
-            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left % right),
-            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left % right),
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left % right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left % right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left % right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left % right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
@@ -453,12 +478,12 @@ impl Rem for Value {
 impl Sub for Value {
     type Output = Self;
 
-    fn sub(self, other: Self) -> Self {
+    fn sub(self, other: Self) -> Self::Output {
         match self.match_type(&other) {
-            (Self::Byte(left), Self::Byte(right)) => Self::Byte(left - right),
-            (Self::Word(left), Self::Word(right)) => Self::Word(left - right),
-            (Self::DWord(left), Self::DWord(right)) => Self::DWord(left - right),
-            (Self::QWord(left), Self::QWord(right)) => Self::QWord(left - right),
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left - right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left - right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left - right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left - right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }
