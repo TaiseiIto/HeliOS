@@ -80,6 +80,63 @@ impl Value {
                     .fold(0, |byte, digit| 10 * byte + digit);
                 Self::Byte(byte)
             },
+            Self::Word(word) => {
+                let bits: Vec<bool> = (0..u16::BITS)
+                    .map(|shift| word & (1 << shift) != 0)
+                    .collect();
+                let word: u16 = bits
+                    .as_slice()
+                    .chunks(4)
+                    .map(|digit| digit
+                        .iter()
+                        .rev()
+                        .fold(0, |digit, bit| (digit << 1) + if *bit {
+                            1
+                        } else {
+                            0
+                        }))
+                    .rev()
+                    .fold(0, |word, digit| 10 * word + digit);
+                Self::Word(word)
+            },
+            Self::DWord(dword) => {
+                let bits: Vec<bool> = (0..u32::BITS)
+                    .map(|shift| dword & (1 << shift) != 0)
+                    .collect();
+                let dword: u32 = bits
+                    .as_slice()
+                    .chunks(4)
+                    .map(|digit| digit
+                        .iter()
+                        .rev()
+                        .fold(0, |digit, bit| (digit << 1) + if *bit {
+                            1
+                        } else {
+                            0
+                        }))
+                    .rev()
+                    .fold(0, |dword, digit| 10 * dword + digit);
+                Self::DWord(dword)
+            },
+            Self::QWord(qword) => {
+                let bits: Vec<bool> = (0..u64::BITS)
+                    .map(|shift| qword & (1 << shift) != 0)
+                    .collect();
+                let qword: u64 = bits
+                    .as_slice()
+                    .chunks(4)
+                    .map(|digit| digit
+                        .iter()
+                        .rev()
+                        .fold(0, |digit, bit| (digit << 1) + if *bit {
+                            1
+                        } else {
+                            0
+                        }))
+                    .rev()
+                    .fold(0, |qword, digit| 10 * qword + digit);
+                Self::QWord(qword)
+            },
             value => unreachable!("value = {:#x?}", value),
         }
     }
