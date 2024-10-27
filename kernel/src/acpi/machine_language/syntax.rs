@@ -1059,6 +1059,22 @@ pub struct DefConcatRes(
     Target,
 );
 
+impl Evaluator for DefConcatRes {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _concat_res_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        let value: Option<interpreter::Value> = left
+            .zip(right)
+            .map(|(left, right)| left.concatenate(&right));
+        value.map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
+
 /// # DefContinue
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2373,6 +2389,8 @@ impl Evaluator for ExpressionOpcode {
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::And(def_and) => def_and.evaluate(stack_frame, root, current),
             Self::Buffer(def_buffer) => def_buffer.evaluate(stack_frame, root, current),
+            Self::Concat(def_concat) => def_concat.evaluate(stack_frame, root, current),
+            Self::ConcatRes(def_concat_res) => def_concat_res.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
