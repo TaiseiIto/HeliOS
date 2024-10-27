@@ -1584,6 +1584,20 @@ pub struct DefLEqual(
     [Operand; 2],
 );
 
+impl Evaluator for DefLEqual {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _l_equal_op,
+            [left, right],
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| interpreter::Value::Bool(left == right))
+    }
+}
+
 /// # DefLGreater
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2500,6 +2514,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Increment(def_increment) => def_increment.evaluate(stack_frame, root, current),
             Self::Index(def_index) => def_index.evaluate(stack_frame, root, current),
             Self::LAnd(def_l_and) => def_l_and.evaluate(stack_frame, root, current),
+            Self::LEqual(def_l_equal) => def_l_equal.evaluate(stack_frame, root, current),
             Self::LGreaterEqual(def_l_greater_equal) => def_l_greater_equal.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
