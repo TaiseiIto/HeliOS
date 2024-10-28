@@ -940,10 +940,9 @@ impl Evaluator for DefAnd {
         ) = self;
         let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
         let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
-        let value: Option<interpreter::Value> = left
+        left
             .zip(right)
-            .map(|(left, right)| left & right);
-        value.map(|value| target.hold(value, stack_frame, root, current))
+            .map(|(left, right)| target.hold(left & right, stack_frame, root, current))
     }
 }
 
@@ -2171,6 +2170,21 @@ pub struct DefOr(
     Target,
 );
 
+impl Evaluator for DefOr {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _or_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| target.hold(left | right, stack_frame, root, current))
+    }
+}
+
 /// # DefPackage
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2776,6 +2790,7 @@ impl Evaluator for ExpressionOpcode {
             Self::NOr(def_n_or) => def_n_or.evaluate(stack_frame, root, current),
             Self::Not(def_not) => def_not.evaluate(stack_frame, root, current),
             Self::ObjectType(def_object_type) => def_object_type.evaluate(stack_frame, root, current),
+            Self::Or(def_or) => def_or.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
