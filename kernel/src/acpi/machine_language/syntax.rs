@@ -1256,11 +1256,12 @@ impl Evaluator for DefDivide {
         ) = self;
         let dividend: Option<interpreter::Value> = dividend.evaluate(stack_frame, root, current);
         let divisor: Option<interpreter::Value> = divisor.evaluate(stack_frame, root, current);
-        if let (Some(dividend), Some(divisor)) = (dividend, divisor) {
-            remainder.hold(dividend.clone() % divisor.clone(), stack_frame, root, current);
-            quotient.hold(dividend.clone() / divisor.clone(), stack_frame, root, current);
-        }
-        None
+        dividend
+            .zip(divisor)
+            .map(|(dividend, divisor)| {
+                remainder.hold(dividend.clone() % divisor.clone(), stack_frame, root, current);
+                quotient.hold(dividend.clone() / divisor.clone(), stack_frame, root, current)
+            })
     }
 }
 
@@ -1946,6 +1947,22 @@ pub struct DefMod(
     Divisor,
     Target,
 );
+
+impl Evaluator for DefMod {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _mod_op,
+            dividend,
+            divisor,
+            target,
+        ) = self;
+        let dividend: Option<interpreter::Value> = dividend.evaluate(stack_frame, root, current);
+        let divisor: Option<interpreter::Value> = divisor.evaluate(stack_frame, root, current);
+        dividend
+            .zip(divisor)
+            .map(|(dividend, divisor)| target.hold(dividend.clone() % divisor.clone(), stack_frame, root, current))
+    }
+}
 
 /// # DefMultiply
 /// ## References
@@ -2661,6 +2678,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Match(def_match) => def_match.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::Mid(def_mid) => def_mid.evaluate(stack_frame, root, current),
+            Self::Mod(def_mod) => def_mod.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
