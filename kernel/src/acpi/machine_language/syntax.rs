@@ -2093,6 +2093,19 @@ pub struct DefNot(
     Target,
 );
 
+impl Evaluator for DefNot {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _not_op,
+            operand,
+            target,
+        ) = self;
+        operand
+            .evaluate(stack_frame, root, current)
+            .map(|operand| target.hold(!operand, stack_frame, root, current))
+    }
+}
+
 /// # DefNotify
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -2727,6 +2740,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Multiply(def_multiply) => def_multiply.evaluate(stack_frame, root, current),
             Self::NAnd(def_n_and) => def_n_and.evaluate(stack_frame, root, current),
             Self::NOr(def_n_or) => def_n_or.evaluate(stack_frame, root, current),
+            Self::Not(def_not) => def_not.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
