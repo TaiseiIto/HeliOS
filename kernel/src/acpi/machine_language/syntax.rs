@@ -1917,6 +1917,25 @@ pub struct DefMid(
     Target,
 );
 
+impl Evaluator for DefMid {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _mid_op,
+            mid_obj,
+            [index, length],
+            target,
+        ) = self;
+        let mid_obj: Option<interpreter::Value> = mid_obj.evaluate(stack_frame, root, current);
+        let index: Option<interpreter::Value> = index.evaluate(stack_frame, root, current);
+        let length: Option<interpreter::Value> = length.evaluate(stack_frame, root, current);
+        let value: Option<interpreter::Value> = match (mid_obj, index, length) {
+            (Some(mid_obj), Some(index), Some(length)) => mid_obj.mid(&index, &length),
+            _ => None,
+        };
+        value.map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
+
 /// # DefMod
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2641,6 +2660,7 @@ impl Evaluator for ExpressionOpcode {
             Self::LOr(def_l_or) => def_l_or.evaluate(stack_frame, root, current),
             Self::Match(def_match) => def_match.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
+            Self::Mid(def_mid) => def_mid.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),

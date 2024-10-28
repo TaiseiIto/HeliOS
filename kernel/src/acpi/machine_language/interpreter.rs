@@ -5,6 +5,7 @@ use {
         vec::Vec,
     },
     core::{
+        cmp,
         iter,
         ops::{
             Add,
@@ -237,6 +238,49 @@ impl Value {
                 .max()
                 .map_or(0, |shift| (shift as u8) + 1)),
             value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.85 Mid (Extract Portion of Buffer or String)
+    pub fn mid(&self, index: &Self, length: &Self) -> Option<Self> {
+        let index: usize = index.into();
+        let length: usize = length.into();
+        let start: usize = index;
+        let end: usize = start + length;
+        match self {
+            Self::Buffer(buffer) => {
+                let buffer_length: usize = buffer.len();
+                let start: usize = cmp::min(start, buffer_length);
+                let end: usize = cmp::min(end, buffer_length);
+                let buffer: Vec<u8> = buffer
+                    .get(start..end)
+                    .map_or(Vec::new(), |buffer| Vec::from(buffer));
+                Some(Self::Buffer(buffer))
+            },
+            Self::Package(package) => {
+                let package_length: usize = package.len();
+                let start: usize = cmp::min(start, package_length);
+                let end: usize = cmp::min(end, package_length);
+                let package: Vec<Self> = package
+                    .get(start..end)
+                    .map_or(Vec::new(), |package| Vec::from(package));
+                Some(Self::Package(package))
+            },
+            Self::String(string) => {
+                let string_length: usize = string
+                    .chars()
+                    .count();
+                let start: usize = cmp::min(start, string_length);
+                let end: usize = cmp::min(end, string_length);
+                let length: usize = end - start;
+                let string: String = string
+                    .chars()
+                    .skip(start)
+                    .take(length)
+                    .collect();
+                Some(Self::String(string))
+            },
+            _ => None,
         }
     }
 
