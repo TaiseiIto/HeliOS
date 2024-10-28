@@ -15,6 +15,7 @@ use {
             Mul,
             Not,
             Rem,
+            Shl,
             Sub,
         },
     },
@@ -655,6 +656,20 @@ impl Rem for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left % right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left % right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left % right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
+        }
+    }
+}
+
+impl Shl for Value {
+    type Output = Self;
+
+    fn shl(self, other: Self) -> Self::Output {
+        match self.match_type(&other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left << right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left << right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left << right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left << right),
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }

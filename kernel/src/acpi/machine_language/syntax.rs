@@ -2319,6 +2319,22 @@ pub struct DefShiftLeft(
     Target,
 );
 
+impl Evaluator for DefShiftLeft {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _shift_left_op,
+            operand,
+            shift_count,
+            target,
+        ) = self;
+        let operand: Option<interpreter::Value> = operand.evaluate(stack_frame, root, current);
+        let shift_count: Option<interpreter::Value> = shift_count.evaluate(stack_frame, root, current);
+        operand
+            .zip(shift_count)
+            .map(|(operand, shift_count)| target.hold(operand << shift_count, stack_frame, root, current))
+    }
+}
+
 /// # DefShiftRight
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2792,6 +2808,7 @@ impl Evaluator for ExpressionOpcode {
             Self::ObjectType(def_object_type) => def_object_type.evaluate(stack_frame, root, current),
             Self::Or(def_or) => def_or.evaluate(stack_frame, root, current),
             Self::Package(def_package) => def_package.evaluate(stack_frame, root, current),
+            Self::ShiftLeft(def_shift_left) => def_shift_left.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
