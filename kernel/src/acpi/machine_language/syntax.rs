@@ -2791,6 +2791,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Not(def_not) => def_not.evaluate(stack_frame, root, current),
             Self::ObjectType(def_object_type) => def_object_type.evaluate(stack_frame, root, current),
             Self::Or(def_or) => def_or.evaluate(stack_frame, root, current),
+            Self::Package(def_package) => def_package.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
