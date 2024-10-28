@@ -1960,7 +1960,7 @@ impl Evaluator for DefMod {
         let divisor: Option<interpreter::Value> = divisor.evaluate(stack_frame, root, current);
         dividend
             .zip(divisor)
-            .map(|(dividend, divisor)| target.hold(dividend.clone() % divisor.clone(), stack_frame, root, current))
+            .map(|(dividend, divisor)| target.hold(dividend % divisor, stack_frame, root, current))
     }
 }
 
@@ -1973,6 +1973,21 @@ pub struct DefMultiply(
     [Operand; 2],
     Target,
 );
+
+impl Evaluator for DefMultiply {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _multiply_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| target.hold(left * right, stack_frame, root, current))
+    }
+}
 
 /// # DefMutex
 /// ## References
@@ -2679,6 +2694,7 @@ impl Evaluator for ExpressionOpcode {
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::Mid(def_mid) => def_mid.evaluate(stack_frame, root, current),
             Self::Mod(def_mod) => def_mod.evaluate(stack_frame, root, current),
+            Self::Multiply(def_multiply) => def_multiply.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
