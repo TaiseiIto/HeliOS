@@ -17,7 +17,10 @@ use {
         fmt,
         iter,
     },
-    crate::com2_println,
+    crate::{
+        com2_println,
+        timer,
+    },
     super::{
         interpreter::{
             Evaluator,
@@ -2478,6 +2481,12 @@ pub struct DefTimer(
     TimerOp,
 );
 
+impl Evaluator for DefTimer {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        Some(interpreter::Value::QWord(timer::acpi::nanoseconds() as u64))
+    }
+}
+
 /// # DefToBcd
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2843,6 +2852,7 @@ impl Evaluator for ExpressionOpcode {
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             Self::Subtract(def_subtract) => def_subtract.evaluate(stack_frame, root, current),
+            Self::Timer(def_timer) => def_timer.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }

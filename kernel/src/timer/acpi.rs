@@ -30,6 +30,10 @@ pub fn bits() -> usize {
         .timer_bits()
 }
 
+pub fn nanoseconds() -> usize {
+    (counter_value() as usize) * 1000000000 / FREQUENCY
+}
+
 #[allow(dead_code)]
 pub fn wait_microseconds(microseconds: usize) {
     let current_counter_value: usize = counter_value() as usize;
