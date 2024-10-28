@@ -2475,6 +2475,7 @@ pub struct DefThermalZone(
 
 /// # DefTimer
 /// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.134 Timer (Get 64-Bit Timer Value)
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefTimer(
@@ -2483,7 +2484,8 @@ pub struct DefTimer(
 
 impl Evaluator for DefTimer {
     fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
-        Some(interpreter::Value::QWord(timer::acpi::nanoseconds() as u64))
+        let nanoseconds: u64 = timer::acpi::nanoseconds() as u64;
+        Some(interpreter::Value::QWord(nanoseconds / 100))
     }
 }
 
