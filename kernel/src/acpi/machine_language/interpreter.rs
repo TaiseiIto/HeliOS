@@ -10,6 +10,7 @@ use {
         ops::{
             Add,
             BitAnd,
+            BitOr,
             Div,
             Mul,
             Not,
@@ -413,6 +414,20 @@ impl BitAnd for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left & right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left & right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left & right),
+            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+        }
+    }
+}
+
+impl BitOr for Value {
+    type Output = Self;
+
+    fn bitor(self, other: Self) -> Self::Output {
+        match self.match_type(&other) {
+            (Self::Byte(left), Self::Byte(right)) => Self::Output::Byte(left | right),
+            (Self::Word(left), Self::Word(right)) => Self::Output::Word(left | right),
+            (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left | right),
+            (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left | right),
             (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
         }
     }

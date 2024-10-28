@@ -2009,6 +2009,21 @@ pub struct DefNAnd(
     Target,
 );
 
+impl Evaluator for DefNAnd {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _n_and_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| target.hold(!(left & right), stack_frame, root, current))
+    }
+}
+
 /// # DefNOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2695,6 +2710,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Mid(def_mid) => def_mid.evaluate(stack_frame, root, current),
             Self::Mod(def_mod) => def_mod.evaluate(stack_frame, root, current),
             Self::Multiply(def_multiply) => def_multiply.evaluate(stack_frame, root, current),
+            Self::NAnd(def_n_and) => def_n_and.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
