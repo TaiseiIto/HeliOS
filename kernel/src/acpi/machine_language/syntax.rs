@@ -2137,6 +2137,30 @@ pub struct DefObjectType(
     ObjectTypeEnum,
 );
 
+impl Evaluator for DefObjectType {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _object_type_op,
+            object_type_enum,
+        ) = self;
+        match object_type_enum {
+            ObjectTypeEnum::SimpleName(simple_name) => simple_name
+                .evaluate(stack_frame, root, current)
+                .map(|simple_name| simple_name.object_type()),
+            ObjectTypeEnum::DebugObj(_) => Some(interpreter::Value::Byte(16)),
+            ObjectTypeEnum::DefRefOf(def_ref_of) => def_ref_of
+                .evaluate(stack_frame, root, current)
+                .map(|def_ref_of| def_ref_of.object_type()),
+            ObjectTypeEnum::DefDerefOf(def_deref_of) => def_deref_of
+                .evaluate(stack_frame, root, current)
+                .map(|def_deref_of| def_deref_of.object_type()),
+            ObjectTypeEnum::DefIndex(def_index) => def_index
+                .evaluate(stack_frame, root, current)
+                .map(|def_index| def_index.object_type()),
+        }
+    }
+}
+
 /// # DefOr
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2208,6 +2232,16 @@ pub struct DefRefOf(
     RefOfOp,
     Box<SuperName>,
 );
+
+impl Evaluator for DefRefOf {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _ref_of_op,
+            super_name,
+        ) = self;
+        super_name.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # DefRelease
 /// ## References
@@ -2741,6 +2775,7 @@ impl Evaluator for ExpressionOpcode {
             Self::NAnd(def_n_and) => def_n_and.evaluate(stack_frame, root, current),
             Self::NOr(def_n_or) => def_n_or.evaluate(stack_frame, root, current),
             Self::Not(def_not) => def_not.evaluate(stack_frame, root, current),
+            Self::ObjectType(def_object_type) => def_object_type.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
             Self::Store(def_store) => def_store.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),

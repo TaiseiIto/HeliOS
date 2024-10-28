@@ -104,7 +104,7 @@ impl Value {
                 .cloned()
                 .collect()),
             (Self::String(first), Self::String(second)) => Self::String(String::from(first) + second),
-            _ => unimplemented!(),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 
@@ -286,6 +286,23 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.96 ObjectType (Get Object Type)
+    pub fn object_type(&self) -> Self {
+        match self {
+            Self::Zero
+            | Self::One
+            | Self::Ones
+            | Self::Byte(_)
+            | Self::Word(_)
+            | Self::DWord(_)
+            | Self::QWord(_) => Self::Byte(1),
+            Self::String(_) => Self::Byte(2),
+            Self::Buffer(_) => Self::Byte(3),
+            Self::Package(_) => Self::Byte(4),
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.49 FindSetRightBit (Find First Set Right Bit)
     pub fn rightest_one_bit_shift(&self) -> Self {
         match self {
@@ -386,7 +403,7 @@ impl Value {
             (Self::Zero, Self::QWord(right)) => (Self::QWord(0x0000000000000000), Self::QWord(*right)),
             (Self::Zero, Self::Word(right)) => (Self::Word(0x0000), Self::Word(*right)),
             (Self::Zero, Self::Zero) => (Self::Zero, Self::Zero),
-            (left, right)  => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right)  => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -400,7 +417,7 @@ impl Add for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left + right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left + right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left + right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -414,7 +431,7 @@ impl BitAnd for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left & right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left & right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left & right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -428,7 +445,7 @@ impl BitOr for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left | right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left | right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left | right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -442,7 +459,7 @@ impl Div for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left / right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left / right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left / right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -638,7 +655,7 @@ impl Rem for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left % right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left % right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left % right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -652,7 +669,7 @@ impl Sub for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left - right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left - right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left - right),
-            (left, right) => unimplemented!("left = {:#x?}\nright = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
