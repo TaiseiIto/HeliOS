@@ -2522,6 +2522,19 @@ pub struct DefToBuffer(
     Target,
 );
 
+impl Evaluator for DefToBuffer {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _to_buffer_op,
+            operand,
+            target,
+        ) = self;
+        operand
+            .evaluate(stack_frame, root, current)
+            .map(|operand| target.hold(operand.to_buffer(), stack_frame, root, current))
+    }
+}
+
 /// # DefToDecimalString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2869,6 +2882,7 @@ impl Evaluator for ExpressionOpcode {
             Self::Subtract(def_subtract) => def_subtract.evaluate(stack_frame, root, current),
             Self::Timer(def_timer) => def_timer.evaluate(stack_frame, root, current),
             Self::ToBcd(def_to_bcd) => def_to_bcd.evaluate(stack_frame, root, current),
+            Self::ToBuffer(def_to_buffer) => def_to_buffer.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }

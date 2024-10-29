@@ -340,10 +340,11 @@ impl Value {
         Self::QWord(size)
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.135 ToBCD (Convert Integer to BCD)
     pub fn to_bcd(&self) -> Self {
         match self {
             Self::Byte(byte) => {
-                let mut decimal_digit_iterator: DecimalDigitIterator = (*byte).into();
+                let decimal_digit_iterator: DecimalDigitIterator = (*byte).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
                 let word: u16 = decimal_digit
                     .into_iter()
@@ -352,7 +353,7 @@ impl Value {
                 Self::Word(word)
             },
             Self::Word(word) => {
-                let mut decimal_digit_iterator: DecimalDigitIterator = (*word).into();
+                let decimal_digit_iterator: DecimalDigitIterator = (*word).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
                 let dword: u32 = decimal_digit
                     .into_iter()
@@ -361,7 +362,7 @@ impl Value {
                 Self::DWord(dword)
             },
             Self::DWord(dword) => {
-                let mut decimal_digit_iterator: DecimalDigitIterator = (*dword).into();
+                let decimal_digit_iterator: DecimalDigitIterator = (*dword).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
                 let qword: u64 = decimal_digit
                     .into_iter()
@@ -370,13 +371,24 @@ impl Value {
                 Self::QWord(qword)
             },
             Self::QWord(qword) => {
-                let mut decimal_digit_iterator: DecimalDigitIterator = (*qword).into();
+                let decimal_digit_iterator: DecimalDigitIterator = (*qword).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
                 let qword: u64 = decimal_digit
                     .into_iter()
                     .rev()
                     .fold(0, |qword, digit| (qword << 4) + (digit as u64));
                 Self::QWord(qword)
+            },
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.136 ToBuffer (Conver Data to Buffer)
+    pub fn to_buffer(&self) -> Self {
+        match self {
+            Self::Byte(byte) => {
+                let buffer: Vec<u8> = iter::once(*byte).collect();
+                Self::Buffer(buffer)
             },
             value => unimplemented!("value = {:#x?}", value),
         }
