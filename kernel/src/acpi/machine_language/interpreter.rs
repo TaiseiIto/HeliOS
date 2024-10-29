@@ -481,6 +481,20 @@ impl Value {
                     .fold(0, |qword, byte| (qword << u8::BITS) + (*byte as u64));
                 Self::QWord(qword)
             },
+            Self::String(string) => {
+                let radix: u64 = if string.starts_with("0x") || string.starts_with("0X") {
+                    0x10
+                } else {
+                    10
+                };
+                let qword: u64 = string
+                    .chars()
+                    .filter_map(|character| character
+                        .to_digit(radix as u32)
+                        .map(|digit| digit as u64))
+                    .fold(0, |qword, digit| qword * radix + digit);
+                Self::QWord(qword)
+            },
             value => unimplemented!("Value = {:#x?}", value),
         }
     }
