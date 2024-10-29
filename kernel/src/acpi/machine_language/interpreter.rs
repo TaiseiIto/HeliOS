@@ -430,6 +430,18 @@ impl Value {
     pub fn to_decimal_string(&self) -> Self {
         match self {
             Self::Byte(byte) => Self::String(format!("{}", byte)),
+            Self::Word(word) => Self::String(format!("{}", word)),
+            Self::DWord(dword) => Self::String(format!("{}", dword)),
+            Self::QWord(qword) => Self::String(format!("{}", qword)),
+            Self::Buffer(buffer) => {
+                let bytes: Vec<String> = buffer
+                    .iter()
+                    .map(|byte| format!("{}", byte))
+                    .collect();
+                let string: String = bytes.join(",");
+                Self::String(string)
+            },
+            Self::String(string) => Self::String(String::from(string)),
             value => unimplemented!("value = {:#x?}", value),
         }
     }
