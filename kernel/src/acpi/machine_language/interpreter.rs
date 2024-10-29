@@ -1,6 +1,7 @@
 use {
     alloc::{
         collections::BTreeMap,
+        format,
         string::String,
         vec::Vec,
     },
@@ -410,9 +411,25 @@ impl Value {
                 Self::Buffer(buffer)
             },
             Self::Buffer(buffer) => Self::Buffer(buffer.to_vec()),
-            Self::String(string) => Self::Buffer(string
-                .bytes()
-                .collect()),
+            Self::String(string) => {
+                let buffer: Vec<u8> = if string.is_empty() {
+                    Vec::new()
+                } else {
+                    string
+                        .bytes()
+                        .chain(iter::once(0))
+                        .collect()
+                };
+                Self::Buffer(buffer)
+            },
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.137 ToDecimalString (Convert Data to Decimal String)
+    pub fn to_decimal_string(&self) -> Self {
+        match self {
+            Self::Byte(byte) => Self::String(format!("{}", byte)),
             value => unimplemented!("value = {:#x?}", value),
         }
     }
