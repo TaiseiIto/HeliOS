@@ -340,6 +340,21 @@ impl Value {
         Self::QWord(size)
     }
 
+    pub fn to_bcd(&self) -> Self {
+        match self {
+            Self::Byte(byte) => {
+                let mut decimal_digit_iterator: DecimalDigitIterator = (*byte).into();
+                let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
+                let word: u16 = decimal_digit
+                    .into_iter()
+                    .rev()
+                    .fold(0, |word, digit| (word << 4) + (digit as u16));
+                Self::Word(word)
+            },
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
     fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
@@ -796,5 +811,26 @@ pub trait Evaluator {
 
 pub trait Holder {
     fn hold(&self, value: Value, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Value;
+}
+
+struct DecimalDigitIterator(u64);
+
+impl From<u8> for DecimalDigitIterator {
+    fn from(byte: u8) -> Self {
+        Self(byte as u64)
+    }
+}
+
+impl Iterator for DecimalDigitIterator {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self(value) = self;
+        (0 < *value).then(|| {
+            let remainder: u8 = (*value % 10) as u8;
+            *value /= 10;
+            remainder
+        })
+    }
 }
 
