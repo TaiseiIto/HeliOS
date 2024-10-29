@@ -449,20 +449,39 @@ impl Value {
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.138 ToHexString (Convert Data to Hexadecimal String)
     pub fn to_hex_string(&self) -> Self {
         match self {
-            Self::Byte(byte) => Self::String(format!("{:02x}", byte)),
-            Self::Word(word) => Self::String(format!("{:04x}", word)),
-            Self::DWord(dword) => Self::String(format!("{:08x}", dword)),
-            Self::QWord(qword) => Self::String(format!("{:016x}", qword)),
+            Self::Byte(byte) => Self::String(format!("{:#04x}", byte)),
+            Self::Word(word) => Self::String(format!("{:#06x}", word)),
+            Self::DWord(dword) => Self::String(format!("{:#010x}", dword)),
+            Self::QWord(qword) => Self::String(format!("{:#018x}", qword)),
             Self::Buffer(buffer) => {
                 let bytes: Vec<String> = buffer
                     .iter()
-                    .map(|byte| format!("{}", byte))
+                    .map(|byte| format!("{:#04x}", byte))
                     .collect();
                 let string: String = bytes.join(",");
                 Self::String(string)
             },
             Self::String(string) => Self::String(String::from(string)),
             value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.139 ToInteger (Convert Data to Integer)
+    pub fn to_integer(&self) -> Self {
+        match self {
+            Self::Byte(byte) => Self::Byte(*byte),
+            Self::Word(word) => Self::Word(*word),
+            Self::DWord(dword) => Self::DWord(*dword),
+            Self::QWord(qword) => Self::QWord(*qword),
+            Self::Buffer(buffer) => {
+                let qword: u64 = buffer
+                    .iter()
+                    .take(mem::size_of::<u64>())
+                    .rev()
+                    .fold(0, |qword, byte| (qword << u8::BITS) + (*byte as u64));
+                Self::QWord(qword)
+            },
+            value => unimplemented!("Value = {:#x?}", value),
         }
     }
 

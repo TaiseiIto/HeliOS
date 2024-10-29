@@ -2591,6 +2591,19 @@ pub struct DefToInteger(
     Target,
 );
 
+impl Evaluator for DefToInteger {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _to_integer_op,
+            operand,
+            target,
+        ) = self;
+        operand
+            .evaluate(stack_frame, root, current)
+            .map(|operand| target.hold(operand.to_integer(), stack_frame, root, current))
+    }
+}
+
 /// # DefToString
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2911,6 +2924,7 @@ impl Evaluator for ExpressionOpcode {
             Self::ToBuffer(def_to_buffer) => def_to_buffer.evaluate(stack_frame, root, current),
             Self::ToDecimalString(def_to_decimal_string) => def_to_decimal_string.evaluate(stack_frame, root, current),
             Self::ToHexString(def_to_hex_string) => def_to_hex_string.evaluate(stack_frame, root, current),
+            Self::ToInteger(def_to_integer) => def_to_integer.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }
