@@ -7,6 +7,7 @@ use {
     core::{
         cmp,
         iter,
+        mem,
         ops::{
             Add,
             BitAnd,
@@ -388,6 +389,12 @@ impl Value {
         match self {
             Self::Byte(byte) => {
                 let buffer: Vec<u8> = iter::once(*byte).collect();
+                Self::Buffer(buffer)
+            },
+            Self::Word(word) => {
+                let buffer: Vec<u8> = (0..(mem::size_of::<u16>() as usize))
+                    .map(|offset| (word >> (offset * (u8::BITS as usize))) as u8)
+                    .collect();
                 Self::Buffer(buffer)
             },
             value => unimplemented!("value = {:#x?}", value),
