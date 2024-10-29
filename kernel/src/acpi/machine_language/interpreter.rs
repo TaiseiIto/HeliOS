@@ -397,6 +397,22 @@ impl Value {
                     .collect();
                 Self::Buffer(buffer)
             },
+            Self::DWord(dword) => {
+                let buffer: Vec<u8> = (0..(mem::size_of::<u32>() as usize))
+                    .map(|offset| (dword >> (offset * (u8::BITS as usize))) as u8)
+                    .collect();
+                Self::Buffer(buffer)
+            },
+            Self::QWord(qword) => {
+                let buffer: Vec<u8> = (0..(mem::size_of::<u64>() as usize))
+                    .map(|offset| (qword >> (offset * (u8::BITS as usize))) as u8)
+                    .collect();
+                Self::Buffer(buffer)
+            },
+            Self::Buffer(buffer) => Self::Buffer(buffer.to_vec()),
+            Self::String(string) => Self::Buffer(string
+                .bytes()
+                .collect()),
             value => unimplemented!("value = {:#x?}", value),
         }
     }
