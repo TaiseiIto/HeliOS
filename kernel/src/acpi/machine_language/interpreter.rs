@@ -351,6 +351,33 @@ impl Value {
                     .fold(0, |word, digit| (word << 4) + (digit as u16));
                 Self::Word(word)
             },
+            Self::Word(word) => {
+                let mut decimal_digit_iterator: DecimalDigitIterator = (*word).into();
+                let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
+                let dword: u32 = decimal_digit
+                    .into_iter()
+                    .rev()
+                    .fold(0, |dword, digit| (dword << 4) + (digit as u32));
+                Self::DWord(dword)
+            },
+            Self::DWord(dword) => {
+                let mut decimal_digit_iterator: DecimalDigitIterator = (*dword).into();
+                let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
+                let qword: u64 = decimal_digit
+                    .into_iter()
+                    .rev()
+                    .fold(0, |qword, digit| (qword << 4) + (digit as u64));
+                Self::QWord(qword)
+            },
+            Self::QWord(qword) => {
+                let mut decimal_digit_iterator: DecimalDigitIterator = (*qword).into();
+                let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
+                let qword: u64 = decimal_digit
+                    .into_iter()
+                    .rev()
+                    .fold(0, |qword, digit| (qword << 4) + (digit as u64));
+                Self::QWord(qword)
+            },
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -818,6 +845,24 @@ struct DecimalDigitIterator(u64);
 impl From<u8> for DecimalDigitIterator {
     fn from(byte: u8) -> Self {
         Self(byte as u64)
+    }
+}
+
+impl From<u16> for DecimalDigitIterator {
+    fn from(word: u16) -> Self {
+        Self(word as u64)
+    }
+}
+
+impl From<u32> for DecimalDigitIterator {
+    fn from(dword: u32) -> Self {
+        Self(dword as u64)
+    }
+}
+
+impl From<u64> for DecimalDigitIterator {
+    fn from(qword: u64) -> Self {
+        Self(qword)
     }
 }
 
