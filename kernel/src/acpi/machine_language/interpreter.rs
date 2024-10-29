@@ -446,6 +446,26 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.138 ToHexString (Convert Data to Hexadecimal String)
+    pub fn to_hex_string(&self) -> Self {
+        match self {
+            Self::Byte(byte) => Self::String(format!("{:02x}", byte)),
+            Self::Word(word) => Self::String(format!("{:04x}", word)),
+            Self::DWord(dword) => Self::String(format!("{:08x}", dword)),
+            Self::QWord(qword) => Self::String(format!("{:016x}", qword)),
+            Self::Buffer(buffer) => {
+                let bytes: Vec<String> = buffer
+                    .iter()
+                    .map(|byte| format!("{}", byte))
+                    .collect();
+                let string: String = bytes.join(",");
+                Self::String(string)
+            },
+            Self::String(string) => Self::String(String::from(string)),
+            value => unimplemented!("value = {:#x?}", value),
+        }
+    }
+
     fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
