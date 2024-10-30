@@ -2704,6 +2704,21 @@ pub struct DefXOr(
     Target,
 );
 
+impl Evaluator for DefXOr {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _x_or_op,
+            [left, right],
+            target,
+        ) = self;
+        let left: Option<interpreter::Value> = left.evaluate(stack_frame, root, current);
+        let right: Option<interpreter::Value> = right.evaluate(stack_frame, root, current);
+        left
+            .zip(right)
+            .map(|(left, right)| target.hold(left ^ right, stack_frame, root, current))
+    }
+}
+
 /// # DerefOfOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2896,11 +2911,13 @@ pub enum ExpressionOpcode {
 impl Evaluator for ExpressionOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
+            Self::Acquire(def_acquire) => unimplemented!("def_acquire = {:#x?}", def_acquire),
             Self::Add(def_add) => def_add.evaluate(stack_frame, root, current),
             Self::And(def_and) => def_and.evaluate(stack_frame, root, current),
             Self::Buffer(def_buffer) => def_buffer.evaluate(stack_frame, root, current),
             Self::Concat(def_concat) => def_concat.evaluate(stack_frame, root, current),
             Self::ConcatRes(def_concat_res) => def_concat_res.evaluate(stack_frame, root, current),
+            Self::CondRefOf(def_cond_ref_of) => unimplemented!("def_cond_ref_of = {:#x?}", def_cond_ref_of),
             Self::CopyObject(def_copy_object) => def_copy_object.evaluate(stack_frame, root, current),
             Self::Decrement(def_decrement) => def_decrement.evaluate(stack_frame, root, current),
             Self::DerefOf(def_deref_of) => def_deref_of.evaluate(stack_frame, root, current),
@@ -2919,6 +2936,8 @@ impl Evaluator for ExpressionOpcode {
             Self::LNot(def_l_not) => def_l_not.evaluate(stack_frame, root, current),
             Self::LNotEqual(def_l_not_equal) => def_l_not_equal.evaluate(stack_frame, root, current),
             Self::LOr(def_l_or) => def_l_or.evaluate(stack_frame, root, current),
+            Self::Load(def_load) => unimplemented!("def_load = {:#x?}", def_load),
+            Self::LoadTable(def_load_table) => unimplemented!("def_load_table = {:#x?}", def_load_table),
             Self::Match(def_match) => def_match.evaluate(stack_frame, root, current),
             Self::MethodInvocation(method_invocation) => method_invocation.evaluate(stack_frame, root, current),
             Self::Mid(def_mid) => def_mid.evaluate(stack_frame, root, current),
@@ -2930,6 +2949,7 @@ impl Evaluator for ExpressionOpcode {
             Self::ObjectType(def_object_type) => def_object_type.evaluate(stack_frame, root, current),
             Self::Or(def_or) => def_or.evaluate(stack_frame, root, current),
             Self::Package(def_package) => def_package.evaluate(stack_frame, root, current),
+            Self::RefOf(def_ref_of) => unimplemented!("def_ref_of = {:#x?}", def_ref_of),
             Self::ShiftLeft(def_shift_left) => def_shift_left.evaluate(stack_frame, root, current),
             Self::ShiftRight(def_shift_right) => def_shift_right.evaluate(stack_frame, root, current),
             Self::SizeOf(def_size_of) => def_size_of.evaluate(stack_frame, root, current),
@@ -2942,7 +2962,9 @@ impl Evaluator for ExpressionOpcode {
             Self::ToHexString(def_to_hex_string) => def_to_hex_string.evaluate(stack_frame, root, current),
             Self::ToInteger(def_to_integer) => def_to_integer.evaluate(stack_frame, root, current),
             Self::ToString(def_to_string) => def_to_string.evaluate(stack_frame, root, current),
-            _ => unimplemented!("self = {:#x?}", self),
+            Self::VarPackage(def_var_package) => def_var_package.evaluate(stack_frame, root, current),
+            Self::Wait(def_wait) => unimplemented!("def_wait = {:#x?}", def_wait),
+            Self::XOr(def_x_or) => def_x_or.evaluate(stack_frame, root, current),
         }
     }
 }
