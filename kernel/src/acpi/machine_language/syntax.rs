@@ -2615,6 +2615,22 @@ pub struct DefToString(
     Target,
 );
 
+impl Evaluator for DefToString {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _to_string_op,
+            term_arg,
+            length_arg,
+            target,
+        ) = self;
+        let term_arg: Option<interpreter::Value> = term_arg.evaluate(stack_frame, root, current);
+        let length_arg: Option<interpreter::Value> = length_arg.evaluate(stack_frame, root, current);
+        term_arg
+            .and_then(|term_arg| term_arg.to_string(&length_arg))
+            .map(|value| target.hold(value, stack_frame, root, current))
+    }
+}
+
 /// # DefVarPackage
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -2925,6 +2941,7 @@ impl Evaluator for ExpressionOpcode {
             Self::ToDecimalString(def_to_decimal_string) => def_to_decimal_string.evaluate(stack_frame, root, current),
             Self::ToHexString(def_to_hex_string) => def_to_hex_string.evaluate(stack_frame, root, current),
             Self::ToInteger(def_to_integer) => def_to_integer.evaluate(stack_frame, root, current),
+            Self::ToString(def_to_string) => def_to_string.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
     }

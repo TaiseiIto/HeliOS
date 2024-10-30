@@ -499,6 +499,24 @@ impl Value {
         }
     }
 
+    /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.141 ToString (Convert Buffer to String)
+    pub fn to_string(&self, length: &Option<Self>) -> Option<Self> {
+        let length: Option<usize> = length
+            .as_ref()
+            .map(|length| length.into());
+        match self {
+            Self::Buffer(buffer) => String::from_utf8(buffer
+                    .iter()
+                    .enumerate()
+                    .take_while(|(index, byte)| **byte != 0 && length.map_or(true, |length| *index < length))
+                    .map(|(_index, byte)| *byte)
+                    .collect())
+                .ok()
+                .map(Self::String),
+            value => unimplemented!("Value = {:#x?}", value),
+        }
+    }
+
     fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
