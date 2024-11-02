@@ -2451,6 +2451,23 @@ pub struct DefSleep(
     MsecTime,
 );
 
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.125 Sleep (Milliseconds Sleep)
+impl Evaluator for DefSleep {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _sleep_op,
+            msec_time,
+        ) = self;
+        if let Some(msec_time) = msec_time
+            .evaluate(stack_frame, root, current)
+            .as_ref()
+            .map(|msec_time| msec_time.into()) {
+            timer::acpi::wait_milliseconds(msec_time);
+        }
+        None
+    }
+}
+
 /// # DefStall
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -4830,6 +4847,7 @@ impl Evaluator for StatementOpcode {
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Noop(def_noop) => def_noop.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
+            Self::Sleep(def_sleep) => def_sleep.evaluate(stack_frame, root, current),
             Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
         }
