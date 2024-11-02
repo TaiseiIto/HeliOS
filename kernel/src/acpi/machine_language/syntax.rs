@@ -1386,6 +1386,27 @@ pub struct DefFatal(
     FatalArg,
 );
 
+impl Evaluator for DefFatal {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _fatal_op,
+            fatal_type,
+            fatal_code,
+            fatal_arg,
+        ) = self;
+        if let Some(fatal_type) = fatal_type.evaluate(stack_frame, root, current) {
+            com2_println!("fatal_type = {:#x?}", fatal_type);
+        }
+        if let Some(fatal_code) = fatal_code.evaluate(stack_frame, root, current) {
+            com2_println!("fatal_code = {:#x?}", fatal_code);
+        }
+        if let Some(fatal_arg) = fatal_arg.evaluate(stack_frame, root, current) {
+            com2_println!("fatal_arg = {:#x?}", fatal_arg);
+        }
+        panic!("AML interpreter panic!");
+    }
+}
+
 /// # DefField
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
@@ -3037,11 +3058,25 @@ pub enum FieldElement {
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalArg(TermArg);
 
+impl Evaluator for FatalArg {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(term_arg) = self;
+        term_arg.evaluate(stack_frame, root, current)
+    }
+}
+
 /// # FatalCode
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalCode(DWordData);
+
+impl Evaluator for FatalCode {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(dword_data) = self;
+        dword_data.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # FatalOp
 /// ## References
@@ -3065,6 +3100,13 @@ pub struct FatalOpSuffix;
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct FatalType(ByteData);
+
+impl Evaluator for FatalType {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(byte_data) = self;
+        byte_data.evaluate(stack_frame, root, current)
+    }
+}
 
 /// # FieldFlags
 /// ## References
@@ -4778,6 +4820,7 @@ impl Evaluator for StatementOpcode {
             Self::Break(def_break) => def_break.evaluate(stack_frame, root, current),
             Self::BreakPoint(def_break_point) => def_break_point.evaluate(stack_frame, root, current),
             Self::Continue(def_continue) => def_continue.evaluate(stack_frame, root, current),
+            Self::Fatal(def_fatal) => def_fatal.evaluate(stack_frame, root, current),
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
             Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
