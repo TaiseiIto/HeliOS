@@ -899,6 +899,8 @@ impl Sub for Value {
 #[derive(Clone, Debug, Default)]
 pub struct StackFrame {
     arguments: [Option<Value>; 0x07],
+    broken: bool,
+    continued: bool,
     locals: [Option<Value>; 0x08],
     named_locals: BTreeMap<name::Path, Value>,
     return_value: Option<Value>,
@@ -907,6 +909,22 @@ pub struct StackFrame {
 impl StackFrame {
     pub fn add_named_local(&mut self, name: &name::Path, value: Value) {
         self.named_locals.insert(name.clone(), value);
+    }
+
+    pub fn clear_broken(&mut self) {
+        self.broken = false;
+    }
+
+    pub fn clear_continued(&mut self) {
+        self.continued = false;
+    }
+
+    pub fn is_broken(&self) -> bool {
+        self.broken
+    }
+
+    pub fn is_continued(&self) -> bool {
+        self.continued
     }
 
     pub fn read_argument(&self, index: usize) -> Option<Value> {
@@ -931,6 +949,8 @@ impl StackFrame {
     pub fn set_arguments(self, new_arguments: Vec<Value>) -> Self {
         let Self {
             arguments,
+            broken,
+            continued,
             locals,
             named_locals,
             return_value,
@@ -949,10 +969,20 @@ impl StackFrame {
             .unwrap();
         Self {
             arguments,
+            broken,
+            continued,
             locals,
             named_locals,
             return_value,
         }
+    }
+
+    pub fn set_broken(&mut self) {
+        self.broken = true;
+    }
+
+    pub fn set_continued(&mut self) {
+        self.continued = true;
     }
 
     pub fn write_argument(&mut self, index: usize, value: Value) -> Value {

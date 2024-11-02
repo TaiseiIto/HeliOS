@@ -968,6 +968,13 @@ pub struct DefBankField(
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBreak(BreakOp);
 
+impl Evaluator for DefBreak {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        stack_frame.set_broken();
+        None
+    }
+}
+
 /// # DefBreakPoint
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -1081,6 +1088,13 @@ impl Evaluator for DefConcatRes {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefContinue(ContinueOp);
+
+impl Evaluator for DefContinue {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        stack_frame.set_continued();
+        None
+    }
+}
 
 /// # DefCopyObject
 /// ## References
@@ -2685,10 +2699,16 @@ impl Evaluator for DefWhile {
             predicate,
             term_list,
         ) = self;
-        while predicate
-            .evaluate(stack_frame, root, current)
-            .map_or(false, |predicate| (&predicate).into()) {
-            term_list.evaluate(stack_frame, root, current);
+        let mut stack_frame: interpreter::StackFrame = stack_frame.clone();
+        while {
+            let predicate: bool = predicate
+                .evaluate(&mut stack_frame, root, current)
+                .map_or(false, |predicate| (&predicate).into());
+            let broken: bool = stack_frame.is_broken();
+            predicate && !broken
+        } {
+            term_list.evaluate(&mut stack_frame, root, current);
+            stack_frame.clear_continued();
         }
         None
     }
@@ -4749,6 +4769,8 @@ pub enum StatementOpcode {
 impl Evaluator for StatementOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
+            Self::Break(def_break) => def_break.evaluate(stack_frame, root, current),
+            Self::Continue(def_continue) => def_continue.evaluate(stack_frame, root, current),
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
             Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
@@ -4910,7 +4932,7 @@ impl Evaluator for TermList {
         let Self(term_objs) = self;
         term_objs
             .iter()
-            .for_each(|term_obj| if stack_frame.read_return().is_none() {
+            .for_each(|term_obj| if stack_frame.read_return().is_none() && !stack_frame.is_broken() && !stack_frame.is_continued() {
                 term_obj.evaluate(stack_frame, root, current);
             });
         stack_frame
