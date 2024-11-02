@@ -969,7 +969,7 @@ pub struct DefBankField(
 pub struct DefBreak(BreakOp);
 
 impl Evaluator for DefBreak {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         stack_frame.set_broken();
         None
     }
@@ -980,6 +980,12 @@ impl Evaluator for DefBreak {
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefBreakPoint(BreakPointOp);
+
+impl Evaluator for DefBreakPoint {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
+        None
+    }
+}
 
 /// # DefBuffer
 /// ## References
@@ -4770,6 +4776,7 @@ impl Evaluator for StatementOpcode {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Break(def_break) => def_break.evaluate(stack_frame, root, current),
+            Self::BreakPoint(def_break_point) => def_break_point.evaluate(stack_frame, root, current),
             Self::Continue(def_continue) => def_continue.evaluate(stack_frame, root, current),
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
