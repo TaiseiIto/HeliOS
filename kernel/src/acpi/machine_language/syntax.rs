@@ -2477,6 +2477,23 @@ pub struct DefStall(
     UsecTime,
 );
 
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.127 Stall (Stall for a Short Time)
+impl Evaluator for DefStall {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        let Self(
+            _stall_op,
+            usec_time,
+        ) = self;
+        if let Some(usec_time) = usec_time
+            .evaluate(stack_frame, root, current)
+            .as_ref()
+            .map(|usec_time| usec_time.into()) {
+            timer::acpi::wait_microseconds(usec_time);
+        }
+        None
+    }
+}
+
 /// # DefStore
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -4846,10 +4863,14 @@ impl Evaluator for StatementOpcode {
             Self::Fatal(def_fatal) => def_fatal.evaluate(stack_frame, root, current),
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
             Self::Noop(def_noop) => def_noop.evaluate(stack_frame, root, current),
+            Self::Notify(def_notify) => unimplemented!("def_notify = {:#x?}", def_notify),
+            Self::Release(def_release) => unimplemented!("def_release = {:#x?}", def_release),
+            Self::Reset(def_reset) => unimplemented!("def_reset = {:#x?}", def_reset),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
+            Self::Signal(def_signal) => unimplemented!("def_signal = {:#x?}", def_signal),
             Self::Sleep(def_sleep) => def_sleep.evaluate(stack_frame, root, current),
+            Self::Stall(def_stall) => def_stall.evaluate(stack_frame, root, current),
             Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
-            _ => unimplemented!("self = {:#x?}", self),
         }
     }
 }
