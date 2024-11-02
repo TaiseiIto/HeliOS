@@ -2125,6 +2125,12 @@ impl Evaluator for DefName {
 #[derive(acpi_machine_language::Analyzer, Clone)]
 pub struct DefNoop(NoopOp);
 
+impl Evaluator for DefNoop {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        None
+    }
+}
+
 /// # DefNot
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -4822,6 +4828,7 @@ impl Evaluator for StatementOpcode {
             Self::Continue(def_continue) => def_continue.evaluate(stack_frame, root, current),
             Self::Fatal(def_fatal) => def_fatal.evaluate(stack_frame, root, current),
             Self::IfElse(def_if_else) => def_if_else.evaluate(stack_frame, root, current),
+            Self::Noop(def_noop) => def_noop.evaluate(stack_frame, root, current),
             Self::Return(def_return) => def_return.evaluate(stack_frame, root, current),
             Self::While(def_while) => def_while.evaluate(stack_frame, root, current),
             _ => unimplemented!("self = {:#x?}", self),
