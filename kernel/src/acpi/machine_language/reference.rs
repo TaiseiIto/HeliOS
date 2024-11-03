@@ -159,7 +159,10 @@ impl<'a> Node<'a> {
             Some(objects) => objects
                 .iter()
                 .filter_map(|object| match object {
-                    Object::NamedField(named_field) => Some(*named_field),
+                    Object::NamedField {
+                        named_field,
+                        offset_in_bits: _,
+                    } => Some(*named_field),
                     _ => None,
                 })
                 .collect(),
@@ -172,7 +175,10 @@ impl<'a> Node<'a> {
             Some((_name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
-                    Object::NamedField(named_field) => Some(*named_field),
+                    Object::NamedField {
+                        named_field,
+                        offset_in_bits: _,
+                    } => Some(*named_field),
                     _ => None,
                 })
                 .collect(),
@@ -310,7 +316,10 @@ pub enum Object<'a> {
     Method(&'a syntax::DefMethod),
     Mutex(&'a syntax::DefMutex),
     Name(&'a syntax::DefName),
-    NamedField(&'a syntax::NamedField),
+    NamedField {
+        named_field: &'a syntax::NamedField,
+        offset_in_bits: usize,
+    },
     OpRegion(&'a syntax::DefOpRegion),
     PowerRes(&'a syntax::DefPowerRes),
     Processor(&'a syntax::DefProcessor),
@@ -346,7 +355,10 @@ impl Object<'_> {
             Self::Method(_) => "Method",
             Self::Mutex(_) => "Mutex",
             Self::Name(_) => "Name",
-            Self::NamedField(_) => "NamedField",
+            Self::NamedField {
+                named_field: _,
+                offset_in_bits: _,
+            } => "NamedField",
             Self::OpRegion(_) => "OpRegion",
             Self::PowerRes(_) => "PowerRes",
             Self::Processor(_) => "Processor",

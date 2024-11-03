@@ -1436,7 +1436,10 @@ impl Lender for DefField {
             .for_each(|field_element| {
                 offset_in_bits += field_element.bits();
                 if let FieldElement::Named(named_field) = field_element {
-                    let named_field = reference::Object::NamedField(named_field);
+                    let named_field = reference::Object::NamedField {
+                        named_field,
+                        offset_in_bits,
+                    };
                     root.add_node(current, named_field);
                 }
             });
@@ -4031,8 +4034,6 @@ impl Lender for NamedField {
         let current: name::Path = current.clone() + self
             .get_path()
             .unwrap_or_default();
-        let object = reference::Object::NamedField(self);
-        root.add_node(&current, object);
         self.iter()
             .for_each(|child| child.lend(root, &current));
     }
