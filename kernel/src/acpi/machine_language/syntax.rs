@@ -3096,6 +3096,7 @@ impl FieldElement {
     fn bits(&self) -> usize {
         match self {
             Self::Named(named_field) => named_field.bits(),
+            Self::Reserved(reserved_field) => reserved_field.bits(),
             _ => unimplemented!(),
         }
     }
@@ -4643,6 +4644,16 @@ pub struct ReservedField(
     ReservedFieldOp,
     PkgLength,
 );
+
+impl ReservedField {
+    fn bits(&self) -> usize {
+        let Self(
+            _reserved_field_op,
+            pkg_length,
+        ) = self;
+        pkg_length.pkg_length()
+    }
+}
 
 /// # ReservedFieldOp
 /// ## References
