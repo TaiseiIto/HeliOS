@@ -3932,11 +3932,17 @@ impl From<&NameString> for VecDeque<name::Segment> {
 }
 
 impl Holder for NameString {
-    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> interpreter::Value {
+    fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let name: name::Path = self.into();
         stack_frame
             .write_named_local(&name, value.clone())
-            .unwrap_or_else(|| unimplemented!("self = {:#x?}, value = {:#x?}", self, value))
+            .unwrap_or_else(|| {
+                let named_field = name::AbsolutePath::new(current, &name);
+                let named_field: &NamedField = root
+                    .get_named_field_from_current(&named_field)
+                    .unwrap();
+                unimplemented!("named_field = {:#x?}, value = {:#x?}", self, named_field)
+            })
     }
 }
 

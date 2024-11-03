@@ -100,6 +100,26 @@ impl<'a> Node<'a> {
         }
     }
 
+    pub fn get_named_field(&self, name: &name::Path) -> Option<&'a syntax::NamedField> {
+        let mut named_fields: Vec<&'a syntax::NamedField> = self.get_named_fields(name);
+        let named_field: Option<&'a syntax::NamedField> = named_fields.pop();
+        if named_fields.is_empty() {
+            named_field
+        } else {
+            None
+        }
+    }
+
+    pub fn get_named_field_from_current(&self, name: &name::AbsolutePath) -> Option<&'a syntax::NamedField> {
+        let mut named_fields: Vec<&'a syntax::NamedField> = self.get_named_fields_from_current(name);
+        let named_field: Option<&'a syntax::NamedField> = named_fields.pop();
+        if named_fields.is_empty() {
+            named_field
+        } else {
+            None
+        }
+    }
+
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
         match self.get_objects(method) {
             Some(objects) => objects
@@ -119,6 +139,31 @@ impl<'a> Node<'a> {
                 .iter()
                 .filter_map(|object| match object {
                     Object::Method(method) => Some(*method),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    fn get_named_fields(&self, name: &name::Path) -> Vec<&'a syntax::NamedField> {
+        match self.get_objects(name) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::NamedField(named_field) => Some(*named_field),
+                })
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    fn get_named_fields_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::NamedField> {
+        match self.get_objects_from_current(name) {
+            Some(objects) => objects
+                .iter()
+                .filter_map(|object| match object {
+                    Object::NamedField(named_field) => Some(*named_field),
                     _ => None,
                 })
                 .collect(),
