@@ -3938,10 +3938,8 @@ impl Holder for NameString {
             .write_named_local(&name, value.clone())
             .unwrap_or_else(|| {
                 let named_field = name::AbsolutePath::new(current, &name);
-                let named_field: &NamedField = root
-                    .get_named_field_from_current(&named_field)
-                    .unwrap();
-                unimplemented!("named_field = {:#x?}, value = {:#x?}", self, named_field)
+                root.write_named_field(&named_field, &value);
+                value
             })
     }
 }

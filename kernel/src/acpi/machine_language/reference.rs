@@ -13,6 +13,7 @@ use {
         name,
         syntax,
         syntax::Lender,
+        interpreter,
     },
 };
 
@@ -120,6 +121,13 @@ impl<'a> Node<'a> {
         }
     }
 
+    pub fn write_named_field(&self, name: &name::AbsolutePath, value: &interpreter::Value) {
+        let (name, objects): (name::Path, &[Object<'a>]) = self
+            .get_objects_from_current(name)
+            .unwrap();
+        unimplemented!("name = {:#x?}, objects = {:#x?}, value = {:#x?}", name, objects, value)
+    }
+
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
         match self.get_objects(method) {
             Some(objects) => objects
@@ -135,7 +143,7 @@ impl<'a> Node<'a> {
 
     fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Vec<&'a syntax::DefMethod> {
         match self.get_objects_from_current(method) {
-            Some((name, objects)) => objects
+            Some((_name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::Method(method) => Some(*method),
@@ -161,7 +169,7 @@ impl<'a> Node<'a> {
 
     fn get_named_fields_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::NamedField> {
         match self.get_objects_from_current(name) {
-            Some((name, objects)) => objects
+            Some((_name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::NamedField(named_field) => Some(*named_field),
@@ -187,7 +195,7 @@ impl<'a> Node<'a> {
 
     fn get_names_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::DefName> {
         match self.get_objects_from_current(name) {
-            Some((name, objects)) => objects
+            Some((_name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::Name(name) => Some(*name),
