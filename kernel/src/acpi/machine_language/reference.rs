@@ -135,7 +135,7 @@ impl<'a> Node<'a> {
 
     fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Vec<&'a syntax::DefMethod> {
         match self.get_objects_from_current(method) {
-            Some(objects) => objects
+            Some((name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::Method(method) => Some(*method),
@@ -161,7 +161,7 @@ impl<'a> Node<'a> {
 
     fn get_named_fields_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::NamedField> {
         match self.get_objects_from_current(name) {
-            Some(objects) => objects
+            Some((name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::NamedField(named_field) => Some(*named_field),
@@ -187,7 +187,7 @@ impl<'a> Node<'a> {
 
     fn get_names_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::DefName> {
         match self.get_objects_from_current(name) {
-            Some(objects) => objects
+            Some((name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::Name(name) => Some(*name),
@@ -219,9 +219,12 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_objects_from_current(&self, object: &name::AbsolutePath) -> Option<&[Object<'a>]> {
-        let mut object: name::AbsolutePath = self.original_path(object);
-        object.find_map(|object| self.get_objects(&object))
+    fn get_objects_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, &[Object<'a>])> {
+        let mut name: name::AbsolutePath = self.original_path(name);
+        name
+            .find_map(|name| self
+                .get_objects(&name)
+                .map(|object| (name, object)))
     }
 
     fn original_path(&self, alias: &name::AbsolutePath) -> name::AbsolutePath {
