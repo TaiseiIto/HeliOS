@@ -1411,6 +1411,7 @@ impl Evaluator for DefFatal {
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
 #[derive(acpi_machine_language::Analyzer, Clone)]
+#[manual(lender)]
 pub struct DefField(
     FieldOp,
     PkgLength,
@@ -1419,6 +1420,28 @@ pub struct DefField(
     #[no_leftover]
     FieldList,
 );
+
+impl Lender for DefField {
+    fn lend<'a>(&'a self, root: &mut reference::Node<'a>, current: &name::Path) {
+        let Self(
+            _field_op,
+            _pkg_length,
+            _name_string,
+            _field_flags,
+            FieldList(field_elements),
+        ) = self;
+        let mut offset_in_bits: usize = 0;
+        field_elements
+            .iter()
+            .for_each(|field_element| {
+                offset_in_bits += field_element.bits();
+                if let FieldElement::Named(named_field) = field_element {
+                    let named_field = reference::Object::NamedField(named_field);
+                    root.add_node(current, named_field);
+                }
+            });
+    }
+}
 
 /// # DefFindSetLeftBit
 /// ## References
