@@ -152,6 +152,7 @@ impl<'a> Node<'a> {
                 .iter()
                 .filter_map(|object| match object {
                     Object::NamedField(named_field) => Some(*named_field),
+                    _ => None,
                 })
                 .collect(),
             None => Vec::new(),
