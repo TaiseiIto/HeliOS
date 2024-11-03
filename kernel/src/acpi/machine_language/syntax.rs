@@ -3092,6 +3092,15 @@ pub enum FieldElement {
     Reserved(ReservedField),
 }
 
+impl FieldElement {
+    fn bits(&self) -> usize {
+        match self {
+            Self::Named(named_field) => named_field.bits(),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 /// # FataArg
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -3963,6 +3972,16 @@ pub struct NamedField(
     NameSeg,
     PkgLength,
 );
+
+impl NamedField {
+    fn bits(&self) -> usize {
+        let Self(
+            _name_seg,
+            pkg_length,
+        ) = self;
+        pkg_length.pkg_length()
+    }
+}
 
 impl FirstReader for NamedField {
     fn first_read<'a>(aml: &'a [u8], root: &mut name::Node, current: &name::Path) -> (Self, &'a [u8]) {
