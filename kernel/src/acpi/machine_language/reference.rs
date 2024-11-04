@@ -123,12 +123,27 @@ impl<'a> Node<'a> {
     }
 
     pub fn write_named_field(&self, name: &name::AbsolutePath, value: &interpreter::Value) {
-        com2_println!("write_named_field");
-        com2_println!("name = {:#x?}", name);
-        let (name, objects): (name::Path, &[Object<'a>]) = self
-            .get_objects_from_current(name)
-            .unwrap();
-        unimplemented!("name = {:#x?}, objects = {:#x?}, value = {:#x?}", name, objects, value)
+        if let Some((named_field_path, objects)) = self.get_objects_from_current(name) {
+            objects
+                .iter()
+                .for_each(|object| if let Object::NamedField {
+                    named_field: _,
+                    offset_in_bits,
+                    op_region,
+                } = object {
+                    let op_region = name::AbsolutePath::new(&named_field_path, &op_region);
+                    if let Some((op_region_path, objects)) = self.get_objects_from_current(&op_region) {
+                        objects
+                            .iter()
+                            .for_each(|object| if let Object::OpRegion(op_region) = object {
+                                com2_println!("op_region_path = {:#x?}", op_region_path);
+                                com2_println!("op_region = {:#x?}", op_region);
+                                com2_println!("offset_in_bits = {:#x?}", offset_in_bits);
+                            });
+                    }
+                });
+        }
+        unimplemented!();
     }
 
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
@@ -165,7 +180,7 @@ impl<'a> Node<'a> {
                     Object::NamedField {
                         named_field,
                         offset_in_bits: _,
-                        operation_region: _,
+                        op_region: _,
                     } => Some(*named_field),
                     _ => None,
                 })
@@ -182,7 +197,7 @@ impl<'a> Node<'a> {
                     Object::NamedField {
                         named_field,
                         offset_in_bits: _,
-                        operation_region: _,
+                        op_region: _,
                     } => Some(*named_field),
                     _ => None,
                 })
@@ -324,7 +339,7 @@ pub enum Object<'a> {
     NamedField {
         named_field: &'a syntax::NamedField,
         offset_in_bits: usize,
-        operation_region: name::Path,
+        op_region: name::Path,
     },
     OpRegion(&'a syntax::DefOpRegion),
     PowerRes(&'a syntax::DefPowerRes),
@@ -364,7 +379,7 @@ impl Object<'_> {
             Self::NamedField {
                 named_field: _,
                 offset_in_bits: _,
-                operation_region: _,
+                op_region: _,
             } => "NamedField",
             Self::OpRegion(_) => "OpRegion",
             Self::PowerRes(_) => "PowerRes",
@@ -382,11 +397,11 @@ impl fmt::Debug for Object<'_> {
             Self::NamedField {
                 named_field: _,
                 offset_in_bits,
-                operation_region,
+                op_region,
             } => formatter
                 .debug_struct(type_name)
                 .field("offset_in_bits", offset_in_bits)
-                .field("operation_region", operation_region)
+                .field("op_region", op_region)
                 .finish(),
             object => formatter.write_str(type_name),
         }

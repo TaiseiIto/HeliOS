@@ -1430,18 +1430,18 @@ impl Lender for DefField {
             _field_flags,
             FieldList(field_elements),
         ) = self;
-        let operation_region: name::Path = name_string.into();
+        let op_region: name::Path = name_string.into();
         let mut offset_in_bits: usize = 0;
         field_elements
             .iter()
             .for_each(|field_element| {
                 if let FieldElement::Named(named_field) = field_element {
                     let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
-                    let operation_region: name::Path = operation_region.clone();
+                    let op_region: name::Path = op_region.clone();
                     let named_field = reference::Object::NamedField {
                         named_field,
                         offset_in_bits,
-                        operation_region,
+                        op_region,
                     };
                     root.add_node(&current, named_field);
                 }
