@@ -4668,6 +4668,13 @@ impl Evaluator for RegionOffset {
 #[encoding_value_max = 0xff]
 pub struct RegionSpace(u8);
 
+impl RegionSpace {
+    pub fn get(&self) -> u8 {
+        let Self(byte) = self;
+        *byte
+    }
+}
+
 /// # ReleaseOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding

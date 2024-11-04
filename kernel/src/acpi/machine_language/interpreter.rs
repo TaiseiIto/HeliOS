@@ -120,6 +120,51 @@ impl From<&Value> for MatchOperator {
     }
 }
 
+/// # RegionSpace
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+pub enum RegionSpace {
+    SystemMemory,
+    SystemIo,
+    PciConfig,
+    EmbeddedControl,
+    SmBus,
+    SystemCmos,
+    PciBarTarget,
+    Ipmi,
+    GeneralPurposeIo,
+    GenericSerialBus,
+    Pcc,
+    OemDefined(u8),
+}
+
+impl From<u8> for RegionSpace {
+    fn from(region_space: u8) -> Self {
+        match region_space {
+            0x00 => Self::SystemMemory,
+            0x01 => Self::SystemIo,
+            0x02 => Self::PciConfig,
+            0x03 => Self::EmbeddedControl,
+            0x04 => Self::SmBus,
+            0x05 => Self::SystemCmos,
+            0x06 => Self::PciBarTarget,
+            0x07 => Self::Ipmi,
+            0x08 => Self::GeneralPurposeIo,
+            0x09 => Self::GenericSerialBus,
+            0x0a => Self::Pcc,
+            region_space => Self::OemDefined(region_space),
+        }
+    }
+}
+
+impl From<&syntax::RegionSpace> for RegionSpace {
+    fn from(region_space: &syntax::RegionSpace) -> Self {
+        region_space
+            .get()
+            .into()
+    }
+}
+
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Value {
     Bool(bool),
