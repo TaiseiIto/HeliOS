@@ -373,7 +373,17 @@ impl Object<'_> {
 
 impl fmt::Debug for Object<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(self.type_name())
+        let type_name: &str = self.type_name();
+        match self {
+            Self::NamedField {
+                named_field: _,
+                offset_in_bits,
+            } => formatter
+                .debug_struct(type_name)
+                .field("offset_in_bits", offset_in_bits)
+                .finish(),
+            object => formatter.write_str(type_name),
+        }
     }
 }
 
