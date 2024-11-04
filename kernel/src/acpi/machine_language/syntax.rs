@@ -1431,12 +1431,19 @@ impl Lender for DefField {
             FieldList(field_elements),
         ) = self;
         let op_region: name::Path = name_string.into();
-        let access_type: FieldAccessType = field_flags.into();
+        let mut access_type: FieldAccessType = field_flags.into();
         let mut offset_in_bits: usize = 0;
         field_elements
             .iter()
             .for_each(|field_element| {
                 match field_element {
+                    FieldElement::AccessField(AccessField(
+                        _access_field_op,
+                        new_access_type,
+                        _access_attrib,
+                    )) => {
+                        access_type = new_access_type.into();
+                    },
                     FieldElement::Named(named_field) => {
                         let access_type: FieldAccessType = access_type.clone();
                         let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
@@ -3224,6 +3231,20 @@ pub enum FieldAccessType {
     QWord,
     Buffer,
     Reserved,
+}
+
+impl From<&AccessType> for FieldAccessType {
+    fn from(access_type: &AccessType) -> Self {
+        match access_type.access_type() {
+            0 => Self::Any,
+            1 => Self::Byte,
+            2 => Self::Word,
+            3 => Self::DWord,
+            4 => Self::QWord,
+            5 => Self::Buffer,
+            _ => Self::Reserved,
+        }
+    }
 }
 
 impl From<&FieldFlags> for FieldAccessType {
