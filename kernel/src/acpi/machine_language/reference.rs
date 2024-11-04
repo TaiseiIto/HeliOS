@@ -165,6 +165,7 @@ impl<'a> Node<'a> {
                     Object::NamedField {
                         named_field,
                         offset_in_bits: _,
+                        operation_region: _,
                     } => Some(*named_field),
                     _ => None,
                 })
@@ -181,6 +182,7 @@ impl<'a> Node<'a> {
                     Object::NamedField {
                         named_field,
                         offset_in_bits: _,
+                        operation_region: _,
                     } => Some(*named_field),
                     _ => None,
                 })
@@ -322,6 +324,7 @@ pub enum Object<'a> {
     NamedField {
         named_field: &'a syntax::NamedField,
         offset_in_bits: usize,
+        operation_region: name::Path,
     },
     OpRegion(&'a syntax::DefOpRegion),
     PowerRes(&'a syntax::DefPowerRes),
@@ -361,6 +364,7 @@ impl Object<'_> {
             Self::NamedField {
                 named_field: _,
                 offset_in_bits: _,
+                operation_region: _,
             } => "NamedField",
             Self::OpRegion(_) => "OpRegion",
             Self::PowerRes(_) => "PowerRes",
@@ -378,9 +382,11 @@ impl fmt::Debug for Object<'_> {
             Self::NamedField {
                 named_field: _,
                 offset_in_bits,
+                operation_region,
             } => formatter
                 .debug_struct(type_name)
                 .field("offset_in_bits", offset_in_bits)
+                .field("operation_region", operation_region)
                 .finish(),
             object => formatter.write_str(type_name),
         }
