@@ -1427,23 +1427,30 @@ impl Lender for DefField {
             _field_op,
             _pkg_length,
             name_string,
-            _field_flags,
+            field_flags,
             FieldList(field_elements),
         ) = self;
         let op_region: name::Path = name_string.into();
+        let access_type: FieldAccessType = field_flags.into();
         let mut offset_in_bits: usize = 0;
         field_elements
             .iter()
             .for_each(|field_element| {
-                if let FieldElement::Named(named_field) = field_element {
-                    let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
-                    let op_region: name::Path = op_region.clone();
-                    let named_field = reference::Object::NamedField {
-                        named_field,
-                        offset_in_bits,
-                        op_region,
-                    };
-                    root.add_node(&current, named_field);
+                match field_element {
+                    FieldElement::Named(named_field) => {
+                        let access_type: FieldAccessType = access_type.clone();
+                        let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
+                        let op_region: name::Path = op_region.clone();
+                        let named_field = reference::Object::NamedField {
+                            access_type,
+                            named_field,
+                            offset_in_bits,
+                            op_region,
+                        };
+                        root.add_node(&current, named_field);
+                    },
+                    _ => {
+                    },
                 }
                 offset_in_bits += field_element.bits();
             });
@@ -3203,6 +3210,34 @@ pub struct FieldFlags {
     update_rule: u8,
     #[bits(access = RO)]
     reserved0: bool,
+}
+
+/// # AccessType of FieldFlags
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(Clone, Debug)]
+pub enum FieldAccessType {
+    Any,
+    Byte,
+    Word,
+    DWord,
+    QWord,
+    Buffer,
+    Reserved,
+}
+
+impl From<&FieldFlags> for FieldAccessType {
+    fn from(field_flags: &FieldFlags) -> Self {
+        match field_flags.access_type() {
+            0 => Self::Any,
+            1 => Self::Byte,
+            2 => Self::Word,
+            3 => Self::DWord,
+            4 => Self::QWord,
+            5 => Self::Buffer,
+            _ => Self::Reserved,
+        }
+    }
 }
 
 /// # FieldList

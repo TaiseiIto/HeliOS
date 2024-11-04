@@ -127,6 +127,7 @@ impl<'a> Node<'a> {
             objects
                 .iter()
                 .for_each(|object| if let Object::NamedField {
+                    access_type,
                     named_field,
                     offset_in_bits,
                     op_region,
@@ -141,6 +142,7 @@ impl<'a> Node<'a> {
                                 com2_println!("op_region = {:#x?}", op_region);
                                 com2_println!("offset_in_bits = {:#x?}", offset_in_bits);
                                 com2_println!("size_in_bits = {:#x?}", size_in_bits);
+                                com2_println!("access_type = {:#x?}", access_type);
                             });
                     }
                 });
@@ -180,6 +182,7 @@ impl<'a> Node<'a> {
                 .iter()
                 .filter_map(|object| match object {
                     Object::NamedField {
+                        access_type: _,
                         named_field,
                         offset_in_bits: _,
                         op_region: _,
@@ -197,6 +200,7 @@ impl<'a> Node<'a> {
                 .iter()
                 .filter_map(|object| match object {
                     Object::NamedField {
+                        access_type: _,
                         named_field,
                         offset_in_bits: _,
                         op_region: _,
@@ -339,6 +343,7 @@ pub enum Object<'a> {
     Mutex(&'a syntax::DefMutex),
     Name(&'a syntax::DefName),
     NamedField {
+        access_type: syntax::FieldAccessType,
         named_field: &'a syntax::NamedField,
         offset_in_bits: usize,
         op_region: name::Path,
@@ -379,6 +384,7 @@ impl Object<'_> {
             Self::Mutex(_) => "Mutex",
             Self::Name(_) => "Name",
             Self::NamedField {
+                access_type: _,
                 named_field: _,
                 offset_in_bits: _,
                 op_region: _,
@@ -397,11 +403,13 @@ impl fmt::Debug for Object<'_> {
         let type_name: &str = self.type_name();
         match self {
             Self::NamedField {
+                access_type,
                 named_field: _,
                 offset_in_bits,
                 op_region,
             } => formatter
                 .debug_struct(type_name)
+                .field("access_type", access_type)
                 .field("offset_in_bits", offset_in_bits)
                 .field("op_region", op_region)
                 .finish(),
