@@ -3123,7 +3123,7 @@ pub enum FieldElement {
 }
 
 impl FieldElement {
-    fn bits(&self) -> usize {
+    pub fn bits(&self) -> usize {
         match self {
             Self::AccessField(_)
             | Self::ConnectField(_)
@@ -4007,7 +4007,7 @@ pub struct NamedField(
 );
 
 impl NamedField {
-    fn bits(&self) -> usize {
+    pub fn bits(&self) -> usize {
         let Self(
             _name_seg,
             pkg_length,
@@ -4676,7 +4676,7 @@ pub struct ReservedField(
 );
 
 impl ReservedField {
-    fn bits(&self) -> usize {
+    pub fn bits(&self) -> usize {
         let Self(
             _reserved_field_op,
             pkg_length,

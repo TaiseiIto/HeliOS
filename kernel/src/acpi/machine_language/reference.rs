@@ -127,10 +127,11 @@ impl<'a> Node<'a> {
             objects
                 .iter()
                 .for_each(|object| if let Object::NamedField {
-                    named_field: _,
+                    named_field,
                     offset_in_bits,
                     op_region,
                 } = object {
+                    let size_in_bits: usize = named_field.bits();
                     let op_region = name::AbsolutePath::new(&named_field_path, &op_region);
                     if let Some((op_region_path, objects)) = self.get_objects_from_current(&op_region) {
                         objects
@@ -139,6 +140,7 @@ impl<'a> Node<'a> {
                                 com2_println!("op_region_path = {:#x?}", op_region_path);
                                 com2_println!("op_region = {:#x?}", op_region);
                                 com2_println!("offset_in_bits = {:#x?}", offset_in_bits);
+                                com2_println!("size_in_bits = {:#x?}", size_in_bits);
                             });
                     }
                 });
