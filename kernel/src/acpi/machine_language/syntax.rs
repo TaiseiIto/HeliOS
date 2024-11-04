@@ -1435,7 +1435,6 @@ impl Lender for DefField {
         field_elements
             .iter()
             .for_each(|field_element| {
-                offset_in_bits += field_element.bits();
                 if let FieldElement::Named(named_field) = field_element {
                     let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
                     let operation_region: name::Path = operation_region.clone();
@@ -1446,6 +1445,7 @@ impl Lender for DefField {
                     };
                     root.add_node(&current, named_field);
                 }
+                offset_in_bits += field_element.bits();
             });
     }
 }
