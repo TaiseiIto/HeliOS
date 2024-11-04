@@ -122,7 +122,7 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn write_named_field(&self, name: &name::AbsolutePath, value: &interpreter::Value) {
+    pub fn write_named_field(&self, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath, value: &interpreter::Value) {
         if let Some((named_field_path, objects)) = self.get_objects_from_current(name) {
             objects
                 .iter()
@@ -138,7 +138,7 @@ impl<'a> Node<'a> {
                         objects
                             .iter()
                             .for_each(|object| if let Object::OpRegion(op_region) = object {
-                                op_region.write(&op_region_path, *offset_in_bits, size_in_bits, access_type);
+                                op_region.write(stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type);
                             });
                     }
                 });

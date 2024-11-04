@@ -2227,7 +2227,17 @@ pub struct DefOpRegion(
 );
 
 impl DefOpRegion {
-    pub fn write(&self, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) {
+    pub fn write(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) {
+        let Self(
+            op_region_op,
+            name_string,
+            region_space,
+            region_offset,
+            region_len,
+        ) = self;
+        let region_space: interpreter::RegionSpace = region_space.into();
+        let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
+        let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         unimplemented!();
     }
 }
@@ -4012,7 +4022,7 @@ impl Holder for NameString {
             .write_named_local(&name, value.clone())
             .unwrap_or_else(|| {
                 let named_field = name::AbsolutePath::new(current, &name);
-                root.write_named_field(&named_field, &value);
+                root.write_named_field(stack_frame, root, &named_field, &value);
                 value
             })
     }
