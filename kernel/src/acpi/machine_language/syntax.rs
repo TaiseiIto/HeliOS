@@ -3121,9 +3121,11 @@ pub enum FieldElement {
 impl FieldElement {
     fn bits(&self) -> usize {
         match self {
+            Self::AccessField(_)
+            | Self::ConnectField(_)
+            | Self::ExtendedAccessField(_) => 0,
             Self::Named(named_field) => named_field.bits(),
             Self::Reserved(reserved_field) => reserved_field.bits(),
-            _ => unimplemented!(),
         }
     }
 }

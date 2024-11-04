@@ -9,6 +9,7 @@ use {
         vec::Vec,
     },
     core::fmt,
+    crate::com2_println,
     super::{
         name,
         syntax,
@@ -122,6 +123,8 @@ impl<'a> Node<'a> {
     }
 
     pub fn write_named_field(&self, name: &name::AbsolutePath, value: &interpreter::Value) {
+        com2_println!("write_named_field");
+        com2_println!("name = {:#x?}", name);
         let (name, objects): (name::Path, &[Object<'a>]) = self
             .get_objects_from_current(name)
             .unwrap();
