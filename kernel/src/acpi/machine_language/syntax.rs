@@ -2265,9 +2265,7 @@ impl DefOpRegion {
                     } else {
                         align_byte * u8_bits - 1
                     };
-                    match region_space {
-                        ref region_space => unimplemented!("region_space = {:#x?}", region_space),
-                    }
+                    unimplemented!("region_space = {:#x?}\naddress = {:#x?}\nalign_byte = {:#x?}\npresent_first_bit = {:#x?}\npresent_last_bit = {:#x?}", region_space, address, align_byte, present_first_bit, present_last_bit);
                 });
             Some(value)
         } else {
