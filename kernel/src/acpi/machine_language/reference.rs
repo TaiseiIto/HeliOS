@@ -138,16 +138,11 @@ impl<'a> Node<'a> {
                         objects
                             .iter()
                             .for_each(|object| if let Object::OpRegion(op_region) = object {
-                                com2_println!("op_region_path = {:#x?}", op_region_path);
-                                com2_println!("op_region = {:#x?}", op_region);
-                                com2_println!("offset_in_bits = {:#x?}", offset_in_bits);
-                                com2_println!("size_in_bits = {:#x?}", size_in_bits);
-                                com2_println!("access_type = {:#x?}", access_type);
+                                op_region.write(&op_region_path, *offset_in_bits, size_in_bits, access_type);
                             });
                     }
                 });
         }
-        unimplemented!();
     }
 
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {

@@ -2220,6 +2220,12 @@ pub struct DefOpRegion(
     RegionLen,
 );
 
+impl DefOpRegion {
+    pub fn write(&self, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &FieldAccessType) {
+        unimplemented!();
+    }
+}
+
 /// # DefObjectType
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
