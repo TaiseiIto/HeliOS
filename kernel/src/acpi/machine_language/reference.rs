@@ -122,27 +122,30 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn write_named_field(&self, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath, value: &interpreter::Value) {
-        if let Some((named_field_path, objects)) = self.get_objects_from_current(name) {
-            objects
+    pub fn write_named_field(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
+        self.get_objects_from_current(name)
+            .and_then(|(named_field_path, objects)| objects
                 .iter()
-                .for_each(|object| if let Object::NamedField {
-                    access_type,
-                    named_field,
-                    offset_in_bits,
-                    op_region,
-                } = object {
-                    let size_in_bits: usize = named_field.bits();
-                    let op_region = name::AbsolutePath::new(&named_field_path, &op_region);
-                    if let Some((op_region_path, objects)) = self.get_objects_from_current(&op_region) {
-                        objects
-                            .iter()
-                            .for_each(|object| if let Object::OpRegion(op_region) = object {
-                                op_region.write(stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type);
-                            });
-                    }
-                });
-        }
+                .find_map(|object| match object {
+                    Object::NamedField {
+                        access_type,
+                        named_field,
+                        offset_in_bits,
+                        op_region,
+                    } => {
+                        let size_in_bits: usize = named_field.bits();
+                        let op_region = name::AbsolutePath::new(&named_field_path, &op_region);
+                        self.get_objects_from_current(&op_region)
+                            .and_then(|(op_region_path, objects)| objects
+                                .iter()
+                                .find_map(|object| match object {
+                                    Object::OpRegion(op_region) => op_region.write(value.clone(), stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
+                                    _ => None,
+                                }))
+                    },
+                    _ => None,
+                })
+            )
     }
 
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
