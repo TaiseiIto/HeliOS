@@ -2238,7 +2238,42 @@ impl DefOpRegion {
         let region_space: interpreter::RegionSpace = region_space.into();
         let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
-        unimplemented!();
+        let align_byte: usize = access_type.align();
+        let u8_bits: usize = u8::BITS as usize;
+        if let Some((region_offset, region_len)) = region_offset.zip(region_len) {
+            match region_space {
+                interpreter::RegionSpace::SystemMemory => {
+                    let region_offset: usize = (&region_offset).into();
+                    let region_len: usize = (&region_len).into();
+                    let first_byte: usize = region_offset + offset_in_bits / u8_bits;
+                    let first_bit: usize = offset_in_bits % u8_bits;
+                    let last_bit: usize = first_bit + size_in_bits - 1;
+                    let last_byte: usize = first_byte + last_bit / u8_bits;
+                    let last_bit: usize = last_bit % u8_bits;
+                    let aligned_first_byte: usize = (first_byte / align_byte) * align_byte;
+                    let aligned_last_byte: usize = (last_byte / align_byte) * align_byte + align_byte - 1;
+                    let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
+                    let last_bit: usize = last_bit + (last_byte + align_byte - aligned_last_byte - 1) * u8_bits;
+                    assert!(aligned_last_byte < region_offset + region_len);
+                    (aligned_first_byte..=aligned_last_byte)
+                        .step_by(align_byte)
+                        .for_each(|address| {
+                            let present_first_bit: usize = if address == aligned_first_byte {
+                                first_bit
+                            } else {
+                                0
+                            };
+                            let present_last_bit: usize = if address + align_byte == aligned_last_byte + 1 {
+                                last_bit
+                            } else {
+                                align_byte * u8_bits - 1
+                            };
+                            unimplemented!();
+                        });
+                },
+                ref retion_space => unimplemented!("op_region_path = {:#x?}\nregion_space = {:#x?}\nregion_offset = {:#x?}\nregion_len = {:#x?}\noffset_in_bits = {:#x?}\nsize_in_bits = {:#x?}\naccess_type = {:#x?}", op_region_path, region_space, region_offset, region_len, offset_in_bits, size_in_bits, access_type),
+            }
+        }
     }
 }
 

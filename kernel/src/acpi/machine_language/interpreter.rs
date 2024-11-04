@@ -44,6 +44,20 @@ pub enum AccessType {
     Reserved,
 }
 
+impl AccessType {
+    pub fn align(&self) -> usize {
+        match self {
+            Self::Any => 1,
+            Self::Byte => 1,
+            Self::Word => 2,
+            Self::DWord => 4,
+            Self::QWord => 8,
+            Self::Buffer => 1,
+            Self::Reserved => unimplemented!(),
+        }
+    }
+}
+
 impl From<u8> for AccessType {
     fn from(access_type: u8) -> Self {
         match access_type {
@@ -123,6 +137,7 @@ impl From<&Value> for MatchOperator {
 /// # RegionSpace
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(Debug)]
 pub enum RegionSpace {
     SystemMemory,
     SystemIo,
