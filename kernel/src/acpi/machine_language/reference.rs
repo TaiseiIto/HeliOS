@@ -338,7 +338,7 @@ pub enum Object<'a> {
     Mutex(&'a syntax::DefMutex),
     Name(&'a syntax::DefName),
     NamedField {
-        access_type: syntax::FieldAccessType,
+        access_type: interpreter::AccessType,
         named_field: &'a syntax::NamedField,
         offset_in_bits: usize,
         op_region: name::Path,

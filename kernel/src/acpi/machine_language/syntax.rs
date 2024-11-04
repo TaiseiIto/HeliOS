@@ -133,6 +133,12 @@ pub struct AccessType {
     access_attrib: u8,
 }
 
+impl AccessType {
+    pub fn get_access_type(&self) -> u8 {
+        self.access_type()
+    }
+}
+
 /// # AcquireOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.4 Expression Opcodes Encoding
@@ -1431,7 +1437,7 @@ impl Lender for DefField {
             FieldList(field_elements),
         ) = self;
         let op_region: name::Path = name_string.into();
-        let mut access_type: FieldAccessType = field_flags.into();
+        let mut access_type: interpreter::AccessType = field_flags.into();
         let mut offset_in_bits: usize = 0;
         field_elements
             .iter()
@@ -1445,7 +1451,7 @@ impl Lender for DefField {
                         access_type = new_access_type.into();
                     },
                     FieldElement::Named(named_field) => {
-                        let access_type: FieldAccessType = access_type.clone();
+                        let access_type: interpreter::AccessType = access_type.clone();
                         let current: name::Path = current.clone() + named_field.get_path().unwrap_or_default();
                         let op_region: name::Path = op_region.clone();
                         let named_field = reference::Object::NamedField {
@@ -2221,7 +2227,7 @@ pub struct DefOpRegion(
 );
 
 impl DefOpRegion {
-    pub fn write(&self, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &FieldAccessType) {
+    pub fn write(&self, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) {
         unimplemented!();
     }
 }
@@ -3225,45 +3231,9 @@ pub struct FieldFlags {
     reserved0: bool,
 }
 
-/// # AccessType of FieldFlags
-/// ## References
-/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
-#[derive(Clone, Debug)]
-pub enum FieldAccessType {
-    Any,
-    Byte,
-    Word,
-    DWord,
-    QWord,
-    Buffer,
-    Reserved,
-}
-
-impl From<&AccessType> for FieldAccessType {
-    fn from(access_type: &AccessType) -> Self {
-        match access_type.access_type() {
-            0 => Self::Any,
-            1 => Self::Byte,
-            2 => Self::Word,
-            3 => Self::DWord,
-            4 => Self::QWord,
-            5 => Self::Buffer,
-            _ => Self::Reserved,
-        }
-    }
-}
-
-impl From<&FieldFlags> for FieldAccessType {
-    fn from(field_flags: &FieldFlags) -> Self {
-        match field_flags.access_type() {
-            0 => Self::Any,
-            1 => Self::Byte,
-            2 => Self::Word,
-            3 => Self::DWord,
-            4 => Self::QWord,
-            5 => Self::Buffer,
-            _ => Self::Reserved,
-        }
+impl FieldFlags {
+    pub fn get_access_type(&self) -> u8 {
+        self.access_type()
     }
 }
 

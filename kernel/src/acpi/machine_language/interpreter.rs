@@ -26,8 +26,53 @@ use {
     super::{
         name,
         reference,
+        syntax,
     },
 };
+
+/// # AccessType of FieldFlags
+/// ## References
+/// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.2 Named Objects Encoding
+#[derive(Clone, Debug)]
+pub enum AccessType {
+    Any,
+    Byte,
+    Word,
+    DWord,
+    QWord,
+    Buffer,
+    Reserved,
+}
+
+impl From<u8> for AccessType {
+    fn from(access_type: u8) -> Self {
+        match access_type {
+            0 => Self::Any,
+            1 => Self::Byte,
+            2 => Self::Word,
+            3 => Self::DWord,
+            4 => Self::QWord,
+            5 => Self::Buffer,
+            _ => Self::Reserved,
+        }
+    }
+}
+
+impl From<&syntax::AccessType> for AccessType {
+    fn from(access_type: &syntax::AccessType) -> Self {
+        access_type
+            .get_access_type()
+            .into()
+    }
+}
+
+impl From<&syntax::FieldFlags> for AccessType {
+    fn from(field_flags: &syntax::FieldFlags) -> Self {
+        field_flags
+            .get_access_type()
+            .into()
+    }
+}
 
 /// # Match Operator
 /// ## References
