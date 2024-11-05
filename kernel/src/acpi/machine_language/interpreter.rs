@@ -88,6 +88,68 @@ impl From<&syntax::FieldFlags> for AccessType {
     }
 }
 
+pub struct BitIterator<'a> {
+    index: usize,
+    value: &'a Value,
+}
+
+impl<'a> From<&'a Value> for BitIterator<'a> {
+    fn from(value: &'a Value) -> Self {
+        let index: usize = 0;
+        Self {
+            index,
+            value,
+        }
+    }
+}
+
+impl<'a> Iterator for BitIterator<'a> {
+    type Item = bool;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            index,
+            value,
+        } = self;
+        let bit_index: usize = *index;
+        let u8_bits: usize = u8::BITS as usize;
+        *index += 1;
+        match value {
+            Value::Bool(value) => (bit_index == 0).then_some(*value),
+            Value::Buffer(buffer) => {
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                buffer
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            Value::Byte(byte) => (bit_index < 8).then(|| (byte >> bit_index) & 1 != 0),
+            Value::Char(character) => {
+                let character: u32 = *character as u32;
+                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                    .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            Value::DWord(dword) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                    .map(|byte_index| (dword >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            _ => unimplemented!(),
+        }
+    }
+}
+
 /// # Match Operator
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.80 Match (Find Object Match)
@@ -690,6 +752,12 @@ impl Value {
             (Self::Zero, Self::Zero) => (Self::Zero, Self::Zero),
             (left, right)  => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
+    }
+}
+
+impl<'a> Value {
+    pub fn bit_iterator(&'a self) -> BitIterator<'a> {
+        self.into()
     }
 }
 

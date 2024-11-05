@@ -9,7 +9,6 @@ use {
         vec::Vec,
     },
     core::fmt,
-    crate::com2_println,
     super::{
         name,
         syntax,
