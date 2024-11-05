@@ -128,6 +128,7 @@ impl<'a> Iterator for BitIterator<'a> {
                 let character: u32 = *character as u32;
                 let bytes: Vec<u8> = (0..mem::size_of::<u32>())
                     .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
+                    .take_while(|byte| *byte != 0)
                     .collect();
                 let byte_index: usize = bit_index / u8_bits;
                 let bit_index: usize = bit_index % u8_bits;
@@ -145,7 +146,41 @@ impl<'a> Iterator for BitIterator<'a> {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
             },
-            _ => unimplemented!(),
+            Value::One => Some(bit_index == 0),
+            Value::Ones => Some(true),
+            Value::Package(package) => unimplemented!(),
+            Value::QWord(qword) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u64>())
+                    .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            Value::Revision => unimplemented!(),
+            Value::String(string) => {
+                let bytes: Vec<u8> = string
+                    .as_bytes()
+                    .to_vec();
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            Value::Word(word) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u16>())
+                    .map(|byte_index| (word >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = bit_index / u8_bits;
+                let bit_index: usize = bit_index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+            },
+            Value::Zero => Some(false),
         }
     }
 }
