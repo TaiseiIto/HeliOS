@@ -450,6 +450,42 @@ impl Value {
         }
     }
 
+    pub fn length_in_bits(&self) -> Option<usize> {
+        let u8_bits: usize = u8::BITS as usize;
+        match self {
+            Self::Bool(_) => Some(1),
+            Self::Buffer(buffer) => Some(buffer.len() * u8_bits),
+            Self::Byte(_) => Some(mem::size_of::<u8>() * u8_bits),
+            Self::Char(character) => {
+                let character: u32 = *character as u32;
+                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                    .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
+                    .take_while(|byte| *byte != 0)
+                    .collect();
+                Some(bytes.len() * u8_bits)
+            },
+            Self::DWord(_) => Some(mem::size_of::<u32>() * u8_bits),
+            Self::One => None,
+            Self::Ones => None,
+            Self::Package(package) => package
+                .iter()
+                .map(|element| element.length_in_bits())
+                .fold(Some(0), |summation, element_length| summation
+                    .zip(element_length)
+                    .map(|(summation, element_length)| summation + element_length)),
+            Self::QWord(_) => Some(mem::size_of::<u64>() * u8_bits),
+            Self::Revision => None,
+            Self::String(string) => {
+                let bytes: Vec<u8> = string
+                    .as_bytes()
+                    .to_vec();
+                Some(bytes.len() * u8_bits)
+            },
+            Self::Word(_) => Some(mem::size_of::<u16>() * u8_bits),
+            Self::Zero => None,
+        }
+    }
+
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.85 Mid (Extract Portion of Buffer or String)
     pub fn mid(&self, index: &Self, length: &Self) -> Option<Self> {
         let index: usize = index.into();
