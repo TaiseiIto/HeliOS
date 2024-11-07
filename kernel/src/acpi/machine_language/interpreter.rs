@@ -112,76 +112,10 @@ impl<'a> Iterator for BitIterator<'a> {
             value,
         } = self;
         let bit_index: usize = *index;
-        let u8_bits: usize = u8::BITS as usize;
         *index += 1;
-        match value {
-            Value::Bool(value) => (bit_index == 0).then_some(*value),
-            Value::Buffer(buffer) => {
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                buffer
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::Byte(byte) => (bit_index < 8).then(|| (byte >> bit_index) & 1 != 0),
-            Value::Char(character) => {
-                let character: u32 = *character as u32;
-                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
-                    .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
-                    .take_while(|byte| *byte != 0)
-                    .collect();
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                bytes
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::DWord(dword) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
-                    .map(|byte_index| (dword >> (byte_index * u8_bits)) as u8)
-                    .collect();
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                bytes
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::One => Some(bit_index == 0),
-            Value::Ones => Some(true),
-            Value::Package(package) => unimplemented!(),
-            Value::QWord(qword) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u64>())
-                    .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
-                    .collect();
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                bytes
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::Revision => unimplemented!(),
-            Value::String(string) => {
-                let bytes: Vec<u8> = string
-                    .as_bytes()
-                    .to_vec();
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                bytes
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::Word(word) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u16>())
-                    .map(|byte_index| (word >> (byte_index * u8_bits)) as u8)
-                    .collect();
-                let byte_index: usize = bit_index / u8_bits;
-                let bit_index: usize = bit_index % u8_bits;
-                bytes
-                    .get(byte_index)
-                    .map(|byte| (*byte >> bit_index) & 1 != 0)
-            },
-            Value::Zero => Some(false),
-        }
+        value
+            .get_bit(bit_index)
+            .ok()
     }
 }
 
@@ -398,6 +332,94 @@ impl Value {
         }
     }
 
+    pub fn get_bit(&self, index: usize) -> Result<bool, Option<usize>> {
+        let u8_bits: usize = u8::BITS as usize;
+        match self {
+            Self::Bool(value) => (index == 0)
+                .then_some(*value)
+                .ok_or(Some(1)),
+            Self::Buffer(buffer) => {
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                buffer
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(buffer.len() * u8_bits))
+            },
+            Self::Byte(byte) => (index < 8)
+                .then(|| (byte >> index) & 1 != 0)
+                .ok_or(Some(u8_bits)),
+            Self::Char(character) => {
+                let character: u32 = *character as u32;
+                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                    .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
+                    .take_while(|byte| *byte != 0)
+                    .collect();
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(bytes.len() * u8_bits))
+            },
+            Self::DWord(dword) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                    .map(|byte_index| (dword >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(bytes.len() * u8_bits))
+            },
+            Self::One => Ok(index == 0),
+            Self::Ones => Ok(true),
+            Self::Package(package) => package
+                .iter()
+                .fold(Err(Some(index)), |result, element| match result {
+                    Ok(bit) => Ok(bit),
+                    Err(Some(length_in_bits)) => element.get_bit(index - length_in_bits),
+                    Err(None) => Err(None),
+                }),
+            Self::QWord(qword) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u64>())
+                    .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(bytes.len() * u8_bits))
+            },
+            Self::Revision => unimplemented!(),
+            Self::String(string) => {
+                let bytes: Vec<u8> = string
+                    .as_bytes()
+                    .to_vec();
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(bytes.len() * u8_bits))
+            },
+            Self::Word(word) => {
+                let bytes: Vec<u8> = (0..mem::size_of::<u16>())
+                    .map(|byte_index| (word >> (byte_index * u8_bits)) as u8)
+                    .collect();
+                let byte_index: usize = index / u8_bits;
+                let bit_index: usize = index % u8_bits;
+                bytes
+                    .get(byte_index)
+                    .map(|byte| (*byte >> bit_index) & 1 != 0)
+                    .ok_or(Some(bytes.len() * u8_bits))
+            },
+            Self::Zero => Ok(false),
+        }
+    }
+
     pub fn get_byte(&self) -> Option<u8> {
         match self {
             Self::Byte(byte) => Some(*byte),
@@ -447,42 +469,6 @@ impl Value {
                 .max()
                 .map_or(0, |shift| (shift as u8) + 1)),
             value => unimplemented!("value = {:#x?}", value),
-        }
-    }
-
-    pub fn length_in_bits(&self) -> Option<usize> {
-        let u8_bits: usize = u8::BITS as usize;
-        match self {
-            Self::Bool(_) => Some(1),
-            Self::Buffer(buffer) => Some(buffer.len() * u8_bits),
-            Self::Byte(_) => Some(mem::size_of::<u8>() * u8_bits),
-            Self::Char(character) => {
-                let character: u32 = *character as u32;
-                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
-                    .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
-                    .take_while(|byte| *byte != 0)
-                    .collect();
-                Some(bytes.len() * u8_bits)
-            },
-            Self::DWord(_) => Some(mem::size_of::<u32>() * u8_bits),
-            Self::One => None,
-            Self::Ones => None,
-            Self::Package(package) => package
-                .iter()
-                .map(|element| element.length_in_bits())
-                .fold(Some(0), |summation, element_length| summation
-                    .zip(element_length)
-                    .map(|(summation, element_length)| summation + element_length)),
-            Self::QWord(_) => Some(mem::size_of::<u64>() * u8_bits),
-            Self::Revision => None,
-            Self::String(string) => {
-                let bytes: Vec<u8> = string
-                    .as_bytes()
-                    .to_vec();
-                Some(bytes.len() * u8_bits)
-            },
-            Self::Word(_) => Some(mem::size_of::<u16>() * u8_bits),
-            Self::Zero => None,
         }
     }
 
