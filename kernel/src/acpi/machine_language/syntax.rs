@@ -20,6 +20,7 @@ use {
     crate::{
         com2_println,
         timer,
+        x64,
     },
     super::{
         interpreter::{
@@ -2277,6 +2278,9 @@ impl DefOpRegion {
                                         unsafe {
                                             *address
                                         }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => {
+                                        x64::port::inb(address as u16)
                                     },
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
