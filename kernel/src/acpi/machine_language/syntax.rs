@@ -2282,6 +2282,9 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemIo => {
                                         x64::port::inb(address as u16)
                                     },
+                                    interpreter::RegionSpace::SystemCmos => {
+                                        x64::cmos::read(address as u8)
+                                    },
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
                             },
