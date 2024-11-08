@@ -36,7 +36,7 @@ use {
 /// ## References
 /// * [Intel E8500 Chipset North Bridge (NB)](https://www.intel.co.jp/content/dam/doc/datasheet/e8500-chipset-north-bridge-datasheet.pdf) 4.6.1 CFGADR - Configuration Address Register
 #[bitfield(u32)]
-struct Address {
+pub struct Address {
     #[bits(2, access = RO)]
     reserved0: u8,
     #[bits(6)]
@@ -55,7 +55,7 @@ impl Address {
     const ADDRESS_PORT: u16 = 0x0cf8;
     const DATA_PORT: u16 = 0x0cfc;
 
-    fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
+    pub fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
         Self::new()
             .with_enable(true)
             .with_bus(bus)
@@ -64,18 +64,30 @@ impl Address {
             .with_register(register)
     }
 
+    pub fn read_u8(self) -> u8 {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::inb(Self::DATA_PORT)
+    }
+
+    pub fn read_u16(self) -> u16 {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::inw(Self::DATA_PORT)
+    }
+
+    pub fn read_u32(self) -> u32 {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::inl(Self::DATA_PORT)
+    }
+
     fn device_range() -> ops::RangeInclusive<u8> {
         0..=(1 << Self::DEVICE_BITS) - 1
     }
 
     fn function_range() -> ops::RangeInclusive<u8> {
         0..=(1 << Self::FUNCTION_BITS) - 1
-    }
-
-    fn read(self) -> u32 {
-        let address: u32 = self.into();
-        x64::port::outl(Self::ADDRESS_PORT, address);
-        x64::port::inl(Self::DATA_PORT)
     }
 }
 
@@ -205,7 +217,7 @@ impl Function {
 
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (0u8..Self::LENGTH as u8)
-            .map(|register| Address::create(bus, device, function, register).read())
+            .map(|register| Address::create(bus, device, function, register).read_u32())
             .collect();
         let space: [u32; Self::LENGTH] = space
             .try_into()

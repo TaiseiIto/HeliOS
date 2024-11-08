@@ -19,6 +19,7 @@ use {
     },
     crate::{
         com2_println,
+        pci,
         timer,
         x64,
     },
@@ -2280,6 +2281,13 @@ impl DefOpRegion {
                                         }
                                     },
                                     interpreter::RegionSpace::SystemIo => x64::port::inb(address as u16),
+                                    interpreter::RegionSpace::PciConfig => {
+                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
+                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
+                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
+                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
+                                        pci::Address::create(bus, device, function, offset).read_u8()
+                                    },
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
