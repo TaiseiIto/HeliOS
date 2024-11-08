@@ -2291,6 +2291,21 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
+                                let written: u8 = (0..u8_bits)
+                                    .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
+                                        bit_iterator
+                                            .next()
+                                            .unwrap_or((read >> index) & 0x01 != 0)
+                                    } else {
+                                        (read >> index) & 0x01 != 0
+                                    })
+                                    .rev()
+                                    .fold(0x00, |written, bit| (written << 1) | if bit {
+                                        0x01
+                                    } else {
+                                        0x00
+                                    });
+                                unimplemented!();
                             },
                             2 => unimplemented!(),
                             4 => unimplemented!(),
