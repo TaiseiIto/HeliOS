@@ -2269,18 +2269,23 @@ impl DefOpRegion {
                         } else {
                             align_bits - 1
                         };
-                        let value: Vec<bool> = (0..align_bits)
-                            .map(|index| if index < present_first_bit {
-                                false
-                            } else if (present_first_bit..=present_last_bit).contains(&index) {
-                                bit_iterator
-                                    .next()
-                                    .unwrap_or(false)
-                            } else {
-                                false
-                            })
-                            .collect();
-                        unimplemented!("self = {:#x?}\nvalue = {:#x?}\nregion_space = {:#x?}\naddress = {:#x?}\nalign_bytes = {:#x?}\npresent_first_bit = {:#x?}\npresent_last_bit = {:#x?}", self, &value, region_space, address, align_bytes, present_first_bit, present_last_bit);
+                        match align_bytes {
+                            1 => {
+                                let read: u8 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u8 = address as *const u8;
+                                        unsafe {
+                                            *address
+                                        }
+                                    },
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                            },
+                            2 => unimplemented!(),
+                            4 => unimplemented!(),
+                            8 => unimplemented!(),
+                            _ => unreachable!(),
+                        }
                     });
                 value
             })
