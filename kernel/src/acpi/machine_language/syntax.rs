@@ -2238,8 +2238,9 @@ impl DefOpRegion {
         let region_space: interpreter::RegionSpace = region_space.into();
         let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
-        let align_byte: usize = access_type.align();
+        let align_bytes: usize = access_type.align();
         let u8_bits: usize = u8::BITS as usize;
+        let align_bits: usize = align_bytes * u8_bits;
         region_offset
             .zip(region_len)
             .map(|(region_offset, region_len)| {
@@ -2250,24 +2251,36 @@ impl DefOpRegion {
                 let last_bit: usize = first_bit + size_in_bits - 1;
                 let last_byte: usize = first_byte + last_bit / u8_bits;
                 let last_bit: usize = last_bit % u8_bits;
-                let aligned_first_byte: usize = (first_byte / align_byte) * align_byte;
-                let aligned_last_byte: usize = (last_byte / align_byte) * align_byte + align_byte - 1;
+                let aligned_first_byte: usize = (first_byte / align_bytes) * align_bytes;
+                let aligned_last_byte: usize = (last_byte / align_bytes) * align_bytes + align_bytes - 1;
                 let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
-                let last_bit: usize = last_bit + (last_byte + align_byte - aligned_last_byte - 1) * u8_bits;
+                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * u8_bits;
+                let mut bit_iterator: interpreter::BitIterator = (&value).into();
                 (aligned_first_byte..=aligned_last_byte)
-                    .step_by(align_byte)
+                    .step_by(align_bytes)
                     .for_each(|address| {
                         let present_first_bit: usize = if address == aligned_first_byte {
                             first_bit
                         } else {
                             0
                         };
-                        let present_last_bit: usize = if address + align_byte == aligned_last_byte + 1 {
+                        let present_last_bit: usize = if address + align_bytes == aligned_last_byte + 1 {
                             last_bit
                         } else {
-                            align_byte * u8_bits - 1
+                            align_bits - 1
                         };
-                        unimplemented!("self = {:#x?}\nvalue = {:#x?}\nregion_space = {:#x?}\naddress = {:#x?}\nalign_byte = {:#x?}\npresent_first_bit = {:#x?}\npresent_last_bit = {:#x?}", self, &value, region_space, address, align_byte, present_first_bit, present_last_bit);
+                        let value: Vec<bool> = (0..align_bits)
+                            .map(|index| if index < present_first_bit {
+                                false
+                            } else if (present_first_bit..=present_last_bit).contains(&index) {
+                                bit_iterator
+                                    .next()
+                                    .unwrap_or(false)
+                            } else {
+                                false
+                            })
+                            .collect();
+                        unimplemented!("self = {:#x?}\nvalue = {:#x?}\nregion_space = {:#x?}\naddress = {:#x?}\nalign_bytes = {:#x?}\npresent_first_bit = {:#x?}\npresent_last_bit = {:#x?}", self, &value, region_space, address, align_bytes, present_first_bit, present_last_bit);
                     });
                 value
             })
