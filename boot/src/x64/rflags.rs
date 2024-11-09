@@ -10,14 +10,11 @@ use {
 #[bitfield(u64)]
 pub struct Rflags {
     cf: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     pf: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     af: bool,
-    #[bits(access = RO)]
-    reserved2: bool,
+    __: bool,
     zf: bool,
     sf: bool,
     tf: bool,
@@ -27,16 +24,15 @@ pub struct Rflags {
     #[bits(2)]
     iopl: u8,
     nt: bool,
-    #[bits(access = RO)]
-    reserved3: bool,
+    __: bool,
     rf: bool,
     vm: bool,
     ac: bool,
     vif: bool,
     vip: bool,
     id: bool,
-    #[bits(42, access = RO)]
-    reserved4: u64,
+    #[bits(42)]
+    __: u64,
 }
 
 impl Rflags {
