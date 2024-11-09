@@ -40,8 +40,8 @@ impl Ecx0x00000001 {
 struct Eax {
     #[bits(5)]
     length_of_the_capacity_bit_mask_for_the_corresponding_resid: u8,
-    #[bits(27, access = RO)]
-    reserved0: u32,
+    #[bits(27)]
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -51,19 +51,17 @@ struct Ebx {
 
 #[bitfield(u32)]
 struct Ecx {
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     l3_cat_for_non_cpu_agents_is_supported: bool,
     l3_code_and_data_prioritization_technology_is_supported: bool,
     non_contiguous_capacity_bitmask_is_supported: bool,
-    #[bits(28, access = RO)]
-    reserved1: u32,
+    #[bits(28)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
     highest_cos_number_supported_for_this_resid: u16,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 

@@ -39,38 +39,37 @@ impl Ecx0x00000001 {
 
 #[bitfield(u32)]
 struct Eax {
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     avx_vnni: bool,
     avx512_bf16: bool,
-    #[bits(4, access = RO)]
-    reserved1: u8,
+    #[bits(4)]
+    __: u8,
     supports_fast_zero_length_rep_movsb: bool,
     supports_fast_short_rep_stosb: bool,
     supports_fast_short_rep_cmpsb_rep_scasb: bool,
-    #[bits(9, access = RO)]
-    reserved2: u16,
+    #[bits(9)]
+    __: u16,
     hreset: bool,
-    #[bits(7, access = RO)]
-    reserved3: u8,
+    #[bits(7)]
+    __: u8,
     invd_disable_post_bios_done: bool,
-    #[bits(access = RO)]
-    reserved4: bool,
+    __: bool,
 }
 
 #[bitfield(u32)]
 struct Ebx {
     enumerates_the_presence_of_the_ia32_ppin_and_ia32_ppin_ctl_msrs: bool,
-    #[bits(31, access = RO)]
-    reserved0: u32,
+    #[bits(31)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
-    #[bits(18, access = RO)]
-    reserved0: u32,
+    #[bits(18)]
+    __: u32,
     cet_sss: bool,
-    #[bits(13, access = RO)]
-    reserved1: u16,
+    #[bits(13)]
+    __: u16,
 }
 

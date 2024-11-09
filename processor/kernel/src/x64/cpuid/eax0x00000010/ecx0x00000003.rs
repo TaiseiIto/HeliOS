@@ -36,22 +36,22 @@ impl Ecx0x00000003 {
 struct Eax {
     #[bits(12)]
     the_maximum_mba_throttling_value_supported_for_the_corresponding_resid: u16,
-    #[bits(20, access = RO)]
-    reserved0: u32,
+    #[bits(20)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Ecx {
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     the_responce_of_the_delay_values_is_linear: bool,
-    #[bits(29, access = RO)]
-    reserved1: u32,
+    #[bits(29)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
     highest_cos_number_supported_for_this_resid: u16,
-    reserved0: u16,
+    __: u16,
 }
 

@@ -37,7 +37,7 @@ struct Edx {
     ddpd_u: bool,
     bhi_ctrl: bool,
     mcdt_no: bool,
-    #[bits(26, access = RO)]
-    reserved0: u32,
+    #[bits(26)]
+    __: u32,
 }
 

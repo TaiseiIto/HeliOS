@@ -50,8 +50,8 @@ struct Eax {
     cache_level: u8,
     self_initializing_cache_level: bool,
     fully_associative_cache: bool,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     #[bits(12)]
     maximum_number_of_addressable_ids_for_logical_processors_sharing_this_cache: u16,
     #[bits(6)]
@@ -79,7 +79,7 @@ struct Edx {
     write_back_invalidate_invalidate: bool,
     cache_inclusiveness: bool,
     complex_cache_indexing: bool,
-    #[bits(29, access = RO)]
-    reserved0: u32,
+    #[bits(29)]
+    __: u32,
 }
 

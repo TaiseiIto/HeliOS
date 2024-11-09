@@ -41,8 +41,8 @@ impl Eax0x0000001c {
 #[bitfield(u32)]
 struct Eax {
     supported_lbr_depth_values: u8,
-    #[bits(22, access = RO)]
-    reserved0: u32,
+    #[bits(22)]
+    __: u32,
     deep_c_state_reset: bool,
     ip_value_contain_lip: bool,
 }
@@ -52,8 +52,8 @@ struct Ebx {
     cpl_filtering_supported: bool,
     branch_filtering_supported: bool,
     call_stack_mode_supported: bool,
-    #[bits(29, access = RO)]
-    reserved0: u32,
+    #[bits(29)]
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -61,7 +61,7 @@ struct Ecx {
     mispredict_bit_supported: bool,
     timed_lbrs_supported: bool,
     branch_type_field_supported: bool,
-    #[bits(29, access = RO)]
-    reserved0: u32,
+    #[bits(29)]
+    __: u32,
 }
 
