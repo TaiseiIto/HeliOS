@@ -125,8 +125,8 @@ struct Pf {
     x: bool,
     w: bool,
     r: bool,
-    #[bits(13, access = RO)]
-    reserved0: u16,
+    #[bits(13)]
+    __: u16,
     maskos: u8,
     mascproc: u8,
 }
