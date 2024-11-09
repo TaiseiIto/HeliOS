@@ -16,7 +16,7 @@ pub struct Register {
     serr_enable: bool,
     fast_back_to_back_transactions_enable: bool,
     interrupt_disable: bool,
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
 }
 

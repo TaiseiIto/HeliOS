@@ -7,8 +7,8 @@ use bitfield_struct::bitfield;
 pub struct Register {
     #[bits(4)]
     completion_code: u8,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     start_bist: bool,
     bist_capable: bool,
 }

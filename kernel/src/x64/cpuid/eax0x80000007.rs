@@ -36,10 +36,9 @@ impl Eax0x80000007 {
 
 #[bitfield(u32)]
 struct Edx {
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
     invariant_tsc_available: bool,
-    #[bits(23, access = RO)]
-    reserved1: u32,
+    #[bits(23)]
+    __: u32,
 }
 

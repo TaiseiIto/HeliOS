@@ -7,8 +7,8 @@ use bitfield_struct::bitfield;
 pub struct Register {
     enable_cnf: bool,
     leg_rt_cnf: bool,
-    #[bits(62, access = RO)]
-    reserved0: u64,
+    #[bits(62)]
+    __: u64,
 }
 
 impl Register {

@@ -36,7 +36,7 @@ impl Structure {
 pub struct Flags {
     enabled: bool,
     architectural_transactions: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 

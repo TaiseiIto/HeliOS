@@ -37,8 +37,8 @@ impl Ecx0x00000001 {
 struct Eax {
     #[bits(3)]
     number_of_configurable_address_ranges_for_filtering: u8,
-    #[bits(13, access = RO)]
-    reserved0: u16,
+    #[bits(13)]
+    __: u16,
     bitmap_of_supportem_mtc_period_encoding: u16,
 }
 

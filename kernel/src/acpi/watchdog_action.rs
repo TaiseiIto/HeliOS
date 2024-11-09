@@ -56,12 +56,10 @@ impl fmt::Debug for Table {
         let pci_bus_number: u8 = self.pci_bus_number;
         let pci_device_number: u8 = self.pci_device_number;
         let pci_function_number: u8 = self.pci_function_number;
-        let reserved0: [u8; 3] = self.reserved0;
         let timer_period: u32 = self.timer_period;
         let maximum_count: u32 = self.maximum_count;
         let minimum_count: u32 = self.minimum_count;
         let flags: Flags = self.flags;
-        let reserved1: [u8; 3] = self.reserved1;
         let number_watchdog_instruction_entries: u32 = self.number_watchdog_instruction_entries;
         let instruction_entries: &[instruction::Entry] = self.instruction_entries();
         formatter
@@ -72,12 +70,10 @@ impl fmt::Debug for Table {
             .field("pci_bus_number", &pci_bus_number)
             .field("pci_device_number", &pci_device_number)
             .field("pci_function_number", &pci_function_number)
-            .field("reserved0", &reserved0)
             .field("timer_period", &timer_period)
             .field("maximum_count", &maximum_count)
             .field("minimum_count", &minimum_count)
             .field("flags", &flags)
-            .field("reserved1", &reserved1)
             .field("number_watchdog_instruction_entries", &number_watchdog_instruction_entries)
             .field("instruction_entries", &instruction_entries)
             .finish()
@@ -87,8 +83,8 @@ impl fmt::Debug for Table {
 #[bitfield(u8)]
 struct Flags {
     enabled: bool,
-    #[bits(6, access = RO)]
-    reserved0: u8,
+    #[bits(6)]
+    __: u8,
     stopped_in_sleep_state: bool,
 }
 

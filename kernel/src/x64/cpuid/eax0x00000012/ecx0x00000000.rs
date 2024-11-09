@@ -36,17 +36,17 @@ impl Ecx0x00000000 {
 struct Eax {
     sgx1: bool,
     sgx2: bool,
-    #[bits(3, access = RO)]
-    reserved0: u8,
+    #[bits(3)]
+    __: u8,
     intel_sgx_supports_enclv_instruction_leaves_eincvirtchild_edecvirtchild_and_esetcontext: bool,
     intel_sgx_supports_encls_instruction_leaves_etrackc_erdinfo_eldbc_and_elduc: bool,
     intel_sgx_supports_enclu_instruction_leaf_everifyreport2: bool,
-    #[bits(2, access = RO)]
-    reserved1: u8,
+    #[bits(2)]
+    __: u8,
     intel_sgx_supports_encls_instruction_leaf_eupdatesvn: bool,
     intel_sgx_supoprts_enclu_instruction_leaf_edeccssa: bool,
-    #[bits(20, access = RO)]
-    reserved2: u32,
+    #[bits(20)]
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -58,6 +58,6 @@ struct Ebx {
 struct Edx {
     maxenclavesize_not64: u8,
     maxenclavesize_64: u8,
-    reserved0: u16,
+    __: u16,
 }
 

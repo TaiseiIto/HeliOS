@@ -37,8 +37,8 @@ use {
 /// * [Intel E8500 Chipset North Bridge (NB)](https://www.intel.co.jp/content/dam/doc/datasheet/e8500-chipset-north-bridge-datasheet.pdf) 4.6.1 CFGADR - Configuration Address Register
 #[bitfield(u32)]
 pub struct Address {
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     #[bits(6)]
     register: u8,
     #[bits(3)]
@@ -47,7 +47,7 @@ pub struct Address {
     device: u8,
     bus: u8,
     #[bits(7)]
-    reserved1: u8,
+    __: u8,
     enable: bool,
 }
 

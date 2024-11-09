@@ -101,8 +101,8 @@ impl B {
 
 #[bitfield(u8)]
 pub struct C {
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     uf: bool,
     af: bool,
     pf: bool,
@@ -119,8 +119,8 @@ impl C {
 
 #[bitfield(u8)]
 pub struct D {
-    #[bits(7, access = RO)]
-    reserved0: u8,
+    #[bits(7)]
+    __: u8,
     vm: bool,
 }
 

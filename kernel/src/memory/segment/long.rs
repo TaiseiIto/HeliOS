@@ -17,12 +17,11 @@ use {
 pub struct Descriptor {
     descriptor: u64,
     base: u32,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
     #[bits(5, access = RO)]
     zero: u8,
-    #[bits(19, access = RO)]
-    reserved1: u32,
+    #[bits(19)]
+    __: u32,
 }
 
 impl Descriptor {

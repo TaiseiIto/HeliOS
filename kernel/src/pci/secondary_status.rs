@@ -5,11 +5,10 @@ use bitfield_struct::bitfield;
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1.7 Secondary Status Register (Offset 1Eh)
 #[bitfield(u16)]
 pub struct Register {
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
     capable_66mhz: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     fast_back_to_back_transactions_capable: bool,
     master_data_parity_error: bool,
     #[bits(2)]

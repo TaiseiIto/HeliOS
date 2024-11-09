@@ -33,8 +33,8 @@ impl Eax0x80000006 {
 #[bitfield(u32)]
 struct Ecx {
     cache_line_size_in_bytes: u8,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     #[bits(4)]
     l2_associativity_field: u8,
     cache_size_in_1k_units: u16,

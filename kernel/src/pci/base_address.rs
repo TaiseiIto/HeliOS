@@ -38,8 +38,7 @@ pub struct Memory {
 #[bitfield(u32)]
 pub struct Io {
     io_space_indicator: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     #[bits(30)]
     base_address: u32,
 }

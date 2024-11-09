@@ -9,8 +9,7 @@ pub struct Register {
     #[bits(5)]
     num_tim_cap: u8,
     count_size_cap: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     leg_rt_cap: bool,
     vendor_id: u16,
     counter_clk_period: u32,

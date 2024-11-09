@@ -60,7 +60,7 @@ pub struct Flags {
     performance_interrupt_mode: bool,
     vgic_maintenance_interrupt_mode_flags: bool,
     online_capable: bool,
-    #[bits(28, access = RO)]
-    reserved2: u32,
+    #[bits(28)]
+    __: u32,
 }
 

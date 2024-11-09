@@ -51,8 +51,8 @@ struct Ebx {
     support_for_psb_and_pmi_preservation: bool,
     writes_can_set_ia32_rtit_ctl_31_eventen_enabling_event_trace_packet_generation: bool,
     writes_can_set_ia32_rtit_ctl_55_distnt_disabling_tnt_packet_generation: bool,
-    #[bits(23, access = RO)]
-    reserved0: u32,
+    #[bits(23)]
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -61,8 +61,8 @@ struct Ecx {
     topa_tables_can_hold_any_number_of_output_entries_up_to_the_maximum_allowed_by_the_maskortableoffset_field_of_ia32_rtit_output_mask_ptrs: bool,
     support_of_single_range_output_scheme: bool,
     support_of_output_to_trace_transport_subsystem: bool,
-    #[bits(27, access = RO)]
-    reserved0: u32,
+    #[bits(27)]
+    __: u32,
     generated_packets_which_contain_ip_payloads_have_lip_values_which_include_the_cs_base_component: bool,
 }
 

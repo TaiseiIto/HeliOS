@@ -360,7 +360,6 @@ impl fmt::Debug for Table {
         let header: system_description::Header = self.header;
         let firmware_ctrl: Option<&firmware_acpi_control::Structure> = self.firmware_ctrl();
         let dsdt: Option<system_description::Table> = self.dsdt();
-        let reserved0: u8 = self.reserved0;
         let preferred_pm_profile: u8 = self.preferred_pm_profile;
         let sci_int: u16 = self.sci_int;
         let smi_cmd: u32 = self.smi_cmd;
@@ -394,7 +393,6 @@ impl fmt::Debug for Table {
         let mon_alrm: u8 = self.mon_alrm;
         let century: u8 = self.century;
         let iapc_boot_arch: u16 = self.iapc_boot_arch;
-        let reserved1: u8 = self.reserved1;
         let flags: Flags = self.flags;
         let reset_reg: generic_address::Structure = self.reset_reg;
         let reser_value: u8 = self.reser_value;
@@ -416,7 +414,6 @@ impl fmt::Debug for Table {
             .field("header", &header)
             .field("firmware_ctrl", &firmware_ctrl)
             .field("dsdt", &dsdt)
-            .field("reserved0", &reserved0)
             .field("preferred_pm_profile", &preferred_pm_profile)
             .field("sci_int", &sci_int)
             .field("smi_cmd", &smi_cmd)
@@ -450,7 +447,6 @@ impl fmt::Debug for Table {
             .field("mon_alrm", &mon_alrm)
             .field("century", &century)
             .field("iapc_boot_arch", &iapc_boot_arch)
-            .field("reserved1", &reserved1)
             .field("flags", &flags)
             .field("reset_reg", &reset_reg)
             .field("reser_value", &reser_value)
@@ -500,8 +496,7 @@ struct Flags {
     low_power_s0_idle_capable: bool,
     #[bits(2)]
     persistent_cpu_caches: u8,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
 }
 
 impl Flags {

@@ -10,8 +10,8 @@ pub struct Register {
     validation_status: u8,
     #[bits(4)]
     validation_details: u8,
-    #[bits(3, access = RO)]
-    reserved0: u8,
+    #[bits(3)]
+    __: u8,
     #[bits(21)]
     base_address: u32,
 }

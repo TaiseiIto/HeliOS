@@ -17,7 +17,7 @@ pub struct Register {
     secondary_discard_timer: bool,
     discard_timer_status: bool,
     discard_timer_serr_enable: bool,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
 }
 

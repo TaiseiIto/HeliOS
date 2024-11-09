@@ -71,8 +71,8 @@ struct Register {
     send_illegal_vector: bool,
     received_illegal_vector: bool,
     illegal_register_address: bool,
-    #[bits(24, access = RO)]
-    reserved0: u32,
+    #[bits(24)]
+    __: u32,
 }
 
 impl Register {

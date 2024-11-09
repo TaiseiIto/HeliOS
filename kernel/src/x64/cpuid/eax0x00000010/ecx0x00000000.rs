@@ -26,11 +26,11 @@ impl Ecx0x00000000 {
 
 #[bitfield(u32)]
 struct Ebx {
-    reserved0: bool,
+    __: bool,
     supports_l3_cache_allocation_technology: bool,
     supports_l2_cache_allocation_technology: bool,
     supports_memory_bandwidth_allocation: bool,
-    #[bits(28, access = RO)]
-    reserved1: u32,
+    #[bits(28)]
+    __: u32,
 }
 

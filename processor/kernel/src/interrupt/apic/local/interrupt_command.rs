@@ -133,16 +133,15 @@ struct Low {
     destination_mode: bool,
     #[bits(access = RO)]
     delivery_status: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     level: bool,
     trigger_mode: bool,
-    #[bits(2, access = RO)]
-    reserved1: u8,
+    #[bits(2)]
+    __: u8,
     #[bits(2)]
     destination_shorthand: u8,
-    #[bits(12, access = RO)]
-    reserved2: u16,
+    #[bits(12)]
+    __: u16,
 }
 
 impl Low {
@@ -384,8 +383,8 @@ impl fmt::Debug for FatHigh {
 
 #[bitfield(u32)]
 struct High {
-    #[bits(24, access = RO)]
-    reserved0: u32,
+    #[bits(24)]
+    __: u32,
     destination_field: u8,
 }
 

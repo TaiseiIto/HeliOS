@@ -6,13 +6,12 @@ use bitfield_struct::bitfield;
 #[bitfield(u16)]
 pub struct Register {
     immediate_readiness: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     interrupt_status: bool,
     capabilities_list: bool,
     capable_66mhz: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     fast_back_to_back_transactions_capable: bool,
     master_data_parity_error: bool,
     #[bits(2)]
