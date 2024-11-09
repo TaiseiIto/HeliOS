@@ -33,15 +33,15 @@ use {
 pub struct Style {
     bold: bool,
     italic: bool,
-    #[bits(14, access = RO)]
-    reserved0: u16,
+    #[bits(14)]
+    __: u16,
     emboss: bool,
     outline: bool,
     shadow: bool,
     underline: bool,
     dbl_under: bool,
-    #[bits(11, access = RO)]
-    reserved1: u16,
+    #[bits(11)]
+    __: u16,
 }
 
 /// # EFI_STRING_ID
@@ -117,7 +117,7 @@ pub struct OutFlags {
     ignore_line_break: bool,
     direct_to_screen: bool,
     #[bits(24)]
-    reserved0: u32,
+    __: u32,
 }
 
 /// # EFI_STRING
@@ -200,21 +200,20 @@ pub struct InfoMask {
     sys_font: bool,
     sys_size: bool,
     sys_style: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     sys_fore_color: bool,
     sys_back_color: bool,
-    #[bits(6, access = RO)]
-    reserved1: u8,
+    #[bits(6)]
+    __: u8,
     resize: bool,
     restyle: bool,
-    #[bits(2, access = RO)]
-    reserved2: u8,
+    #[bits(2)]
+    __: u8,
     any_font: bool,
     any_size: bool,
     any_style: bool,
-    #[bits(13, access = RO)]
-    reserved3: u16,
+    #[bits(13)]
+    __: u16,
 }
 
 /// # EFI_IMAGE_OUTPUT
