@@ -15,19 +15,17 @@ pub struct Register0 {
     ts: bool,
     et: bool,
     ne: bool,
-    #[bits(10, access = RO)]
-    reserved0: u16,
+    #[bits(10)]
+    __: u16,
     wp: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     am: bool,
-    #[bits(10, access = RO)]
-    reserved2: u16,
+    #[bits(10)]
+    __: u16,
     nw: bool,
     cd: bool,
     pg: bool,
-    #[bits(32, access = RO)]
-    reserved3: u32,
+    __: u32,
 }
 
 impl Register0 {
@@ -69,12 +67,12 @@ impl Register2 {
 
 #[bitfield(u64)]
 pub struct Register3 {
-    #[bits(3, access = RO)]
-    reserved0: u8,
+    #[bits(3)]
+    __: u8,
     pwt: bool,
     pcd: bool,
-    #[bits(7, access = RO)]
-    reserved1: u8,
+    #[bits(7)]
+    __: u8,
     #[bits(52)]
     page_directory_base: u64,
 }
@@ -136,8 +134,7 @@ pub struct Register4 {
     la57: bool,
     vmxe: bool,
     smxe: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     fsgsbase: bool,
     pcide: bool,
     oscsafe: bool,
@@ -148,8 +145,8 @@ pub struct Register4 {
     cep: bool,
     pks: bool,
     uintr: bool,
-    #[bits(38, access = RO)]
-    reserved1: u64,
+    #[bits(38)]
+    __: u64,
 }
 
 impl Register4 {
