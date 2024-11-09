@@ -23,8 +23,7 @@ use {
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
-    #[allow(dead_code)]
-    reserved0: [u8; 12],
+    __: [u8; 12],
 }
 
 impl Table {

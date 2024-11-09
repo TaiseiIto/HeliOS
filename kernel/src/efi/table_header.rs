@@ -13,7 +13,7 @@ pub struct TableHeader {
     revision: u32,
     header_size: u32,
     crc32: u32,
-    reserved0: u32,
+    __: u32,
 }
 
 #[repr(C)]

@@ -7,8 +7,7 @@ use {
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
-    #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl fmt::Debug for FatRegister {
@@ -32,11 +31,10 @@ impl fmt::Debug for FatRegister {
 #[bitfield(u32)]
 struct Register {
     version: u8,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
     max_lvt_entry: u8,
     support_for_eoi_broadcast_suppression: bool,
-    #[bits(7, access = RO)]
-    reserved1: u8,
+    #[bits(7)]
+    __: u8,
 }
 

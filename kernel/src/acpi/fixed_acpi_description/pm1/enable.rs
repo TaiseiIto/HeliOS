@@ -6,18 +6,17 @@ use bitfield_struct::bitfield;
 #[bitfield(u16)]
 pub struct Register {
     tmr_en: bool,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     gbl_en: bool,
-    #[bits(2, access = RO)]
-    reserved1: u8,
+    #[bits(2)]
+    __: u8,
     pwrbtn_en: bool,
     slpbtn_en: bool,
     rtc_en: bool,
-    #[bits(3, access = RO)]
-    reserved2: u8,
+    #[bits(3)]
+    __: u8,
     pciexp_wake_dis: bool,
-    #[bits(access = RO)]
-    reserved3: bool,
+    __: bool,
 }
 

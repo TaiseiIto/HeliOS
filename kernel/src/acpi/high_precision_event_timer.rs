@@ -64,7 +64,7 @@ struct EventTimerBlockId {
     #[bits(5)]
     number_of_comparators_in_first_timer_block: u8,
     counter_size_cap_counter_size: bool,
-    reserved0: bool,
+    __: bool,
     legacy_placement_irq_routing_capable: bool,
     pci_vendor_id_of_first_timer_block: u16,
 }

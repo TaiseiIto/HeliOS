@@ -13,8 +13,7 @@ use {
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
-    #[allow(dead_code)]
-    reserved0: u64,
+    __: u64,
 }
 
 impl Table {
@@ -59,7 +58,6 @@ struct ConfigurationSpaceBaseAddressAllocation {
     start_pci_bus_number: u8,
     #[allow(dead_code)]
     end_pci_bus_number: u8,
-    #[allow(dead_code)]
-    reserved0: u32,
+    __: u32,
 }
 

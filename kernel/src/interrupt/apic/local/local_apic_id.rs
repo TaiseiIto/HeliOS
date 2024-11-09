@@ -7,8 +7,7 @@ use {
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
-    #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl FatRegister {
@@ -34,8 +33,8 @@ impl fmt::Debug for FatRegister {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) 3.11.4.6 Local APIC ID Register
 #[bitfield(u32)]
 struct Register {
-    #[bits(24, access = RO)]
-    reserved0: u32,
+    #[bits(24)]
+    __: u32,
     apic_id: u8,
 }
 

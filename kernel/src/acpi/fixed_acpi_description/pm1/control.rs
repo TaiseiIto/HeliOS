@@ -8,14 +8,14 @@ pub struct Register {
     sci_en: bool,
     bm_rld: bool,
     gbl_rls: bool,
-    #[bits(6, access = RO)]
-    reserved0: u8,
+    #[bits(6)]
+    __: u8,
     ignore: bool,
     #[bits(3)]
     slp_typx: u8,
     slp_en: bool,
-    #[bits(2, access = RO)]
-    reserved1: u8,
+    #[bits(2)]
+    __: u8,
 }
 
 impl Register {

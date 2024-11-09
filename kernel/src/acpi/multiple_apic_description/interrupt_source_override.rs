@@ -34,7 +34,7 @@ pub struct Flags {
     polarity: u8,
     #[bits(2)]
     trigger_mode: u8,
-    #[bits(12, access = RO)]
-    reserved0: u16,
+    #[bits(12)]
+    __: u16,
 }
 

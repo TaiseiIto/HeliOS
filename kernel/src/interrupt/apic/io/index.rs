@@ -7,8 +7,7 @@ use {
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
-    #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl FatRegister {
@@ -35,7 +34,7 @@ impl fmt::Debug for FatRegister {
 #[bitfield(u32)]
 struct Register {
     index: u8,
-    #[bits(24, access = RO)]
-    reserved0: u32,
+    #[bits(24)]
+    __: u32,
 }
 

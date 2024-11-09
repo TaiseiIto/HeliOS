@@ -25,8 +25,7 @@ pub struct Table {
     header: system_description::Header,
     host_address_width: u8,
     flags: Flags,
-    #[allow(dead_code)]
-    reserved0: [u8; 10],
+    __: [u8; 10],
 }
 
 impl Table {
@@ -74,8 +73,8 @@ struct Flags {
     intr_remap: bool,
     x2apic_opt_out: bool,
     dma_ctrl_platform_opt_in_flag: bool,
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
 }
 
 struct Structures<'a> {

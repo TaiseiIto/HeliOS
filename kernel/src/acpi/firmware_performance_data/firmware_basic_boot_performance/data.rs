@@ -9,8 +9,7 @@ pub struct Record {
     length: u8,
     #[allow(dead_code)]
     revision: u8,
-    #[allow(dead_code)]
-    reserved0: u32,
+    __: u32,
     #[allow(dead_code)]
     reset_end: u64,
     #[allow(dead_code)]

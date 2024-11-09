@@ -24,8 +24,7 @@ pub struct Pointer {
     length: u32,
     xsdt: u64,
     extended_checksum: u8,
-    #[allow(dead_code)]
-    reserved0: [u8; 3],
+    __: [u8; 3],
 }
 
 impl Pointer {

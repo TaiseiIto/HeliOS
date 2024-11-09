@@ -29,7 +29,7 @@ struct Flags {
     fixed_comm_buffers: bool,
     comm_buffer_nested_ptr_protection: bool,
     system_resource_protection: bool,
-    #[bits(29, access = RO)]
-    reserved0: u32,
+    #[bits(29)]
+    __: u32,
 }
 

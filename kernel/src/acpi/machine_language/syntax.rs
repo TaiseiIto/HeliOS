@@ -129,8 +129,8 @@ pub struct AccessFieldOp;
 pub struct AccessType {
     #[bits(4)]
     access_type: u8,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     #[bits(2)]
     access_attrib: u8,
 }
@@ -3313,8 +3313,7 @@ pub struct FieldFlags {
     lock_rule: bool,
     #[bits(2)]
     update_rule: u8,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
 }
 
 impl FieldFlags {
@@ -5153,8 +5152,8 @@ impl Holder for SuperName {
 pub struct SyncFlags {
     #[bits(4)]
     sync_level: u8,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
 }
 
 /// # SystemLevel

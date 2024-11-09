@@ -20,8 +20,7 @@ pub struct Registers {
     // 0xfec00010
     data: data::FatRegister,
     // 0xfec00020
-    #[allow(dead_code)]
-    reserved0: [u128; 2],
+    __: [u128; 2],
     // 0xfec00040
     eoi: eoi::FatRegister,
 }

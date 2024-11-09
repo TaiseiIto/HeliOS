@@ -138,8 +138,8 @@ impl fmt::Debug for Table {
 #[bitfield(u32)]
 struct Flags {
     pcat_compat: bool,
-    #[bits(31, access = RO)]
-    reserved0: u32,
+    #[bits(31)]
+    __: u32,
 }
 
 struct InterruptControllerStructures<'a> {

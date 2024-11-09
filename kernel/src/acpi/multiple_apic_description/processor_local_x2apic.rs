@@ -9,8 +9,7 @@ pub struct Structure {
     #[allow(dead_code)]
     structure_type: u8,
     length: u8,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     x2apic_id: u32,
     #[allow(dead_code)]

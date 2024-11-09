@@ -6,11 +6,11 @@ use bitfield_struct::bitfield;
 #[bitfield(u32)]
 pub struct Register {
     version: u8,
-    #[bits(7, access = RO)]
-    reserved0: u8,
+    #[bits(7)]
+    __: u8,
     pin_assertion_register_supported: bool,
     maximum_redirection_entries: u8,
-    reserved1: u8,
+    __: u8,
 }
 
 impl Register {

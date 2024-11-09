@@ -54,8 +54,8 @@ impl fmt::Debug for Structure {
 struct Flags {
     s4bios_f: bool,
     bit64_wake_supported_f: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 
 /// # Global Lock
@@ -65,7 +65,7 @@ struct Flags {
 struct GlobalLock {
     pending: bool,
     owned: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 
