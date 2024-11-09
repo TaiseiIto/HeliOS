@@ -57,8 +57,8 @@ type Open = extern "efiapi" fn(/* This */ &Protocol, /* NewHandle */ &mut &Proto
 pub struct OpenMode {
     read: bool,
     write: bool,
-    #[bits(62, access = RO)]
-    reserved0: u64,
+    #[bits(62)]
+    __: u64,
 }
 
 /// # Attributes
@@ -69,12 +69,11 @@ pub struct Attributes {
     read_only: bool,
     hidden: bool,
     system: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     directory: bool,
     archive: bool,
-    #[bits(58, access = RO)]
-    reserved1: u64,
+    #[bits(58)]
+    __: u64,
 }
 
 /// # EFI_FILE_CLOSE
