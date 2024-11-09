@@ -61,7 +61,7 @@ struct Ebx {
     branch_mispredict_retired_event_not_available: bool,
     top_down_slots_event_not_available: bool,
     #[bits(24)]
-    reserved0: u32,
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -75,8 +75,8 @@ struct Edx {
     number_of_contiguous_fixed_function_performance_counters_starting_from_0: u8,
     bit_width_of_fixed_function_performance_counters: u8,
     #[bits(2)]
-    reserved0: u8,
+    __: u8,
     any_thread_deprecation: bool,
-    reserved1: u16,
+    __: u16,
 }
 

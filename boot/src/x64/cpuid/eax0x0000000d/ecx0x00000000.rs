@@ -61,8 +61,8 @@ struct Eax {
     used_for_ia32_xdd1: u8,
     tilecfg_state: bool,
     tiledata_state: bool,
-    #[bits(13, access = RO)]
-    reserved0: u16,
+    #[bits(13)]
+    __: u16,
 }
 
 #[bitfield(u32)]

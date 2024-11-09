@@ -49,8 +49,8 @@ struct Ebx {
 struct Ecx {
     bit_n_is_supported_in_the_ia32_xss_msr: bool,
     the_compacted_format_of_an_xsave_area_is_used: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 
 #[bitfield(u32)]
