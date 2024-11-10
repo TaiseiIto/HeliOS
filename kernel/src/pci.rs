@@ -56,16 +56,13 @@ impl Address {
     const DATA_PORT: u16 = 0x0cfc;
 
     pub fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
-        com2_println!("bus = {:#x?}", bus);
-        com2_println!("device = {:#x?}", device);
-        com2_println!("function = {:#x?}", function);
-        com2_println!("register = {:#x?}", register);
+        assert_eq!(register % 4, 0);
         Self::new()
             .with_enable(true)
             .with_bus(bus)
             .with_device(device)
             .with_function(function)
-            .with_register(register)
+            .with_register(register >> 2)
     }
 
     pub fn read_u8(self) -> u8 {
@@ -238,7 +235,8 @@ impl Function {
     const LENGTH: usize = 0x40;
 
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
-        let space: Vec<u32> = (0u8..Self::LENGTH as u8)
+        let space: Vec<u32> = (u8::MIN..=u8::MAX)
+            .filter(|register| register % 4 == 0)
             .map(|register| Address::create(bus, device, function, register).read_u32())
             .collect();
         let space: [u32; Self::LENGTH] = space

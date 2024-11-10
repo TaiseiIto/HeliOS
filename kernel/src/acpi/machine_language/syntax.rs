@@ -2285,13 +2285,6 @@ impl DefOpRegion {
                                         }
                                     },
                                     interpreter::RegionSpace::SystemIo => x64::port::inb(address as u16),
-                                    interpreter::RegionSpace::PciConfig => {
-                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
-                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
-                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
-                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).read_u8()
-                                    },
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u8(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
@@ -2319,13 +2312,6 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemIo => {
                                         x64::port::outb(address as u16, written);
                                     },
-                                    interpreter::RegionSpace::PciConfig => {
-                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
-                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
-                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
-                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).write_u8(written);
-                                    },
                                     interpreter::RegionSpace::SystemCmos => {
                                         x64::cmos::write_u8(address as u8, written);
                                     },
@@ -2341,13 +2327,6 @@ impl DefOpRegion {
                                         }
                                     },
                                     interpreter::RegionSpace::SystemIo => x64::port::inw(address as u16),
-                                    interpreter::RegionSpace::PciConfig => {
-                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
-                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
-                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
-                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).read_u16()
-                                    },
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u16(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
@@ -2374,13 +2353,6 @@ impl DefOpRegion {
                                     },
                                     interpreter::RegionSpace::SystemIo => {
                                         x64::port::outw(address as u16, written);
-                                    },
-                                    interpreter::RegionSpace::PciConfig => {
-                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
-                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
-                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
-                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).write_u16(written);
                                     },
                                     interpreter::RegionSpace::SystemCmos => {
                                         x64::cmos::write_u16(address as u8, written);
