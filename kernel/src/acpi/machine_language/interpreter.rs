@@ -250,7 +250,7 @@ impl Value {
     }
 
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.54 From BCD (Convert BCD To Integer)
-    pub fn from_bcd(&self) -> Self {
+    pub fn bcd2integer(&self) -> Self {
         match self {
             Self::Byte(byte) => {
                 let bits: Vec<bool> = (0..u8::BITS)

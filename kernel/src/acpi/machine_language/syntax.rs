@@ -1537,7 +1537,7 @@ impl Evaluator for DefFromBcd {
         ) = self;
         bcd_value
             .evaluate(stack_frame, root, current)
-            .map(|bcd_value| target.hold(bcd_value.from_bcd(), stack_frame, root, current))
+            .map(|bcd_value| target.hold(bcd_value.bcd2integer(), stack_frame, root, current))
     }
 }
 

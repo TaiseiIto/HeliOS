@@ -5,6 +5,7 @@
 #[repr(packed)]
 pub struct Register {
     int_sts: u32,
+    #[allow(dead_code)]
     reserved0: u32
 }
 
