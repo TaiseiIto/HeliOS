@@ -2302,6 +2302,7 @@ impl DefOpRegion {
                                     } else {
                                         0x00
                                     });
+                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u8 = address as *mut u8;
@@ -2344,6 +2345,7 @@ impl DefOpRegion {
                                     } else {
                                         0x0000
                                     });
+                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u16 = address as *mut u16;
@@ -2393,6 +2395,7 @@ impl DefOpRegion {
                                     } else {
                                         0x00000000
                                     });
+                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u32 = address as *mut u32;
@@ -2440,6 +2443,7 @@ impl DefOpRegion {
                                     } else {
                                         0x0000000000000000
                                     });
+                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u64 = address as *mut u64;
@@ -3050,6 +3054,8 @@ impl Evaluator for DefWhile {
         ) = self;
         stack_frame.enter_loop();
         while {
+            com2_println!("Run DefWhile");
+            com2_println!("stack_frame = {:#x?}", stack_frame);
             let predicate: bool = predicate
                 .evaluate(stack_frame, root, current)
                 .map_or(false, |predicate| (&predicate).into());
