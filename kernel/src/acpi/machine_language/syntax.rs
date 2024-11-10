@@ -2178,7 +2178,7 @@ impl Evaluator for DefName {
 pub struct DefNoop(NoopOp);
 
 impl Evaluator for DefNoop {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         None
     }
 }
@@ -2231,8 +2231,8 @@ pub struct DefOpRegion(
 impl DefOpRegion {
     pub fn write(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
         let Self(
-            op_region_op,
-            name_string,
+            _op_region_op,
+            _name_string,
             region_space,
             region_offset,
             region_len,
@@ -2258,6 +2258,7 @@ impl DefOpRegion {
                 let last_bit: usize = last_bit % u8_bits;
                 let aligned_first_byte: usize = (first_byte / align_bytes) * align_bytes;
                 let aligned_last_byte: usize = (last_byte / align_bytes) * align_bytes + align_bytes - 1;
+                assert!(aligned_last_byte < region_offset + region_len);
                 let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
                 let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * u8_bits;
                 let mut bit_iterator: interpreter::BitIterator = (&value).into();

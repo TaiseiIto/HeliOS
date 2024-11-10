@@ -21,11 +21,13 @@ pub struct Table {
     pci_bus_number: u8,
     pci_device_number: u8,
     pci_function_number: u8,
+    #[allow(dead_code)]
     reserved0: [u8; 3],
     timer_period: u32,
     maximum_count: u32,
     minimum_count: u32,
     flags: Flags,
+    #[allow(dead_code)]
     reserved1: [u8; 3],
     number_watchdog_instruction_entries: u32,
 }
