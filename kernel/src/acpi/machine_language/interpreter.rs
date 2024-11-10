@@ -1129,8 +1129,8 @@ impl Sub for Value {
 #[derive(Clone, Debug, Default)]
 pub struct StackFrame {
     arguments: [Option<Value>; 0x07],
-    broken: bool,
-    continued: bool,
+    broken: Vec<bool>,
+    continued: Vec<bool>,
     locals: [Option<Value>; 0x08],
     named_locals: BTreeMap<name::Path, Value>,
     return_value: Option<Value>,
@@ -1141,20 +1141,18 @@ impl StackFrame {
         self.named_locals.insert(name.clone(), value);
     }
 
-    pub fn clear_broken(&mut self) {
-        self.broken = false;
-    }
-
-    pub fn clear_continued(&mut self) {
-        self.continued = false;
-    }
-
     pub fn is_broken(&self) -> bool {
         self.broken
+            .last()
+            .cloned()
+            .unwrap_or_default()
     }
 
     pub fn is_continued(&self) -> bool {
         self.continued
+            .last()
+            .cloned()
+            .unwrap_or_default()
     }
 
     pub fn read_argument(&self, index: usize) -> Option<Value> {
@@ -1207,12 +1205,40 @@ impl StackFrame {
         }
     }
 
-    pub fn set_broken(&mut self) {
-        self.broken = true;
+    pub fn r#break(&mut self) {
+        if let Some(broken) = self.broken.last_mut() {
+            *broken = true;
+        } else {
+            unreachable!();
+        }
     }
 
-    pub fn set_continued(&mut self) {
-        self.continued = true;
+    pub fn r#continue(&mut self) {
+        if let Some(continued) = self.continued.last_mut() {
+            *continued = true;
+        } else {
+            unreachable!();
+        }
+    }
+
+    pub fn enter_loop(&mut self) {
+        self.broken.push(false);
+        self.continued.push(false);
+    }
+
+    pub fn leave_loop(&mut self) {
+        assert!(!self.broken.is_empty());
+        assert!(!self.continued.is_empty());
+        self.broken.pop();
+        self.continued.pop();
+    }
+
+    pub fn uncontinue(&mut self) {
+        if let Some(continued) = self.continued.last_mut() {
+            *continued = false;
+        } else {
+            unreachable!();
+        }
     }
 
     pub fn write_argument(&mut self, index: usize, value: Value) -> Value {

@@ -978,7 +978,7 @@ pub struct DefBreak(BreakOp);
 
 impl Evaluator for DefBreak {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
-        stack_frame.set_broken();
+        stack_frame.r#break();
         None
     }
 }
@@ -1105,7 +1105,7 @@ pub struct DefContinue(ContinueOp);
 
 impl Evaluator for DefContinue {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
-        stack_frame.set_continued();
+        stack_frame.r#continue();
         None
     }
 }
@@ -3076,17 +3076,18 @@ impl Evaluator for DefWhile {
             predicate,
             term_list,
         ) = self;
-        let mut stack_frame: interpreter::StackFrame = stack_frame.clone();
+        stack_frame.enter_loop();
         while {
             let predicate: bool = predicate
-                .evaluate(&mut stack_frame, root, current)
+                .evaluate(stack_frame, root, current)
                 .map_or(false, |predicate| (&predicate).into());
             let broken: bool = stack_frame.is_broken();
             predicate && !broken
         } {
-            term_list.evaluate(&mut stack_frame, root, current);
-            stack_frame.clear_continued();
+            term_list.evaluate(stack_frame, root, current);
+            stack_frame.uncontinue();
         }
+        stack_frame.leave_loop();
         None
     }
 }
