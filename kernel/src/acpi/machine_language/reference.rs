@@ -133,7 +133,7 @@ impl<'a> Node<'a> {
                         op_region,
                     } => {
                         let size_in_bits: usize = named_field.bits();
-                        let op_region = name::AbsolutePath::new(&named_field_path, &op_region);
+                        let op_region = name::AbsolutePath::new(&named_field_path, op_region);
                         self.get_objects_from_current(&op_region)
                             .and_then(|(op_region_path, objects)| objects
                                 .iter()

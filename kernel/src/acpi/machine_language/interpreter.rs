@@ -485,7 +485,7 @@ impl Value {
                 let end: usize = cmp::min(end, buffer_length);
                 let buffer: Vec<u8> = buffer
                     .get(start..end)
-                    .map_or(Vec::new(), |buffer| Vec::from(buffer));
+                    .map_or(Vec::new(), Vec::from);
                 Some(Self::Buffer(buffer))
             },
             Self::Package(package) => {
@@ -494,7 +494,7 @@ impl Value {
                 let end: usize = cmp::min(end, package_length);
                 let package: Vec<Self> = package
                     .get(start..end)
-                    .map_or(Vec::new(), |package| Vec::from(package));
+                    .map_or(Vec::new(), Vec::from);
                 Some(Self::Package(package))
             },
             Self::String(string) => {
@@ -618,19 +618,19 @@ impl Value {
                 Self::Buffer(buffer)
             },
             Self::Word(word) => {
-                let buffer: Vec<u8> = (0..(mem::size_of::<u16>() as usize))
+                let buffer: Vec<u8> = (0..mem::size_of::<u16>())
                     .map(|offset| (word >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
             },
             Self::DWord(dword) => {
-                let buffer: Vec<u8> = (0..(mem::size_of::<u32>() as usize))
+                let buffer: Vec<u8> = (0..mem::size_of::<u32>())
                     .map(|offset| (dword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
             },
             Self::QWord(qword) => {
-                let buffer: Vec<u8> = (0..(mem::size_of::<u64>() as usize))
+                let buffer: Vec<u8> = (0..mem::size_of::<u64>())
                     .map(|offset| (qword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
