@@ -1227,7 +1227,7 @@ impl Evaluator for DefDecrement {
         ) = self;
         super_name
             .evaluate(stack_frame, root, current)
-            .map(|super_name| super_name - interpreter::Value::One)
+            .map(|value| super_name.hold(value - interpreter::Value::One, stack_frame, root, current))
     }
 }
 
@@ -1602,7 +1602,7 @@ impl Evaluator for DefIncrement {
         ) = self;
         super_name
             .evaluate(stack_frame, root, current)
-            .map(|super_name| super_name + interpreter::Value::One)
+            .map(|value| super_name.hold(value + interpreter::Value::One, stack_frame, root, current))
     }
 }
 
