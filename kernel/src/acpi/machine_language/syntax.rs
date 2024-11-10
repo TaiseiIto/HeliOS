@@ -2274,11 +2274,8 @@ impl DefOpRegion {
                         match align_bytes {
                             1 => {
                                 let read: u8 = match &region_space {
-                                    interpreter::RegionSpace::SystemMemory => {
-                                        let address: *const u8 = address as *const u8;
-                                        unsafe {
-                                            *address
-                                        }
+                                    interpreter::RegionSpace::SystemMemory => unsafe {
+                                        (address as *const u8).read_volatile()
                                     },
                                     interpreter::RegionSpace::SystemIo => x64::port::inb(address as u16),
                                     interpreter::RegionSpace::PciConfig => {
@@ -2305,7 +2302,12 @@ impl DefOpRegion {
                                     } else {
                                         0x00
                                     });
-                                unimplemented!();
+                                match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => unsafe {
+                                        (address as *mut u8).write_volatile(written)
+                                    },
+                                    region_space => unimplemented!("region_space = {:#x?}", region_space),
+                                };
                             },
                             2 => unimplemented!(),
                             4 => unimplemented!(),
