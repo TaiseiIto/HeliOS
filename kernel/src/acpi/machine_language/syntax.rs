@@ -2288,7 +2288,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u8(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: u8 = (0..u8_bits)
+                                let written: Vec<bool> = (0..u8_bits)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2296,6 +2296,9 @@ impl DefOpRegion {
                                     } else {
                                         (read >> index) & 0x01 != 0
                                     })
+                                    .collect();
+                                let written: u8 = written
+                                    .into_iter()
                                     .rev()
                                     .fold(0x00, |written, bit| (written << 1) | if bit {
                                         0x01
@@ -2331,7 +2334,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u16(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: u16 = (0..u16_bits)
+                                let written: Vec<bool> = (0..u16_bits)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2339,6 +2342,9 @@ impl DefOpRegion {
                                     } else {
                                         (read >> index) & 0x0001 != 0
                                     })
+                                    .collect();
+                                let written: u16 = written
+                                    .into_iter()
                                     .rev()
                                     .fold(0x0000, |written, bit| (written << 1) | if bit {
                                         0x0001
@@ -2381,7 +2387,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u32(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: u32 = (0..u32_bits)
+                                let written: Vec<bool> = (0..u32_bits)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2389,6 +2395,9 @@ impl DefOpRegion {
                                     } else {
                                         (read >> index) & 0x00000001 != 0
                                     })
+                                    .collect();
+                                let written: u32 = written
+                                    .into_iter()
                                     .rev()
                                     .fold(0x00000000, |written, bit| (written << 1) | if bit {
                                         0x00000001
@@ -2429,7 +2438,7 @@ impl DefOpRegion {
                                     },
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: u64 = (0..u64_bits)
+                                let written: Vec<bool> = (0..u64_bits)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2437,6 +2446,9 @@ impl DefOpRegion {
                                     } else {
                                         (read >> index) & 0x0000000000000001 != 0
                                     })
+                                    .collect();
+                                let written: u64 = written
+                                    .into_iter()
                                     .rev()
                                     .fold(0x0000000000000000, |written, bit| (written << 1) | if bit {
                                         0x0000000000000001
