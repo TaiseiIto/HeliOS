@@ -21,7 +21,7 @@ impl A {
     const ADDRESS: u8 = 0x0a;
 
     pub fn read() -> Self {
-        x64::cmos::read(Self::ADDRESS).into()
+        x64::cmos::read_u8(Self::ADDRESS).into()
     }
 
     pub fn set_frequency(self, hz: usize) -> Self {
@@ -34,7 +34,7 @@ impl A {
     }
 
     pub fn write(self) {
-        x64::cmos::write(Self::ADDRESS, self.into())
+        x64::cmos::write_u8(Self::ADDRESS, self.into())
     }
 }
 
@@ -91,11 +91,11 @@ impl B {
     }
 
     pub fn read() -> Self {
-        x64::cmos::read(Self::ADDRESS).into()
+        x64::cmos::read_u8(Self::ADDRESS).into()
     }
 
     pub fn write(self) {
-        x64::cmos::write(Self::ADDRESS, self.into())
+        x64::cmos::write_u8(Self::ADDRESS, self.into())
     }
 }
 
@@ -113,7 +113,7 @@ impl C {
     const ADDRESS: u8 = 0x0c;
 
     pub fn read() -> Self {
-        x64::cmos::read(Self::ADDRESS).into()
+        x64::cmos::read_u8(Self::ADDRESS).into()
     }
 }
 
@@ -128,7 +128,7 @@ impl D {
     const ADDRESS: u8 = 0x0d;
 
     pub fn read() -> Self {
-        x64::cmos::read(Self::ADDRESS).into()
+        x64::cmos::read_u8(Self::ADDRESS).into()
     }
 }
 

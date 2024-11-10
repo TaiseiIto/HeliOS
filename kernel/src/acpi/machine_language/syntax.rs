@@ -2242,6 +2242,7 @@ impl DefOpRegion {
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
         let u8_bits: usize = u8::BITS as usize;
+        let u16_bits: usize = u16::BITS as usize;
         let align_bits: usize = align_bytes * u8_bits;
         region_offset
             .zip(region_len)
@@ -2288,7 +2289,7 @@ impl DefOpRegion {
                                         let offset: u8 = (address & 0x00000000000000ff) as u8;
                                         pci::Address::create(bus, device, function, offset).read_u8()
                                     },
-                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read(address as u8),
+                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read_u8(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
                                 let written: u8 = (0..u8_bits)
@@ -2323,12 +2324,67 @@ impl DefOpRegion {
                                         pci::Address::create(bus, device, function, offset).write_u8(written);
                                     },
                                     interpreter::RegionSpace::SystemCmos => {
-                                        x64::cmos::write(address as u8, written);
+                                        x64::cmos::write_u8(address as u8, written);
                                     },
                                     region_space => unimplemented!("region_space = {:#x?}", region_space),
                                 };
                             },
-                            2 => unimplemented!(),
+                            2 => {
+                                let read: u16 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u16 = address as *const u16;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => x64::port::inw(address as u16),
+                                    interpreter::RegionSpace::PciConfig => {
+                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
+                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
+                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
+                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
+                                        pci::Address::create(bus, device, function, offset).read_u16()
+                                    },
+                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read_u16(address as u8),
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                let written: u16 = (0..u16_bits)
+                                    .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
+                                        bit_iterator
+                                            .next()
+                                            .unwrap_or((read >> index) & 0x0001 != 0)
+                                    } else {
+                                        (read >> index) & 0x0001 != 0
+                                    })
+                                    .rev()
+                                    .fold(0x0000, |written, bit| (written << 1) | if bit {
+                                        0x0001
+                                    } else {
+                                        0x0000
+                                    });
+                                match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *mut u16 = address as *mut u16;
+                                        unsafe {
+                                            address.write_volatile(written);
+                                        }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => {
+                                        x64::port::outw(address as u16, written);
+                                    },
+                                    interpreter::RegionSpace::PciConfig => {
+                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
+                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
+                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
+                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
+                                        pci::Address::create(bus, device, function, offset).write_u16(written);
+                                    },
+                                    interpreter::RegionSpace::SystemCmos => {
+                                        x64::cmos::write_u16(address as u8, written);
+                                    },
+                                    region_space => unimplemented!("region_space = {:#x?}", region_space),
+                                };
+                            },
                             4 => unimplemented!(),
                             8 => unimplemented!(),
                             _ => unreachable!(),
