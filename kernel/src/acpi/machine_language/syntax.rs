@@ -1104,7 +1104,7 @@ impl Evaluator for DefConcatRes {
 pub struct DefContinue(ContinueOp);
 
 impl Evaluator for DefContinue {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         stack_frame.r#continue();
         None
     }

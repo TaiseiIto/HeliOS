@@ -410,7 +410,7 @@ impl fmt::Debug for Object<'_> {
                 .field("offset_in_bits", offset_in_bits)
                 .field("op_region", op_region)
                 .finish(),
-            object => formatter.write_str(type_name),
+            _ => formatter.write_str(type_name),
         }
     }
 }
