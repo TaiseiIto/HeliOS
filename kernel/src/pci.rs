@@ -82,6 +82,24 @@ impl Address {
         x64::port::inl(Self::DATA_PORT)
     }
 
+    pub fn write_u8(self, data: u8) {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::outb(Self::DATA_PORT, data)
+    }
+
+    pub fn write_u16(self, data: u16) {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::outw(Self::DATA_PORT, data)
+    }
+
+    pub fn write_u32(self, data: u32) {
+        let address: u32 = self.into();
+        x64::port::outl(Self::ADDRESS_PORT, address);
+        x64::port::outl(Self::DATA_PORT, data)
+    }
+
     fn device_range() -> ops::RangeInclusive<u8> {
         0..=(1 << Self::DEVICE_BITS) - 1
     }

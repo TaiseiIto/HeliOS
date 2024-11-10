@@ -2312,6 +2312,19 @@ impl DefOpRegion {
                                             address.write_volatile(written);
                                         }
                                     },
+                                    interpreter::RegionSpace::SystemIo => {
+                                        x64::port::outb(address as u16, written);
+                                    },
+                                    interpreter::RegionSpace::PciConfig => {
+                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
+                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
+                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
+                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
+                                        pci::Address::create(bus, device, function, offset).write_u8(written);
+                                    },
+                                    interpreter::RegionSpace::SystemCmos => {
+                                        x64::cmos::write(address as u8, written);
+                                    },
                                     region_space => unimplemented!("region_space = {:#x?}", region_space),
                                 };
                             },
