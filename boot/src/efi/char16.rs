@@ -65,13 +65,13 @@ impl<'a> From<&'a NullTerminatedString<'a>> for &'a [u16] {
         let string: *const u16 = string as *const u16;
         let length: usize = (0..)
             .take_while(|index| {
-                let string: *const u16 = unsafe {
-                    string.add(*index)
+                let index: usize = *index;
+                let string: u16 = unsafe {
+                    string
+                        .add(index)
+                        .read_volatile()
                 };
-                let string: &u16 = unsafe {
-                    &*string
-                };
-                *string != 0
+                string != 0
             })
             .max()
             .map(|max_index| max_index + 1)

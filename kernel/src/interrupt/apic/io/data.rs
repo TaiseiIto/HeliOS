@@ -20,7 +20,7 @@ impl FatRegister {
         let register: *mut Self = self as *mut Self;
         let register: *mut u32 = register as *mut u32;
         unsafe {
-            register.write(data);
+            register.write_volatile(data);
         }
     }
 }

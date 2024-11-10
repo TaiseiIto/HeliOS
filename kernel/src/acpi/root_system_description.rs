@@ -128,7 +128,9 @@ impl Table {
         (0..entries)
             .map(|index| {
                 let entry: u32 = unsafe {
-                    *first_entry.add(index)
+                    first_entry
+                        .add(index)
+                        .read_volatile()
                 };
                 let entry: usize = entry as usize;
                 let header: *const system_description::Header = entry as *const system_description::Header;

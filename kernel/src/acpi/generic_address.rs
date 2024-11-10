@@ -73,10 +73,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u8 = address as *const u8;
-                let address: &u8 = unsafe {
-                    &*address
-                };
-                *address
+                unsafe {
+                    address.read_volatile()
+                }
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -92,10 +91,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u16 = address as *const u16;
-                let address: &u16 = unsafe {
-                    &*address
-                };
-                *address
+                unsafe {
+                    address.read_volatile()
+                }
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -111,10 +109,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u32 = address as *const u32;
-                let address: &u32 = unsafe {
-                    &*address
-                };
-                *address
+                unsafe {
+                    address.read_volatile()
+                }
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -130,10 +127,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u64 = address as *const u64;
-                let address: &u64 = unsafe {
-                    &*address
-                };
-                *address
+                unsafe {
+                    address.read_volatile()
+                }
             },
             SpaceId::SystemIoSpace => {
                 let low_port: u16 = self.address as u16;
@@ -168,10 +164,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *mut u8 = address as *mut u8;
-                let address: &mut u8 = unsafe {
-                    &mut *address
+                unsafe {
+                    address.write_volatile(data);
                 };
-                *address = data;
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -187,10 +182,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *mut u16 = address as *mut u16;
-                let address: &mut u16 = unsafe {
-                    &mut *address
+                unsafe {
+                    address.write_volatile(data);
                 };
-                *address = data;
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -206,10 +200,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *mut u32 = address as *mut u32;
-                let address: &mut u32 = unsafe {
-                    &mut *address
+                unsafe {
+                    address.write_volatile(data);
                 };
-                *address = data;
             },
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
@@ -225,10 +218,9 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *mut u64 = address as *mut u64;
-                let address: &mut u64 = unsafe {
-                    &mut *address
+                unsafe {
+                    address.write_volatile(data);
                 };
-                *address = data;
             },
             SpaceId::SystemIoSpace => {
                 let low_port: u16 = self.address as u16;
