@@ -2244,6 +2244,7 @@ impl DefOpRegion {
         let u8_bits: usize = u8::BITS as usize;
         let u16_bits: usize = u16::BITS as usize;
         let u32_bits: usize = u32::BITS as usize;
+        let u64_bits: usize = u64::BITS as usize;
         let align_bits: usize = align_bytes * u8_bits;
         region_offset
             .zip(region_len)
@@ -2442,7 +2443,40 @@ impl DefOpRegion {
                                     region_space => unimplemented!("region_space = {:#x?}", region_space),
                                 };
                             },
-                            8 => unimplemented!(),
+                            8 => {
+                                let read: u64 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u64 = address as *const u64;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                let written: u64 = (0..u64_bits)
+                                    .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
+                                        bit_iterator
+                                            .next()
+                                            .unwrap_or((read >> index) & 0x0000000000000001 != 0)
+                                    } else {
+                                        (read >> index) & 0x0000000000000001 != 0
+                                    })
+                                    .rev()
+                                    .fold(0x0000000000000000, |written, bit| (written << 1) | if bit {
+                                        0x0000000000000001
+                                    } else {
+                                        0x0000000000000000
+                                    });
+                                match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *mut u64 = address as *mut u64;
+                                        unsafe {
+                                            address.write_volatile(written);
+                                        }
+                                    },
+                                    region_space => unimplemented!("region_space = {:#x?}", region_space),
+                                };
+                            },
                             _ => unreachable!(),
                         }
                     });
