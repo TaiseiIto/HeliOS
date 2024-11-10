@@ -56,6 +56,10 @@ impl Address {
     const DATA_PORT: u16 = 0x0cfc;
 
     pub fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
+        com2_println!("bus = {:#x?}", bus);
+        com2_println!("device = {:#x?}", device);
+        com2_println!("function = {:#x?}", function);
+        com2_println!("register = {:#x?}", register);
         Self::new()
             .with_enable(true)
             .with_bus(bus)

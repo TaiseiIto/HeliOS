@@ -827,6 +827,11 @@ impl Add for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left + right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left + right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left + right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::One,
+            (Self::Zero, Self::Ones) => Self::Ones,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::Ones, Self::Zero) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -841,6 +846,15 @@ impl BitAnd for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left & right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left & right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left & right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::Zero) => Self::Zero,
+            (Self::One, Self::One) => Self::One,
+            (Self::One, Self::Ones) => Self::One,
+            (Self::Ones, Self::Zero) => Self::Zero,
+            (Self::Ones, Self::One) => Self::One,
+            (Self::Ones, Self::Ones) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -855,6 +869,15 @@ impl BitOr for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left | right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left | right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left | right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::One,
+            (Self::Zero, Self::Ones) => Self::Ones,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::One, Self::One) => Self::One,
+            (Self::One, Self::Ones) => Self::Ones,
+            (Self::Ones, Self::Zero) => Self::Ones,
+            (Self::Ones, Self::One) => Self::Ones,
+            (Self::Ones, Self::Ones) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -869,6 +892,13 @@ impl BitXor for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left ^ right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left ^ right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left ^ right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::One,
+            (Self::Zero, Self::Ones) => Self::Ones,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::One, Self::One) => Self::Zero,
+            (Self::Ones, Self::Zero) => Self::Ones,
+            (Self::Ones, Self::Ones) => Self::Zero,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -883,6 +913,11 @@ impl Div for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left / right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left / right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left / right),
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::One) => Self::One,
+            (Self::Ones, Self::One) => Self::Ones,
+            (Self::Ones, Self::Ones) => Self::One,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -1041,6 +1076,14 @@ impl Mul for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left * right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left * right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left * right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::Zero) => Self::Zero,
+            (Self::One, Self::One) => Self::One,
+            (Self::One, Self::Ones) => Self::Ones,
+            (Self::Ones, Self::Zero) => Self::Zero,
+            (Self::Ones, Self::One) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -1058,13 +1101,14 @@ impl Not for Value {
                 .collect()),
             Self::Byte(byte) => Self::Output::Byte(!byte),
             Self::DWord(dword) => Self::Output::DWord(!dword),
-            Self::Ones => Self::Zero,
             Self::Package(package) => Self::Output::Package(package
                 .into_iter()
                 .map(|element| !element)
                 .collect()),
             Self::QWord(qword) => Self::Output::QWord(!qword),
             Self::Word(word) => Self::Output::Word(!word),
+            Self::Zero => Self::Ones,
+            Self::Ones => Self::Zero,
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -1079,6 +1123,11 @@ impl Rem for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left % right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left % right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left % right),
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::One) => Self::Zero,
+            (Self::Ones, Self::One) => Self::Zero,
+            (Self::Ones, Self::Ones) => Self::Zero,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -1093,6 +1142,11 @@ impl Shl for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left << right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left << right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left << right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::Ones, Self::Zero) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -1107,6 +1161,13 @@ impl Shr for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left >> right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left >> right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left >> right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::Zero, Self::One) => Self::Zero,
+            (Self::Zero, Self::Ones) => Self::Zero,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::One, Self::One) => Self::Zero,
+            (Self::One, Self::Ones) => Self::Zero,
+            (Self::Ones, Self::Zero) => Self::Ones,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -1121,6 +1182,11 @@ impl Sub for Value {
             (Self::Word(left), Self::Word(right)) => Self::Output::Word(left - right),
             (Self::DWord(left), Self::DWord(right)) => Self::Output::DWord(left - right),
             (Self::QWord(left), Self::QWord(right)) => Self::Output::QWord(left - right),
+            (Self::Zero, Self::Zero) => Self::Zero,
+            (Self::One, Self::Zero) => Self::One,
+            (Self::One, Self::One) => Self::Zero,
+            (Self::Ones, Self::Zero) => Self::Ones,
+            (Self::Ones, Self::Ones) => Self::Zero,
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
