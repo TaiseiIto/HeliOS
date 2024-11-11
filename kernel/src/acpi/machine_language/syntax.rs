@@ -2233,6 +2233,10 @@ pub struct DefOpRegion(
 
 impl DefOpRegion {
     pub fn read_value(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+        const U8_BITS: usize = u8::BITS as usize;
+        const U16_BITS: usize = u16::BITS as usize;
+        const U32_BITS: usize = u32::BITS as usize;
+        const U64_BITS: usize = u64::BITS as usize;
         let Self(
             _op_region_op,
             _name_string,
@@ -2244,26 +2248,22 @@ impl DefOpRegion {
         let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
-        let u8_bits: usize = u8::BITS as usize;
-        let u16_bits: usize = u16::BITS as usize;
-        let u32_bits: usize = u32::BITS as usize;
-        let u64_bits: usize = u64::BITS as usize;
-        let align_bits: usize = align_bytes * u8_bits;
+        let align_bits: usize = align_bytes * U8_BITS;
         region_offset
             .zip(region_len)
-            .and_then(|(region_offset, region_len)| {
+            .map(|(region_offset, region_len)| {
                 let region_offset: usize = (&region_offset).into();
                 let region_len: usize = (&region_len).into();
-                let first_byte: usize = region_offset + offset_in_bits / u8_bits;
-                let first_bit: usize = offset_in_bits % u8_bits;
+                let first_byte: usize = region_offset + offset_in_bits / U8_BITS;
+                let first_bit: usize = offset_in_bits % U8_BITS;
                 let last_bit: usize = first_bit + size_in_bits - 1;
-                let last_byte: usize = first_byte + last_bit / u8_bits;
-                let last_bit: usize = last_bit % u8_bits;
+                let last_byte: usize = first_byte + last_bit / U8_BITS;
+                let last_bit: usize = last_bit % U8_BITS;
                 let aligned_first_byte: usize = (first_byte / align_bytes) * align_bytes;
                 let aligned_last_byte: usize = (last_byte / align_bytes) * align_bytes + align_bytes - 1;
                 assert!(aligned_last_byte < region_offset + region_len);
-                let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
-                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * u8_bits;
+                let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * U8_BITS;
+                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * U8_BITS;
                 let bits: Vec<Vec<bool>> = (aligned_first_byte..=aligned_last_byte)
                     .step_by(align_bytes)
                     .map(|address| {
@@ -2356,15 +2356,33 @@ impl DefOpRegion {
                     .flatten()
                     .collect();
                 match bits.len() {
-                    1 => bits
-                        .get(0)
-                        .map(|bit| interpreter::Value::Bool(*bit)),
+                    1 => {
+                        let bit: bool = bits
+                            .iter()
+                            .any(|bit| *bit);
+                        interpreter::Value::Bool(bit)
+                    },
+                    U8_BITS => {
+                        let byte: u8 = bits
+                            .iter()
+                            .rev()
+                            .fold(0x00, |byte, bit| (byte << 1) | if *bit {
+                                0x01
+                            } else {
+                                0x00
+                            });
+                        interpreter::Value::Byte(byte)
+                    },
                     _ => unimplemented!(),
                 }
             })
     }
 
     pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+        const U8_BITS: usize = u8::BITS as usize;
+        const U16_BITS: usize = u16::BITS as usize;
+        const U32_BITS: usize = u32::BITS as usize;
+        const U64_BITS: usize = u64::BITS as usize;
         let Self(
             _op_region_op,
             _name_string,
@@ -2376,26 +2394,22 @@ impl DefOpRegion {
         let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
-        let u8_bits: usize = u8::BITS as usize;
-        let u16_bits: usize = u16::BITS as usize;
-        let u32_bits: usize = u32::BITS as usize;
-        let u64_bits: usize = u64::BITS as usize;
-        let align_bits: usize = align_bytes * u8_bits;
+        let align_bits: usize = align_bytes * U8_BITS;
         region_offset
             .zip(region_len)
             .map(|(region_offset, region_len)| {
                 let region_offset: usize = (&region_offset).into();
                 let region_len: usize = (&region_len).into();
-                let first_byte: usize = region_offset + offset_in_bits / u8_bits;
-                let first_bit: usize = offset_in_bits % u8_bits;
+                let first_byte: usize = region_offset + offset_in_bits / U8_BITS;
+                let first_bit: usize = offset_in_bits % U8_BITS;
                 let last_bit: usize = first_bit + size_in_bits - 1;
-                let last_byte: usize = first_byte + last_bit / u8_bits;
-                let last_bit: usize = last_bit % u8_bits;
+                let last_byte: usize = first_byte + last_bit / U8_BITS;
+                let last_bit: usize = last_bit % U8_BITS;
                 let aligned_first_byte: usize = (first_byte / align_bytes) * align_bytes;
                 let aligned_last_byte: usize = (last_byte / align_bytes) * align_bytes + align_bytes - 1;
                 assert!(aligned_last_byte < region_offset + region_len);
-                let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
-                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * u8_bits;
+                let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * U8_BITS;
+                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * U8_BITS;
                 let mut bit_iterator: interpreter::BitIterator = (&value).into();
                 (aligned_first_byte..=aligned_last_byte)
                     .step_by(align_bytes)
@@ -2423,7 +2437,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u8(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: Vec<bool> = (0..u8_bits)
+                                let written: Vec<bool> = (0..U8_BITS)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2469,7 +2483,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u16(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: Vec<bool> = (0..u16_bits)
+                                let written: Vec<bool> = (0..U16_BITS)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2522,7 +2536,7 @@ impl DefOpRegion {
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u32(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: Vec<bool> = (0..u32_bits)
+                                let written: Vec<bool> = (0..U32_BITS)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
@@ -2573,7 +2587,7 @@ impl DefOpRegion {
                                     },
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
                                 };
-                                let written: Vec<bool> = (0..u64_bits)
+                                let written: Vec<bool> = (0..U64_BITS)
                                     .map(|index| if (present_first_bit..=present_last_bit).contains(&index) {
                                         bit_iterator
                                             .next()
