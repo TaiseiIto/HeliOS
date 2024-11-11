@@ -2443,6 +2443,7 @@ impl DefOpRegion {
     }
 
     pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+        com2_println!("write {:#x?} to {:#x?}", &value, op_region_path);
         const U8_BITS: usize = u8::BITS as usize;
         const U16_BITS: usize = u16::BITS as usize;
         const U32_BITS: usize = u32::BITS as usize;
@@ -4467,6 +4468,7 @@ impl From<&NameString> for VecDeque<name::Segment> {
 impl Holder for NameString {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let name: name::Path = self.into();
+        com2_println!("{:#x?} holds {:#x?}", &name, &value);
         stack_frame
             .write_named_local(&name, value.clone())
             .or_else(|| {
