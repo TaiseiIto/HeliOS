@@ -71,14 +71,17 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_method_from_current(&self, method: &name::AbsolutePath) -> Option<&'a syntax::DefMethod> {
-        let mut methods: Vec<&'a syntax::DefMethod> = self.get_methods_from_current(method);
-        let method: Option<&'a syntax::DefMethod> = methods.pop();
-        if methods.is_empty() {
-            method
-        } else {
-            None
-        }
+    pub fn get_method_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, &'a syntax::DefMethod)> {
+        self.get_methods_from_current(method)
+            .and_then(|(name, mut methods)| {
+                methods
+                    .pop()
+                    .and_then(|method| if methods.is_empty() {
+                        Some((name, method))
+                    } else {
+                        None
+                    })
+            })
     }
 
     pub fn get_name(&self, name: &name::Path) -> Option<&'a syntax::DefName> {
@@ -130,17 +133,18 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Vec<&'a syntax::DefMethod> {
-        match self.get_objects_from_current(method) {
-            Some((_name, objects)) => objects
-                .iter()
-                .filter_map(|object| match object {
-                    Object::Method(method) => Some(*method),
-                    _ => None,
-                })
-                .collect(),
-            None => Vec::new(),
-        }
+    fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, Vec<&'a syntax::DefMethod>)> {
+        self.get_objects_from_current(method)
+            .map(|(name, objects)| {
+                let methods: Vec<&'a syntax::DefMethod> = objects
+                    .iter()
+                    .filter_map(|object| match object {
+                        Object::Method(method) => Some(*method),
+                        _ => None,
+                    })
+                    .collect();
+                (name, methods)
+            })
     }
 
     fn get_names(&self, name: &name::Path) -> Vec<&'a syntax::DefName> {

@@ -3871,21 +3871,19 @@ impl Evaluator for MethodInvocation {
             term_args,
         ) = self;
         let method: name::Path = name_string.into();
+        let term_args: Vec<interpreter::Value> = term_args
+            .iter()
+            .filter_map(|term_arg| term_arg.evaluate(stack_frame, root, current))
+            .collect();
         stack_frame
             .read_named_local(&method)
-            .or_else(|| {
-                let method = name::AbsolutePath::new(current, &method);
-                let method: &DefMethod = root
-                    .get_method_from_current(&method)
-                    .unwrap();
-                let term_args: Vec<interpreter::Value> = term_args
-                    .iter()
-                    .filter_map(|term_arg| term_arg.evaluate(stack_frame, root, current))
-                    .collect();
-                let mut stack_frame = interpreter::StackFrame::default()
-                    .set_arguments(term_args);
-                method.evaluate(&mut stack_frame, root, current)
-            })
+            .or_else(|| root
+                .get_method_from_current(&name::AbsolutePath::new(current, &method))
+                .and_then(|(current, method)| {
+                    let mut stack_frame = interpreter::StackFrame::default()
+                        .set_arguments(term_args);
+                    method.evaluate(&mut stack_frame, root, &current)
+                }))
     }
 }
 
