@@ -134,7 +134,6 @@ impl Table {
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &current);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
-        com2_println!("syntax_tree = {:#x?}", syntax_tree);
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);
         let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);

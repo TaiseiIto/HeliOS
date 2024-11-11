@@ -1997,6 +1997,9 @@ impl Evaluator for DefMethod {
         ) = self;
         let name_string: name::Path = name_string.into();
         let current: name::Path = current.clone() + name_string;
+        com2_println!("Evaluate {:#x?}", current);
+        com2_println!("stack_frame = {:#x?}", stack_frame);
+        com2_println!("{:#x?} = {:#x?}", current, self);
         method_term_list.evaluate(stack_frame, root, &current)
     }
 }
