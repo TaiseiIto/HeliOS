@@ -91,36 +91,6 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_name_from_current(&self, name: &name::AbsolutePath) -> Option<&'a syntax::DefName> {
-        let mut names: Vec<&'a syntax::DefName> = self.get_names_from_current(name);
-        let name: Option<&'a syntax::DefName> = names.pop();
-        if names.is_empty() {
-            name
-        } else {
-            None
-        }
-    }
-
-    pub fn get_named_field(&self, name: &name::Path) -> Option<&'a syntax::NamedField> {
-        let mut named_fields: Vec<&'a syntax::NamedField> = self.get_named_fields(name);
-        let named_field: Option<&'a syntax::NamedField> = named_fields.pop();
-        if named_fields.is_empty() {
-            named_field
-        } else {
-            None
-        }
-    }
-
-    pub fn get_named_field_from_current(&self, name: &name::AbsolutePath) -> Option<&'a syntax::NamedField> {
-        let mut named_fields: Vec<&'a syntax::NamedField> = self.get_named_fields_from_current(name);
-        let named_field: Option<&'a syntax::NamedField> = named_fields.pop();
-        if named_fields.is_empty() {
-            named_field
-        } else {
-            None
-        }
-    }
-
     pub fn write_named_field(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
         self.get_objects_from_current(name)
             .and_then(|(named_field_path, objects)| objects
@@ -173,58 +143,9 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_named_fields(&self, name: &name::Path) -> Vec<&'a syntax::NamedField> {
-        match self.get_objects(name) {
-            Some(objects) => objects
-                .iter()
-                .filter_map(|object| match object {
-                    Object::NamedField {
-                        access_type: _,
-                        named_field,
-                        offset_in_bits: _,
-                        op_region: _,
-                    } => Some(*named_field),
-                    _ => None,
-                })
-                .collect(),
-            None => Vec::new(),
-        }
-    }
-
-    fn get_named_fields_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::NamedField> {
-        match self.get_objects_from_current(name) {
-            Some((_name, objects)) => objects
-                .iter()
-                .filter_map(|object| match object {
-                    Object::NamedField {
-                        access_type: _,
-                        named_field,
-                        offset_in_bits: _,
-                        op_region: _,
-                    } => Some(*named_field),
-                    _ => None,
-                })
-                .collect(),
-            None => Vec::new(),
-        }
-    }
-
     fn get_names(&self, name: &name::Path) -> Vec<&'a syntax::DefName> {
         match self.get_objects(name) {
             Some(objects) => objects
-                .iter()
-                .filter_map(|object| match object {
-                    Object::Name(name) => Some(*name),
-                    _ => None,
-                })
-                .collect(),
-            None => Vec::new(),
-        }
-    }
-
-    fn get_names_from_current(&self, name: &name::AbsolutePath) -> Vec<&'a syntax::DefName> {
-        match self.get_objects_from_current(name) {
-            Some((_name, objects)) => objects
                 .iter()
                 .filter_map(|object| match object {
                     Object::Name(name) => Some(*name),
