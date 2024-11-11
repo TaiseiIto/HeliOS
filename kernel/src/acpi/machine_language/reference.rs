@@ -94,6 +94,31 @@ impl<'a> Node<'a> {
         }
     }
 
+    pub fn read_named_field(&self, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
+        self.get_objects_from_current(name)
+            .and_then(|(named_field_path, objects)| objects
+                .iter()
+                .find_map(|object| match object {
+                    Object::NamedField {
+                        access_type,
+                        named_field,
+                        offset_in_bits,
+                        op_region,
+                    } => {
+                        let size_in_bits: usize = named_field.bits();
+                        let op_region = name::AbsolutePath::new(&named_field_path, op_region);
+                        self.get_objects_from_current(&op_region)
+                            .and_then(|(op_region_path, objects)| objects
+                                .iter()
+                                .find_map(|object| match object {
+                                    Object::OpRegion(op_region) => op_region.read_value(stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
+                                    _ => None,
+                                }))
+                    },
+                    _ => None,
+                }))
+    }
+
     pub fn write_named_field(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
         self.get_objects_from_current(name)
             .and_then(|(named_field_path, objects)| objects
@@ -111,13 +136,12 @@ impl<'a> Node<'a> {
                             .and_then(|(op_region_path, objects)| objects
                                 .iter()
                                 .find_map(|object| match object {
-                                    Object::OpRegion(op_region) => op_region.write(value.clone(), stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
+                                    Object::OpRegion(op_region) => op_region.write_value(value.clone(), stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
                                     _ => None,
                                 }))
                     },
                     _ => None,
-                })
-            )
+                }))
     }
 
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {

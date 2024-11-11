@@ -2232,7 +2232,139 @@ pub struct DefOpRegion(
 );
 
 impl DefOpRegion {
-    pub fn write(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+    pub fn read_value(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+        let Self(
+            _op_region_op,
+            _name_string,
+            region_space,
+            region_offset,
+            region_len,
+        ) = self;
+        let region_space: interpreter::RegionSpace = region_space.into();
+        let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
+        let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
+        let align_bytes: usize = access_type.align();
+        let u8_bits: usize = u8::BITS as usize;
+        let u16_bits: usize = u16::BITS as usize;
+        let u32_bits: usize = u32::BITS as usize;
+        let u64_bits: usize = u64::BITS as usize;
+        let align_bits: usize = align_bytes * u8_bits;
+        region_offset
+            .zip(region_len)
+            .and_then(|(region_offset, region_len)| {
+                let region_offset: usize = (&region_offset).into();
+                let region_len: usize = (&region_len).into();
+                let first_byte: usize = region_offset + offset_in_bits / u8_bits;
+                let first_bit: usize = offset_in_bits % u8_bits;
+                let last_bit: usize = first_bit + size_in_bits - 1;
+                let last_byte: usize = first_byte + last_bit / u8_bits;
+                let last_bit: usize = last_bit % u8_bits;
+                let aligned_first_byte: usize = (first_byte / align_bytes) * align_bytes;
+                let aligned_last_byte: usize = (last_byte / align_bytes) * align_bytes + align_bytes - 1;
+                assert!(aligned_last_byte < region_offset + region_len);
+                let first_bit: usize = first_bit + (first_byte - aligned_first_byte) * u8_bits;
+                let last_bit: usize = last_bit + (last_byte + align_bytes - aligned_last_byte - 1) * u8_bits;
+                let bits: Vec<Vec<bool>> = (aligned_first_byte..=aligned_last_byte)
+                    .step_by(align_bytes)
+                    .map(|address| {
+                        let present_first_bit: usize = if address == aligned_first_byte {
+                            first_bit
+                        } else {
+                            0
+                        };
+                        let present_last_bit: usize = if address + align_bytes == aligned_last_byte + 1 {
+                            last_bit
+                        } else {
+                            align_bits - 1
+                        };
+                        match align_bytes {
+                            1 => {
+                                let read: u8 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u8 = address as *const u8;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => x64::port::inb(address as u16),
+                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read_u8(address as u8),
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                (present_first_bit..=present_last_bit)
+                                    .map(|shift| (read >> shift) & 0x01 != 0)
+                                    .collect()
+                            },
+                            2 => {
+                                let read: u16 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u16 = address as *const u16;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => x64::port::inw(address as u16),
+                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read_u16(address as u8),
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                (present_first_bit..=present_last_bit)
+                                    .map(|shift| (read >> shift) & 0x0001 != 0)
+                                    .collect()
+                            },
+                            4 => {
+                                let read: u32 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u32 = address as *const u32;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    interpreter::RegionSpace::SystemIo => x64::port::inl(address as u16),
+                                    interpreter::RegionSpace::PciConfig => {
+                                        let bus: u8 = ((address >> 0x30) & 0x00000000000000ff) as u8;
+                                        let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
+                                        let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
+                                        let offset: u8 = (address & 0x00000000000000ff) as u8;
+                                        pci::Address::create(bus, device, function, offset).read_u32()
+                                    },
+                                    interpreter::RegionSpace::SystemCmos => x64::cmos::read_u32(address as u8),
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                (present_first_bit..=present_last_bit)
+                                    .map(|shift| (read >> shift) & 0x00000001 != 0)
+                                    .collect()
+                            },
+                            8 => {
+                                let read: u64 = match &region_space {
+                                    interpreter::RegionSpace::SystemMemory => {
+                                        let address: *const u64 = address as *const u64;
+                                        unsafe {
+                                            address.read_volatile()
+                                        }
+                                    },
+                                    region_space => unimplemented!("reagion_space = {:#x?}", region_space),
+                                };
+                                (present_first_bit..=present_last_bit)
+                                    .map(|shift| (read >> shift) & 0x0000000000000001 != 0)
+                                    .collect()
+                            },
+                            _ => unreachable!(),
+                        }
+                    })
+                    .collect();
+                let bits: Vec<bool> = bits
+                    .into_iter()
+                    .flatten()
+                    .collect();
+                match bits.len() {
+                    1 => bits
+                        .get(0)
+                        .map(|bit| interpreter::Value::Bool(*bit)),
+                    _ => unimplemented!(),
+                }
+            })
+    }
+
+    pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
         let Self(
             _op_region_op,
             _name_string,
@@ -3877,6 +4009,10 @@ impl Evaluator for MethodInvocation {
             .collect();
         stack_frame
             .read_named_local(&method)
+            .or_else(|| {
+                let named_field = name::AbsolutePath::new(current, &method);
+                root.read_named_field(stack_frame, root, &named_field)
+            })
             .or_else(|| root
                 .get_method_from_current(&name::AbsolutePath::new(current, &method))
                 .and_then(|(current, method)| {
