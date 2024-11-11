@@ -2373,7 +2373,71 @@ impl DefOpRegion {
                             });
                         interpreter::Value::Byte(byte)
                     },
-                    _ => unimplemented!(),
+                    U16_BITS => {
+                        let word: u16 = bits
+                            .iter()
+                            .rev()
+                            .fold(0x0000, |word, bit| (word << 1) | if *bit {
+                                0x0001
+                            } else {
+                                0x0000
+                            });
+                        interpreter::Value::Word(word)
+                    },
+                    U32_BITS => {
+                        let dword: u32 = bits
+                            .iter()
+                            .rev()
+                            .fold(0x00000000, |dword, bit| (dword << 1) | if *bit {
+                                0x00000001
+                            } else {
+                                0x00000000
+                            });
+                        interpreter::Value::DWord(dword)
+                    },
+                    U64_BITS => {
+                        let qword: u64 = bits
+                            .iter()
+                            .rev()
+                            .fold(0x0000000000000000, |qword, bit| (qword << 1) | if *bit {
+                                0x0000000000000001
+                            } else {
+                                0x0000000000000000
+                            });
+                        interpreter::Value::QWord(qword)
+                    },
+                    length => if length % U8_BITS == 0 {
+                        let bytes: Vec<u8> = bits
+                            .chunks(U8_BITS)
+                            .map(|byte| byte
+                                .iter()
+                                .fold(0x00, |byte, bit| (byte << 1) | if *bit {
+                                    0x01
+                                } else {
+                                    0x00
+                                }))
+                            .collect();
+                        interpreter::Value::Buffer(bytes)
+                    } else if bits  
+                        .iter()
+                        .all(|bit| !*bit) {
+                        interpreter::Value::Zero
+                    } else if bits
+                        .iter()
+                        .enumerate()
+                        .all(|(index, bit)| if index == 0 {
+                            *bit
+                        } else {
+                            !*bit
+                        }) {
+                        interpreter::Value::One
+                    } else if bits
+                        .iter()
+                        .all(|bit| *bit) {
+                        interpreter::Value::Ones
+                    } else {
+                        unimplemented!()
+                    },
                 }
             })
     }
