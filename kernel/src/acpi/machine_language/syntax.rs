@@ -2463,6 +2463,11 @@ impl DefOpRegion {
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
         let align_bits: usize = align_bytes * U8_BITS;
+        com2_println!("region_space = {:#x?}", region_space);
+        com2_println!("region_offset = {:#x?}", region_offset);
+        com2_println!("region_len = {:#x?}", region_len);
+        com2_println!("align_bytes = {:#x?}", align_bytes);
+        com2_println!("align_bits = {:#x?}", align_bits);
         region_offset
             .zip(region_len)
             .map(|(region_offset, region_len)| {
