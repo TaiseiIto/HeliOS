@@ -129,26 +129,26 @@ impl Table {
         com2_println!("iasl_input = {:02x?}", iasl_input);
         let dsdt: &[u8] = dsdt.definition_block();
         let mut semantic_tree = machine_language::name::Node::default();
-        let current = machine_language::name::Path::root();
-        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
+        let root_path = machine_language::name::Path::root();
+        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &root_path);
         assert!(unread_dsdt.is_empty());
-        syntax_tree.read_outside_method(&mut semantic_tree, &current);
+        syntax_tree.read_outside_method(&mut semantic_tree, &root_path);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
         com2_println!("semantic_tree = {:#x?}", semantic_tree);
         com2_println!("reference_tree = {:#x?}", reference_tree);
         let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
         com2_println!("stack_frame = {:#x?}", stack_frame);
-        let tts: machine_language::name::Path = "\\_TTS".into();
-        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts);
+        let tts_path: machine_language::name::Path = "\\_TTS".into();
+        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
         com2_println!("tts = {:#x?}", tts);
         if let Some(tts) = tts {
-            tts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
+            tts.evaluate(&mut stack_frame.clone(), &reference_tree, &tts_path);
         }
-        let pts: machine_language::name::Path = "\\_PTS".into();
-        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts);
+        let pts_path: machine_language::name::Path = "\\_PTS".into();
+        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
         com2_println!("pts = {:#x?}", pts);
         if let Some(pts) = pts {
-            pts.evaluate(&mut stack_frame.clone(), &reference_tree, &current);
+            pts.evaluate(&mut stack_frame.clone(), &reference_tree, &pts_path);
         }
         let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
         com2_println!("pm1a_status = {:#x?}", pm1a_status);
@@ -164,7 +164,7 @@ impl Table {
         com2_println!("pm1b_control = {:#x?}", pm1b_control);
         let s5: machine_language::name::Path = "\\_S5".into();
         let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
-        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &current));
+        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &root_path));
         com2_println!("s5 = {:#x?}", s5);
         let pm1a_cnt_slp_typ: Option<u8> = s5
             .as_ref()
