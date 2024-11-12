@@ -4091,19 +4091,20 @@ impl Evaluator for MethodInvocation {
             name_string,
             term_args,
         ) = self;
-        let method: name::Path = name_string.into();
+        let relative_method_path: name::Path = name_string.into();
+        let absolute_method_path = name::AbsolutePath::new(current, &relative_method_path);
         let term_args: Vec<interpreter::Value> = term_args
             .iter()
             .filter_map(|term_arg| term_arg.evaluate(stack_frame, root, current))
             .collect();
         stack_frame
-            .read_named_local(&method)
-            .or_else(|| {
-                let named_field = name::AbsolutePath::new(current, &method);
-                root.read_named_field(stack_frame, root, &named_field)
-            })
+            .read_named_local(&relative_method_path)
             .or_else(|| root
-                .get_method_from_current(&name::AbsolutePath::new(current, &method))
+                .get_name_from_current(&absolute_method_path)
+                .and_then(|(current, name)| name.evaluate(stack_frame, root, &current)))
+            .or_else(|| root.read_named_field(stack_frame, root, &absolute_method_path))
+            .or_else(|| root
+                .get_method_from_current(&absolute_method_path)
                 .and_then(|(current, method)| {
                     let mut stack_frame = interpreter::StackFrame::default()
                         .set_arguments(term_args);

@@ -74,15 +74,13 @@ impl<'a> Node<'a> {
 
     pub fn get_method_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, &'a syntax::DefMethod)> {
         self.get_methods_from_current(method)
-            .and_then(|(name, mut methods)| {
-                methods
-                    .pop()
-                    .and_then(|method| if methods.is_empty() {
-                        Some((name, method))
-                    } else {
-                        None
-                    })
-            })
+            .and_then(|(method_path, mut methods)| methods
+                .pop()
+                .and_then(|method| if methods.is_empty() {
+                    Some((method_path, method))
+                } else {
+                    None
+                }))
     }
 
     pub fn get_name(&self, name: &name::Path) -> Option<&'a syntax::DefName> {
@@ -93,6 +91,17 @@ impl<'a> Node<'a> {
         } else {
             None
         }
+    }
+
+    pub fn get_name_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, &'a syntax::DefName)> {
+        self.get_names_from_current(name)
+            .and_then(|(name_path, mut names)| names
+                .pop()
+                .and_then(|name| if names.is_empty() {
+                    Some((name_path, name))
+                } else {
+                    None
+                }))
     }
 
     pub fn read_named_field(&self, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
@@ -162,7 +171,7 @@ impl<'a> Node<'a> {
 
     fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, Vec<&'a syntax::DefMethod>)> {
         self.get_objects_from_current(method)
-            .map(|(name, objects)| {
+            .map(|(method_path, objects)| {
                 let methods: Vec<&'a syntax::DefMethod> = objects
                     .iter()
                     .filter_map(|object| match object {
@@ -170,7 +179,7 @@ impl<'a> Node<'a> {
                         _ => None,
                     })
                     .collect();
-                (name, methods)
+                (method_path, methods)
             })
     }
 
@@ -185,6 +194,20 @@ impl<'a> Node<'a> {
                 .collect(),
             None => Vec::new(),
         }
+    }
+
+    fn get_names_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, Vec<&'a syntax::DefName>)> {
+        self.get_objects_from_current(name)
+            .map(|(name_path, objects)| {
+                let names: Vec<&'a syntax::DefName> = objects
+                    .iter()
+                    .filter_map(|object| match object {
+                        Object::Name(name) => Some(*name),
+                        _ => None,
+                    })
+                    .collect();
+                (name_path, names)
+            })
     }
 
     fn get_objects(&self, object: &name::Path) -> Option<&[Object<'a>]> {
