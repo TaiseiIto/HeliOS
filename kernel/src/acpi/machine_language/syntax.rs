@@ -4607,7 +4607,8 @@ pub enum NamedObj {
 impl Evaluator for NamedObj {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
-            Self::OpRegion(_) => None,
+            Self::Field(_)
+            | Self::OpRegion(_) => None,
             named_obj => unimplemented!("named_obj = {:#x?}", named_obj),
         }
     }
