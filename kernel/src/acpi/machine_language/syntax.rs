@@ -4604,6 +4604,15 @@ pub enum NamedObj {
     ThermalZone(DefThermalZone),
 }
 
+impl Evaluator for NamedObj {
+    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+        match self {
+            Self::OpRegion(_) => None,
+            named_obj => unimplemented!("named_obj = {:#x?}", named_obj),
+        }
+    }
+}
+
 /// # NoopOp
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20.2.5.3 Statement Opcodes Encoding
@@ -4702,7 +4711,7 @@ impl Evaluator for Object {
     fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::NameSpaceModifierObj(name_space_modifier_obj) => name_space_modifier_obj.evaluate(stack_frame, root, current),
-            Self::NamedObj(named_obj) => unimplemented!("named_obj = {:#x?}", named_obj),
+            Self::NamedObj(named_obj) => named_obj.evaluate(stack_frame, root, current),
         }
     }
 }
