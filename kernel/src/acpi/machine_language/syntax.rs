@@ -16,6 +16,7 @@ use {
     core::{
         fmt,
         iter,
+        ops::Range,
     },
     crate::{
         com2_println,
@@ -2446,7 +2447,7 @@ impl DefOpRegion {
             })
     }
 
-    pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, offset_in_bits: usize, size_in_bits: usize, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
+    pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, bit_range: &Range<usize>, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
         com2_println!("write {:#x?} to {:#x?}", &value, op_region_path);
         const U8_BITS: usize = u8::BITS as usize;
         const U16_BITS: usize = u16::BITS as usize;
@@ -2459,6 +2460,12 @@ impl DefOpRegion {
             region_offset,
             region_len,
         ) = self;
+        let Range {
+            start,
+            end,
+        } = bit_range;
+        let offset_in_bits: usize = *start;
+        let size_in_bits: usize = *end - *start;
         let region_space: interpreter::RegionSpace = region_space.into();
         let region_offset: Option<interpreter::Value> = region_offset.evaluate(stack_frame, root, op_region_path);
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);

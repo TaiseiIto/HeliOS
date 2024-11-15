@@ -8,7 +8,10 @@ use {
         string::String,
         vec::Vec,
     },
-    core::fmt,
+    core::{
+        fmt,
+        ops::Range,
+    },
     crate::com2_println,
     super::{
         name,
@@ -142,13 +145,16 @@ impl<'a> Node<'a> {
                         op_region,
                     } => {
                         com2_println!("write {:#x?} to {:#x?}", &value, &named_field_path);
+                        let start_bit: usize = *offset_in_bits;
                         let size_in_bits: usize = named_field.bits();
+                        let end_bit: usize = start_bit + size_in_bits;
+                        let bit_range: Range<usize> = start_bit..end_bit;
                         let op_region = name::AbsolutePath::new(&named_field_path, op_region);
                         self.get_objects_from_current(&op_region)
                             .and_then(|(op_region_path, objects)| objects
                                 .iter()
                                 .find_map(|object| match object {
-                                    Object::OpRegion(op_region) => op_region.write_value(value.clone(), stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
+                                    Object::OpRegion(op_region) => op_region.write_value(value.clone(), stack_frame, root, &op_region_path, &bit_range, access_type),
                                     _ => None,
                                 }))
                     },
