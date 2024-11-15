@@ -376,13 +376,17 @@ impl Value {
             },
             Self::One => Ok(index == 0),
             Self::Ones => Ok(true),
-            Self::Package(package) => package
-                .iter()
-                .fold(Err(Some(index)), |result, element| match result {
-                    Ok(bit) => Ok(bit),
-                    Err(Some(length_in_bits)) => element.get_bit(index - length_in_bits),
-                    Err(None) => Err(None),
-                }),
+            Self::Package(package) => {
+                let mut bit_or_remaining_index: Result<bool, Option<usize>> = Err(Some(index));
+                for element in package.iter() {
+                    bit_or_remaining_index = match bit_or_remaining_index {
+                        Ok(bit) => Ok(bit),
+                        Err(Some(length_in_bits)) => element.get_bit(index - length_in_bits),
+                        Err(None) => Err(None),
+                    };
+                }
+                bit_or_remaining_index
+            },
             Self::QWord(qword) => {
                 let bytes: Vec<u8> = (0..mem::size_of::<u64>())
                     .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
