@@ -1991,7 +1991,7 @@ impl Evaluator for DefMethod {
         let Self(
             _method_op,
             _pkg_length,
-            name_string,
+            _name_string,
             _method_flags,
             method_term_list,
         ) = self;
@@ -4605,7 +4605,7 @@ pub enum NamedObj {
 }
 
 impl Evaluator for NamedObj {
-    fn evaluate(&self, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> Option<interpreter::Value> {
+    fn evaluate(&self, _stack_frame: &mut interpreter::StackFrame, _root: &reference::Node, _current: &name::Path) -> Option<interpreter::Value> {
         match self {
             Self::Field(_)
             | Self::OpRegion(_) => None,
