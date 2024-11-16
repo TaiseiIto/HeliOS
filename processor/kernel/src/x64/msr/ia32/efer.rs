@@ -13,15 +13,14 @@ use {
 #[bitfield(u64)]
 pub struct Efer {
     sce: bool,
-    #[bits(7, access = RO)]
-    reserved0: u8,
+    #[bits(7)]
+    __: u8,
     lme: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     lma: bool,
     nxe: bool,
-    #[bits(52, access = RO)]
-    reserved2: u64,
+    #[bits(52)]
+    __: u64,
 }
 
 impl Efer {

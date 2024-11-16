@@ -14,8 +14,7 @@ pub struct Structure {
     length: u32,
     #[allow(dead_code)]
     unique_id: u16,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     flags: Flags,
     #[allow(dead_code)]
@@ -43,7 +42,7 @@ impl Structure {
 struct Flags {
     disabled: bool,
     counter_not_available: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 

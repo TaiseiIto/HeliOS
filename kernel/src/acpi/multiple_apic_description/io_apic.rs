@@ -11,7 +11,7 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     io_apic_id: u8,
-    reserved0: u8,
+    __: u8,
     io_apic_address: u32,
     global_system_interrupt_base: u32,
 }
@@ -45,7 +45,6 @@ impl fmt::Debug for Structure {
         let structure_type: u8 = self.structure_type;
         let length: u8 = self.length;
         let io_apic_id: u8 = self.io_apic_id;
-        let reserved0: u8 = self.reserved0;
         let registers: &interrupt::apic::io::Registers = self.registers();
         let global_system_interrupt_base: u32 = self.global_system_interrupt_base;
         formatter
@@ -53,7 +52,6 @@ impl fmt::Debug for Structure {
             .field("structure_type", &structure_type)
             .field("length", &length)
             .field("io_apic_id", &io_apic_id)
-            .field("reserved0", &reserved0)
             .field("registers", registers)
             .field("global_system_interrupt_base", &global_system_interrupt_base)
             .finish()

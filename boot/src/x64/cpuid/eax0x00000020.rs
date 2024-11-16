@@ -42,7 +42,7 @@ struct Eax {
 #[bitfield(u32)]
 struct Ebx {
     indicates_support_for_both_hresets_eax0_parameter_and_ia32_hreset_enable0_set_by_the_os_to_enable_reset_of_intel_thread_director_history: bool,
-    #[bits(31, access = RO)]
-    reserved0: u32,
+    #[bits(31)]
+    __: u32,
 }
 

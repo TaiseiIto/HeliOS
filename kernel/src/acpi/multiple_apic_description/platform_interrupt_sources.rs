@@ -40,7 +40,7 @@ impl Structure {
 #[bitfield(u32)]
 pub struct Flags {
     cpei_processor_override: bool,
-    #[bits(31, access = RO)]
-    reserved0: u32,
+    #[bits(31)]
+    __: u32,
 }
 

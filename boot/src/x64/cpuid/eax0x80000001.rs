@@ -57,32 +57,30 @@ struct Eax {
 #[bitfield(u32)]
 struct Ecx {
     lahf_sahf_available_in_64bit_mode: bool,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     lzcnt: bool,
-    #[bits(2, access = RO)]
-    reserved1: u8,
+    #[bits(2)]
+    __: u8,
     prefetchw: bool,
-    #[bits(23, access = RO)]
-    reserved2: u32,
+    #[bits(23)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
-    #[bits(11, access = RO)]
-    reserved0: u16,
+    #[bits(11)]
+    __: u16,
     syscall_sysret: bool,
-    #[bits(access = RO)]
-    reserved1: u8,
+    __: u8,
     execute_disable_bit_available: bool,
-    #[bits(5, access = RO)]
-    reserved2: u8,
+    #[bits(5)]
+    __: u8,
     pages_1gb_are_available: bool,
     rdtscp_and_ia32_tsc_aux_are_available: bool,
-    #[bits(access = RO)]
-    reserved3: bool,
+    __: bool,
     intel64_architecture_available: bool,
-    #[bits(2, access = RO)]
-    reserved4: u8,
+    #[bits(2)]
+    __: u8,
 }
 

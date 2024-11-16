@@ -66,7 +66,7 @@ impl Node {
         }
     }
 
-    pub fn find_number_of_arguments_with_absolute_path(&self, method: &Path) -> Option<usize> {
+    pub fn find_number_of_arguments(&self, method: &Path) -> Option<usize> {
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {
@@ -76,30 +76,30 @@ impl Node {
                     .children
                     .iter()
                     .find(|child| child.name == method_segment)
-                    .and_then(|child| child.find_number_of_arguments_with_absolute_path(&method)),
+                    .and_then(|child| child.find_number_of_arguments(&method)),
                 Segment::Parent => unreachable!(),
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
-                    self.find_number_of_arguments_with_absolute_path(&method)
+                    self.find_number_of_arguments(&method)
                 },
             },
             None => Some(self.object.number_of_arguments()),
         }
     }
 
-    pub fn find_number_of_arguments_with_relative_path(&self, method: &AbsolutePath) -> Option<usize> {
+    pub fn find_number_of_arguments_from_current(&self, method: &AbsolutePath) -> Option<usize> {
         let mut method: AbsolutePath = self.original_path(method);
-        method.find_map(|method| self.find_number_of_arguments_with_absolute_path(&method))
+        method.find_map(|method| self.find_number_of_arguments(&method))
     }
 
     pub fn original_path(&self, alias: &AbsolutePath) -> AbsolutePath {
-        match self.solve_relative_alias(alias) {
+        match self.solve_alias_from_current(alias) {
             Some(alias) => self.original_path(&alias),
             None => alias.clone(),
         }
     }
 
-    pub fn solve_absolute_alias(&self, alias: &Path) -> Option<AbsolutePath> {
+    pub fn solve_alias(&self, alias: &Path) -> Option<AbsolutePath> {
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
             Some(segment) => match segment {
@@ -109,20 +109,20 @@ impl Node {
                     .children
                     .iter()
                     .find(|child| child.name == segment)
-                    .and_then(|child| child.solve_absolute_alias(&alias)),
+                    .and_then(|child| child.solve_alias(&alias)),
                 Segment::Parent => None,
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
-                    self.solve_absolute_alias(&alias)
+                    self.solve_alias(&alias)
                 },
             },
             None => self.object.solve_alias(),
         }
     }
 
-    pub fn solve_relative_alias(&self, alias: &AbsolutePath) -> Option<AbsolutePath> {
+    pub fn solve_alias_from_current(&self, alias: &AbsolutePath) -> Option<AbsolutePath> {
         let mut alias: AbsolutePath = alias.clone();
-        alias.find_map(|alias| self.solve_absolute_alias(&alias))
+        alias.find_map(|alias| self.solve_alias(&alias))
     }
 }
 
@@ -163,7 +163,7 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Object {
     Alias {
         original_path: AbsolutePath,
@@ -242,7 +242,7 @@ impl Default for Object {
     }
 }
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Path {
     segments: VecDeque<Segment>,
 }
@@ -266,6 +266,27 @@ impl Path {
         self.segments.pop_back()
     }
 
+    pub fn push_segment(&mut self, segment: Segment) {
+        let Self {
+            segments,
+        } = self;
+        match segment {
+            Segment::Child {
+                name: _,
+            } => {
+                segments.push_back(segment);
+            },
+            Segment::Parent => if segments.is_empty() {
+                segments.push_back(segment);
+            } else {
+                segments.pop_back();
+            },
+            Segment::Root => {
+                *segments = iter::once(segment).collect();
+            },
+        }
+    }
+
     pub fn root() -> Self {
         let segments: VecDeque<Segment> = iter::once(Segment::Root).collect();
         Self {
@@ -278,32 +299,54 @@ impl Add for Path {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        let mut segments: VecDeque<Segment> = VecDeque::new();
+        let mut sum: Self::Output = Self::Output::root();
         self.segments
-            .iter()
-            .chain(other
-                .segments
-                .iter())
-            .for_each(|segment| match segment {
-                Segment::Child {
-                    name: _,
-                } => {
-                    segments.push_back(segment.clone());
+            .into_iter()
+            .chain(other.segments)
+            .for_each(|segment| sum.push_segment(segment));
+        sum
+    }
+}
+
+impl From<&str> for Path {
+    fn from(path_str: &str) -> Self {
+        let mut path: Self = Self::root();
+        let mut segment: String = String::new();
+        path_str
+            .chars()
+            .for_each(|character| match character {
+                '\\' => {
+                    if !segment.is_empty() {
+                        let segment: Segment = segment
+                            .as_str()
+                            .into();
+                        path.push_segment(segment);
+                    }
+                    path.push_segment(Segment::Root);
+                    segment = String::new();
                 },
-                Segment::Parent => if segments.is_empty() {
-                    segments.push_back(segment.clone());
-                } else {
-                    segments.pop_back();
+                '^' => {
+                    if !segment.is_empty() {
+                        let segment: Segment = segment
+                            .as_str()
+                            .into();
+                        path.push_segment(segment);
+                    }
+                    path.push_segment(Segment::Parent);
+                    segment = String::new();
                 },
-                Segment::Root => {
-                    segments = iter::once(segment)
-                        .cloned()
-                        .collect();
+                character => {
+                    assert!(character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_');
+                    segment.push(character);
                 },
             });
-        Self::Output {
-            segments,
+        if !segment.is_empty() {
+            let segment: Segment = segment
+                .as_str()
+                .into();
+            path.push_segment(segment);
         }
+        path
     }
 }
 
@@ -436,7 +479,7 @@ impl PartialEq for AbsolutePath {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Segment {
     Child {
         name: String,
@@ -453,6 +496,29 @@ impl fmt::Debug for Segment {
             } => formatter.write_str(name),
             Self::Parent => formatter.write_str("^"),
             Self::Root => formatter.write_str("\\"),
+        }
+    }
+}
+
+impl From<&str> for Segment {
+    fn from(segment: &str) -> Self {
+        match segment {
+            "\\" => Self::Root,
+            "^" => Self::Parent,
+            name => {
+                let valid: bool = name.chars()
+                    .enumerate()
+                    .all(|(index, character)| match index {
+                        0 => character.is_ascii_uppercase() || character == '_',
+                        1..=3 => character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_',
+                        _ => false,
+                    });
+                assert!(valid);
+                let name: String = String::from(name);
+                Self::Child {
+                    name,
+                }
+            },
         }
     }
 }

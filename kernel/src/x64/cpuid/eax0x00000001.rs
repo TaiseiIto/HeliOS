@@ -83,8 +83,7 @@ struct Ecx {
     cmpxchg16b: bool,
     xtpr: bool,
     pdcm: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     pcid: bool,
     dca: bool,
     sse4_1: bool,
@@ -99,8 +98,7 @@ struct Ecx {
     avx: bool,
     f16c: bool,
     rdrand: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
 }
 
 /// # CPUID 0x00000001
@@ -118,8 +116,7 @@ struct Edx {
     mce: bool,
     cx8: bool,
     apic: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     sep: bool,
     mtrr: bool,
     pge: bool,
@@ -129,8 +126,7 @@ struct Edx {
     ps: bool,
     psn: bool,
     clfsh: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     ds: bool,
     acpi: bool,
     mmx: bool,
@@ -140,8 +136,7 @@ struct Edx {
     ss: bool,
     htt: bool,
     tm: bool,
-    #[bits(access = RO)]
-    reserved2: bool,
+    __: bool,
     pbe: bool,
 }
 

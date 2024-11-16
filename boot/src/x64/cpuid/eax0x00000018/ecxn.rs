@@ -42,12 +42,12 @@ struct Ebx {
     page_size_2m_entries_supported_by_this_structure: bool,
     page_size_4m_entries_supported_by_this_structure: bool,
     page_size_1g_entries_supported_by_this_structure: bool,
-    #[bits(4, access = RO)]
-    reserved0: u8,
+    #[bits(4)]
+    __: u8,
     #[bits(3)]
     partitioning: u8,
-    #[bits(5, access = RO)]
-    reserved1: u8,
+    #[bits(5)]
+    __: u8,
     ways_of_associativity: u16,
 }
 
@@ -63,11 +63,11 @@ struct Edx {
     #[bits(3)]
     translation_cache_level: u8,
     fully_associative_structure: bool,
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
     #[bits(12)]
     maximum_number_of_addressable_ids_for_logical_processors_sharing_this_translation_cache: u16,
     #[bits(6)]
-    reserved1: u8,
+    __: u8,
 }
 

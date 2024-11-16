@@ -44,8 +44,7 @@ impl EcxN {
 struct Eax {
     #[bits(4)]
     sub_leaf_type: u8,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
     #[bits(20)]
     bits_31_12_of_the_physical_address_of_the_base_of_the_epc_section: u32,
 }
@@ -54,16 +53,15 @@ struct Eax {
 struct Ebx {
     #[bits(20)]
     bits_51_32_of_the_physical_address_of_the_base_of_the_epc_section: u32,
-    #[bits(12, access = RO)]
-    reserved0: u16,
+    #[bits(12)]
+    __: u16,
 }
 
 #[bitfield(u32)]
 struct Ecx {
     #[bits(4)]
     epc_section_property_encoding: u8,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
     #[bits(20)]
     bits_31_12_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory: u32,
 }
@@ -72,7 +70,7 @@ struct Ecx {
 struct Edx {
     #[bits(20)]
     bits_51_32_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory: u32,
-    #[bits(12, access = RO)]
-    reserved0: u16,
+    #[bits(12)]
+    __: u16,
 }
 

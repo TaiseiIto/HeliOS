@@ -53,8 +53,8 @@ struct Eax {
     supports_xgetbv_with_ecx_1: bool,
     supports_xsaves_xrstors_and_ia32_xdd: bool,
     supports_xfd: bool,
-    #[bits(27, access = RO)]
-    reserved0: u32,
+    #[bits(27)]
+    __: u32,
 }
 
 #[bitfield(u32)]
@@ -76,8 +76,8 @@ struct Ecx {
     hwp_state: bool,
     #[bits(2)]
     used_for_xcr0_2: u8,
-    #[bits(13, access = RO)]
-    reserved0: u16,
+    #[bits(13)]
+    __: u16,
 }
 
 #[bitfield(u32)]

@@ -7,8 +7,7 @@ pub struct Structure {
     #[allow(dead_code)]
     structure_type: u8,
     length: u8,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     local_apic_address: u64,
 }

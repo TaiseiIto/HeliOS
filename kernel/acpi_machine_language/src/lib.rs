@@ -54,6 +54,7 @@ use {
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let analyzer: proc_macro2::TokenStream = derive_analyzer(&derive_input);
+    let lender: proc_macro2::TokenStream = derive_lender(&derive_input);
     let char_from_self: proc_macro2::TokenStream = derive_char_from_self(&derive_input);
     let debug: proc_macro2::TokenStream = derive_debug(&derive_input);
     let first_reader: proc_macro2::TokenStream = derive_first_reader(&derive_input);
@@ -67,6 +68,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
+        #lender
         #char_from_self
         #debug
         #first_reader
@@ -103,6 +105,7 @@ struct TypeAttribute {
     defined_object_name: Option<Ident>,
     derive_debug: bool,
     derive_first_reader: bool,
+    derive_lender: bool,
     derive_matcher: bool,
     derive_path_getter: bool,
     derive_reader: bool,
@@ -211,6 +214,51 @@ impl From<&DeriveInput> for TypeAttribute {
                                     TokenTree::Ident(manual_arg) => {
                                         let manual_arg: String = manual_arg.to_string();
                                         !matches!(manual_arg.as_str(), "first_reader")
+                                    },
+                                    _ => true,
+                                }),
+                            _ => true,
+                        }
+                    },
+                    _ => true,
+                }
+            });
+        let derive_lender: bool = attrs
+            .iter()
+            .all(|attribute| {
+                let Attribute {
+                    pound_token: _,
+                    style: _,
+                    bracket_token: _,
+                    meta,
+                } = attribute;
+                match meta {
+                    Meta::List(MetaList {
+                        path,
+                        delimiter: _,
+                        tokens,
+                    }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments
+                            .iter()
+                            .last()
+                            .unwrap();
+                        match ident
+                            .to_string()
+                            .as_str() {
+                            "manual" => tokens
+                                .clone()
+                                .into_iter()
+                                .all(|token_tree| match token_tree {
+                                    TokenTree::Ident(manual_arg) => {
+                                        let manual_arg: String = manual_arg.to_string();
+                                        !matches!(manual_arg.as_str(), "lender")
                                     },
                                     _ => true,
                                 }),
@@ -761,6 +809,7 @@ impl From<&DeriveInput> for TypeAttribute {
             defined_object_name,
             derive_debug,
             derive_first_reader,
+            derive_lender,
             derive_matcher,
             derive_path_getter,
             derive_reader,
@@ -916,6 +965,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -1125,6 +1175,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name,
         derive_debug: _,
         derive_first_reader,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -1329,17 +1380,29 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
@@ -1385,7 +1448,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let mut current: crate::acpi::machine_language::semantics::Path = current.clone();
+                                                        let mut current: crate::acpi::machine_language::name::Path = current.clone();
                                                     }
                                                 },
                                                 _ => quote! {
@@ -1405,7 +1468,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     quote! {
                                                         if index == 0 {
                                                             current += (&element).into();
-                                                            root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                            root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                         }
                                                     }
                                                 },
@@ -1471,8 +1534,8 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                         .unwrap();
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::first_read(symbol_aml, root, &current);
-                                                        let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        let current: crate::acpi::machine_language::name::Path = current + (&#field_name).into();
+                                                        root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {
@@ -1585,9 +1648,67 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         };
         quote! {
             impl crate::acpi::machine_language::syntax::FirstReader for #ident {
-                fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone();
+                fn first_read<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) -> (Self, &'a [u8]) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone();
                     #first_read
+                }
+            }
+        }
+    } else {
+        quote! {
+        }
+    }
+}
+
+fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
+    let DeriveInput {
+        attrs: _,
+        vis: _,
+        ident,
+        generics: _,
+        data: _,
+    } = derive_input;
+    let TypeAttribute {
+        defined_object_name,
+        derive_debug: _,
+        derive_first_reader: _,
+        derive_lender,
+        derive_matcher: _,
+        derive_path_getter: _,
+        derive_reader: _,
+        derive_reader_inside_method: _,
+        derive_reader_outside_method: _,
+        derive_string_from_self: _,
+        encoding: _,
+        flags: _,
+        has_field_list,
+        has_name_string,
+        matching_elements: _,
+        string: _,
+    } = derive_input.into();
+    if derive_lender {
+        let add_node: proc_macro2::TokenStream = if has_name_string && !has_field_list {
+            match defined_object_name {
+                Some(defined_object_name) => quote! {
+                    let object = crate::acpi::machine_language::reference::Object::#defined_object_name(self);
+                    root.add_node(&current, object);
+                },
+                None => quote! {
+                },
+            }
+        } else {
+            quote! {
+            }
+        };
+        quote! {
+            impl crate::acpi::machine_language::syntax::Lender for #ident {
+                fn lend<'a>(&'a self, root: &mut crate::acpi::machine_language::reference::Node<'a>, current: &crate::acpi::machine_language::name::Path) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
+                        .get_path()
+                        .unwrap_or_default();
+                    #add_node
+                    self.iter()
+                        .for_each(|child| child.lend(root, &current));
                 }
             }
         }
@@ -1609,6 +1730,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -2079,6 +2201,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -2275,6 +2398,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher,
         derive_path_getter: _,
         derive_reader: _,
@@ -2596,6 +2720,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter,
         derive_reader: _,
@@ -2698,7 +2823,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         };
         quote! {
             impl crate::acpi::machine_language::syntax::PathGetter for #ident {
-                fn get_path(&self) -> Option<crate::acpi::machine_language::semantics::Path> {
+                fn get_path(&self) -> Option<crate::acpi::machine_language::name::Path> {
                     #get_path
                 }
             }
@@ -2721,6 +2846,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader,
@@ -2925,17 +3051,29 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
@@ -3150,6 +3288,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         defined_object_name,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -3354,17 +3493,29 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                         unnamed,
                     }) => {
                         let (read, pack): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = match encoding {
-                            Some(_encoding) => {
+                            Some(encoding) => {
                                 let field_type: proc_macro2::TokenStream = unnamed
                                     .first()
                                     .unwrap()
                                     .to_token_stream();
                                 let field_name: Ident = format_ident!("field");
+                                let read: proc_macro2::TokenStream = match (field_type.to_string().as_str(), encoding) {
+                                    ("u8", Encoding::Range(range)) => {
+                                        let start: u8 = *range.start();
+                                        quote! {
+                                            let #field_name: u8 = *#field_name;
+                                            let #field_name: #field_type = #field_name - #start;
+                                        }
+                                    },
+                                    _ => quote! {
+                                        let #field_name: u8 = *#field_name;
+                                        let #field_name: #field_type = #field_name as #field_type;
+                                    },
+                                };
                                 let read: proc_macro2::TokenStream = quote! {
                                     let (#field_name, symbol_aml): (#field_type, &[u8]) = match symbol_aml {
                                         [#field_name, symbol_aml @ ..] => {
-                                            let #field_name: u8 = *#field_name;
-                                            let #field_name: #field_type = #field_name as #field_type;
+                                            #read
                                             (#field_name, symbol_aml)
                                         },
                                         _ => unreachable!(),
@@ -3410,7 +3561,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                     }
                                                 } else {
                                                     quote! {
-                                                        let mut current: crate::acpi::machine_language::semantics::Path = current.clone();
+                                                        let mut current: crate::acpi::machine_language::name::Path = current.clone();
                                                     }
                                                 },
                                                 _ => quote! {
@@ -3430,7 +3581,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                     quote! {
                                                         if index == 0 {
                                                             current += (&element).into();
-                                                            root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                            root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                         }
                                                     }
                                                 },
@@ -3496,8 +3647,8 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                                                         .unwrap();
                                                     quote! {
                                                         let (#field_name, symbol_aml): (#ty, &[u8]) = #ty::read_inside_method(symbol_aml, root, &current);
-                                                        let current: crate::acpi::machine_language::semantics::Path = current + (&#field_name).into();
-                                                        root.add_node(&current, crate::acpi::machine_language::semantics::Object::#defined_object_name);
+                                                        let current: crate::acpi::machine_language::name::Path = current + (&#field_name).into();
+                                                        root.add_node(&current, crate::acpi::machine_language::name::Object::#defined_object_name);
                                                     }
                                                 },
                                                 "Option" => match arguments {
@@ -3610,8 +3761,8 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
         };
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderInsideMethod for #ident {
-                fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) -> (Self, &'a [u8]) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone();
+                fn read_inside_method<'a>(aml: &'a [u8], root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) -> (Self, &'a [u8]) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone();
                     #read_inside_method
                 }
             }
@@ -3634,6 +3785,7 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,
@@ -3650,8 +3802,8 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
     if derive_reader_outside_method {
         quote! {
             impl crate::acpi::machine_language::syntax::ReaderOutsideMethod for #ident {
-                fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::semantics::Node, current: &crate::acpi::machine_language::semantics::Path) {
-                    let current: crate::acpi::machine_language::semantics::Path = current.clone() + self
+                fn read_outside_method(&mut self, root: &mut crate::acpi::machine_language::name::Node, current: &crate::acpi::machine_language::name::Path) {
+                    let current: crate::acpi::machine_language::name::Path = current.clone() + self
                         .get_path()
                         .unwrap_or_default();
                     self.iter_mut()
@@ -3677,6 +3829,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         defined_object_name: _,
         derive_debug: _,
         derive_first_reader: _,
+        derive_lender: _,
         derive_matcher: _,
         derive_path_getter: _,
         derive_reader: _,

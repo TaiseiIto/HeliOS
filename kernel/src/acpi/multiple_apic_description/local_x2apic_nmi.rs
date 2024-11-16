@@ -15,8 +15,7 @@ pub struct Structure {
     acpi_processor_uid: u32,
     #[allow(dead_code)]
     local_x2apic_lint: u8,
-    #[allow(dead_code)]
-    reserved0: [u8; 3],
+    __: [u8; 3],
 }
 
 impl Structure {

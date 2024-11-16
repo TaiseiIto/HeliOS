@@ -41,21 +41,18 @@ impl Eax0x00000016 {
 #[bitfield(u32)]
 struct Eax {
     processor_base_frequency_in_mhz: u16,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 
 #[bitfield(u32)]
 struct Ebx {
     maximum_frequency_in_mhz: u16,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 
 #[bitfield(u32)]
 struct Ecx {
     bus_reference_frequency_in_mhz: u16,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 

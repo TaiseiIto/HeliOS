@@ -45,8 +45,8 @@ struct Eax {
 struct Ebx {
     soc_vendor_id: u16,
     is_vendor_scheme: bool,
-    #[bits(15, access = RO)]
-    reserved0: u32,
+    #[bits(15)]
+    __: u32,
 }
 
 #[bitfield(u32)]

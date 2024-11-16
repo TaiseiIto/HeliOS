@@ -9,8 +9,7 @@ pub struct Structure {
     length: u8,
     #[allow(dead_code)]
     mail_box_version: u16,
-    #[allow(dead_code)]
-    reserved0: u32,
+    __: u32,
     #[allow(dead_code)]
     mail_box_address: u64,
 }

@@ -90,7 +90,7 @@ impl<'a> From<file::Node<'a>> for Tree<'a> {
             .clone()
             .filter(|child| [".", ".."]
                 .into_iter()
-                .all(|reserved_name| child.name() != reserved_name))
+                .all(|name| child.name() != name))
             .map(|child| child.into())
             .collect();
         Self {

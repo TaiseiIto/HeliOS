@@ -38,16 +38,15 @@ impl Eax0x80000008 {
 struct Eax {
     physical_address_bits: u8,
     linear_address_bits: u8,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 
 #[bitfield(u32)]
 struct Ebx {
-    #[bits(9, access = RO)]
-    reserved0: u16,
+    #[bits(9)]
+    __: u16,
     wbnoinvd_is_available: bool,
-    #[bits(22, access = RO)]
-    reserved1: u32,
+    #[bits(22)]
+    __: u32,
 }
 

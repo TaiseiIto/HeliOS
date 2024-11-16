@@ -47,7 +47,6 @@ struct Ebx {
 #[bitfield(u32)]
 struct Ecx {
     palette_1_max_rows: u16,
-    #[bits(access = RO)]
-    reserved0: u16,
+    __: u16,
 }
 

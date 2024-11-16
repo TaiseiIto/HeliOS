@@ -10,8 +10,7 @@ use super::super::{
 #[repr(packed)]
 pub struct Record<'a> {
     header: record::Header,
-    #[allow(dead_code)]
-    reserved0: u32,
+    __: u32,
     #[allow(dead_code)]
     s3pt: &'a Table,
 }

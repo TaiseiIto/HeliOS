@@ -10,8 +10,7 @@ pub struct Entry {
     action: u8,
     #[allow(dead_code)]
     flags: u8,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     register_region: generic_address::Structure,
     #[allow(dead_code)]

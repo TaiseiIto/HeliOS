@@ -159,10 +159,9 @@ impl From<Map> for Vec<Descriptor> {
             .map(|descriptor| {
                 let descriptor: *const [u8] = descriptor as *const [u8];
                 let descriptor: *const Descriptor = descriptor as *const Descriptor;
-                let descriptor: &Descriptor = unsafe {
-                    &*descriptor
-                };
-                descriptor.clone()
+                unsafe {
+                    descriptor.read_volatile()
+                }
             })
             .collect()
     }

@@ -51,11 +51,11 @@ struct Register {
     spurious_vector: u8,
     apic_software_enable: bool,
     focus_processor_checking_disable: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     eoi_broadcast_suppression: bool,
-    #[bits(19, access = RO)]
-    reserved1: u32,
+    #[bits(19)]
+    __: u32,
 }
 
 impl Register {

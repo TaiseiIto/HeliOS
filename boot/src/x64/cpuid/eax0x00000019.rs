@@ -43,28 +43,26 @@ struct Eax {
     key_locker_restriction_of_cplo_only_supported: bool,
     key_locker_restriction_of_no_encrypt_supported: bool,
     key_locker_restriction_of_no_decrypt_supported: bool,
-    #[bits(29, access = RO)]
-    reserved0: u32,
+    #[bits(29)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Ebx {
     aeskle: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     the_aes_wide_key_locker_instructions_are_supported: bool,
-    #[bits(access = RO)]
-    reserved1: bool,
+    __: bool,
     the_platform_supports_the_key_locker_msrs_andbacking_up_the_internal_wrapping_key: bool,
-    #[bits(27, access = RO)]
-    reserved2: u32,
+    #[bits(27)]
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Ecx {
     the_nobackup_parameter_to_loadiwkey_is_supported: bool,
     keysource_encoding_of_1_is_supported: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 

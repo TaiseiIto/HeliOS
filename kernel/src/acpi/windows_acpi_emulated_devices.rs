@@ -27,7 +27,7 @@ impl Table {
 struct Flags {
     rtc_good: bool,
     acpi_tm_timer_good: bool,
-    #[bits(30, access = RO)]
-    reserved0: u32,
+    #[bits(30)]
+    __: u32,
 }
 

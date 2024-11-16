@@ -44,8 +44,7 @@ struct Register {
     vector: u8,
     #[bits(3)]
     delivery_mode: u8,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     delivery_status: bool,
     interrupt_input_pin_polarity: bool,
     remote_irr: bool,
@@ -53,7 +52,7 @@ struct Register {
     mask: bool,
     #[bits(2)]
     timer_mode: u8,
-    #[bits(13, access = RO)]
-    reserved1: u16,
+    #[bits(13)]
+    __: u16,
 }
 

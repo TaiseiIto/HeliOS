@@ -12,8 +12,8 @@ pub struct Register {
     aux_output2: bool,
     loopback_mode: bool,
     autoflow_control_enabled: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
 }
 
 impl Register {

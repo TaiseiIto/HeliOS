@@ -18,7 +18,7 @@ pub struct Structure {
     acpi_processor_id: u8,
     local_sapic_id: u8,
     local_sapic_eid: u8,
-    reserved0: [u8; 3],
+    __: [u8; 3],
     flags: processor_local_apic::Flags,
     acpi_processor_uid_value: u32,
 }
@@ -53,7 +53,6 @@ impl fmt::Debug for Structure {
             .field("acpi_processor_id", &self.acpi_processor_id)
             .field("local_sapic_id", &self.local_sapic_id)
             .field("local_sapic_eid", &self.local_sapic_eid)
-            .field("reserved0", &self.reserved0)
             .field("flags", &flags)
             .field("acpi_processor_uid_value", &acpi_processor_uid_value)
             .field("acpi_processor_uid_string", &self.acpi_processor_uid_string())

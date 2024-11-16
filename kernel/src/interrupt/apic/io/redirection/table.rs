@@ -18,8 +18,8 @@ pub struct Entry {
     remote_irr: bool,
     trigger_mode: bool,
     mask: bool,
-    #[bits(31, access = RO)]
-    reserved0: u32,
+    #[bits(31)]
+    __: u32,
     extended_destination_id: u8,
     destination_id: u8,
 }

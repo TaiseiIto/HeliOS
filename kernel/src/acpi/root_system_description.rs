@@ -24,8 +24,7 @@ pub struct Pointer {
     length: u32,
     xsdt: u64,
     extended_checksum: u8,
-    #[allow(dead_code)]
-    reserved0: [u8; 3],
+    __: [u8; 3],
 }
 
 impl Pointer {
@@ -129,7 +128,9 @@ impl Table {
         (0..entries)
             .map(|index| {
                 let entry: u32 = unsafe {
-                    *first_entry.add(index)
+                    first_entry
+                        .add(index)
+                        .read_volatile()
                 };
                 let entry: usize = entry as usize;
                 let header: *const system_description::Header = entry as *const system_description::Header;

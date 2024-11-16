@@ -14,7 +14,7 @@ use {
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
 #[bitfield(u64)]
 pub struct Star {
-    reserved0: u32,
+    __: u32,
     syscall_cs_and_ss: u16,
     sysret_cs_and_ss: u16,
 }

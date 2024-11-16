@@ -41,10 +41,9 @@ struct Ebx {
 
 #[bitfield(u32)]
 struct Edx {
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     supports_l3_cache_intel_rdt_monitoring: bool,
-    #[bits(30, access = RO)]
-    reserved1: u32,
+    #[bits(30)]
+    __: u32,
 }
 

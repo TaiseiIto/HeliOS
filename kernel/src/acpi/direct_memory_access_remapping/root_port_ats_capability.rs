@@ -17,8 +17,7 @@ pub struct Structure {
     structure_type: u16,
     length: u16,
     flags: Flags,
-    #[allow(dead_code)]
-    reserved0: u8,
+    __: u8,
     segment_number: u16,
 }
 
@@ -67,7 +66,7 @@ impl fmt::Debug for Structure {
 #[bitfield(u8)]
 struct Flags {
     all_ports: bool,
-    #[bits(7, access = RO)]
-    reserved0: u8,
+    #[bits(7)]
+    __: u8,
 }
 

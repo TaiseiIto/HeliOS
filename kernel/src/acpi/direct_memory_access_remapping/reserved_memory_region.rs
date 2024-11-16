@@ -15,8 +15,7 @@ use {
 pub struct Structure {
     structure_type: u16,
     length: u16,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     segment_number: u16,
     base_address: u64,
     limit_address: u64,

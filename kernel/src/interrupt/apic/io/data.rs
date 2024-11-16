@@ -7,8 +7,7 @@ use {
 #[repr(packed)]
 pub struct FatRegister {
     register: Register,
-    #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl FatRegister {
@@ -21,7 +20,7 @@ impl FatRegister {
         let register: *mut Self = self as *mut Self;
         let register: *mut u32 = register as *mut u32;
         unsafe {
-            register.write(data);
+            register.write_volatile(data);
         }
     }
 }

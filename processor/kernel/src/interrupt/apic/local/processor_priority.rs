@@ -33,7 +33,7 @@ struct Register {
     sub_class: u8,
     #[bits(4)]
     class: u8,
-    #[bits(24, access = RO)]
-    reserved0: u32,
+    #[bits(24)]
+    __: u32,
 }
 

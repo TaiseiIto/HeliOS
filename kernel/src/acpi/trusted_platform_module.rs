@@ -12,8 +12,7 @@ pub struct Table {
     header: system_description::Header,
     #[allow(dead_code)]
     platform_class: u16,
-    #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     address_of_crb_control_area_or_fifo_base_address: u64,
     #[allow(dead_code)]
@@ -46,8 +45,7 @@ struct StartMethodSpecificParameters {
     operation_flags: OperationFlags,
     #[allow(dead_code)]
     attributes: Attributes,
-    #[allow(dead_code)]
-    reserved0: u8,
+    __: u8,
     #[allow(dead_code)]
     smc_hvc_function_id: u32,
 }
@@ -57,22 +55,22 @@ struct Flags {
     interrupt_support: bool,
     hypervisor_call: bool,
     attribute_field_valid: bool,
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
 }
 
 #[bitfield(u8)]
 struct OperationFlags {
     tpm_idle_support: bool,
-    #[bits(7, access = RO)]
-    reserved0: u8,
+    #[bits(7)]
+    __: u8,
 }
 
 #[bitfield(u8)]
 struct Attributes {
     #[bits(2)]
     memory_type: u8,
-    #[bits(6, access = RO)]
-    reserved0: u8,
+    #[bits(6)]
+    __: u8,
 }
 

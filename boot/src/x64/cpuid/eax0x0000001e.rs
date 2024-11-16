@@ -34,7 +34,6 @@ impl Eax0x0000001e {
 struct Ebx {
     tmul_maxk: u8,
     tmul_maxn: u16,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
 }
 

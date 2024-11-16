@@ -62,6 +62,28 @@ impl Table {
             .unwrap()
     }
 
+    pub fn fadt_mut(&mut self) -> &mut fixed_acpi_description::Table {
+        self.bytes()
+            .chunks(size_of::<usize>())
+            .find_map(|entry_address_bytes| {
+                let entry: usize = entry_address_bytes
+                    .iter()
+                    .rev()
+                    .fold(0usize, |entry_address, byte| (entry_address << u8::BITS) + (*byte as usize));
+                let header: *const system_description::Header = entry as *const system_description::Header;
+                let header: &system_description::Header = unsafe {
+                    &*header
+                };
+                (header.signature() == "FACP").then(|| {
+                    let table: *mut fixed_acpi_description::Table = entry as *mut fixed_acpi_description::Table;
+                    unsafe {
+                        &mut *table
+                    }
+                })
+            })
+            .unwrap()
+    }
+
     pub fn hpet(&self) -> &high_precision_event_timer::Table {
         self.bytes()
             .chunks(size_of::<usize>())

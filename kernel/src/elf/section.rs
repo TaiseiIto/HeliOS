@@ -124,8 +124,7 @@ struct Flags {
     write: bool,
     alloc: bool,
     execinstr: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     merge: bool,
     strings: bool,
     info_link: bool,
@@ -133,12 +132,12 @@ struct Flags {
     os_nonconforming: bool,
     group: bool,
     tls: bool,
-    #[bits(9, access = RO)]
-    reserved1: u16,
+    #[bits(9)]
+    __: u16,
     maskos: u8,
     #[bits(4)]
     maskproc: u8,
-    reserved2: u32,
+    __: u32,
 }
 
 struct Name<'a>(&'a [u8]);

@@ -522,13 +522,13 @@ struct Pml4e {
     pwt: bool,
     pcd: bool,
     a: bool,
-    #[bits(5, access = RO)]
-    reserved0: u8,
+    #[bits(5)]
+    __: u8,
     r: bool,
     #[bits(36)]
     address_of_pdpt: u64,
-    #[bits(15, access = RO)]
-    reserved1: u16,
+    #[bits(15)]
+    __: u16,
     xd: bool,
 }
 
@@ -558,8 +558,8 @@ impl Pml4e {
 #[bitfield(u64)]
 struct Pml4teNotPresent {
     p: bool,
-    #[bits(63, access = RO)]
-    reserved0: u64,
+    #[bits(63)]
+    __: u64,
 }
 
 /// # Page Directory Pointer Table
@@ -987,16 +987,16 @@ struct Pe1Gib {
     d: bool,
     is_page_1gib: bool,
     g: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     r: bool,
     pat: bool,
-    #[bits(17, access = RO)]
-    reserved1: u32,
+    #[bits(17)]
+    __: u32,
     #[bits(18)]
     address_of_1gib_page_frame: u32,
-    #[bits(11, access = RO)]
-    reserved2: u16,
+    #[bits(11)]
+    __: u16,
     #[bits(4)]
     prot_key: u8,
     xd: bool,
@@ -1026,16 +1026,15 @@ struct Pdpe {
     pwt: bool,
     pcd: bool,
     a: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     is_page_1gib: bool,
-    #[bits(3, access = RO)]
-    reserved1: u8,
+    #[bits(3)]
+    __: u8,
     r: bool,
     #[bits(36)]
     address_of_pdt: u64,
-    #[bits(15, access = RO)]
-    reserved2: u16,
+    #[bits(15)]
+    __: u16,
     xd: bool,
 }
 
@@ -1065,8 +1064,8 @@ impl Pdpe {
 #[bitfield(u64)]
 struct PdpteNotPresent {
     p: bool,
-    #[bits(63, access = RO)]
-    reserved0: u64,
+    #[bits(63)]
+    __: u64,
 }
 
 /// # Page Directory Table
@@ -1470,16 +1469,16 @@ struct Pe2Mib {
     d: bool,
     is_page_2mib: bool,
     g: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     r: bool,
     pat: bool,
-    #[bits(8, access = RO)]
-    reserved1: u32,
+    #[bits(8)]
+    __: u32,
     #[bits(27)]
     address_of_2mib_page_frame: u32,
-    #[bits(11, access = RO)]
-    reserved2: u16,
+    #[bits(11)]
+    __: u16,
     #[bits(4)]
     prot_key: u8,
     xd: bool,
@@ -1509,16 +1508,15 @@ struct Pde {
     pwt: bool,
     pcd: bool,
     a: bool,
-    #[bits(access = RO)]
-    reserved0: bool,
+    __: bool,
     is_page_2mib: bool,
-    #[bits(3, access = RO)]
-    reserved1: u8,
+    #[bits(3)]
+    __: u8,
     r: bool,
     #[bits(36)]
     address_of_pt: u64,
-    #[bits(15, access = RO)]
-    reserved2: u16,
+    #[bits(15)]
+    __: u16,
     xd: bool,
 }
 
@@ -1548,8 +1546,8 @@ impl Pde {
 #[bitfield(u64)]
 struct PdteNotPresent {
     p: bool,
-    #[bits(63, access = RO)]
-    reserved0: u64,
+    #[bits(63)]
+    __: u64,
 }
 
 /// # Page Table
@@ -1748,13 +1746,13 @@ struct Pe4Kib {
     d: bool,
     pat: bool,
     g: bool,
-    #[bits(2, access = RO)]
-    reserved0: u8,
+    #[bits(2)]
+    __: u8,
     r: bool,
     #[bits(36)]
     address_of_4kib_page_frame: u64,
-    #[bits(11, access = RO)]
-    reserved1: u16,
+    #[bits(11)]
+    __: u16,
     #[bits(4)]
     prot_key: u8,
     xd: bool,
@@ -1779,8 +1777,8 @@ type Page4Mib = [u8; 1 << Pe4Kib::ADDRESS_OF_4KIB_PAGE_FRAME_OFFSET];
 #[bitfield(u64)]
 struct PteNotPresent {
     p: bool,
-    #[bits(63, access = RO)]
-    reserved0: u64,
+    #[bits(63)]
+    __: u64,
 }
 
 /// # Virtual Address
@@ -1805,7 +1803,7 @@ struct Vaddr {
     pdpi: u16,
     #[bits(9)]
     pml4i: u16,
-    reserved0: u16,
+    reserved: u16,
 }
 
 impl Vaddr {
@@ -1821,7 +1819,7 @@ impl Vaddr {
             .with_pdi(pdi)
             .with_pdpi(pdpi)
             .with_pml4i(pml4i)
-            .with_reserved0(match pml4i & (1 << (Self::PML4I_BITS - 1)) {
+            .with_reserved(match pml4i & (1 << (Self::PML4I_BITS - 1)) {
                 0 => 0,
                 _ => 0xffff,
             })

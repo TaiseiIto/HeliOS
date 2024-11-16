@@ -1,17 +1,21 @@
+pub mod pm1;
+
 use {
+    alloc::vec,
     bitfield_struct::bitfield,
     core::{
         fmt,
         mem,
     },
     crate::{
-        com2_println,
         io,
+        x64,
     },
     super::{
         firmware_acpi_control,
         generic_address,
         machine_language::{
+            interpreter::Evaluator,
             self,
             syntax::{
                 FirstReader,
@@ -25,11 +29,13 @@ use {
 /// # FADT
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.9 Fixed ACPI Description Table (FADT)
+#[derive(repr_packed_struct::OffsetGetter)]
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
     firmware_ctrl: u32,
     dsdt: u32,
+    #[allow(dead_code)]
     reserved0: u8,
     preferred_pm_profile: u8,
     sci_int: u16,
@@ -64,6 +70,7 @@ pub struct Table {
     mon_alrm: u8,
     century: u8,
     iapc_boot_arch: u16,
+    #[allow(dead_code)]
     reserved1: u8,
     flags: Flags,
     reset_reg: generic_address::Structure,
@@ -113,26 +120,50 @@ impl Table {
         self.header.is_correct() && self.dsdt().map_or(true, |dsdt| dsdt.is_correct())
     }
 
-    pub fn shutdown(&self) {
-        let pm1a_cnt_blk: u32 = self.pm1a_cnt_blk;
-        let pm1b_cnt_blk: u32 = self.pm1b_cnt_blk;
-        let x_pm1a_cnt_blk: generic_address::Structure = self.x_pm1a_cnt_blk;
-        let x_pm1b_cnt_blk: generic_address::Structure = self.x_pm1b_cnt_blk;
+    pub fn shutdown(&mut self) {
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
         let dsdt: &[u8] = dsdt.definition_block();
-        let mut semantic_tree = machine_language::semantics::Node::default();
-        let current = machine_language::semantics::Path::root();
-        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &current);
+        let mut semantic_tree = machine_language::name::Node::default();
+        let root_path = machine_language::name::Path::root();
+        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &root_path);
         assert!(unread_dsdt.is_empty());
-        syntax_tree.read_outside_method(&mut semantic_tree, &current);
-        com2_println!("semantic_tree = {:#x?}", semantic_tree);
-        com2_println!("syntax_tree = {:#x?}", syntax_tree);
-        com2_println!("pm1a_cnt_blk = {:#x?}", pm1a_cnt_blk);
-        com2_println!("pm1b_cnt_blk = {:#x?}", pm1b_cnt_blk);
-        com2_println!("x_pm1a_cnt_blk = {:#x?}", x_pm1a_cnt_blk);
-        com2_println!("x_pm1b_cnt_blk = {:#x?}", x_pm1b_cnt_blk);
+        syntax_tree.read_outside_method(&mut semantic_tree, &root_path);
+        let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
+        let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
+        let tts_path: machine_language::name::Path = "\\_TTS".into();
+        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
+        if let Some(tts) = tts {
+            tts.evaluate(&mut stack_frame.clone(), &reference_tree, &tts_path);
+        }
+        let pts_path: machine_language::name::Path = "\\_PTS".into();
+        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
+        if let Some(pts) = pts {
+            pts.evaluate(&mut stack_frame.clone(), &reference_tree, &pts_path);
+        }
+        let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
+        let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
+        let s5: machine_language::name::Path = "\\_S5".into();
+        let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
+        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &root_path));
+        let pm1a_cnt_slp_typ: Option<u8> = s5
+            .as_ref()
+            .and_then(|s5| s5.index(&machine_language::interpreter::Value::QWord(0)))
+            .and_then(|pm1a_cnt_slp_typ| pm1a_cnt_slp_typ.get_byte());
+        let pm1b_cnt_slp_typ: Option<u8> = s5
+            .as_ref()
+            .and_then(|s5| s5.index(&machine_language::interpreter::Value::QWord(1)))
+            .and_then(|pm1b_cnt_slp_typ| pm1b_cnt_slp_typ.get_byte());
+        if let Some((pm1a_control, pm1a_cnt_slp_typ)) = pm1a_control.zip(pm1a_cnt_slp_typ) {
+            self.write_pm1a_control(pm1a_control.sleep(pm1a_cnt_slp_typ));
+        }
+        if let Some((pm1b_control, pm1b_cnt_slp_typ)) = pm1b_control.zip(pm1b_cnt_slp_typ) {
+            self.write_pm1b_control(pm1b_control.sleep(pm1b_cnt_slp_typ));
+        }
+        loop {
+            x64::pause();
+        }
     }
 
     pub fn timer_bits(&self) -> usize {
@@ -172,6 +203,140 @@ impl Table {
                 }
             })
     }
+
+    fn pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1a_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1a_cnt_blk)
+            .filter(|pm1a_cnt_blk| *pm1a_cnt_blk != 0)
+            .map(|pm1a_cnt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1a_cnt_blk as u16, access_size)
+            })
+    }
+
+    fn pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1b_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1b_cnt_blk)
+            .filter(|pm1b_cnt_blk| *pm1b_cnt_blk != 0)
+            .map(|pm1b_cnt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1b_cnt_blk as u16, access_size)
+            })
+    }
+
+    fn pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1a_evt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1a_evt_blk)
+            .filter(|pm1a_evt_blk| *pm1a_evt_blk != 0)
+            .map(|pm1a_evt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1a_evt_blk as u16, access_size)
+            })
+    }
+
+    fn pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::pm1b_evt_blk_offset() < self.header.table_size())
+            .then_some(self.pm1b_evt_blk)
+            .filter(|pm1b_evt_blk| *pm1b_evt_blk != 0)
+            .map(|pm1b_evt_blk| {
+                let access_size: usize = mem::size_of::<u16>();
+                generic_address::Structure::system_io(pm1b_evt_blk as u16, access_size)
+            })
+    }
+
+    fn read_pm1a_control(&self) -> Option<pm1::control::Register> {
+        self.x_pm1a_cnt_blk()
+            .or(self.pm1a_cnt_blk())
+            .map(|pm1a_cnt_blk| pm1a_cnt_blk
+                .read_word()
+                .into())
+    }
+
+    fn read_pm1b_control(&self) -> Option<pm1::control::Register> {
+        self.x_pm1b_cnt_blk()
+            .or(self.pm1b_cnt_blk())
+            .map(|pm1b_cnt_blk| pm1b_cnt_blk
+                .read_word()
+                .into())
+    }
+
+    #[allow(dead_code)]
+    fn read_pm1a_enable(&self) -> Option<pm1::enable::Register> {
+        self.x_pm1a_evt_blk()
+            .or(self.pm1a_evt_blk())
+            .map(|pm1a_evt_blk| pm1a_evt_blk
+                .add((self.pm1_evt_len as usize) / 2)
+                .read_word()
+                .into())
+    }
+
+    #[allow(dead_code)]
+    fn read_pm1b_enable(&self) -> Option<pm1::enable::Register> {
+        self.x_pm1b_evt_blk()
+            .or(self.pm1b_evt_blk())
+            .map(|pm1b_evt_blk| pm1b_evt_blk
+                .add((self.pm1_evt_len as usize) / 2)
+                .read_word()
+                .into())
+    }
+
+    #[allow(dead_code)]
+    fn read_pm1a_status(&self) -> Option<pm1::status::Register> {
+        self.x_pm1a_evt_blk()
+            .or(self.pm1a_evt_blk())
+            .map(|pm1a_evt_blk| pm1a_evt_blk
+                .read_word()
+                .into())
+    }
+
+    #[allow(dead_code)]
+    fn read_pm1b_status(&self) -> Option<pm1::status::Register> {
+        self.x_pm1b_evt_blk()
+            .or(self.pm1b_evt_blk())
+            .map(|pm1b_evt_blk| pm1b_evt_blk
+                .read_word()
+                .into())
+    }
+
+    fn write_pm1a_control(&mut self, pm1a_cnt: pm1::control::Register) {
+        if let Some(mut pm1a_cnt_blk) = self
+            .x_pm1a_cnt_blk()
+            .or(self.pm1a_cnt_blk()) {
+            pm1a_cnt_blk.write_word(pm1a_cnt.into());
+        }
+    }
+
+    fn write_pm1b_control(&mut self, pm1b_cnt: pm1::control::Register) {
+        if let Some(mut pm1b_cnt_blk) = self
+            .x_pm1b_cnt_blk()
+            .or(self.pm1b_cnt_blk()) {
+            pm1b_cnt_blk.write_word(pm1b_cnt.into());
+        }
+    }
+
+    fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1a_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1a_cnt_blk)
+            .filter(|x_pm1a_cnt_blk| x_pm1a_cnt_blk.address() != 0)
+    }
+
+    fn x_pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1b_cnt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1b_cnt_blk)
+            .filter(|x_pm1b_cnt_blk| x_pm1b_cnt_blk.address() != 0)
+    }
+
+    fn x_pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1a_evt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1a_evt_blk)
+            .filter(|x_pm1a_evt_blk| x_pm1a_evt_blk.address() != 0)
+    }
+
+    fn x_pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
+        (Self::x_pm1b_evt_blk_offset() < self.header.table_size())
+            .then_some(self.x_pm1b_evt_blk)
+            .filter(|x_pm1b_evt_blk| x_pm1b_evt_blk.address() != 0)
+    }
 }
 
 impl fmt::Debug for Table {
@@ -179,7 +344,6 @@ impl fmt::Debug for Table {
         let header: system_description::Header = self.header;
         let firmware_ctrl: Option<&firmware_acpi_control::Structure> = self.firmware_ctrl();
         let dsdt: Option<system_description::Table> = self.dsdt();
-        let reserved0: u8 = self.reserved0;
         let preferred_pm_profile: u8 = self.preferred_pm_profile;
         let sci_int: u16 = self.sci_int;
         let smi_cmd: u32 = self.smi_cmd;
@@ -213,7 +377,6 @@ impl fmt::Debug for Table {
         let mon_alrm: u8 = self.mon_alrm;
         let century: u8 = self.century;
         let iapc_boot_arch: u16 = self.iapc_boot_arch;
-        let reserved1: u8 = self.reserved1;
         let flags: Flags = self.flags;
         let reset_reg: generic_address::Structure = self.reset_reg;
         let reser_value: u8 = self.reser_value;
@@ -235,7 +398,6 @@ impl fmt::Debug for Table {
             .field("header", &header)
             .field("firmware_ctrl", &firmware_ctrl)
             .field("dsdt", &dsdt)
-            .field("reserved0", &reserved0)
             .field("preferred_pm_profile", &preferred_pm_profile)
             .field("sci_int", &sci_int)
             .field("smi_cmd", &smi_cmd)
@@ -269,7 +431,6 @@ impl fmt::Debug for Table {
             .field("mon_alrm", &mon_alrm)
             .field("century", &century)
             .field("iapc_boot_arch", &iapc_boot_arch)
-            .field("reserved1", &reserved1)
             .field("flags", &flags)
             .field("reset_reg", &reset_reg)
             .field("reser_value", &reser_value)
@@ -319,8 +480,7 @@ struct Flags {
     low_power_s0_idle_capable: bool,
     #[bits(2)]
     persistent_cpu_caches: u8,
-    #[bits(access = RO)]
-    reserved0: u8,
+    __: u8,
 }
 
 impl Flags {

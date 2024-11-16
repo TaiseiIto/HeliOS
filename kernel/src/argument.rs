@@ -55,8 +55,7 @@ impl Argument<'static> {
 
     pub fn get() -> &'static mut Self {
         unsafe {
-            ARGUMENT
-                .get_mut()
+            ARGUMENT.get_mut()
         }.unwrap()
     }
 

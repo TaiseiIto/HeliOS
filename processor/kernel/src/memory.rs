@@ -62,9 +62,11 @@ impl Allocator {
         let range: Range<usize> = start..end;
         let node_list: &mut NodeList = NodeList::new(range, available_range);
         let node_list: *mut NodeList = node_list as *mut NodeList;
-        *unsafe {
-            &mut *self.root_node_list.get()
-        } = node_list;
+        unsafe {
+            self.root_node_list
+                .get()
+                .write_volatile(node_list)
+        }
     }
 }
 

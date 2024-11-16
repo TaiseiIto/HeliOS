@@ -14,7 +14,7 @@ use {
 #[bitfield(u64)]
 pub struct Fmask {
     syscall_eflags_mask: u32,
-    reserved0: u32,
+    __: u32,
 }
 
 impl Fmask {

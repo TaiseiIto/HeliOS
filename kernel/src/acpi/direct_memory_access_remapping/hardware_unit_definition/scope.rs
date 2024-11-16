@@ -15,7 +15,7 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     flags: Flags,
-    reserved0: u8,
+    __: u8,
     enumeration_id: u8,
     start_bus_number: u8,
 }
@@ -57,7 +57,6 @@ impl fmt::Debug for Structure {
         let structure_type: u8 = self.structure_type;
         let length: u8 = self.length;
         let flags: Flags = self.flags;
-        let reserved0: u8 = self.reserved0;
         let enumeration_id: u8 = self.enumeration_id;
         let start_bus_number: u8 = self.start_bus_number;
         formatter
@@ -65,7 +64,6 @@ impl fmt::Debug for Structure {
             .field("structure_type", &structure_type)
             .field("length", &length)
             .field("flags", &flags)
-            .field("reserved0", &reserved0)
             .field("enumeration_id", &enumeration_id)
             .field("start_bus_number", &start_bus_number)
             .field("path", &self.path())
@@ -80,7 +78,7 @@ struct Flags {
     req_wo_pasid_pgsnp_notallowed: bool,
     atc_hardened: bool,
     atc_required: bool,
-    #[bits(3, access = RO)]
-    reserved0: u8,
+    #[bits(3)]
+    __: u8,
 }
 

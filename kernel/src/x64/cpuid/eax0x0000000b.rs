@@ -47,20 +47,20 @@ struct Eax {
     #[bits(5)]
     the_number_of_bits_that_the_x2apic_id_must_be_shifted_to_the_right_to_address_instances_of_the_next_higher_scoped_domain: u8,
     #[bits(27)]
-    reserved0: u32,
+    __: u32,
 }
 
 #[bitfield(u32)]
 struct Ebx {
     the_number_of_logical_processors_across_all_instances_of_this_domain_within_the_next_higher_scoped_domain: u16,
-    reserved0: u16,
+    __: u16,
 }
 
 #[bitfield(u32)]
 struct Ecx {
     the_input_ecx_sub_leaf_index: u8,
     domain_type: u8,
-    reserved0: u16,
+    __: u16,
 }
 
 #[bitfield(u32)]
