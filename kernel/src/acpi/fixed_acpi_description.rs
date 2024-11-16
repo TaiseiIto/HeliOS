@@ -124,7 +124,6 @@ impl Table {
         let dsdt: system_description::Table = self
             .dsdt()
             .unwrap();
-        let iasl_input: &[u8] = (&dsdt).into();
         let dsdt: &[u8] = dsdt.definition_block();
         let mut semantic_tree = machine_language::name::Node::default();
         let root_path = machine_language::name::Path::root();
@@ -143,10 +142,6 @@ impl Table {
         if let Some(pts) = pts {
             pts.evaluate(&mut stack_frame.clone(), &reference_tree, &pts_path);
         }
-        let pm1a_status: Option<pm1::status::Register> = self.read_pm1a_status();
-        let pm1b_status: Option<pm1::status::Register> = self.read_pm1b_status();
-        let pm1a_enable: Option<pm1::enable::Register> = self.read_pm1a_enable();
-        let pm1b_enable: Option<pm1::enable::Register> = self.read_pm1b_enable();
         let pm1a_control: Option<pm1::control::Register> = self.read_pm1a_control();
         let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
         let s5: machine_language::name::Path = "\\_S5".into();
@@ -265,6 +260,7 @@ impl Table {
                 .into())
     }
 
+    #[allow(dead_code)]
     fn read_pm1a_enable(&self) -> Option<pm1::enable::Register> {
         self.x_pm1a_evt_blk()
             .or(self.pm1a_evt_blk())
@@ -274,6 +270,7 @@ impl Table {
                 .into())
     }
 
+    #[allow(dead_code)]
     fn read_pm1b_enable(&self) -> Option<pm1::enable::Register> {
         self.x_pm1b_evt_blk()
             .or(self.pm1b_evt_blk())
@@ -283,6 +280,7 @@ impl Table {
                 .into())
     }
 
+    #[allow(dead_code)]
     fn read_pm1a_status(&self) -> Option<pm1::status::Register> {
         self.x_pm1a_evt_blk()
             .or(self.pm1a_evt_blk())
@@ -291,6 +289,7 @@ impl Table {
                 .into())
     }
 
+    #[allow(dead_code)]
     fn read_pm1b_status(&self) -> Option<pm1::status::Register> {
         self.x_pm1b_evt_blk()
             .or(self.pm1b_evt_blk())
