@@ -1996,9 +1996,6 @@ impl Evaluator for DefMethod {
             _method_flags,
             method_term_list,
         ) = self;
-        com2_println!("Evaluate {:#x?}", current);
-        com2_println!("stack_frame = {:#x?}", stack_frame);
-        com2_println!("{:#x?} = {:#x?}", current, self);
         method_term_list.evaluate(stack_frame, root, current)
     }
 }
@@ -2248,12 +2245,6 @@ impl DefOpRegion {
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
         let align_bits: usize = align_bytes * U8_BITS;
-        com2_println!("read {:#x?}", self);
-        com2_println!("region_space = {:#x?}", region_space);
-        com2_println!("region_offset = {:#x?}", region_offset);
-        com2_println!("region_len = {:#x?}", region_len);
-        com2_println!("align_bytes = {:#x?}", align_bytes);
-        com2_println!("align_bits = {:#x?}", align_bits);
         region_offset
             .zip(region_len)
             .map(|(region_offset, region_len)| {
@@ -2448,7 +2439,6 @@ impl DefOpRegion {
     }
 
     pub fn write_value(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, op_region_path: &name::Path, bit_range: &Range<usize>, access_type: &interpreter::AccessType) -> Option<interpreter::Value> {
-        com2_println!("write {:#x?} to {:#x?}", &value, op_region_path);
         const U8_BITS: usize = u8::BITS as usize;
         const U16_BITS: usize = u16::BITS as usize;
         const U32_BITS: usize = u32::BITS as usize;
@@ -2471,12 +2461,6 @@ impl DefOpRegion {
         let region_len: Option<interpreter::Value> = region_len.evaluate(stack_frame, root, op_region_path);
         let align_bytes: usize = access_type.align();
         let align_bits: usize = align_bytes * U8_BITS;
-        com2_println!("write {:#x?} to {:#x?}", &value, self);
-        com2_println!("region_space = {:#x?}", region_space);
-        com2_println!("region_offset = {:#x?}", region_offset);
-        com2_println!("region_len = {:#x?}", region_len);
-        com2_println!("align_bytes = {:#x?}", align_bytes);
-        com2_println!("align_bits = {:#x?}", align_bits);
         region_offset
             .zip(region_len)
             .map(|(region_offset, region_len)| {
@@ -2536,7 +2520,6 @@ impl DefOpRegion {
                                     } else {
                                         0x00
                                     });
-                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u8 = address as *mut u8;
@@ -2582,7 +2565,6 @@ impl DefOpRegion {
                                     } else {
                                         0x0000
                                     });
-                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u16 = address as *mut u16;
@@ -2635,7 +2617,6 @@ impl DefOpRegion {
                                     } else {
                                         0x00000000
                                     });
-                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u32 = address as *mut u32;
@@ -2686,7 +2667,6 @@ impl DefOpRegion {
                                     } else {
                                         0x0000000000000000
                                     });
-                                com2_println!("Write {:#x?} to {:#x?} {:#x?}", written, &region_space, address);
                                 match &region_space {
                                     interpreter::RegionSpace::SystemMemory => {
                                         let address: *mut u64 = address as *mut u64;
@@ -3297,8 +3277,6 @@ impl Evaluator for DefWhile {
         ) = self;
         stack_frame.enter_loop();
         while {
-            com2_println!("Run DefWhile");
-            com2_println!("stack_frame = {:#x?}", stack_frame);
             let predicate: bool = predicate
                 .evaluate(stack_frame, root, current)
                 .map_or(false, |predicate| (&predicate).into());
@@ -4486,7 +4464,6 @@ impl From<&NameString> for VecDeque<name::Segment> {
 impl Holder for NameString {
     fn hold(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &reference::Node, current: &name::Path) -> interpreter::Value {
         let name: name::Path = self.into();
-        com2_println!("{:#x?} holds {:#x?}", &name, &value);
         stack_frame
             .write_named_local(&name, value.clone())
             .or_else(|| {

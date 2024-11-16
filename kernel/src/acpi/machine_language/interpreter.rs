@@ -23,7 +23,6 @@ use {
             Sub,
         },
     },
-    crate::com2_println,
     super::{
         name,
         reference,
@@ -1336,14 +1335,9 @@ impl StackFrame {
     }
 
     pub fn write_named_local(&mut self, name: &name::Path, value: Value) -> Option<Value> {
-        com2_println!("write_named_local");
-        com2_println!("self = {:#x?}", self);
-        com2_println!("name = {:#x?}", name);
-        com2_println!("value = {:#x?}", &value);
         self.named_locals
             .get_mut(name)
             .map(|named_local| {
-                com2_println!("named_local = {:#x?}", named_local);
                 let (_named_local, value): (Value, Value) = named_local
                     .match_type(&value);
                 *named_local = value.clone();

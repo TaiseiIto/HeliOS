@@ -12,7 +12,6 @@ use {
         fmt,
         ops::Range,
     },
-    crate::com2_println,
     super::{
         name,
         syntax,
@@ -133,7 +132,6 @@ impl<'a> Node<'a> {
     }
 
     pub fn write_named_field(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
-        com2_println!("write {:#x?} to {:#x?}", &value, name);
         self.get_objects_from_current(name)
             .and_then(|(named_field_path, objects)| objects
                 .iter()
@@ -144,7 +142,6 @@ impl<'a> Node<'a> {
                         offset_in_bits,
                         op_region,
                     } => {
-                        com2_println!("write {:#x?} to {:#x?}", &value, &named_field_path);
                         let start_bit: usize = *offset_in_bits;
                         let size_in_bits: usize = named_field.bits();
                         let end_bit: usize = start_bit + size_in_bits;
