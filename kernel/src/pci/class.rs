@@ -137,7 +137,7 @@ pub enum Code {
     UsbUhci,                                    // 0c 03 00
     UsbOhci,                                    // 0c 03 10
     UsbEhci,                                    // 0c 03 20
-    Usbxhci,                                    // 0c 03 30
+    UsbXhci,                                    // 0c 03 30
     UsbNoSpecificProgrammingInterface,          // 0c 03 80
     UsbNoHostController,                        // 0c 03 fe
     FibreChannel,                               // 0c 04 00
@@ -323,7 +323,7 @@ impl Code {
             (0x0c, 0x03, 0x00) => Self::UsbUhci,                                    // 0c 03 00
             (0x0c, 0x03, 0x10) => Self::UsbOhci,                                    // 0c 03 10
             (0x0c, 0x03, 0x20) => Self::UsbEhci,                                    // 0c 03 20
-            (0x0c, 0x03, 0x30) => Self::Usbxhci,                                    // 0c 03 30
+            (0x0c, 0x03, 0x30) => Self::UsbXhci,                                    // 0c 03 30
             (0x0c, 0x03, 0x80) => Self::UsbNoSpecificProgrammingInterface,          // 0c 03 80
             (0x0c, 0x03, 0xfe) => Self::UsbNoHostController,                        // 0c 03 fe
             (0x0c, 0x04, 0x00) => Self::FibreChannel,                               // 0c 04 00
