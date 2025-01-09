@@ -49,7 +49,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
-    let kernel_heap_start: usize = kernel.heap_start();
     let processor_boot_loader: Vec<u8> = directory_tree
         .get(PROCESSOR_BOOT_LOADER)
         .unwrap()
@@ -70,7 +69,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         efi::SystemTable::get(),
         fonts,
         graphics_output_protocol,
-        kernel_heap_start,
+        &kernel,
         memory_map,
         paging);
     kernel.run(&kernel_argument);

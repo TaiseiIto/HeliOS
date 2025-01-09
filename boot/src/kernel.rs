@@ -49,10 +49,11 @@ impl<'a> Argument<'a> {
         efi_system_table: &'a mut efi::SystemTable<'a>,
         fonts: BTreeMap<usize, efi::Font<'a>>,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
-        heap_start: usize,
+        loader: &Loader,
         memory_map: efi::memory::Map,
         paging: memory::Paging,
     ) -> Self {
+        let heap_start: usize = loader.heap_start();
         Self {
             processor_boot_loader,
             processor_kernel,
@@ -127,10 +128,6 @@ impl Loader {
         }
     }
 
-    pub fn heap_start(&self) -> usize {
-        self.heap_start
-    }
-
     pub fn run(&self, argument: &Argument) {
         let Self {
             elf,
@@ -140,6 +137,10 @@ impl Loader {
             heap_start,
         } = self;
         elf.run(*stack_floor, argument);
+    }
+
+    fn heap_start(&self) -> usize {
+        self.heap_start
     }
 }
 
