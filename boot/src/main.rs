@@ -48,46 +48,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
-    let kernel: elf::File = directory_tree
-        .get(KERNEL)
-        .unwrap()
-        .read()
-        .into();
-    let _kernel_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = kernel.deploy(&mut paging);
-    let kernel_stack_pages: usize = 0x200;
-    let kernel_stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..kernel_stack_pages)
-        .map(|kernel_stack_page_index| (usize::MAX - (kernel_stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
-        .collect();
-    kernel_stack_vaddr2frame
-        .iter()
-        .for_each(|(vaddr, frame)| {
-            let present: bool = true;
-            let writable: bool = true;
-            let executable: bool = false;
-            paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
-        });
-    let kernel_stack_floor: usize = 0;
-    let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
-        .memory_map()
-        .unwrap()
-        .into();
-    let higher_half_range: Range<u128> = paging.higher_half_range();
-    let kernel_heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
-    let kernel_heap_start: usize = kernel_heap_start as usize;
-    let kernel_heap_pages: usize = memory_map
-        .into_iter()
-        .filter(|memory_descriptor| memory_descriptor.is_available())
-        .map(|memory_descriptor| memory_descriptor.number_of_pages())
-        .sum();
-    (0..kernel_heap_pages)
-        .for_each(|heap_page_index| {
-            let vaddr: usize = kernel_heap_start + heap_page_index * memory::page::SIZE;
-            let paddr: usize = 0;
-            let present: bool = false;
-            let writable: bool = false;
-            let executable: bool = false;
-            paging.set_page(vaddr, paddr, present, writable, executable);
-        });
+    let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
+    let kernel_heap_start: usize = kernel.heap_start();
     let processor_boot_loader: Vec<u8> = directory_tree
         .get(PROCESSOR_BOOT_LOADER)
         .unwrap()
@@ -111,9 +73,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         kernel_heap_start,
         memory_map,
         paging);
-    kernel.run(kernel_stack_floor, &kernel_argument);
-    efi::SystemTable::get().shutdown();
-    efi::Status::ABORTED
+    kernel.run(&kernel_argument);
+    unreachable!("Failure to start the kernel.")
 }
 
 /// # A panic handler of the boot loader
@@ -121,6 +82,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
 fn panic(panic: &PanicInfo) -> ! {
     com2_println!("BOOT PANIC!!!");
     com2_println!("{}", panic);
+    efi::SystemTable::get().shutdown();
     loop {
         x64::hlt();
     }

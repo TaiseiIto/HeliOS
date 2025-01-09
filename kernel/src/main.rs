@@ -313,6 +313,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let pci = pci::Configuration::read();
     com2_println!("pci = {:#x?}", pci);
     // Shutdown.
+    com2_println!("Shutting down.");
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
