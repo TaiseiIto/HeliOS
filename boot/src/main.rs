@@ -17,7 +17,6 @@ mod x64;
 
 use {
     alloc::{
-        boxed::Box,
         collections::BTreeMap,
         vec::Vec,
     },

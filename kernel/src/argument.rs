@@ -8,7 +8,6 @@ use {
     core::cell::OnceCell,
     crate::{
         efi,
-        elf,
         memory,
         processor,
         rs232c,

@@ -71,7 +71,9 @@ impl<'a> Argument<'a> {
 
 pub struct Loader {
     elf: elf::File,
+    #[allow(dead_code)]
     elf_vaddr2frame: BTreeMap<usize, Box<memory::Frame>>,
+    #[allow(dead_code)]
     stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>>,
     stack_floor: usize,
     heap_start: usize,
@@ -129,14 +131,7 @@ impl Loader {
     }
 
     pub fn run(&self, argument: &Argument) {
-        let Self {
-            elf,
-            elf_vaddr2frame,
-            stack_vaddr2frame,
-            stack_floor,
-            heap_start,
-        } = self;
-        elf.run(*stack_floor, argument);
+        self.elf.run(self.stack_floor, argument);
     }
 
     fn heap_start(&self) -> usize {
