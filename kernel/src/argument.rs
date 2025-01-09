@@ -30,8 +30,6 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
-    #[allow(dead_code)]
-    hello_application: elf::File,
     memory_map: efi::memory::Map,
     paging: memory::Paging,
 }
@@ -86,7 +84,8 @@ impl Argument<'static> {
     pub fn set(&'static mut self) {
         unsafe {
             ARGUMENT.set(self)
-        }.unwrap()
+        }.unwrap();
+        rs232c::set_com2(Self::get().com2_mut());
     }
 }
 

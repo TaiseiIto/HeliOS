@@ -100,11 +100,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         .get(PROCESSOR_KERNEL)
         .unwrap()
         .read();
-    let hello_application: elf::File = directory_tree
-        .get("applications/hello.elf")
-        .unwrap()
-        .read()
-        .into();
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
@@ -117,7 +112,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         fonts,
         graphics_output_protocol,
         kernel_heap_start,
-        hello_application,
         memory_map,
         paging);
     kernel.run(kernel_stack_floor, &kernel_argument);

@@ -45,7 +45,6 @@ const PRIVILEGE_LEVEL: u8 = 0;
 fn main(argument: &'static mut Argument<'static>) {
     x64::cli();
     argument.set();
-    rs232c::set_com2(Argument::get().com2_mut());
     com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());

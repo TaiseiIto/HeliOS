@@ -32,8 +32,6 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     heap_start: usize,
     #[allow(dead_code)]
-    hello_application: elf::File,
-    #[allow(dead_code)]
     memory_map: efi::memory::Map,
     #[allow(dead_code)]
     paging: memory::Paging,
@@ -50,7 +48,6 @@ impl<'a> Argument<'a> {
         fonts: BTreeMap<usize, efi::Font<'a>>,
         graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
         heap_start: usize,
-        hello_application: elf::File,
         memory_map: efi::memory::Map,
         paging: memory::Paging,
     ) -> Self {
@@ -63,7 +60,6 @@ impl<'a> Argument<'a> {
             fonts,
             graphics_output_protocol,
             heap_start,
-            hello_application,
             memory_map,
             paging,
         }
