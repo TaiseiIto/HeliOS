@@ -49,15 +49,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
-    let processor_boot_loader: Vec<u8> = directory_tree
-        .get(PROCESSOR_BOOT_LOADER)
-        .unwrap()
-        .read();
-    let processor_boot_loader = processor::boot::Loader::new(&processor_boot_loader, processor_boot_loader_pages);
-    let processor_kernel: Vec<u8> = directory_tree
-        .get(PROCESSOR_KERNEL)
-        .unwrap()
-        .read();
+    let (processor_boot_loader, processor_kernel): (processor::boot::Loader, Vec<u8>) = processor::prepare(&directory_tree, PROCESSOR_BOOT_LOADER, PROCESSOR_KERNEL, processor_boot_loader_pages);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();

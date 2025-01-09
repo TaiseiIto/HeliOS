@@ -77,7 +77,7 @@ impl Argument<'static> {
         &mut self.processor_boot_loader
     }
 
-    pub fn processor_kernel(&self) -> &Vec<u8> {
+    pub fn processor_kernel(&self) -> &[u8] {
         &self.processor_kernel
     }
 

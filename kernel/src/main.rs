@@ -233,7 +233,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .clone();
     let processor_kernel: elf::File = Argument::get()
         .processor_kernel()
-        .clone()
+        .to_vec()
         .into();
     let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
     let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
