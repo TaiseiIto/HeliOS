@@ -4,7 +4,10 @@ use {
         ops::Range,
         slice,
     },
-    crate::efi,
+    crate::{
+        efi,
+        memory,
+    },
 };
 
 pub struct Loader {
@@ -13,6 +16,13 @@ pub struct Loader {
 }
 
 impl Loader {
+    pub fn allocate_pages(base: usize, stack_floor: usize) -> Range<efi::memory::PhysicalAddress> {
+        let processor_boot_loader_pages: usize = (stack_floor - base) / memory::page::SIZE;
+        efi::SystemTable::get()
+            .allocate_specific_pages(base, processor_boot_loader_pages)
+            .unwrap()
+    }
+
     pub fn new(binary: &[u8], physical_range: Range<efi::memory::PhysicalAddress>) -> Self {
         let program_start: usize = physical_range.start as usize;
         let program_size: usize = binary.len();

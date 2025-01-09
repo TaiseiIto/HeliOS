@@ -36,10 +36,7 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
     // Allocate pages requested to be allocated at specific physical address preferentially.
-    let processor_boot_loader_pages: usize = (PROCESSOR_BOOT_LOADER_STACK_FLOOR - PROCESSOR_BOOT_LOADER_BASE) / memory::page::SIZE;
-    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = efi::SystemTable::get()
-        .allocate_specific_pages(PROCESSOR_BOOT_LOADER_BASE, processor_boot_loader_pages)
-        .unwrap();
+    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = processor::boot::Loader::allocate_pages(PROCESSOR_BOOT_LOADER_BASE, PROCESSOR_BOOT_LOADER_STACK_FLOOR);
     efi_println!("Hello, World!");
     com2_println!("Hello from /EFI/BOOT/BOOTX64.EFI");
     let font_protocol = efi::font::Protocol::get();
