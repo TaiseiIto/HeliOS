@@ -7,7 +7,6 @@
 extern crate alloc;
 
 mod acpi;
-mod application;
 mod argument;
 mod efi;
 mod elf;
@@ -39,62 +38,12 @@ use {
     },
 };
 
-const PRIVILEGE_LEVEL: u8 = 0;
-
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
     x64::cli();
     argument.set();
-    // Initialize allocator.
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
-    // Initialize GDT.
-    let mut gdt = memory::segment::descriptor::Table::get();
-    let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
-    gdtr.set();
-    let cs: memory::segment::Selector = memory::segment::Selector::cs();
-    com2_println!("cs = {:#x?}", cs);
-    let ds: memory::segment::Selector = memory::segment::Selector::ds();
-    com2_println!("ds = {:#x?}", ds);
-    let es: memory::segment::Selector = memory::segment::Selector::es();
-    com2_println!("es = {:#x?}", es);
-    let fs: memory::segment::Selector = memory::segment::Selector::fs();
-    com2_println!("fs = {:#x?}", fs);
-    let gs: memory::segment::Selector = memory::segment::Selector::gs();
-    com2_println!("gs = {:#x?}", gs);
-    let ss: memory::segment::Selector = memory::segment::Selector::ss();
-    com2_println!("ss = {:#x?}", ss);
-    let kernel_code_segment_descriptor: memory::segment::descriptor::Interface = gdt
-        .descriptor(&cs)
-        .unwrap();
-    let kernel_data_segment_descriptor: memory::segment::descriptor::Interface = gdt
-        .descriptor(&ds)
-        .unwrap();
-    let application_code_segment_descriptor: memory::segment::descriptor::Interface = kernel_code_segment_descriptor
-        .with_dpl(application::PRIVILEGE_LEVEL);
-    let application_data_segment_descriptor: memory::segment::descriptor::Interface = kernel_data_segment_descriptor
-        .with_dpl(application::PRIVILEGE_LEVEL);
-    let segment_descriptors = [
-        kernel_code_segment_descriptor,
-        kernel_data_segment_descriptor,
-        application_data_segment_descriptor,
-        application_code_segment_descriptor,
-    ];
-    let segment_descriptors: &[memory::segment::descriptor::Interface] = segment_descriptors.as_slice();
-    let mut segment_descriptor_indices: Range<usize> = gdt.continuous_free_descriptor_indices(segment_descriptors.len()).unwrap();
-    segment_descriptor_indices
-        .clone()
-        .zip(segment_descriptors.iter())
-        .for_each(|(index, descriptor)| gdt.set_descriptor(index, descriptor));
-    let kernel_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
-    let kernel_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
-    let application_data_segment_index: usize = segment_descriptor_indices.next().unwrap();
-    let application_code_segment_index: usize = segment_descriptor_indices.next().unwrap();
-    let is_ldt: bool = false;
-    let kernel_code_segment_selector = memory::segment::Selector::create(kernel_code_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
-    let kernel_data_segment_selector = memory::segment::Selector::create(kernel_data_segment_index as u16, is_ldt, PRIVILEGE_LEVEL);
-    let application_code_segment_selector = memory::segment::Selector::create(application_code_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
-    let application_data_segment_selector = memory::segment::Selector::create(application_data_segment_index as u16, is_ldt, application::PRIVILEGE_LEVEL);
-    x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
+    let mut gdt = memory::segment::Gdt::new();
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
     interrupt::register_handlers(&mut idt);
@@ -115,7 +64,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let task_register = x64::task::Register::get();
     com2_println!("task_register = {:#x?}", task_register);
     // Initialize syscall.
-    syscall::initialize(Argument::get().cpuid(), &kernel_code_segment_selector, &kernel_data_segment_selector, &application_code_segment_selector, &application_data_segment_selector);
+    syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
     task::Controller::set_current();
     task::Controller::get_current_mut()
