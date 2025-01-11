@@ -43,7 +43,7 @@ fn main(argument: &'static mut Argument<'static>) {
     x64::cli();
     argument.set();
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
-    let mut gdt = memory::segment::Gdt::new();
+    let mut gdt = memory::segment::descriptor::table::Controller::new();
     // Initialize IDT.
     let mut idt = interrupt::descriptor::Table::get();
     interrupt::register_handlers(&mut idt);
