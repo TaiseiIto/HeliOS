@@ -44,25 +44,7 @@ fn main(argument: &'static mut Argument<'static>) {
     argument.set();
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     let mut gdt = memory::segment::descriptor::table::Controller::new();
-    // Initialize IDT.
-    let mut idt = interrupt::descriptor::Table::get();
-    interrupt::register_handlers(&mut idt);
-    let idtr: interrupt::descriptor::table::Register = (&idt).into();
-    idtr.set();
-    let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
-        .map(|index| {
-            let pages: usize = 0x10;
-            let floor_inclusive: usize = Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
-            memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
-        })
-        .collect();
-    let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
-    let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
-    let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
-    let task_register: x64::task::Register = task_state_segment_selector.into();
-    task_register.set();
-    let task_register = x64::task::Register::get();
-    com2_println!("task_register = {:#x?}", task_register);
+    interrupt::descriptor::Table::initialize(&mut gdt);
     // Initialize syscall.
     syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
