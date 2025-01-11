@@ -45,16 +45,8 @@ const PRIVILEGE_LEVEL: u8 = 0;
 fn main(argument: &'static mut Argument<'static>) {
     x64::cli();
     argument.set();
-    com2_println!("Hello from /HeliOS/kernel.elf");
     // Initialize allocator.
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
-    com2_println!("heap_size = {:#x?}", heap_size);
-    // Check memory map.
-    let memory_map: Vec<&efi::memory::Descriptor> = Argument::get()
-        .memory_map()
-        .iter()
-        .collect();
-    com2_println!("memory_map = {:#x?}", memory_map);
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::Table::get();
     let gdtr: memory::segment::descriptor::table::Register = (&gdt).into();
