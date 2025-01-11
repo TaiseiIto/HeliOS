@@ -22,15 +22,22 @@ pub mod task_priority;
 pub mod trigger_mode;
 
 use {
+    alloc::vec::Vec,
     core::fmt,
     crate::{
+        Argument,
+        com2_println,
         timer,
         x64,
     },
     super::{
         DeliveryMode,
         TriggerMode,
-        super::APIC_TIMER_INTERRUPT,
+        io,
+        super::{
+            APIC_TIMER_INTERRUPT,
+            SPURIOUS_INTERRUPT,
+        },
     },
 };
 
@@ -130,6 +137,29 @@ impl Registers {
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+
+    pub fn initialize(ia32_apic_base: &mut x64::msr::ia32::ApicBase) -> &mut Self {
+        let io_apic: &mut io::Registers = Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .madt_mut()
+            .io_apic_mut()
+            .registers_mut();
+        let io_apic_identification: io::identification::Register = io_apic.identification();
+        com2_println!("io_apic_identification = {:#x?}", io_apic_identification);
+        let io_apic_version: io::version::Register = io_apic.version();
+        com2_println!("io_apic_version = {:#x?}", io_apic_version);
+        let io_apic_redirection_table_entries: Vec<io::redirection::table::Entry> = io_apic.redirection_table_entries();
+        com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
+        ia32_apic_base.enable();
+        let registers: &mut Self = ia32_apic_base.registers_mut();
+        let focus_processor_checking: bool = true;
+        let eoi_broadcast: bool = true;
+        registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, SPURIOUS_INTERRUPT);
+        com2_println!("registers = {:#x?}", registers);
+        registers
     }
 
     pub fn send_init(&mut self, processor_local_apic_id: u8, hpet: &timer::hpet::Registers) {

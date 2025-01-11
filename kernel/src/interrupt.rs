@@ -1235,7 +1235,7 @@ extern "x86-interrupt" fn handler_0x20(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get()
         .unwrap()
         .registers_mut()
         .end_interruption();
@@ -1263,7 +1263,7 @@ extern "x86-interrupt" fn handler_0x22(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get()
         .unwrap()
         .registers_mut()
         .end_interruption();
@@ -1343,7 +1343,7 @@ extern "x86-interrupt" fn handler_0x28(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get()
         .unwrap()
         .registers_mut()
         .end_interruption();
@@ -2802,7 +2802,7 @@ extern "x86-interrupt" fn handler_0x98(_stack_frame: StackFrame) {
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.start_interrupt();
     }
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get()
         .unwrap()
         .registers_mut()
         .end_interruption();
@@ -2818,7 +2818,7 @@ extern "x86-interrupt" fn handler_0x99(_stack_frame: StackFrame) {
         current_task.start_interrupt();
     }
     processor::Controller::save_received_messages();
-    x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+    x64::msr::ia32::ApicBase::get()
         .unwrap()
         .registers_mut()
         .end_interruption();

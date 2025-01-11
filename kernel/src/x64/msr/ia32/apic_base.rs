@@ -1,6 +1,9 @@
 use {
     bitfield_struct::bitfield,
-    crate::interrupt,
+    crate::{
+        Argument,
+        interrupt,
+    },
     super::super::{
         rdmsr,
         super::Cpuid,
@@ -30,8 +33,9 @@ impl ApicBase {
         wrmsr(Self::ECX, (*self).into());
     }
 
-    pub fn get(cpuid: &Cpuid) -> Option<Self> {
-        cpuid
+    pub fn get() -> Option<Self> {
+        Argument::get()
+            .cpuid()
             .supports_apic()
             .then(|| rdmsr(Self::ECX)
                 .into())

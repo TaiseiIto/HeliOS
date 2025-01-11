@@ -166,7 +166,7 @@ impl Controller {
 
     pub fn send(&mut self, message: message::Content) {
         *self.sender.lock() = Some(message);
-        x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        x64::msr::ia32::ApicBase::get()
             .unwrap()
             .registers_mut()
             .send_interrupt(self.local_apic_id(), interrupt::INTERPROCESSOR_INTERRUPT);
