@@ -26,6 +26,40 @@ use {
 
 pub use register::Register;
 
+pub struct Controller {
+    stacks: Vec<memory::Stack>,
+    table: Table,
+    task_register: x64::task::Register,
+    task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap>,
+}
+
+impl Controller {
+    pub fn new(gdt: &mut memory::segment::descriptor::table::Controller) -> Self {
+        let mut table = Table::get();
+        register_handlers(&mut table);
+        let tabler: Register = (&table).into();
+        tabler.set();
+        let stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
+            .map(|index| {
+                let pages: usize = 0x10;
+                let floor_inclusive: usize = Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
+                memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
+            })
+            .collect();
+        let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&stacks);
+        let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
+        let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
+        let task_register: x64::task::Register = task_state_segment_selector.into();
+        task_register.set();
+        Self {
+            stacks,
+            table,
+            task_register,
+            task_state_segment_and_io_permission_bit_map,
+        }
+    }
+}
+
 /// # Interrupt Descriptor
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.10 Interrupt Descriptor Table (IDT)
@@ -42,26 +76,6 @@ impl Table {
 
     pub fn get() -> Self {
         Register::get().into()
-    }
-
-    pub fn initialize(gdt: &mut memory::segment::descriptor::table::Controller) {
-        let mut idt = Table::get();
-        register_handlers(&mut idt);
-        let idtr: Register = (&idt).into();
-        idtr.set();
-        let interrupt_stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
-            .map(|index| {
-                let pages: usize = 0x10;
-                let floor_inclusive: usize = Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
-                memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
-            })
-            .collect();
-        let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&interrupt_stacks);
-        let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
-        let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
-        let task_register: x64::task::Register = task_state_segment_selector.into();
-        task_register.set();
-        let task_register = x64::task::Register::get();
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Descriptor> {

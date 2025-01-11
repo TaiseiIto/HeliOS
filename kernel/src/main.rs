@@ -44,7 +44,7 @@ fn main(argument: &'static mut Argument<'static>) {
     argument.set();
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     let mut gdt = memory::segment::descriptor::table::Controller::new();
-    interrupt::descriptor::Table::initialize(&mut gdt);
+    let idt = interrupt::descriptor::table::Controller::new(&mut gdt);
     // Initialize syscall.
     syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
