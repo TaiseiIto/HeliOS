@@ -72,57 +72,9 @@ fn main(argument: &'static mut Argument<'static>) {
     let hpet = timer::hpet::Registers::initialize(local_apic_id);
     // Set APIC Timer.
     local_apic_registers.initialize_apic(hpet);
-    // Test ACPI Timer.
-    com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
-    com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
-    // Test TSC.
-    com2_println!("Time stamp counter is {}", if timer::tsc::is_invariant() {
-        "invariant"
-    } else {
-        "variant"
-    });
-    com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
-    com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Boot application processors.
-    let mut processor_paging: memory::Paging = Argument::get()
-        .paging()
-        .clone();
-    let processor_kernel: elf::File = Argument::get()
-        .processor_kernel()
-        .to_vec()
-        .into();
-    let _processor_kernel_read_only_pages: Vec<memory::Page> = processor_kernel.deploy_unwritable_segments(&mut processor_paging);
-    let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
-        .efi_system_table()
-        .rsdp()
-        .xsdt()
-        .madt()
-        .processor_local_apic_structures()
-        .into_iter()
-        .filter(|processor_local_apic| processor_local_apic.is_enabled())
-        .collect();
-    let number_of_processors: usize = processors.len();
-    com2_println!("number_of_processors = {:#x?}", number_of_processors);
-    let processor_heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
-    let processor_heap_size: usize = processor_heap_size / if processor_heap_size / 2 + (number_of_processors - 1) * processor_heap_size < heap_size {
-        1
-    } else {
-        2
-    };
-    com2_println!("processor_heap_size = {:#x?}", processor_heap_size);
-    let processors: Vec<processor::Controller> = processors
-        .into_iter()
-        .filter(|processor_local_apic| processor_local_apic.apic_id() != local_apic_id)
-        .map(|processor_local_apic| {
-            let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(processor_heap_size);
-            unsafe {
-                heap.set_len(processor_heap_size);
-            }
-            processor::Controller::new(processor_local_apic.clone(), processor_paging.clone(), &processor_kernel, heap)
-        })
-        .collect();
-    processor::Controller::set_all(processors);
-    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
+    processor::Manager::initialize(local_apic_id, local_apic_registers, heap_size, hpet);
+    // Kernel loop.
     let mut shutdown: bool = false;
     let mut loop_counter: usize = 0;
     while !shutdown {

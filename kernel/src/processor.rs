@@ -15,6 +15,7 @@ use {
         },
     },
     crate::{
+        Argument,
         acpi,
         com2_println,
         elf,
@@ -26,7 +27,7 @@ use {
     },
 };
 
-static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
+static mut MANAGER: OnceCell<Manager> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Controller {
@@ -74,15 +75,17 @@ impl Controller {
 
     pub fn get_all() -> impl Iterator<Item = &'static Self> {
         unsafe {
-            CONTROLLERS.get()
+            MANAGER.get()
         }   .unwrap()
+			.controllers
             .iter()
     }
 
     pub fn get_mut_all() -> impl Iterator<Item = &'static mut Self> {
         unsafe {
-            CONTROLLERS.get_mut()
+            MANAGER.get_mut()
         }   .unwrap()
+			.controllers
             .iter_mut()
     }
 
@@ -178,10 +181,66 @@ impl Controller {
     pub fn receive_character(&mut self, character: char) {
         self.log.push(character);
     }
+}
 
-    pub fn set_all(controllers: Vec<Self>) {
+#[derive(Debug)]
+pub struct Manager {
+    controllers: Vec<Controller>,
+    kernel: elf::File,
+    kernel_read_only_pages: Vec<memory::Page>,
+    paging: memory::Paging,
+}
+
+impl Manager {
+    pub fn initialize(local_apic_id: u8, local_apic_registers: &mut interrupt::apic::local::Registers, heap_size: usize, hpet: &timer::hpet::Registers) {
+        let mut paging: memory::Paging = Argument::get()
+            .paging()
+            .clone();
+        let kernel: elf::File = Argument::get()
+            .processor_kernel()
+            .to_vec()
+            .into();
+        let kernel_read_only_pages: Vec<memory::Page> = kernel.deploy_unwritable_segments(&mut paging);
+        let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .xsdt()
+            .madt()
+            .processor_local_apic_structures()
+            .into_iter()
+            .filter(|local_apic| local_apic.is_enabled())
+            .collect();
+        let number_of_processors: usize = processors.len();
+        com2_println!("number_of_processors = {:#x?}", number_of_processors);
+        let heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
+        let heap_size: usize = heap_size / if heap_size / 2 + (number_of_processors - 1) * heap_size < heap_size {
+            1
+        } else {
+            2
+        };
+        com2_println!("heap_size = {:#x?}", heap_size);
+        let controllers: Vec<Controller> = processors
+            .into_iter()
+            .filter(|local_apic| local_apic.apic_id() != local_apic_id)
+            .map(|local_apic| {
+                let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(heap_size);
+                unsafe {
+                    heap.set_len(heap_size);
+                }
+                Controller::new(local_apic.clone(), paging.clone(), &kernel, heap)
+            })
+            .collect();
+        controllers
+            .iter()
+            .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
+        let manager = Self {
+            controllers,
+            kernel,
+            kernel_read_only_pages,
+            paging,
+        };
         unsafe {
-            CONTROLLERS.set(controllers)
+            MANAGER.set(manager)
         }.unwrap();
     }
 }
