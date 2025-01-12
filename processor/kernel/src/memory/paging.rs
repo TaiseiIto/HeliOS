@@ -3,7 +3,6 @@ mod level4;
 use {
     core::ops::Range,
     crate::{
-        bsp_print,
         bsp_println,
         x64,
     },

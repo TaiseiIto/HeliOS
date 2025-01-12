@@ -18,7 +18,6 @@ use {
         slice,
     },
     crate::{
-        bsp_print,
         bsp_println,
         memory,
         x64,

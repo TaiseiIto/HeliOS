@@ -7,7 +7,6 @@ use {
     alloc::collections::VecDeque,
     crate::{
         Argument,
-        bsp_print,
         bsp_println,
         memory,
         processor,

@@ -17,18 +17,7 @@ mod x64;
 
 pub use argument::Argument;
 
-use {
-    alloc::{
-        boxed::Box,
-        vec::Vec,
-    },
-    core::{
-        ops::Range,
-        panic::PanicInfo,
-    },
-};
-
-const PRIVILEGE_LEVEL: u8 = 0;
+use core::panic::PanicInfo;
 
 #[no_mangle]
 fn main(argument: &'static Argument<'static>) {
@@ -62,7 +51,7 @@ fn main(argument: &'static Argument<'static>) {
         .sti();
     // Set APIC.
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
-    let local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
+    let _local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
     // Tell the BSP initialication completion.
     Argument::get_mut().initialized();
     // Event loop.
