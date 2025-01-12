@@ -69,19 +69,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Set PIT.
     timer::pit::initialize(local_apic_registers.apic_id());
     // Set RTC.
-    let time = timer::rtc::Time::get();
-    com2_println!("time = {:#?}", time);
-    let rtc_frequency: usize = 0x2; // Hz
-    let rtc_irq: u8 = timer::rtc::enable_periodic_interrupt(rtc_frequency);
-    com2_println!("rtc_irq = {:#x?}", rtc_irq);
-    Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .madt_mut()
-        .io_apic_mut()
-        .registers_mut()
-        .redirect(rtc_irq, local_apic_registers.apic_id(), interrupt::RTC_INTERRUPT);
+    timer::rtc::initialize(local_apic_registers.apic_id());
     // Set HPET.
     let hpet: &mut timer::hpet::Registers = Argument::get()
         .efi_system_table_mut()

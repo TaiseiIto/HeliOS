@@ -5,6 +5,7 @@
 
 use crate::{
     Argument,
+    com2_println,
     interrupt,
     x64,
 };
@@ -31,6 +32,7 @@ pub fn enable_periodic_interrupt(hz: usize) -> u8 {
 pub fn initialize(local_apic_id: u8) {
     let pit_frequency: usize = 0x20; // Hz
     let pit_irq: u8 = enable_periodic_interrupt(pit_frequency);
+    com2_println!("pit_irq = {:#x?}", pit_irq);
     Argument::get()
         .efi_system_table_mut()
         .rsdp_mut()
