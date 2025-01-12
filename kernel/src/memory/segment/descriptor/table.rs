@@ -14,7 +14,10 @@ use {
         ops::Range,
         slice,
     },
-    crate::x64,
+    crate::{
+        com2_println,
+        x64,
+    },
     super::{
         Interface,
         super::{
@@ -77,6 +80,19 @@ impl Controller {
         let application_code_segment_selector = Selector::create(application_code_segment_index as u16, is_ldt, APPLICATION_PRIVILEGE_LEVEL);
         let application_data_segment_selector = Selector::create(application_data_segment_index as u16, is_ldt, APPLICATION_PRIVILEGE_LEVEL);
         x64::set_segment_registers(&kernel_code_segment_selector, &kernel_data_segment_selector); // Don't rewrite segment registers before exiting boot services.
+        com2_println!("gdt = {:#x?}", table);
+        let cs: Selector = Selector::cs();
+        com2_println!("cs = {:#x?}", cs);
+        let ds: Selector = Selector::ds();
+        com2_println!("ds = {:#x?}", ds);
+        let es: Selector = Selector::es();
+        com2_println!("es = {:#x?}", es);
+        let fs: Selector = Selector::fs();
+        com2_println!("fs = {:#x?}", fs);
+        let gs: Selector = Selector::gs();
+        com2_println!("gs = {:#x?}", gs);
+        let ss: Selector = Selector::ss();
+        com2_println!("ss = {:#x?}", ss);
         Self {
             table,
             application_code_segment_selector,
