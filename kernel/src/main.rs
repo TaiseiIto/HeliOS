@@ -24,16 +24,7 @@ mod x64;
 
 pub use argument::Argument;
 
-use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
-    core::{
-        mem::MaybeUninit,
-        panic::PanicInfo,
-    },
-};
+use core::panic::PanicInfo;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {

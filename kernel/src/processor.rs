@@ -187,8 +187,11 @@ impl Controller {
 #[derive(Debug)]
 pub struct Manager {
     controllers: Vec<Controller>,
+    #[allow(dead_code)]
     kernel: elf::File,
+    #[allow(dead_code)]
     kernel_read_only_pages: Vec<memory::Page>,
+    #[allow(dead_code)]
     paging: memory::Paging,
 }
 
