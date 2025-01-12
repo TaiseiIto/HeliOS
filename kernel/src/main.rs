@@ -67,17 +67,7 @@ fn main(argument: &'static mut Argument<'static>) {
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get().unwrap();
     let local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
     // Set PIT.
-    let pit_frequency: usize = 0x20; // Hz
-    let pit_irq: u8 = timer::pit::enable_periodic_interrupt(pit_frequency);
-    com2_println!("pit_irq = {:#x?}", pit_irq);
-    Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .madt_mut()
-        .io_apic_mut()
-        .registers_mut()
-        .redirect(pit_irq, local_apic_registers.apic_id(), interrupt::PIT_INTERRUPT);
+    timer::pit::initialize(local_apic_registers.apic_id());
     // Set RTC.
     let time = timer::rtc::Time::get();
     com2_println!("time = {:#?}", time);
