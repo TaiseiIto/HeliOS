@@ -3,6 +3,7 @@ pub mod message;
 
 use {
     alloc::{
+        collections::BTreeMap,
         string::String,
         vec::Vec,
     },
@@ -241,6 +242,19 @@ impl Manager {
         }.unwrap();
         Controller::get_all()
             .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
+    }
+
+    pub fn finalize() {
+        let local_apic_id2log: BTreeMap<u8, &str> = Controller::get_all()
+            .map(|processor| (processor.local_apic_id(), processor.log()))
+            .collect();
+        local_apic_id2log
+            .into_iter()
+            .for_each(|(local_apic_id, log)| {
+                com2_println!("Application processor log");
+                com2_println!("Local APIC ID = {:#x?}", local_apic_id);
+                com2_println!("{}", log);
+            });
     }
 }
 

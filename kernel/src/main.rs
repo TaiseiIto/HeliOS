@@ -74,6 +74,9 @@ fn main(argument: &'static mut Argument<'static>) {
     local_apic_registers.initialize_apic(hpet);
     // Boot application processors.
     processor::Manager::initialize(local_apic_id, local_apic_registers, heap_size, hpet);
+    // Enumerate PCI devices.
+    let pci = pci::Configuration::read();
+    com2_println!("pci = {:#x?}", pci);
     // Kernel loop.
     let mut shutdown: bool = false;
     let mut loop_counter: usize = 0;
@@ -100,19 +103,7 @@ fn main(argument: &'static mut Argument<'static>) {
         .unwrap()
         .cli();
     // Print AP log.
-    let local_apic_id2log: BTreeMap<u8, &str> = processor::Controller::get_all()
-        .map(|processor| (processor.local_apic_id(), processor.log()))
-        .collect();
-    local_apic_id2log
-        .into_iter()
-        .for_each(|(local_apic_id, log)| {
-            com2_println!("Application processor log");
-            com2_println!("Local APIC ID = {:#x?}", local_apic_id);
-            com2_println!("{}", log);
-        });
-    // Enumerate PCI devices.
-    let pci = pci::Configuration::read();
-    com2_println!("pci = {:#x?}", pci);
+    processor::Manager::finalize();
     // Shutdown.
     com2_println!("Shutting down.");
     Argument::get()
