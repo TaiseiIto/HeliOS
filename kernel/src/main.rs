@@ -71,32 +71,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Set RTC.
     timer::rtc::initialize(local_apic_registers.apic_id());
     // Set HPET.
-    let hpet: &mut timer::hpet::Registers = Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .hpet_mut()
-        .registers_mut();
-    hpet.enable_legacy_replacement_route();
-    let hpet_interrupt_period_milliseconds: usize = 1000;
-    let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
-    com2_println!("hpet_irq = {:#x?}", hpet_irq);
-    Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .madt_mut()
-        .io_apic_mut()
-        .registers_mut()
-        .redirect(hpet_irq, local_apic_registers.apic_id(), interrupt::HPET_INTERRUPT);
-    hpet.start();
-    let hpet: &timer::hpet::Registers = Argument::get()
-        .efi_system_table()
-        .rsdp()
-        .xsdt()
-        .hpet()
-        .registers();
-    com2_println!("hpet = {:#x?}", hpet);
+    let hpet = timer::hpet::Registers::initialize(local_apic_registers.apic_id());
     // Set APIC Timer.
     let apic_timer_interrupt_frequency: usize = 1; // Hz
     local_apic_registers.enable_periodic_interrupt(hpet, apic_timer_interrupt_frequency);

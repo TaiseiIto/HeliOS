@@ -14,7 +14,12 @@ use {
         fmt,
         slice,
     },
-    crate::x64,
+    crate::{
+        Argument,
+        com2_println,
+        interrupt,
+        x64,
+    },
 };
 
 /// # Register Overview
@@ -59,6 +64,36 @@ impl Registers {
             .find(|timer| timer.supports_periodic_interrupt() && !timer.is_enable())
             .unwrap()
             .enable_periodic_interrupt(comparator)
+    }
+
+    pub fn initialize(local_apic_id: u8) -> &'static Self {
+        let hpet: &mut Registers = Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .hpet_mut()
+            .registers_mut();
+        hpet.enable_legacy_replacement_route();
+        let hpet_interrupt_period_milliseconds: usize = 1000;
+        let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
+        com2_println!("hpet_irq = {:#x?}", hpet_irq);
+        Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .madt_mut()
+            .io_apic_mut()
+            .registers_mut()
+            .redirect(hpet_irq, local_apic_id, interrupt::HPET_INTERRUPT);
+        hpet.start();
+        let hpet: &Registers = Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .xsdt()
+            .hpet()
+            .registers();
+        com2_println!("hpet = {:#x?}", hpet);
+        hpet
     }
 
     pub fn start(&mut self) {
