@@ -12,6 +12,7 @@ use {
     },
     crate::{
         Argument,
+        com2_println,
         memory,
         x64,
     },
@@ -55,6 +56,8 @@ impl Controller {
         let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
         let task_register: x64::task::Register = task_state_segment_selector.into();
         task_register.set();
+        let task_register = x64::task::Register::get();
+        com2_println!("task_register = {:#x?}", task_register);
         Self {
             stacks,
             table,
