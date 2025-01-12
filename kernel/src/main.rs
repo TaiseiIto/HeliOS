@@ -92,14 +92,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Stop RTC interruptions.
     timer::rtc::disable_periodic_interrupt();
     // Stop HPET.
-    let hpet: &mut timer::hpet::Registers = Argument::get()
-        .efi_system_table_mut()
-        .rsdp_mut()
-        .xsdt_mut()
-        .hpet_mut()
-        .registers_mut();
-    hpet.stop();
-    hpet.disable_periodic_interrupt();
+    timer::hpet::Registers::finalize();
     // Stop APIC interruptions.
     local_apic_registers.disable_periodic_interrupt();
     // Disable all interruptions.

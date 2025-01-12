@@ -230,9 +230,6 @@ impl Manager {
                 Controller::new(local_apic.clone(), paging.clone(), &kernel, heap)
             })
             .collect();
-        controllers
-            .iter()
-            .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
         let manager = Self {
             controllers,
             kernel,
@@ -242,6 +239,8 @@ impl Manager {
         unsafe {
             MANAGER.set(manager)
         }.unwrap();
+        Controller::get_all()
+            .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
     }
 }
 
