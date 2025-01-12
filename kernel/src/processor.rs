@@ -15,7 +15,6 @@ use {
         },
     },
     crate::{
-        Argument,
         acpi,
         com2_println,
         elf,

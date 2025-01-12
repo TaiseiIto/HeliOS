@@ -7,7 +7,6 @@ pub use descriptor::Descriptor;
 use {
     alloc::collections::VecDeque,
     crate::{
-        Argument,
         com2_println,
         memory,
         processor,

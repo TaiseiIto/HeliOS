@@ -26,14 +26,11 @@ pub use argument::Argument;
 
 use {
     alloc::{
-        boxed::Box,
         collections::BTreeMap,
         vec::Vec,
     },
     core::{
-        arch::asm,
         mem::MaybeUninit,
-        ops::Range,
         panic::PanicInfo,
     },
 };
@@ -49,7 +46,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::table::Controller::new();
     // Initialize IDT.
-    let idt = interrupt::descriptor::table::Controller::new(&mut gdt);
+    let _idt = interrupt::descriptor::table::Controller::new(&mut gdt);
     // Initialize syscall.
     syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
@@ -66,15 +63,15 @@ fn main(argument: &'static mut Argument<'static>) {
     // Set APIC.
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get().unwrap();
     let local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
+    let local_apic_id: u8 = local_apic_registers.apic_id();
     // Set PIT.
-    timer::pit::initialize(local_apic_registers.apic_id());
+    timer::pit::initialize(local_apic_id);
     // Set RTC.
-    timer::rtc::initialize(local_apic_registers.apic_id());
+    timer::rtc::initialize(local_apic_id);
     // Set HPET.
-    let hpet = timer::hpet::Registers::initialize(local_apic_registers.apic_id());
+    let hpet = timer::hpet::Registers::initialize(local_apic_id);
     // Set APIC Timer.
-    let apic_timer_interrupt_frequency: usize = 1; // Hz
-    local_apic_registers.enable_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
+    local_apic_registers.initialize_apic(hpet);
     // Test ACPI Timer.
     com2_println!("ACPI timer bits = {:#x?}", timer::acpi::bits());
     com2_println!("ACPI timer counter value = {:#x?}", timer::acpi::counter_value());
@@ -87,7 +84,6 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("Time stamp counter frequency = {:#x?}", timer::tsc::frequency());
     com2_println!("Time stamp counter = {:#x?}", timer::tsc::counter_value());
     // Boot application processors.
-    let my_local_apic_id: u8 = local_apic_registers.apic_id();
     let mut processor_paging: memory::Paging = Argument::get()
         .paging()
         .clone();
@@ -116,7 +112,7 @@ fn main(argument: &'static mut Argument<'static>) {
     com2_println!("processor_heap_size = {:#x?}", processor_heap_size);
     let processors: Vec<processor::Controller> = processors
         .into_iter()
-        .filter(|processor_local_apic| processor_local_apic.apic_id() != my_local_apic_id)
+        .filter(|processor_local_apic| processor_local_apic.apic_id() != local_apic_id)
         .map(|processor_local_apic| {
             let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(processor_heap_size);
             unsafe {
@@ -126,7 +122,7 @@ fn main(argument: &'static mut Argument<'static>) {
         })
         .collect();
     processor::Controller::set_all(processors);
-    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, my_local_apic_id, Argument::get().heap_start()));
+    processor::Controller::get_all().for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
     let mut shutdown: bool = false;
     let mut loop_counter: usize = 0;
     while !shutdown {

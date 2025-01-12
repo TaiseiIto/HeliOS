@@ -27,9 +27,13 @@ use {
 pub use register::Register;
 
 pub struct Controller {
+    #[allow(dead_code)]
     stacks: Vec<memory::Stack>,
+    #[allow(dead_code)]
     table: Table,
+    #[allow(dead_code)]
     task_register: x64::task::Register,
+    #[allow(dead_code)]
     task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap>,
 }
 

@@ -162,6 +162,11 @@ impl Registers {
         registers
     }
 
+    pub fn initialize_apic(&mut self, hpet: &timer::hpet::Registers) {
+        let apic_timer_interrupt_frequency: usize = 1; // Hz
+        self.enable_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
+    }
+
     pub fn send_init(&mut self, processor_local_apic_id: u8, hpet: &timer::hpet::Registers) {
         self.error_status.clear_all_errors();
         self.interrupt_command.assert_init(processor_local_apic_id);

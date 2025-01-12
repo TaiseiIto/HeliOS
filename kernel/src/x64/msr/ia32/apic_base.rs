@@ -6,7 +6,6 @@ use {
     },
     super::super::{
         rdmsr,
-        super::Cpuid,
         wrmsr,
     },
 };
