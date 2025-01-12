@@ -24,8 +24,10 @@ pub mod trigger_mode;
 use {
     core::fmt,
     crate::{
+        bsp_println,
         x64,
     },
+    super::super::SPURIOUS_INTERRUPT,
 };
 
 /// # Local APIC Registers
@@ -113,6 +115,16 @@ impl Registers {
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+
+    pub fn initialize(ia32_apic_base: &mut x64::msr::ia32::ApicBase) -> &mut Self {
+        bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
+        let registers: &mut Self = ia32_apic_base.registers_mut();
+        let focus_processor_checking: bool = true;
+        let eoi_broadcast: bool = true;
+        registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, SPURIOUS_INTERRUPT);
+        bsp_println!("registers = {:#x?}", registers);
+        registers
     }
 
     pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {

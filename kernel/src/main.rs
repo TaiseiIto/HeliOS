@@ -28,7 +28,7 @@ use core::panic::PanicInfo;
 
 #[no_mangle]
 fn main(argument: &'static mut Argument<'static>) {
-    // Prohibit interrupts.
+    // Prohibit interruptions.
     x64::cli();
     // Set argument from the bootloader to the kernel.
     argument.set();
@@ -42,7 +42,7 @@ fn main(argument: &'static mut Argument<'static>) {
     syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
     task::Controller::set_current();
-    // Allow interrupts.
+    // Allow interruptions.
     task::Controller::get_current_mut()
         .unwrap()
         .sti();

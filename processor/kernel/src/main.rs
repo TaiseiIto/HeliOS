@@ -32,14 +32,20 @@ const PRIVILEGE_LEVEL: u8 = 0;
 
 #[no_mangle]
 fn main(argument: &'static Argument<'static>) {
+    // Prohibit interruptions.
     x64::cli();
+    // Set argument from the boot strap processor.
     Argument::set(argument.clone());
+    // Report the boot strap processor to complete boot.
     Argument::get_mut().boot_complete();
+    // Initialize heap memory.
     memory::initialize(Argument::get().heap_range());
     bsp_println!("Hello, World!");
     bsp_println!("argument = {:#x?}", Argument::get());
+    // Initialize CPUID.
     x64::Cpuid::set();
     let cpuid: &x64::Cpuid = x64::Cpuid::get();
+    // Initialize paging.
     let mut paging = memory::Paging::get(cpuid);
     paging.set();
     // Initialize GDT.
@@ -50,16 +56,13 @@ fn main(argument: &'static Argument<'static>) {
     syscall::initialize(cpuid, gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
     // Initialize a current task.
     task::Controller::set_current();
+    // Allow interruptions.
     task::Controller::get_current_mut()
         .unwrap()
         .sti();
+    // Set APIC.
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
-    bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
-    let local_apic_registers: &mut interrupt::apic::local::Registers = ia32_apic_base.registers_mut();
-    let focus_processor_checking: bool = true;
-    let eoi_broadcast: bool = true;
-    local_apic_registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, interrupt::SPURIOUS_INTERRUPT);
-    bsp_println!("local_apic_registers = {:#x?}", local_apic_registers);
+    let local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
     // Tell the BSP initialication completion.
     Argument::get_mut().initialized();
     // Event loop.
