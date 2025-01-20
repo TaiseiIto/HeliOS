@@ -11,6 +11,7 @@ pub mod expansion_rom_base_address;
 pub mod header_type;
 pub mod secondary_status;
 pub mod status;
+pub mod xhci;
 
 use {
     alloc::{
