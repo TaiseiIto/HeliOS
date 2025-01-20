@@ -566,6 +566,14 @@ impl Function {
             },
         }
     }
+
+    fn memory_address(&self) -> Option<usize> {
+        let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
+        let low_address: Option<&base_address::Register> = base_address_registers.get(0);
+        let high_address: Option<&base_address::Register> = base_address_registers.get(1);
+        low_address
+            .and_then(|low_address| low_address.memory_address(high_address))
+    }
 }
 
 impl fmt::Debug for Function {
@@ -656,6 +664,13 @@ impl fmt::Debug for Function {
         }
         if let Some(bridge_control) = self.bridge_control() {
             debug.field("bridge_control", &bridge_control);
+        }
+        match self.class_code() {
+            class::Code::UsbXhci => {
+                let memory_address: Option<usize> = self.memory_address();
+                debug.field("memory_address", &memory_address);
+            },
+            _ => {},
         }
         debug.finish()
     }
