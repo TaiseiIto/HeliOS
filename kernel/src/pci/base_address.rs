@@ -9,6 +9,36 @@ pub enum Register {
     Io(Io),
 }
 
+impl Register {
+    pub fn read_memory<T>(&self) -> Option<&T> {
+        match self {
+            Self::Memory(memory) => {
+                let lower_address: u32 = memory
+                    .clone()
+                    .with_memory_space_indicator(false)
+                    .with_memory_type(0)
+                    .with_prefetchable(false)
+                    .into();
+                let lower_register: *const Memory = memory as *const Memory;
+                let higher_register: *const Memory = unsafe {
+                    lower_register.add(1)
+                };
+                let higher_address: Memory = unsafe {
+                    *higher_register
+                };
+                let higher_address: u32 = higher_address.into();
+                let address: usize = ((higher_address as usize) << u32::BITS) | (lower_address as usize);
+                let address: *const T = address as *const T;
+                let address: &T = unsafe {
+                    &*address
+                };
+                Some(address)
+            },
+            Self::Io(_) => None,
+        }
+    }
+}
+
 impl From<u32> for Register {
     fn from(register: u32) -> Self {
         match register & 0x00000001 {
