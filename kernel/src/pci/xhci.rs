@@ -17,11 +17,11 @@ pub struct Registers {
 }
 
 impl Registers {
-    fn host_controller_capability_register(&self) -> &host_controller::capability::Register {
+    fn host_controller_capability_registers(&self) -> &host_controller::capability::Registers {
         let Self {
             address,
         } = self;
-        let host_controller_capability_register: *const host_controller::capability::Register = *address as *const host_controller::capability::Register;
+        let host_controller_capability_register: *const host_controller::capability::Registers = *address as *const host_controller::capability::Registers;
         unsafe {
             &*host_controller_capability_register
         }
@@ -32,7 +32,7 @@ impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Registers")
-            .field("host_controller_capability_registers", self.host_controller_capability_register())
+            .field("host_controller_capability_registers", self.host_controller_capability_registers())
             .finish()
     }
 }

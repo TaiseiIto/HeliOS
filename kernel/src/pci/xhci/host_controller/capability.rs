@@ -1,13 +1,17 @@
+pub mod hcsparams1;
+
 /// # Host Controller Capability Registers
 /// ## References
 /// * [eXtensible Host Controller Interface for Universal Serial Bus (xHCI)](https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf) 5.3 Host Controller Capability Registers
 #[derive(Debug)]
 #[repr(packed)]
-pub struct Register {
+pub struct Registers {
     caplength: u8,
     __: u8,
     hciversion: u16,
-    hcsparams: [u32; 3],
+    hcsparams1: hcsparams1::Register,
+    hcsparams2: u32,
+    hcsparams3: u32,
     hccparams1: u32,
     dboff: u32,
     rtsoff: u32,
