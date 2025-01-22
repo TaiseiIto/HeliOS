@@ -1,3 +1,4 @@
+pub mod dboff;
 pub mod hccparams1;
 pub mod hcsparams1;
 pub mod hcsparams2;
@@ -16,7 +17,7 @@ pub struct Registers {
     hcsparams2: hcsparams2::Register,
     hcsparams3: hcsparams3::Register,
     hccparams1: hccparams1::Register,
-    dboff: u32,
+    dboff: dboff::Register,
     rtsoff: u32,
     hccparams2: u32,
 }
