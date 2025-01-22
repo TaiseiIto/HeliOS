@@ -5,6 +5,7 @@ pub mod hcsparams1;
 pub mod hcsparams2;
 pub mod hcsparams3;
 pub mod rtsoff;
+pub mod vtiosoff;
 
 /// # Host Controller Capability Registers
 /// ## References
@@ -22,5 +23,6 @@ pub struct Registers {
     dboff: dboff::Register,
     rtsoff: rtsoff::Register,
     hccparams2: hccparams2::Register,
+    vtiosoff: vtiosoff::Register,
 }
 
