@@ -2,7 +2,7 @@
 /// ## References
 /// * [PCI Code and ID Assignment Specification Revision 1.11](https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_11__v24_Jan_2019.pdf)
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Code {
     AllCurrentlyImplemented,                    // 00 00 00
     VgaCompatibleDevice,                        // 00 01 00

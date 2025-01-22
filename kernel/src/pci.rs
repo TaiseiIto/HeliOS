@@ -254,6 +254,14 @@ impl Function {
             .is_multi_function_device()
     }
 
+    pub fn memory_address(&self) -> Option<usize> {
+        let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
+        let low_address: Option<&base_address::Register> = base_address_registers.get(0);
+        let high_address: Option<&base_address::Register> = base_address_registers.get(1);
+        low_address
+            .and_then(|low_address| low_address.memory_address(high_address))
+    }
+
     fn vendor_id(&self) -> u16 {
         let vendor_id_and_device_id: u32 = self.space[0];
         let vendor_id_and_device_id: [u16; 2] = unsafe {
@@ -292,7 +300,7 @@ impl Function {
         self.space[2].to_le_bytes()[0]
     }
 
-	fn class_code(&self) -> class::Code {
+	pub fn class_code(&self) -> class::Code {
 		let base_class: u8 = self.base_class();
 		let sub_class: u8 = self.sub_class();
 		let programming_interface: u8 = self.programming_interface();
@@ -566,14 +574,6 @@ impl Function {
             },
         }
     }
-
-    fn memory_address(&self) -> Option<usize> {
-        let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
-        let low_address: Option<&base_address::Register> = base_address_registers.get(0);
-        let high_address: Option<&base_address::Register> = base_address_registers.get(1);
-        low_address
-            .and_then(|low_address| low_address.memory_address(high_address))
-    }
 }
 
 impl fmt::Debug for Function {
@@ -667,8 +667,10 @@ impl fmt::Debug for Function {
         }
         match self.class_code() {
             class::Code::UsbXhci => {
-                let memory_address: Option<usize> = self.memory_address();
-                debug.field("memory_address", &memory_address);
+                let xhci: Result<xhci::Registers, ()> = self.try_into();
+                if let Ok(xhci) = xhci {
+                    debug.field("xhci", &xhci);
+                }
             },
             _ => {},
         }
