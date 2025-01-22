@@ -1,5 +1,8 @@
 use bitfield_struct::bitfield;
 
+/// # HSCPARAMS1
+/// ## References
+/// * [eXtensible Host Controller Interface for Universal Serial Bus (xHCI)](https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/extensible-host-controler-interface-usb-xhci.pdf) 5.3.3 Structural Parameters 1 (HCSPARAMS1)
 #[bitfield(u32)]
 pub struct Register {
     max_slots: u8,

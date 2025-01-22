@@ -1,4 +1,5 @@
 pub mod hcsparams1;
+pub mod hcsparams2;
 
 /// # Host Controller Capability Registers
 /// ## References
@@ -10,7 +11,7 @@ pub struct Registers {
     __: u8,
     hciversion: u16,
     hcsparams1: hcsparams1::Register,
-    hcsparams2: u32,
+    hcsparams2: hcsparams2::Register,
     hcsparams3: u32,
     hccparams1: u32,
     dboff: u32,
