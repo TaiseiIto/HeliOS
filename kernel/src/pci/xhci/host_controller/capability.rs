@@ -1,3 +1,5 @@
+use super::operational;
+
 pub mod dboff;
 pub mod hccparams1;
 pub mod hccparams2;
@@ -24,5 +26,19 @@ pub struct Registers {
     rtsoff: rtsoff::Register,
     hccparams2: hccparams2::Register,
     vtiosoff: vtiosoff::Register,
+}
+
+impl Registers {
+    pub fn operational_registers(&self) -> &operational::Registers {
+        let caplength: u8 = self.caplength;
+        let caplength: usize = caplength as usize;
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let operational_registers: usize = address + caplength;
+        let operational_registers: *const operational::Registers = operational_registers as *const operational::Registers;
+        unsafe {
+            &*operational_registers
+        }
+    }
 }
 

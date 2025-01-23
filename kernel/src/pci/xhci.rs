@@ -26,6 +26,11 @@ impl Registers {
             &*host_controller_capability_register
         }
     }
+
+    fn host_controller_operational_registers(&self) -> &host_controller::operational::Registers {
+        self.host_controller_capability_registers()
+            .operational_registers()
+    }
 }
 
 impl fmt::Debug for Registers {
@@ -33,6 +38,7 @@ impl fmt::Debug for Registers {
         formatter
             .debug_struct("Registers")
             .field("host_controller_capability_registers", self.host_controller_capability_registers())
+            .field("host_controller_operational_registers", self.host_controller_operational_registers())
             .finish()
     }
 }
