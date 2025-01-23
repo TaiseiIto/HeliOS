@@ -13,3 +13,9 @@ pub struct Register {
     max_ports: u8,
 }
 
+impl Register {
+    pub fn number_of_ports(&self) -> usize {
+        self.max_ports() as usize
+    }
+}
+

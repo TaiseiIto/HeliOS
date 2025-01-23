@@ -29,6 +29,11 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn number_of_ports(&self) -> usize {
+        let hcsparams1: hcsparams1::Register = self.hcsparams1;
+        hcsparams1.number_of_ports()
+    }
+
     pub fn operational_registers(&self) -> &operational::Registers {
         let caplength: u8 = self.caplength;
         let caplength: usize = caplength as usize;

@@ -1,8 +1,11 @@
+use core::mem;
+
 pub mod config;
 pub mod crcr;
 pub mod dcbaap;
 pub mod dnctrl;
 pub mod pagesize;
+pub mod port;
 pub mod usbcmd;
 pub mod usbsts;
 
@@ -21,5 +24,18 @@ pub struct Registers {
     _1: u128,
     dcbaap: dcbaap::Register,
     config: config::Register,
+}
+
+impl Registers {
+    pub fn port_registers(&self, port: usize) -> &port::Registers {
+        assert!(1 <= port);
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let port: usize = address + port::Registers::OFFSET + (port - 1) * mem::size_of::<port::Registers>();
+        let port: *const port::Registers = port as *const port::Registers;
+        unsafe {
+            &*port
+        }
+    }
 }
 
