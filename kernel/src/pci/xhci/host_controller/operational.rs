@@ -1,4 +1,5 @@
 pub mod usbcmd;
+pub mod usbsts;
 
 /// # Host Controller Operational Registers
 /// ## References
@@ -7,5 +8,6 @@ pub mod usbcmd;
 #[repr(packed)]
 pub struct Registers {
     usbcmd: usbcmd::Register,
+    usbsts: usbsts::Register,
 }
 
