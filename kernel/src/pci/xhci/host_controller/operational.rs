@@ -1,3 +1,4 @@
+pub mod config;
 pub mod crcr;
 pub mod dcbaap;
 pub mod dnctrl;
@@ -19,5 +20,6 @@ pub struct Registers {
     crcr: crcr::Register,
     _1: u128,
     dcbaap: dcbaap::Register,
+    config: config::Register,
 }
 
