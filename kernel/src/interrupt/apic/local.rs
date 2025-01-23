@@ -48,14 +48,14 @@ use {
 pub struct Registers {
     // 0xfee00000
     #[allow(dead_code)]
-    reserved0: [u128; 2],
+    _0: [u128; 2],
     // 0xfee00020
     local_apic_id: local_apic_id::FatRegister,
     // 0xfee00030
     local_apic_version: local_apic_version::FatRegister,
     // 0xfee00040
     #[allow(dead_code)]
-    reserved1: [u128; 4],
+    _1: [u128; 4],
     // 0xfee00080
     task_priority: task_priority::FatRegister,
     // 0xfee00090
@@ -82,7 +82,7 @@ pub struct Registers {
     error_status: error_status::FatRegister,
     // 0xfee00290
     #[allow(dead_code)]
-    reserved2: [u128; 6],
+    _2: [u128; 6],
     // 0xfee002f0
     lvt_corrected_machine_check_interrupt: local_vector_table::FatRegister,
     // 0xfee00300
@@ -103,12 +103,12 @@ pub struct Registers {
     current_count: current_count::FatRegister,
     // 0xfee003a0
     #[allow(dead_code)]
-    reserved3: [u128; 4],
+    _3: [u128; 4],
     // 0xfee003e0
     divide_configuration: divide_configuration::FatRegister,
     // 0xfee003f0
     #[allow(dead_code)]
-    reserved4: u128,
+    _4: u128,
 }
 
 impl Registers {

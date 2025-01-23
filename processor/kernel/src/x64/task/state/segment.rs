@@ -37,15 +37,15 @@ impl AndIoPermissionBitMap {
 #[repr(packed)]
 pub struct Segment {
     #[allow(dead_code)]
-    reserved0: u32,
+    _0: u32,
     #[allow(dead_code)]
     rsp: [usize; Self::NUMBER_OF_STACK_POINTERS],
     #[allow(dead_code)]
     ist: [usize; Self::NUMBER_OF_INTERRUPT_STACKS + 1], // ist[0] is reserved.
     #[allow(dead_code)]
-    reserved1: u64,
+    _1: u64,
     #[allow(dead_code)]
-    reserved2: u16,
+    _2: u16,
     #[allow(dead_code)]
     io_map_base_address: u16,
 }
@@ -56,9 +56,9 @@ impl Segment {
 
     pub fn new(interrupt_stacks: &[memory::Stack], io_map_base_address: usize) -> Self {
         assert_eq!(interrupt_stacks.len(), Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS);
-        let reserved0: u32 = 0;
-        let reserved1: u64 = 0;
-        let reserved2: u16 = 0;
+        let _0: u32 = 0;
+        let _1: u64 = 0;
+        let _2: u16 = 0;
         let rsp: &[memory::Stack] = &interrupt_stacks[..Self::NUMBER_OF_STACK_POINTERS];
         let rsp: Vec<usize> = rsp
             .iter()
@@ -80,11 +80,11 @@ impl Segment {
             .unwrap();
         let io_map_base_address: u16 = io_map_base_address as u16;
         Self {
-            reserved0,
+            _0,
             rsp,
             ist,
-            reserved1,
-            reserved2,
+            _1,
+            _2,
             io_map_base_address,
         }
     }

@@ -10,7 +10,7 @@ pub struct Structure {
     #[allow(dead_code)]
     proximity_domain: u32,
     #[allow(dead_code)]
-    reserved0: u16,
+    __: u16,
     #[allow(dead_code)]
     its_id: u32,
 }

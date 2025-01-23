@@ -17,7 +17,7 @@ pub struct Registers {
     #[allow(dead_code)]
     fsb_interrupt_route: fsb_interrupt_route::Register,
     #[allow(dead_code)]
-    reserved0: u64,
+    __: u64,
 }
 
 impl Registers {

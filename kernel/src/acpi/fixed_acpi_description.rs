@@ -36,7 +36,7 @@ pub struct Table {
     firmware_ctrl: u32,
     dsdt: u32,
     #[allow(dead_code)]
-    reserved0: u8,
+    _0: u8,
     preferred_pm_profile: u8,
     sci_int: u16,
     smi_cmd: u32,
@@ -71,7 +71,7 @@ pub struct Table {
     century: u8,
     iapc_boot_arch: u16,
     #[allow(dead_code)]
-    reserved1: u8,
+    _1: u8,
     flags: Flags,
     reset_reg: generic_address::Structure,
     reser_value: u8,
