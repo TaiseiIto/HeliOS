@@ -1,3 +1,4 @@
+pub mod dnctrl;
 pub mod pagesize;
 pub mod usbcmd;
 pub mod usbsts;
@@ -11,5 +12,7 @@ pub struct Registers {
     usbcmd: usbcmd::Register,
     usbsts: usbsts::Register,
     pagesize: pagesize::Register,
+    __: u64,
+    dnctrl: dnctrl::Register,
 }
 
