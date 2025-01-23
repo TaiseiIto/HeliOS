@@ -1,3 +1,4 @@
+pub mod crcr;
 pub mod dnctrl;
 pub mod pagesize;
 pub mod usbcmd;
@@ -14,5 +15,6 @@ pub struct Registers {
     pagesize: pagesize::Register,
     __: u64,
     dnctrl: dnctrl::Register,
+    crcr: crcr::Register,
 }
 
