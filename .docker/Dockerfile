@@ -5,32 +5,32 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install softwares.
-RUN apt-get update && apt-get upgrade -y apt-get install -y bison
-RUN apt-get update && apt-get upgrade -y apt-get install -y build-essential
-RUN apt-get update && apt-get upgrade -y apt-get install -y curl
-RUN apt-get update && apt-get upgrade -y apt-get install -y dejagnu
-RUN apt-get update && apt-get upgrade -y apt-get install -y dosfstools
-RUN apt-get update && apt-get upgrade -y apt-get install -y flex
-RUN apt-get update && apt-get upgrade -y apt-get install -y git
-RUN apt-get update && apt-get upgrade -y apt-get install -y gnupg
-RUN apt-get update && apt-get upgrade -y apt-get install -y iasl
-RUN apt-get update && apt-get upgrade -y apt-get install -y libexpat-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y libglib2.0-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y libgmp-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y libmpfr-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y libpixman-1-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y lld
-RUN apt-get update && apt-get upgrade -y apt-get install -y nasm
-RUN apt-get update && apt-get upgrade -y apt-get install -y netcat
-RUN apt-get update && apt-get upgrade -y apt-get install -y ninja-build
-RUN apt-get update && apt-get upgrade -y apt-get install -y pkg-config
-RUN apt-get update && apt-get upgrade -y apt-get install -y python3
-RUN apt-get update && apt-get upgrade -y apt-get install -y python3-venv
-RUN apt-get update && apt-get upgrade -y apt-get install -y texinfo
-RUN apt-get update && apt-get upgrade -y apt-get install -y tmux
-RUN apt-get update && apt-get upgrade -y apt-get install -y tzdata
-RUN apt-get update && apt-get upgrade -y apt-get install -y uuid-dev
-RUN apt-get update && apt-get upgrade -y apt-get install -y vim
+RUN apt-get update && apt-get upgrade -y && apt-get install -y bison
+RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
+RUN apt-get update && apt-get upgrade -y && apt-get install -y dejagnu
+RUN apt-get update && apt-get upgrade -y && apt-get install -y dosfstools
+RUN apt-get update && apt-get upgrade -y && apt-get install -y flex
+RUN apt-get update && apt-get upgrade -y && apt-get install -y git
+RUN apt-get update && apt-get upgrade -y && apt-get install -y gnupg
+RUN apt-get update && apt-get upgrade -y && apt-get install -y iasl
+RUN apt-get update && apt-get upgrade -y && apt-get install -y libexpat-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y libglib2.0-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y libgmp-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y libmpfr-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y libpixman-1-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y lld
+RUN apt-get update && apt-get upgrade -y && apt-get install -y nasm
+RUN apt-get update && apt-get upgrade -y && apt-get install -y netcat
+RUN apt-get update && apt-get upgrade -y && apt-get install -y ninja-build
+RUN apt-get update && apt-get upgrade -y && apt-get install -y pkg-config
+RUN apt-get update && apt-get upgrade -y && apt-get install -y python3
+RUN apt-get update && apt-get upgrade -y && apt-get install -y python3-venv
+RUN apt-get update && apt-get upgrade -y && apt-get install -y texinfo
+RUN apt-get update && apt-get upgrade -y && apt-get install -y tmux
+RUN apt-get update && apt-get upgrade -y && apt-get install -y tzdata
+RUN apt-get update && apt-get upgrade -y && apt-get install -y uuid-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y vim
 
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
