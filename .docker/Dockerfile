@@ -33,7 +33,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y uuid-dev
 RUN apt-get update && apt-get upgrade -y && apt-get install -y vim
 
 # Install Rust.
-RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=nightly-2024-01-01-x86_64-unknown-linux-gnu
 
 # Put git settings.
 WORKDIR /root
