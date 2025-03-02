@@ -1,3 +1,4 @@
+pub mod interrupter;
 pub mod mfindex;
 
 /// # Host Controller Runtime Registers
@@ -7,5 +8,7 @@ pub mod mfindex;
 #[repr(packed)]
 pub struct Registers {
     mfindex: mfindex::Register,
+    __: [u32; 7],
+    interrupter_register_sets: [interrupter::RegisterSet; 1024],
 }
 
