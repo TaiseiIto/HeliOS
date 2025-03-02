@@ -4,6 +4,11 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct RegisterSet {
-    registers: [u32; 8],
+    iman: u32,
+    imod: u32,
+    erstsz: u32,
+    __: u32,
+    erstba: u64,
+    erdb: u64,
 }
 
