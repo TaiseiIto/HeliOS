@@ -1,4 +1,8 @@
 pub mod iman;
+pub mod imod;
+pub mod erstsz;
+pub mod erstba;
+pub mod erdp;
 
 /// # Interrupter Register Set
 /// ## References
@@ -7,10 +11,10 @@ pub mod iman;
 #[repr(packed)]
 pub struct RegisterSet {
     iman: iman::Register,
-    imod: u32,
-    erstsz: u32,
+    imod: imod::Register,
+    erstsz: erstsz::Register,
     __: u32,
-    erstba: u64,
-    erdb: u64,
+    erstba: erstba::Register,
+    erdp: erdp::Register,
 }
 
