@@ -11,3 +11,9 @@ pub struct Register {
     runtime_register_space_offset: u32,
 }
 
+impl Register {
+    pub fn get(&self) -> u32 {
+        self.runtime_register_space_offset() << Self::RUNTIME_REGISTER_SPACE_OFFSET_OFFSET
+    }
+}
+

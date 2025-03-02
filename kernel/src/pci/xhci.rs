@@ -42,6 +42,11 @@ impl Registers {
             .map(|port| operational_registers.port_registers(port))
             .collect()
     }
+
+    fn runtime_registers(&self) -> &host_controller::runtime::Registers {
+        self.capability_registers()
+            .runtime_registers()
+    }
 }
 
 impl fmt::Debug for Registers {
@@ -51,6 +56,7 @@ impl fmt::Debug for Registers {
             .field("capability_registers", self.capability_registers())
             .field("operational_registers", self.operational_registers())
             .field("ports", &self.ports())
+            .field("runtime_registers", self.runtime_registers())
             .finish()
     }
 }

@@ -1,4 +1,7 @@
-use super::operational;
+use super::{
+    operational,
+    runtime,
+};
 
 pub mod dboff;
 pub mod hccparams1;
@@ -43,6 +46,19 @@ impl Registers {
         let operational_registers: *const operational::Registers = operational_registers as *const operational::Registers;
         unsafe {
             &*operational_registers
+        }
+    }
+
+    pub fn runtime_registers(&self) -> &runtime::Registers {
+        let rtsoff: rtsoff::Register = self.rtsoff;
+        let runtime_register_space_offset: u32 = rtsoff.get();
+        let runtime_register_space_offset: usize = runtime_register_space_offset as usize;
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let runtime_registers: usize = address + runtime_register_space_offset;
+        let runtime_registers: *const runtime::Registers = runtime_registers as *const runtime::Registers;
+        unsafe {
+            &*runtime_registers
         }
     }
 }
