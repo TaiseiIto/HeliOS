@@ -29,9 +29,12 @@ impl Registers {
         }
     }
 
-    fn doorbell_registers(&self) -> &[doorbell::Register] {
-        self.capability_registers()
-            .doorbell_registers()
+    fn doorbell_registers(&self) -> Vec<&doorbell::Register> {
+        let capability_registers: &host_controller::capability::Registers = self.capability_registers();
+        let number_of_slots: usize = capability_registers.number_of_slots();
+        (1..=number_of_slots)
+            .map(|slot| capability_registers.doorbell_register(slot))
+            .collect()
     }
 
     fn operational_registers(&self) -> &host_controller::operational::Registers {
@@ -59,10 +62,10 @@ impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Registers")
-            .field("capability_registers", self.capability_registers())
-            .field("operational_registers", self.operational_registers())
+            .field("capability_registers", &self.capability_registers())
+            .field("operational_registers", &self.operational_registers())
             .field("ports", &self.ports())
-            .field("runtime_registers", self.runtime_registers())
+            .field("runtime_registers", &self.runtime_registers())
             .field("doorbell_regislters", &self.doorbell_registers())
             .finish()
     }

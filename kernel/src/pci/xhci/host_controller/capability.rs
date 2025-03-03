@@ -1,5 +1,5 @@
 use {
-    core::slice,
+    core::mem,
     super::{
         operational,
         runtime,
@@ -36,23 +36,27 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn doorbell_registers(&self) -> &[doorbell::Register] {
+    pub fn doorbell_register(&self, slot: usize) -> &doorbell::Register {
+        assert!((1..=self.number_of_slots()).contains(&slot));
         let dboff: dboff::Register = self.dboff;
         let doorbell_array_offset: usize = dboff.get();
-        let hcsparams1: hcsparams1::Register = self.hcsparams1;
-        let number_of_slots: usize = hcsparams1.number_of_slots();
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
-        let doorbell_registers: usize = address + doorbell_array_offset;
-        let doorbell_registers: *const doorbell::Register = doorbell_registers as *const doorbell::Register;
+        let doorbell_register: usize = address + doorbell_array_offset + (slot - 1) * mem::size_of::<doorbell::Register>();
+        let doorbell_register: *const doorbell::Register = doorbell_register as *const doorbell::Register;
         unsafe {
-            slice::from_raw_parts(doorbell_registers, number_of_slots)
+            &*doorbell_register
         }
     }
 
     pub fn number_of_ports(&self) -> usize {
         let hcsparams1: hcsparams1::Register = self.hcsparams1;
         hcsparams1.number_of_ports()
+    }
+
+    pub fn number_of_slots(&self) -> usize {
+        let hcsparams1: hcsparams1::Register = self.hcsparams1;
+        hcsparams1.number_of_slots()
     }
 
     pub fn operational_registers(&self) -> &operational::Registers {
