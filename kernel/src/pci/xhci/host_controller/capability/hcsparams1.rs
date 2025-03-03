@@ -17,5 +17,9 @@ impl Register {
     pub fn number_of_ports(&self) -> usize {
         self.max_ports() as usize
     }
+
+    pub fn number_of_slots(&self) -> usize {
+        self.max_slots() as usize
+    }
 }
 

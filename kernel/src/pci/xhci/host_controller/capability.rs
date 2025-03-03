@@ -1,6 +1,10 @@
-use super::{
-    operational,
-    runtime,
+use {
+    core::slice,
+    super::{
+        operational,
+        runtime,
+        super::doorbell,
+    },
 };
 
 pub mod dboff;
@@ -32,6 +36,20 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn doorbell_registers(&self) -> &[doorbell::Register] {
+        let dboff: dboff::Register = self.dboff;
+        let doorbell_array_offset: usize = dboff.get();
+        let hcsparams1: hcsparams1::Register = self.hcsparams1;
+        let number_of_slots: usize = hcsparams1.number_of_slots();
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let doorbell_registers: usize = address + doorbell_array_offset;
+        let doorbell_registers: *const doorbell::Register = doorbell_registers as *const doorbell::Register;
+        unsafe {
+            slice::from_raw_parts(doorbell_registers, number_of_slots)
+        }
+    }
+
     pub fn number_of_ports(&self) -> usize {
         let hcsparams1: hcsparams1::Register = self.hcsparams1;
         hcsparams1.number_of_ports()
@@ -51,8 +69,7 @@ impl Registers {
 
     pub fn runtime_registers(&self) -> &runtime::Registers {
         let rtsoff: rtsoff::Register = self.rtsoff;
-        let runtime_register_space_offset: u32 = rtsoff.get();
-        let runtime_register_space_offset: usize = runtime_register_space_offset as usize;
+        let runtime_register_space_offset: usize = rtsoff.get();
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
         let runtime_registers: usize = address + runtime_register_space_offset;

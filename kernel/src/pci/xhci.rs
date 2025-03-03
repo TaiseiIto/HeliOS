@@ -11,6 +11,7 @@ use {
     },
 };
 
+pub mod doorbell;
 pub mod host_controller;
 
 pub struct Registers {
@@ -26,6 +27,11 @@ impl Registers {
         unsafe {
             &*capability_register
         }
+    }
+
+    fn doorbell_registers(&self) -> &[doorbell::Register] {
+        self.capability_registers()
+            .doorbell_registers()
     }
 
     fn operational_registers(&self) -> &host_controller::operational::Registers {
@@ -57,6 +63,7 @@ impl fmt::Debug for Registers {
             .field("operational_registers", self.operational_registers())
             .field("ports", &self.ports())
             .field("runtime_registers", self.runtime_registers())
+            .field("doorbell_regislters", &self.doorbell_registers())
             .finish()
     }
 }
