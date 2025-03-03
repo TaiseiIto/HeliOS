@@ -3,7 +3,10 @@ use {
     super::{
         operational,
         runtime,
-        super::doorbell,
+        super::{
+            doorbell,
+            vtio,
+        },
     },
 };
 
@@ -80,6 +83,18 @@ impl Registers {
         let runtime_registers: *const runtime::Registers = runtime_registers as *const runtime::Registers;
         unsafe {
             &*runtime_registers
+        }
+    }
+
+    pub fn vtio_registers(&self) -> &vtio::Registers {
+        let vtiosoff: vtiosoff::Register = self.vtiosoff;
+        let vtio_register_space_offset: usize = vtiosoff.get();
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        let vtio_registers: usize = address + vtio_register_space_offset;
+        let vtio_registers: *const vtio::Registers = vtio_registers as *const vtio::Registers;
+        unsafe {
+            &*vtio_registers
         }
     }
 }

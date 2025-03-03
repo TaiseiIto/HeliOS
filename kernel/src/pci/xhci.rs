@@ -13,6 +13,7 @@ use {
 
 pub mod doorbell;
 pub mod host_controller;
+pub mod vtio;
 
 pub struct Registers {
     address: usize,
@@ -56,17 +57,23 @@ impl Registers {
         self.capability_registers()
             .runtime_registers()
     }
+
+    fn vtio_registers(&self) -> &vtio::Registers {
+        self.capability_registers()
+            .vtio_registers()
+    }
 }
 
 impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("Registers")
-            .field("capability_registers", &self.capability_registers())
-            .field("operational_registers", &self.operational_registers())
+            .field("capability_registers", self.capability_registers())
+            .field("operational_registers", self.operational_registers())
             .field("ports", &self.ports())
-            .field("runtime_registers", &self.runtime_registers())
+            .field("runtime_registers", self.runtime_registers())
             .field("doorbell_regislters", &self.doorbell_registers())
+            .field("vtio_registers", self.vtio_registers())
             .finish()
     }
 }

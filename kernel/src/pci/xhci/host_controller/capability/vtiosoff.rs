@@ -11,3 +11,10 @@ pub struct Register {
     vtio_register_space_offset: u32,
 }
 
+impl Register {
+    pub fn get(&self) -> usize {
+        let vtio_register_space_offset: u32 = self.vtio_register_space_offset() << Self::VTIO_REGISTER_SPACE_OFFSET_OFFSET;
+        vtio_register_space_offset as usize
+    }
+}
+
