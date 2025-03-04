@@ -8,7 +8,12 @@ pub mod common_assignment;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
-    capability: capability::Register,
-    common_assignment: common_assignment::Register,
+    capability_register: capability::Register,
+    common_assignment_register: common_assignment::Register,
+    device_assignment_registers: [u32; 8],
+    rsvd_p: [u32; 2],
+    interrupter_assignment_registers: [u32; 32],
+    rsvd_z: [u32; 20],
+    endpoint_assignment_registers: [u32; 255],
 }
 
