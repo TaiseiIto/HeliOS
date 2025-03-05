@@ -9,6 +9,7 @@ pub mod class;
 pub mod command;
 pub mod expansion_rom_base_address;
 pub mod header_type;
+pub mod msi;
 pub mod secondary_status;
 pub mod status;
 pub mod xhci;
@@ -536,7 +537,12 @@ impl Function {
         }
     }
 
-    fn capabilities_pointer(&self) -> u8 {
+    fn capabilities(&self) -> impl Iterator<Item = &msi::capability::Structure> {
+        let structures: msi::capability::Structures = self.into();
+        structures
+    }
+
+    pub fn capabilities_pointer(&self) -> u8 {
         self.space[13].to_le_bytes()[0]
     }
 
@@ -650,6 +656,10 @@ impl fmt::Debug for Function {
             debug.field("io_limit_upper_16bits", &io_limit_upper_16bits);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
+        let capabilities: Vec<&msi::capability::Structure> = self
+            .capabilities()
+            .collect();
+        debug.field("capabilities", &capabilities);
         if let header_type::Type::One = self.into() {
             debug.field("expansion_rom_base_address", &self.expansion_rom_base_address());
         }
