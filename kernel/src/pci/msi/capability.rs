@@ -3,27 +3,37 @@ use {
     super::super::Function,
 };
 
+pub mod msi_x;
+
 /// # MSI Capability Structure
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.1. MSI Capability Structure
+#[derive(Clone)]
 #[repr(packed)]
 pub struct Structure {
     capability_id: u8,
     next_pointer: u8,
 }
 
+impl Structure {
+    pub fn capability_id(&self) -> u8 {
+        self.capability_id
+    }
+
+    pub fn next_pointer(&self) -> u8 {
+        self.next_pointer
+    }
+}
+
 impl fmt::Debug for Structure {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            capability_id,
-            next_pointer,
-        } = self;
-        let capability_id: Id = (*capability_id).into();
-        formatter
-            .debug_struct("Structure")
-            .field("capability_id", &capability_id)
-            .field("next_poitner", next_pointer)
-            .finish()
+        match self.capability_id().into() {
+            Id::MsiX => {
+                let structure: &msi_x::Structure = self.into();
+                structure.fmt(formatter)
+            },
+            _ => unimplemented!(),
+        }
     }
 }
 
