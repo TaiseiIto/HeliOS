@@ -1,6 +1,7 @@
 use {
+    bitfield_struct::bitfield,
     core::fmt,
-    super::Structure as Header,
+    super::Header,
 };
 
 /// # MSI-X Capability and Table Structure
@@ -9,7 +10,7 @@ use {
 #[repr(packed)]
 pub struct Structure {
     header: Header,
-    message_control: u16,
+    message_control: MessageControl,
     table: u32,
     pba: u32,
 }
@@ -19,7 +20,7 @@ impl fmt::Debug for Structure {
         let header: Header = self.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
-        let message_control: u16 = self.message_control;
+        let message_control: MessageControl = self.message_control;
         let table: u32 = self.table;
         let pba: u32 = self.pba;
         formatter
@@ -41,5 +42,18 @@ impl<'a> From<&'a Header> for &'a Structure {
             &*structure
         }
     }
+}
+
+/// # Message Control for MSI-X
+/// ## References
+/// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.2.3. Message Control for MSI-X
+#[bitfield(u16)]
+pub struct MessageControl {
+    #[bits(11)]
+    table_size: u16,
+    #[bits(3)]
+    __: u8,
+    function_mask: bool,
+    msi_x_enable: bool,
 }
 

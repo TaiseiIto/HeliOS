@@ -10,12 +10,12 @@ pub mod msi_x;
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.1. MSI Capability Structure
 #[derive(Clone)]
 #[repr(packed)]
-pub struct Structure {
+pub struct Header {
     capability_id: u8,
     next_pointer: u8,
 }
 
-impl Structure {
+impl Header {
     pub fn capability_id(&self) -> u8 {
         self.capability_id
     }
@@ -25,7 +25,7 @@ impl Structure {
     }
 }
 
-impl fmt::Debug for Structure {
+impl fmt::Debug for Header {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.capability_id().into() {
             Id::MsiX => {
@@ -37,12 +37,12 @@ impl fmt::Debug for Structure {
     }
 }
 
-pub struct Structures<'a> {
+pub struct Headers<'a> {
     function: &'a Function,
     next_pointer: u8,
 }
 
-impl<'a> From<&'a Function> for Structures<'a> {
+impl<'a> From<&'a Function> for Headers<'a> {
     fn from(function: &'a Function) -> Self {
         let next_pointer: u8 = function.capabilities_pointer();
         Self {
@@ -52,8 +52,8 @@ impl<'a> From<&'a Function> for Structures<'a> {
     }
 }
 
-impl<'a> Iterator for Structures<'a> {
-    type Item = &'a Structure;
+impl<'a> Iterator for Headers<'a> {
+    type Item = &'a Header;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Self {
@@ -66,8 +66,8 @@ impl<'a> Iterator for Structures<'a> {
         (offset != 0).then(|| {
             let offset: usize = offset as usize;
             let structure: usize = function + offset;
-            let structure: *const Structure = structure as *const Structure;
-            let structure: &Structure = unsafe {
+            let structure: *const Header = structure as *const Header;
+            let structure: &Header = unsafe {
                 &*structure
             };
             *next_pointer = structure.next_pointer;

@@ -537,8 +537,8 @@ impl Function {
         }
     }
 
-    fn capabilities(&self) -> impl Iterator<Item = &msi::capability::Structure> {
-        let structures: msi::capability::Structures = self.into();
+    fn capabilities(&self) -> impl Iterator<Item = &msi::capability::Header> {
+        let structures: msi::capability::Headers = self.into();
         structures
     }
 
@@ -656,7 +656,7 @@ impl fmt::Debug for Function {
             debug.field("io_limit_upper_16bits", &io_limit_upper_16bits);
         }
         debug.field("capabilities_pointer", &self.capabilities_pointer());
-        let capabilities: Vec<&msi::capability::Structure> = self
+        let capabilities: Vec<&msi::capability::Header> = self
             .capabilities()
             .collect();
         debug.field("capabilities", &capabilities);
