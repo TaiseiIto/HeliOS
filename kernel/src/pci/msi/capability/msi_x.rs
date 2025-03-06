@@ -11,8 +11,8 @@ use {
 pub struct Structure {
     header: Header,
     message_control: MessageControl,
-    table: u32,
-    pba: u32,
+    table: Table,
+    pba: Pba,
 }
 
 impl fmt::Debug for Structure {
@@ -21,8 +21,8 @@ impl fmt::Debug for Structure {
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
         let message_control: MessageControl = self.message_control;
-        let table: u32 = self.table;
-        let pba: u32 = self.pba;
+        let table: Table = self.table;
+        let pba: Pba = self.pba;
         formatter
             .debug_struct("Structure")
             .field("capability_id", &capability_id)
@@ -55,5 +55,27 @@ pub struct MessageControl {
     __: u8,
     function_mask: bool,
     msi_x_enable: bool,
+}
+
+/// # Table Offset/Table BIR for MSI-X
+/// ## References
+/// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.2.4. Table Offset/Table BIR for MSI-X
+#[bitfield(u32)]
+pub struct Table {
+    #[bits(29)]
+    offset: u32,
+    #[bits(3)]
+    bir: u8,
+}
+
+/// # PBA Offset/PBA BIR for MSI-X
+/// ## References
+/// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.2.4. PBA Offset/PBA BIR for MSI-X
+#[bitfield(u32)]
+pub struct Pba {
+    #[bits(29)]
+    offset: u32,
+    #[bits(3)]
+    bir: u8,
 }
 
