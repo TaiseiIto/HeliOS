@@ -11,7 +11,8 @@ pub struct Handle<'a>(&'a Void);
 
 impl fmt::Debug for Handle<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:#x?}", self.0 as *const Void)
+        let void: *const Void = self.0 as *const Void;
+        void.fmt(formatter)
     }
 }
 

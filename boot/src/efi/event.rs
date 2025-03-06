@@ -11,7 +11,8 @@ pub struct Event<'a>(&'a super::Void);
 
 impl fmt::Debug for Event<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:#x?}", self.0 as *const Void)
+        let void: *const Void = self.0 as *const Void;
+        void.fmt(formatter)
     }
 }
 

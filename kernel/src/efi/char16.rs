@@ -37,7 +37,7 @@ impl NullTerminatedString<'static> {
 impl fmt::Debug for NullTerminatedString<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string: String = self.into();
-        write!(formatter, "{:#x?}", string)
+        string.fmt(formatter)
     }
 }
 
