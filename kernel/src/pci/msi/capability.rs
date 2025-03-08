@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::super::Function,
+    super::super::{
+        Function,
+        Header as FunctionHeader,
+    },
 };
 
 pub mod msi_x;
@@ -44,7 +47,8 @@ pub struct Headers<'a> {
 
 impl<'a> From<&'a Function> for Headers<'a> {
     fn from(function: &'a Function) -> Self {
-        let next_pointer: u8 = function.capabilities_pointer();
+        let function_header: FunctionHeader = function.into();
+        let next_pointer: u8 = function_header.capabilities_pointer();
         Self {
             function,
             next_pointer,

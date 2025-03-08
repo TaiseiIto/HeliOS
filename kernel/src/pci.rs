@@ -237,21 +237,6 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
-    pub fn base_address_regsiters(&self) -> Vec<base_address::Register> {
-        let header: Header = self.into();
-        header.base_address_registers()
-    }
-
-    pub fn capabilities_pointer(&self) -> u8 {
-        let header: Header = self.into();
-        header.capability_pointer()
-    }
-
-    pub fn class_code(&self) -> class::Code {
-        let header: Header = self.into();
-        header.class_code()
-    }
-
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (u8::MIN..=u8::MAX)
             .filter(|register| register % 4 == 0)
@@ -280,10 +265,10 @@ impl Header<'_> {
         }
     }
 
-    fn capability_pointer(&self) -> u8 {
+    fn capabilities_pointer(&self) -> u8 {
         match self {
-            Self::Type0(type0) => type0.capability_pointer,
-            Self::Type1(type1) => type1.capability_pointer,
+            Self::Type0(type0) => type0.capabilities_pointer,
+            Self::Type1(type1) => type1.capabilities_pointer,
         }
     }
 
