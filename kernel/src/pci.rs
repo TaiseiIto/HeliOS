@@ -278,8 +278,8 @@ impl Header<'_> {
 
     pub fn class_code(&self) -> class::Code {
         match self {
-            Self::Type0(type0) => type0.class_code,
-            Self::Type1(type1) => type1.class_code,
+            Self::Type0(type0) => type0.class_code.clone(),
+            Self::Type1(type1) => type1.class_code.clone(),
         }.into()
     }
 
@@ -346,7 +346,8 @@ pub struct Type0 {
 
 impl Type0 {
     fn base_address_registers(&self) -> Vec<base_address::Register> {
-        self.base_address_registers
+        let base_address_registers: [u32; 6] = self.base_address_registers;
+        base_address_registers
             .as_slice()
             .iter()
             .map(|base_address_register| (*base_address_register).into())
@@ -412,7 +413,8 @@ pub struct Type1 {
 
 impl Type1 {
     fn base_address_registers(&self) -> Vec<base_address::Register> {
-        self.base_address_registers
+        let base_address_registers: [u32; 2] = self.base_address_registers;
+        base_address_registers
             .as_slice()
             .iter()
             .map(|base_address_register| (*base_address_register).into())

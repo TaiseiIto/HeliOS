@@ -1,6 +1,7 @@
 /// # Class Code Register
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1.6 Class Code Register
+#[derive(Clone)]
 #[repr(packed)]
 pub struct Register {
     programming_interface: u8,
