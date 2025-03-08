@@ -7,6 +7,7 @@ use {
     core::fmt,
     super::{
         Function,
+        Header,
         class,
     },
 };
@@ -82,8 +83,8 @@ impl TryFrom<&Function> for Registers {
     type Error = ();
 
     fn try_from(function: &Function) -> Result<Self, Self::Error> {
-        (function.class_code() == class::Code::UsbXhci)
-            .then(|| function.memory_address())
+        (function.header().class_code() == class::Code::UsbXhci)
+            .then(|| function.header().memory_address())
             .flatten()
             .map(|address| Self {
                 address,

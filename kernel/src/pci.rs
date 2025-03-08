@@ -151,7 +151,7 @@ impl Configuration {
             if let Some(function) = Function::read(bus_number, device_number, function_number) {
                 com2_println!("Scan PCI ({:#x?}, {:#x?}, {:#x?})", bus_number, device_number, function_number);
                 let mut next_addresses: BTreeSet<(u8, u8, u8)> = BTreeSet::new();
-                match function.class_code() {
+                match function.header().class_code() {
                     class::Code::HostBridge => {
                         let bus_number: u8 = function_number;
                         let function_number: u8 = 0;
@@ -237,6 +237,10 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
+    pub fn header<'a>(&'a self) -> Header<'a> {
+        self.into()
+    }
+
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (u8::MIN..=u8::MAX)
             .filter(|register| register % 4 == 0)
@@ -258,25 +262,33 @@ pub enum Header<'a> {
 }
 
 impl Header<'_> {
-    fn base_address_registers(&self) -> Vec<base_address::Register> {
+    pub fn base_address_registers(&self) -> Vec<base_address::Register> {
         match self {
             Self::Type0(type0) => type0.base_address_registers(),
             Self::Type1(type1) => type1.base_address_registers(),
         }
     }
 
-    fn capabilities_pointer(&self) -> u8 {
+    pub fn capabilities_pointer(&self) -> u8 {
         match self {
             Self::Type0(type0) => type0.capabilities_pointer,
             Self::Type1(type1) => type1.capabilities_pointer,
         }
     }
 
-    fn class_code(&self) -> class::Code {
+    pub fn class_code(&self) -> class::Code {
         match self {
             Self::Type0(type0) => type0.class_code,
             Self::Type1(type1) => type1.class_code,
         }.into()
+    }
+
+    pub fn memory_address(&self) -> Option<usize> {
+        let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
+        let low_address: Option<&base_address::Register> = base_address_registers.get(0);
+        let high_address: Option<&base_address::Register> = base_address_registers.get(1);
+        low_address
+            .and_then(|low_address| low_address.memory_address(high_address))
     }
 }
 
