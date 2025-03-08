@@ -229,7 +229,6 @@ impl Device {
 /// # PCI Function
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1 Type 0/1 Common Configuration Space Figure 7-4 Common Configuration Space Header
-#[derive(Debug)]
 pub struct Function {
     space: [u32; Self::LENGTH],
 }
@@ -254,6 +253,124 @@ impl Function {
             .then_some(Self {
                 space
             })
+    }
+}
+
+impl fmt::Debug for Function {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
+        match self.header() {
+            Header::Type0(type0) => {
+                let vendor_id: u16 = type0.vendor_id;
+                let device_id: u16 = type0.device_id;
+                let command: command::Register = type0.command;
+                let status: status::Register = type0.status;
+                let revision_id: u8 = type0.revision_id;
+                let class_code: class::Register = type0.class_code.clone();
+                let cash_line_size: u8 = type0.cash_line_size;
+                let latency_timer: u8 = type0.latency_timer;
+                let header_type: header_type::Register = type0.header_type;
+                let bist: bist::Register = type0.bist;
+                let base_address_registers: [u32; 6] = type0.base_address_registers;
+                let cardbus_cis_pointer: u32 = type0.cardbus_cis_pointer;
+                let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
+                let subsystem_id: u16 = type0.subsystem_id;
+                let expansion_rom_base_address: expansion_rom_base_address::Register = type0.expansion_rom_base_address;
+                let capabilities_pointer: u8 = type0.capabilities_pointer;
+                let interrupt_line: u8 = type0.interrupt_line;
+                let interrupt_pin: u8 = type0.interrupt_pin;
+                let min_gnt: u8 = type0.min_gnt;
+                let min_lat: u8 = type0.min_lat;
+                let class_code: class::Code = class_code.clone().into();
+                debug_struct
+                    .field("vendor_id", &vendor_id)
+                    .field("device_id", &device_id)
+                    .field("command", &command)
+                    .field("status", &status)
+                    .field("revision_id", &revision_id)
+                    .field("class_code", &class_code)
+                    .field("cash_line_size", &cash_line_size)
+                    .field("latency_timer", &latency_timer)
+                    .field("header_type", &header_type)
+                    .field("bist", &bist)
+                    .field("base_address_registers", &base_address_registers)
+                    .field("cardbus_cis_pointer", &cardbus_cis_pointer)
+                    .field("subsystem_vendor_id", &subsystem_vendor_id)
+                    .field("subsystem_id", &subsystem_id)
+                    .field("expansion_rom_base_address", &expansion_rom_base_address)
+                    .field("capabilities_pointer", &capabilities_pointer)
+                    .field("interrupt_line", &interrupt_line)
+                    .field("interrupt_pin", &interrupt_pin)
+                    .field("min_gnt", &min_gnt)
+                    .field("min_lat", &min_lat)
+            },
+            Header::Type1(type1) => {
+                let vendor_id: u16 = type1.vendor_id;
+                let device_id: u16 = type1.device_id;
+                let command: command::Register = type1.command;
+                let status: status::Register = type1.status;
+                let revision_id: u8 = type1.revision_id;
+                let class_code: class::Register = type1.class_code.clone();
+                let cash_line_size: u8 = type1.cash_line_size;
+                let latency_timer: u8 = type1.latency_timer;
+                let header_type: header_type::Register = type1.header_type;
+                let bist: bist::Register = type1.bist;
+                let base_address_registers: [u32; 2] = type1.base_address_registers;
+                let primary_bus_number: u8 = type1.primary_bus_number;
+                let secondary_bus_number: u8 = type1.secondary_bus_number;
+                let subordinate_bus_number: u8 = type1.subordinate_bus_number;
+                let secondary_latency_timer: u8 = type1.secondary_latency_timer;
+                let io_base: u8 = type1.io_base;
+                let io_limit: u8 = type1.io_limit;
+                let secondary_status: secondary_status::Register = type1.secondary_status;
+                let mamory_base: u16 = type1.mamory_base;
+                let memory_limit: u16 = type1.memory_limit;
+                let prefetchable_memory_base: u16 = type1.prefetchable_memory_base;
+                let prefetchable_memory_limit: u16 = type1.prefetchable_memory_limit;
+                let prefetchable_memory_base_upper_32bits: u32 = type1.prefetchable_memory_base_upper_32bits;
+                let prefetchable_memory_limit_upper_32bits: u32 = type1.prefetchable_memory_limit_upper_32bits;
+                let io_base_upper_16bits: u16 = type1.io_base_upper_16bits;
+                let io_limit_upper_16bits: u16 = type1.io_limit_upper_16bits;
+                let capabilities_pointer: u8 = type1.capabilities_pointer;
+                let expantion_rom_base_address: expansion_rom_base_address::Register = type1.expantion_rom_base_address;
+                let interrupt_line: u8 = type1.interrupt_line;
+                let interrupt_pin: u8 = type1.interrupt_pin;
+                let bridge_control: bridge_control::Register = type1.bridge_control;
+                let class_code: class::Code = class_code.clone().into();
+                debug_struct
+                    .field("vendor_id", &vendor_id)
+                    .field("device_id", &device_id)
+                    .field("command", &command)
+                    .field("status", &status)
+                    .field("revision_id", &revision_id)
+                    .field("class_code", &class_code)
+                    .field("cash_line_size", &cash_line_size)
+                    .field("latency_timer", &latency_timer)
+                    .field("header_type", &header_type)
+                    .field("bist", &bist)
+                    .field("base_address_registers", &base_address_registers)
+                    .field("primary_bus_number", &primary_bus_number)
+                    .field("secondary_bus_number", &secondary_bus_number)
+                    .field("subordinate_bus_number", &subordinate_bus_number)
+                    .field("secondary_latency_timer", &secondary_latency_timer)
+                    .field("io_base", &io_base)
+                    .field("io_limit", &io_limit)
+                    .field("secondary_status", &secondary_status)
+                    .field("mamory_base", &mamory_base)
+                    .field("memory_limit", &memory_limit)
+                    .field("prefetchable_memory_base", &prefetchable_memory_base)
+                    .field("prefetchable_memory_limit", &prefetchable_memory_limit)
+                    .field("prefetchable_memory_base_upper_32bits", &prefetchable_memory_base_upper_32bits)
+                    .field("prefetchable_memory_limit_upper_32bits", &prefetchable_memory_limit_upper_32bits)
+                    .field("io_base_upper_16bits", &io_base_upper_16bits)
+                    .field("io_limit_upper_16bits", &io_limit_upper_16bits)
+                    .field("capabilities_pointer", &capabilities_pointer)
+                    .field("expantion_rom_base_address", &expantion_rom_base_address)
+                    .field("interrupt_line", &interrupt_line)
+                    .field("interrupt_pin", &interrupt_pin)
+                    .field("bridge_control", &bridge_control)
+            },
+        }.finish()
     }
 }
 
