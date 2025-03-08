@@ -249,10 +249,11 @@ impl Function {
         let space: [u32; Self::LENGTH] = space
             .try_into()
             .unwrap();
-        let function = Self {
-            space
-        };
-        (function.header().vendor_id() != 0xffff).then_some(function)
+        let vendor_id: u16 = (space[0] & 0x0000ffff) as u16;
+        (vendor_id != 0xffff)
+            .then_some(Self {
+                space
+            })
     }
 }
 
