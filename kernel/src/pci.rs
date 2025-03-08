@@ -280,6 +280,23 @@ pub struct Type0 {
     min_lat: u8,
 }
 
+impl<'a> TryFrom<&'a Function> for &'a Type0 {
+    type Error = ();
+
+    fn try_from(function: &'a Function) -> Result<Self, Self::Error> {
+        let function: *const Function = function as *const Function;
+        let type0: *const Type0 = function as *const Type0;
+        let type0: &Type0 = unsafe {
+            &*type0
+        };
+        let header_type: header_type::Register = type0.header_type;
+        match header_type.into() {
+            header_type::Type::Zero => Ok(type0),
+            header_type::Type::One => Err(()),
+        }
+    }
+}
+
 /// # Type 1 Configuration Space Header
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.3 Type 1 Configuration Space Header Figure 7-14 Type 1 Configuration Space Header
@@ -317,5 +334,22 @@ pub struct Type1 {
     interrupt_line: u8,
     interrupt_pin: u8,
     bridge_control: bridge_control::Register,
+}
+
+impl<'a> TryFrom<&'a Function> for &'a Type1 {
+    type Error = ();
+
+    fn try_from(function: &'a Function) -> Result<Self, Self::Error> {
+        let function: *const Function = function as *const Function;
+        let type1: *const Type1 = function as *const Type1;
+        let type1: &Type1 = unsafe {
+            &*type1
+        };
+        let header_type: header_type::Register = type1.header_type;
+        match header_type.into() {
+            header_type::Type::Zero => Err(()),
+            header_type::Type::One => Ok(type1),
+        }
+    }
 }
 

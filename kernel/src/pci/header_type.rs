@@ -24,20 +24,13 @@ pub enum Type {
     One,
 }
 
-impl From<&Register> for Type {
-    fn from(register: &Register) -> Self {
+impl From<Register> for Type {
+    fn from(register: Register) -> Self {
         match register.header_layout() {
             0x00 => Self::Zero,
             0x01 => Self::One,
             _ => unreachable!(),
         }
-    }
-}
-
-impl From<&Function> for Type {
-    fn from(function: &Function) -> Self {
-        let register: Register = function.header_type();
-        (&register).into()
     }
 }
 
