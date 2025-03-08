@@ -252,11 +252,11 @@ impl Function {
     }
 }
 
-/// # PCI Function
+/// # Type 0 Configuration Space Header
 /// ## References
-/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1 Type 0/1 Common Configuration Space Figure 7-4 Common Configuration Space Header
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2 Type 0 Configuration Space Header Figure 7-10 Type 0 Configuration Space Header
 #[repr(packed)]
-pub struct CommonHeader {
+pub struct Type0 {
     vendor_id: u16,
     device_id: u16,
     command: command::Register,
@@ -267,5 +267,55 @@ pub struct CommonHeader {
     latency_timer: u8,
     header_type: header_type::Register,
     bist: bist::Register,
+    base_address_registers: [u32; 6],
+    cardbus_cis_pointer: u32,
+    subsystem_vendor_id: u16,
+    subsystem_id: u16,
+    expansion_rom_base_address: expansion_rom_base_address::Register,
+    capabilities_pointer: u8,
+    __: [u8; 7],
+    interrupt_line: u8,
+    interrupt_pin: u8,
+    min_gnt: u8,
+    min_lat: u8,
+}
+
+/// # Type 1 Configuration Space Header
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.3 Type 1 Configuration Space Header Figure 7-14 Type 1 Configuration Space Header
+#[repr(packed)]
+pub struct Type1 {
+    vendor_id: u16,
+    device_id: u16,
+    command: command::Register,
+    status: status::Register,
+    revision_id: u8,
+    class_code: class::Register,
+    cash_line_size: u8,
+    latency_timer: u8,
+    header_type: header_type::Register,
+    bist: bist::Register,
+    base_address_registers: [u32; 2],
+    primary_bus_number: u8,
+    secondary_bus_number: u8,
+    subordinate_bus_number: u8,
+    secondary_latency_timer: u8,
+    io_base: u8,
+    io_limit: u8,
+    secondary_status: secondary_status::Register,
+    mamory_base: u16,
+    memory_limit: u16,
+    prefetchable_memory_base: u16,
+    prefetchable_memory_limit: u16,
+    prefetchable_memory_base_upper_32bits: u32,
+    prefetchable_memory_limit_upper_32bits: u32,
+    io_base_upper_16bits: u16,
+    io_limit_upper_16bits: u16,
+    capabilities_pointer: u8,
+    __: [u8; 3],
+    expantion_rom_base_address: expansion_rom_base_address::Register,
+    interrupt_line: u8,
+    interrupt_pin: u8,
+    bridge_control: bridge_control::Register,
 }
 
