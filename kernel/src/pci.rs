@@ -252,6 +252,21 @@ impl Function {
     }
 }
 
+pub enum Header<'a> {
+    Type0(&'a Type0),
+    Type1(&'a Type1),
+}
+
+impl<'a> From<&'a Function> for Header<'a> {
+    fn from(function: &'a Function) -> Self {
+        match (function.try_into(), function.try_into()) {
+            (Ok(type0), Err(_)) => Self::Type0(type0),
+            (Err(_), Ok(type1)) => Self::Type1(type1),
+            _ => unreachable!(),
+        }
+    }
+}
+
 /// # Type 0 Configuration Space Header
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2 Type 0 Configuration Space Header Figure 7-10 Type 0 Configuration Space Header
