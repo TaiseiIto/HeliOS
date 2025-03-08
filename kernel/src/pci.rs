@@ -271,7 +271,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type0.latency_timer;
                 let header_type: header_type::Register = type0.header_type;
                 let bist: bist::Register = type0.bist;
-                let base_address_registers: [u32; 6] = type0.base_address_registers;
+                let base_addresses: base_address::Addresses = type0.base_addresses();
                 let cardbus_cis_pointer: u32 = type0.cardbus_cis_pointer;
                 let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
                 let subsystem_id: u16 = type0.subsystem_id;
@@ -293,7 +293,7 @@ impl fmt::Debug for Function {
                     .field("latency_timer", &latency_timer)
                     .field("header_type", &header_type)
                     .field("bist", &bist)
-                    .field("base_address_registers", &base_address_registers)
+                    .field("base_addresses", &base_addresses)
                     .field("cardbus_cis_pointer", &cardbus_cis_pointer)
                     .field("subsystem_vendor_id", &subsystem_vendor_id)
                     .field("subsystem_id", &subsystem_id)
@@ -315,7 +315,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type1.latency_timer;
                 let header_type: header_type::Register = type1.header_type;
                 let bist: bist::Register = type1.bist;
-                let base_address_registers: [u32; 2] = type1.base_address_registers;
+                let base_addresses: base_address::Addresses = type1.base_addresses();
                 let primary_bus_number: u8 = type1.primary_bus_number;
                 let secondary_bus_number: u8 = type1.secondary_bus_number;
                 let subordinate_bus_number: u8 = type1.subordinate_bus_number;
@@ -348,7 +348,7 @@ impl fmt::Debug for Function {
                     .field("latency_timer", &latency_timer)
                     .field("header_type", &header_type)
                     .field("bist", &bist)
-                    .field("base_address_registers", &base_address_registers)
+                    .field("base_addresses", &base_addresses)
                     .field("primary_bus_number", &primary_bus_number)
                     .field("secondary_bus_number", &secondary_bus_number)
                     .field("subordinate_bus_number", &subordinate_bus_number)
@@ -380,10 +380,10 @@ pub enum Header<'a> {
 }
 
 impl Header<'_> {
-    pub fn base_address_registers(&self) -> Vec<base_address::Register> {
+    pub fn base_addresses(&self) -> base_address::Addresses {
         match self {
-            Self::Type0(type0) => type0.base_address_registers(),
-            Self::Type1(type1) => type1.base_address_registers(),
+            Self::Type0(type0) => type0.base_addresses(),
+            Self::Type1(type1) => type1.base_addresses(),
         }
     }
 
@@ -406,14 +406,6 @@ impl Header<'_> {
             Self::Type0(type0) => type0.header_type,
             Self::Type1(type1) => type1.header_type,
         }
-    }
-
-    pub fn memory_address(&self) -> Option<usize> {
-        let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
-        let low_address: Option<&base_address::Register> = base_address_registers.get(0);
-        let high_address: Option<&base_address::Register> = base_address_registers.get(1);
-        low_address
-            .and_then(|low_address| low_address.memory_address(high_address))
     }
 
     pub fn vendor_id(&self) -> u16 {
@@ -463,13 +455,11 @@ pub struct Type0 {
 }
 
 impl Type0 {
-    fn base_address_registers(&self) -> Vec<base_address::Register> {
+    fn base_addresses(&self) -> base_address::Addresses {
         let base_address_registers: [u32; 6] = self.base_address_registers;
         base_address_registers
             .as_slice()
-            .iter()
-            .map(|base_address_register| (*base_address_register).into())
-            .collect()
+            .into()
     }
 }
 
@@ -530,13 +520,11 @@ pub struct Type1 {
 }
 
 impl Type1 {
-    fn base_address_registers(&self) -> Vec<base_address::Register> {
+    fn base_addresses(&self) -> base_address::Addresses {
         let base_address_registers: [u32; 2] = self.base_address_registers;
         base_address_registers
             .as_slice()
-            .iter()
-            .map(|base_address_register| (*base_address_register).into())
-            .collect()
+            .into()
     }
 }
 

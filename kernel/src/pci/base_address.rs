@@ -13,7 +13,8 @@ impl From<&[u32]> for Addresses {
     fn from(registers: &[u32]) -> Self {
         let (addresses, low_memory_address): (Vec<Address>, Option<Memory>) = registers
             .iter()
-            .fold((Vec::new(), None), |(addresses, low_memory_address), register| match low_memory_address {
+            .cloned()
+            .fold((Vec::new(), None), move |(addresses, low_memory_address), register| match low_memory_address {
                 Some(low_memory_address) => {
                     assert!(!low_memory_address.memory_space_indicator());
                     assert!(matches!(low_memory_address.size(), Size::Bits64));
