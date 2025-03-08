@@ -159,8 +159,8 @@ impl Configuration {
                             .extend(Address::device_range()
                                 .map(|device_number| (bus_number, device_number, function_number)));
                     },
-                    class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => if let Some(secondary_bus_number) = function.secondary_bus_number() {
-                        let bus_number: u8 = secondary_bus_number;
+                    class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => if let Header::Type1(type1) = function.header() {
+                        let bus_number: u8 = type1.secondary_bus_number;
                         let function_number: u8 = 0;
                         next_addresses
                             .extend(Address::device_range()
