@@ -8,6 +8,7 @@ use {
     super::{
         Function,
         Header,
+        base_address,
         class,
     },
 };
@@ -84,7 +85,20 @@ impl TryFrom<&Function> for Registers {
 
     fn try_from(function: &Function) -> Result<Self, Self::Error> {
         (function.header().class_code() == class::Code::UsbXhci)
-            .then(|| function.header().memory_address())
+            .then(|| function
+                .header()
+                .base_addresses()
+                .iter()
+                .next()
+                .map(|address| match address {
+                    base_address::Address::Memory {
+                        address,
+                        prefetchable: _,
+                    } => *address as usize,
+                    base_address::Address::Io {
+                        address: _,
+                    } => unimplemented!(),
+                }))
             .flatten()
             .map(|address| Self {
                 address,

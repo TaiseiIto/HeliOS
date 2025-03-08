@@ -9,12 +9,19 @@ use {
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2.1 Base Address Registers (Offset 10h - 24h)
 pub struct Addresses(Vec<Address>);
 
+impl Addresses {
+    pub fn iter(&self) -> impl Iterator<Item = &Address> {
+        let Self(addresses) = self;
+        addresses.iter()
+    }
+}
+
 impl From<&[u32]> for Addresses {
     fn from(registers: &[u32]) -> Self {
         let (addresses, low_memory_address): (Vec<Address>, Option<Memory>) = registers
             .iter()
             .cloned()
-            .fold((Vec::new(), None), move |(addresses, low_memory_address), register| match low_memory_address {
+            .fold((Vec::new(), None), move |(mut addresses, low_memory_address), register| match low_memory_address {
                 Some(low_memory_address) => {
                     assert!(!low_memory_address.memory_space_indicator());
                     assert!(matches!(low_memory_address.size(), Size::Bits64));
@@ -59,6 +66,7 @@ impl From<&[u32]> for Addresses {
                             addresses.push(address);
                             (addresses, None)
                         },
+                        _ => unreachable!(),
                     }
                 },
             });
