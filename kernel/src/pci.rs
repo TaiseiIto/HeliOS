@@ -370,7 +370,17 @@ impl fmt::Debug for Function {
                     .field("interrupt_pin", &interrupt_pin)
                     .field("bridge_control", &bridge_control)
             },
-        }.finish()
+        };
+        match self.header().class_code() {
+            class::Code::UsbXhci => {
+                let xhci: Result<xhci::Registers, ()> = self.try_into();
+                if let Ok(xhci) = xhci {
+                    debug_struct.field("xhci", &xhci);
+                }
+            },
+            _ => {},
+        }
+        debug_struct.finish()
     }
 }
 
