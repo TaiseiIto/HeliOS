@@ -1,3 +1,14 @@
+/// # Class Code Register
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1.6 Class Code Register
+#[repr(packed)]
+pub struct Register {
+    programming_interface: u8,
+    sub_class: u8,
+    base_class: u8,
+}
+
+
 /// # Class Code
 /// ## References
 /// * [PCI Code and ID Assignment Specification Revision 1.11](https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_11__v24_Jan_2019.pdf)
@@ -187,8 +198,13 @@ pub enum Code {
     },
 }
 
-impl Code {
-    pub fn new(base_class: u8, sub_class: u8, programming_interface: u8) -> Self {
+impl From<Register> for Code {
+    fn from(register: Register) -> Self {
+        let Register {
+            programming_interface,
+            sub_class,
+            base_class,
+        } = register;
         match (base_class, sub_class, programming_interface) {
             (0x00, 0x00, 0x00) => Self::AllCurrentlyImplemented,                    // 00 00 00
             (0x00, 0x01, 0x00) => Self::VgaCompatibleDevice,                        // 00 01 00
