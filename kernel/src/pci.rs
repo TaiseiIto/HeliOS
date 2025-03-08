@@ -168,7 +168,7 @@ impl Configuration {
                     },
                     _ => {},
                 }
-                if function_number == 0 && function.is_multi_function_device() {
+                if function_number == 0 && function.header().header_type().is_multi_function_device() {
                     next_addresses
                         .extend(Address::function_range()
                             .map(|function_number| (bus_number, device_number, function_number)));
@@ -252,7 +252,7 @@ impl Function {
         let function = Self {
             space
         };
-        (function.vendor_id() != 0xffff).then_some(function)
+        (function.header().vendor_id() != 0xffff).then_some(function)
     }
 }
 
@@ -283,12 +283,26 @@ impl Header<'_> {
         }.into()
     }
 
+    pub fn header_type(&self) -> header_type::Register {
+        match self {
+            Self::Type0(type0) => type0.header_type,
+            Self::Type1(type1) => type1.header_type,
+        }
+    }
+
     pub fn memory_address(&self) -> Option<usize> {
         let base_address_registers: Vec<base_address::Register> = self.base_address_registers();
         let low_address: Option<&base_address::Register> = base_address_registers.get(0);
         let high_address: Option<&base_address::Register> = base_address_registers.get(1);
         low_address
             .and_then(|low_address| low_address.memory_address(high_address))
+    }
+
+    pub fn vendor_id(&self) -> u16 {
+        match self {
+            Self::Type0(type0) => type0.vendor_id,
+            Self::Type1(type1) => type1.vendor_id,
+        }
     }
 }
 
@@ -335,7 +349,7 @@ impl Type0 {
         self.base_address_registers
             .as_slice()
             .iter()
-            .map(|base_address_register| base_address_register.into())
+            .map(|base_address_register| (*base_address_register).into())
             .collect()
     }
 }
@@ -401,7 +415,7 @@ impl Type1 {
         self.base_address_registers
             .as_slice()
             .iter()
-            .map(|base_address_register| base_address_register.into())
+            .map(|base_address_register| (*base_address_register).into())
             .collect()
     }
 }
