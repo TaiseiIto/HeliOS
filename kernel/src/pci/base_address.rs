@@ -1,56 +1,93 @@
-use bitfield_struct::bitfield;
+use {
+    alloc::vec::Vec,
+    bitfield_struct::bitfield,
+    core::fmt,
+};
 
-/// # Base Address Register
+/// # Base Addresses
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2.1 Base Address Registers (Offset 10h - 24h)
+pub struct Addresses(Vec<Address>);
+
+impl From<&[u32]> for Addresses {
+    fn from(registers: &[u32]) -> Self {
+        let (addresses, low_memory_address): (Vec<Address>, Option<Memory>) = registers
+            .iter()
+            .fold((Vec::new(), None), |(addresses, low_memory_address), register| match low_memory_address {
+                Some(low_memory_address) => {
+                    assert!(!low_memory_address.memory_space_indicator());
+                    assert!(matches!(low_memory_address.size(), Size::Bits64));
+                    let prefetchable: bool = low_memory_address.prefetchable();
+                    let low_address: u32 = low_memory_address.base_address() << Memory::BASE_ADDRESS_OFFSET;
+                    let low_address: u64 = low_address as u64;
+                    let high_address: u32 = register;
+                    let high_address: u64 = high_address as u64;
+                    let address: u64 = low_address | (high_address << u32::BITS);
+                    let address = Address::Memory {
+                        address,
+                        prefetchable,
+                    };
+                    addresses.push(address);
+                    (addresses, None)
+                },
+                None => {
+                    let memory: Memory = register.into();
+                    let memory: Option<Memory> = (!memory.memory_space_indicator()).then_some(memory);
+                    let io: Io = register.into();
+                    let io: Option<Io> = io.io_space_indicator().then_some(io);
+                    match (memory, io) {
+                        (Some(memory), None) => match memory.size() {
+                            Size::Bits32 => {
+                                let address: u32 = memory.base_address() << Memory::BASE_ADDRESS_OFFSET;
+                                let address: u64 = address as u64;
+                                let prefetchable: bool = memory.prefetchable();
+                                let address = Address::Memory {
+                                    address,
+                                    prefetchable,
+                                };
+                                addresses.push(address);
+                                (addresses, None)
+                            },
+                            Size::Bits64 => (addresses, Some(memory)),
+                        },
+                        (None, Some(io)) => {
+                            let address: u32 = io.base_address() << Io::BASE_ADDRESS_OFFSET;
+                            let address = Address::Io {
+                                address,
+                            };
+                            addresses.push(address);
+                            (addresses, None)
+                        },
+                    }
+                },
+            });
+        assert!(matches!(low_memory_address, None));
+        Self(addresses)
+    }
+}
+
+impl fmt::Debug for Addresses {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self(addresses) = self;
+        formatter
+            .debug_list()
+            .entries(addresses.iter())
+            .finish()
+    }
+}
+
+/// # Base Address
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2.1 Base Address Registers (Offset 10h - 24h)
 #[derive(Debug)]
-pub enum Register {
-    Io(Io),
-    Memory(Memory),
-}
-
-impl Register {
-    pub fn memory_address(&self, next: Option<&Self>) -> Option<usize> {
-        match self {
-            Self::Memory(memory) => {
-                let low_address: u32 = memory.base_address() << Memory::BASE_ADDRESS_OFFSET;
-                let low_address: usize = low_address as usize;
-                let high_address: u32 = match memory.size() {
-                    Size::Bits32 => 0,
-                    Size::Bits64 => next
-                        .unwrap()
-                        .into(),
-                };
-                let high_address: usize = high_address as usize;
-                let address: usize = low_address + (high_address << u32::BITS);
-                Some(address)
-            },
-            Self::Io(_) => None,
-        }
-    }
-}
-
-impl From<u32> for Register {
-    fn from(register: u32) -> Self {
-        match register & 0x00000001 {
-            0x00000000 => Self::Memory(register.into()),
-            0x00000001 => Self::Io(register.into()),
-            _ => unreachable!(),
-        }
-    }
-}
-
-impl From<&Register> for u32 {
-    fn from(register: &Register) -> Self {
-        match register {
-            Register::Io(io) => io
-                .clone()
-                .into(),
-            Register::Memory(memory) => memory
-                .clone()
-                .into(),
-        }
-    }
+pub enum Address {
+    Io {
+        address: u32,
+    },
+    Memory {
+        address: u64,
+        prefetchable: bool,
+    },
 }
 
 /// # Base Address Register for I/O
