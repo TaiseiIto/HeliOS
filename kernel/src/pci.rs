@@ -237,6 +237,21 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
+    pub fn base_address_regsiters(&self) -> Vec<base_address::Register> {
+        let header: Header = self.into();
+        header.base_address_registers()
+    }
+
+    pub fn capabilities_pointer(&self) -> u8 {
+        let header: Header = self.into();
+        header.capability_pointer()
+    }
+
+    pub fn class_code(&self) -> class::Code {
+        let header: Header = self.into();
+        header.class_code()
+    }
+
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (u8::MIN..=u8::MAX)
             .filter(|register| register % 4 == 0)
@@ -255,6 +270,29 @@ impl Function {
 pub enum Header<'a> {
     Type0(&'a Type0),
     Type1(&'a Type1),
+}
+
+impl Header<'_> {
+    fn base_address_registers(&self) -> Vec<base_address::Register> {
+        match self {
+            Self::Type0(type0) => type0.base_address_registers(),
+            Self::Type1(type1) => type1.base_address_registers(),
+        }
+    }
+
+    fn capability_pointer(&self) -> u8 {
+        match self {
+            Self::Type0(type0) => type0.capability_pointer,
+            Self::Type1(type1) => type1.capability_pointer,
+        }
+    }
+
+    fn class_code(&self) -> class::Code {
+        match self {
+            Self::Type0(type0) => type0.class_code,
+            Self::Type1(type1) => type1.class_code,
+        }.into()
+    }
 }
 
 impl<'a> From<&'a Function> for Header<'a> {
@@ -293,6 +331,16 @@ pub struct Type0 {
     interrupt_pin: u8,
     min_gnt: u8,
     min_lat: u8,
+}
+
+impl Type0 {
+    fn base_address_registers(&self) -> Vec<base_address::Register> {
+        self.base_address_registers
+            .as_slice()
+            .iter()
+            .map(|base_address_register| base_address_register.into())
+            .collect()
+    }
 }
 
 impl<'a> TryFrom<&'a Function> for &'a Type0 {
@@ -349,6 +397,16 @@ pub struct Type1 {
     interrupt_line: u8,
     interrupt_pin: u8,
     bridge_control: bridge_control::Register,
+}
+
+impl Type1 {
+    fn base_address_registers(&self) -> Vec<base_address::Register> {
+        self.base_address_registers
+            .as_slice()
+            .iter()
+            .map(|base_address_register| base_address_register.into())
+            .collect()
+    }
 }
 
 impl<'a> TryFrom<&'a Function> for &'a Type1 {
