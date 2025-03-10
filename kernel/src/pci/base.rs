@@ -105,6 +105,32 @@ pub enum Address {
 }
 
 impl Address {
+    pub fn offset(&self, offset: usize) -> Self {
+        match self {
+            Self::Io {
+                address,
+            } => {
+                let offset: u32 = offset as u32;
+                let address: u32 = address + offset;
+                Self::Io {
+                    address,
+                }
+            },
+            Self::Memory {
+                address,
+                prefetchable,
+            } => {
+                let offset: u64 = offset as u64;
+                let address: u64 = address + offset;
+                let prefetchable: bool = *prefetchable;
+                Self::Memory {
+                    address,
+                    prefetchable,
+                }
+            },
+        }
+    }
+
     pub fn read<T>(&self) -> T where T: Default {
         let mut read = T::default();
         let writer: &mut T = &mut read;
@@ -144,33 +170,9 @@ impl Address {
     pub fn read_vector<T>(&self, length: usize) -> Vec<T> where T: Default {
         let size: usize = mem::size_of::<T>();
         (0..length)
-            .map(|index| {
-                let offset: usize = index * size;
-                let address: Self = match self {
-                    Self::Io {
-                        address,
-                    } => {
-                        let offset: u32 = offset as u32;
-                        let address: u32 = address + offset;
-                        Self::Io {
-                            address,
-                        }
-                    },
-                    Self::Memory {
-                        address,
-                        prefetchable,
-                    } => {
-                        let offset: u64 = offset as u64;
-                        let address: u64 = address + offset;
-                        let prefetchable: bool = *prefetchable;
-                        Self::Memory {
-                            address,
-                            prefetchable,
-                        }
-                    },
-                };
-                address.read()
-            })
+            .map(|index| self
+                .offset(index * size)
+                .read())
             .collect()
     }
 }
