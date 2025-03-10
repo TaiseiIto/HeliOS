@@ -8,7 +8,7 @@ use {
     super::{
         Function,
         Header,
-        base_address,
+        base,
         class,
     },
 };
@@ -91,11 +91,11 @@ impl TryFrom<&Function> for Registers {
                 .iter()
                 .next()
                 .map(|address| match address {
-                    base_address::Address::Memory {
+                    base::Address::Memory {
                         address,
                         prefetchable: _,
                     } => *address as usize,
-                    base_address::Address::Io {
+                    base::Address::Io {
                         address: _,
                     } => unimplemented!(),
                 }))

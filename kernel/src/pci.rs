@@ -2,7 +2,7 @@
 //! ## References
 //! * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
 
-pub mod base_address;
+pub mod base;
 pub mod bist;
 pub mod bridge_control;
 pub mod class;
@@ -271,7 +271,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type0.latency_timer;
                 let header_type: header_type::Register = type0.header_type;
                 let bist: bist::Register = type0.bist;
-                let base_addresses: base_address::Addresses = type0.base_addresses();
+                let base_addresses: base::Addresses = type0.base_addresses();
                 let cardbus_cis_pointer: u32 = type0.cardbus_cis_pointer;
                 let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
                 let subsystem_id: u16 = type0.subsystem_id;
@@ -315,7 +315,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type1.latency_timer;
                 let header_type: header_type::Register = type1.header_type;
                 let bist: bist::Register = type1.bist;
-                let base_addresses: base_address::Addresses = type1.base_addresses();
+                let base_addresses: base::Addresses = type1.base_addresses();
                 let primary_bus_number: u8 = type1.primary_bus_number;
                 let secondary_bus_number: u8 = type1.secondary_bus_number;
                 let subordinate_bus_number: u8 = type1.subordinate_bus_number;
@@ -390,7 +390,7 @@ pub enum Header<'a> {
 }
 
 impl Header<'_> {
-    pub fn base_addresses(&self) -> base_address::Addresses {
+    pub fn base_addresses(&self) -> base::Addresses {
         match self {
             Self::Type0(type0) => type0.base_addresses(),
             Self::Type1(type1) => type1.base_addresses(),
@@ -465,7 +465,7 @@ pub struct Type0 {
 }
 
 impl Type0 {
-    fn base_addresses(&self) -> base_address::Addresses {
+    fn base_addresses(&self) -> base::Addresses {
         let base_address_registers: [u32; 6] = self.base_address_registers;
         base_address_registers
             .as_slice()
@@ -530,7 +530,7 @@ pub struct Type1 {
 }
 
 impl Type1 {
-    fn base_addresses(&self) -> base_address::Addresses {
+    fn base_addresses(&self) -> base::Addresses {
         let base_address_registers: [u32; 2] = self.base_address_registers;
         base_address_registers
             .as_slice()
