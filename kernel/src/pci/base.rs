@@ -1,7 +1,12 @@
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+        slice,
+    },
+    crate::x64,
 };
 
 /// # Base Addresses
@@ -97,6 +102,44 @@ pub enum Address {
         address: u64,
         prefetchable: bool,
     },
+}
+
+impl Address {
+    pub fn read<T>(&self) -> T where T: Default {
+        let mut read = T::default();
+        let writer: &mut T = &mut read;
+        let writer: *mut T = writer as *mut T;
+        let writer: *mut u8 = writer as *mut u8;
+        let size: usize = mem::size_of::<T>();
+        let writer: &mut [u8] = unsafe {
+            slice::from_raw_parts_mut(writer, size)
+        };
+        writer
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, byte)| match self {
+                Self::Io {
+                    address,
+                } => {
+                    let address: u16 = *address as u16;
+                    let index: u16 = index as u16;
+                    *byte = x64::port::inb(address + index);
+                },
+                Self::Memory {
+                    address,
+                    prefetchable: _,
+                } => {
+                    let address: usize = *address as usize;
+                    let address: usize = address + index;
+                    let address: *const u8 = address as *const u8;
+                    let address: &u8 = unsafe {
+                        &*address
+                    };
+                    *byte = *address;
+                },
+            });
+        read
+    }
 }
 
 /// # Base Address Register for I/O
