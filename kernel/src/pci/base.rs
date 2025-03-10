@@ -26,12 +26,12 @@ impl Index2Address {
 
 impl From<&[u32]> for Index2Address {
     fn from(registers: &[u32]) -> Self {
-        let (index2address, low_memory_address): (BTreeMap<usize, Address>, Option<Memory>) = registers
+        let (index2address, index_and_low_memory_address): (BTreeMap<usize, Address>, Option<(usize, Memory)>) = registers
             .iter()
             .cloned()
             .enumerate()
-            .fold((BTreeMap::new(), None), move |(mut index2address, low_memory_address), (index, register)| match low_memory_address {
-                Some(low_memory_address) => {
+            .fold((BTreeMap::new(), None), move |(mut index2address, index_and_low_memory_address), (index, register)| match index_and_low_memory_address {
+                Some((index, low_memory_address)) => {
                     assert!(!low_memory_address.memory_space_indicator());
                     assert!(matches!(low_memory_address.size(), Size::Bits64));
                     let prefetchable: bool = low_memory_address.prefetchable();
@@ -65,7 +65,7 @@ impl From<&[u32]> for Index2Address {
                                 index2address.insert(index, address);
                                 (index2address, None)
                             },
-                            Size::Bits64 => (index2address, Some(memory)),
+                            Size::Bits64 => (index2address, Some((index, memory))),
                         },
                         (None, Some(io)) => {
                             let address: u32 = io.base_address() << Io::BASE_ADDRESS_OFFSET;
@@ -79,7 +79,7 @@ impl From<&[u32]> for Index2Address {
                     }
                 },
             });
-        assert!(matches!(low_memory_address, None));
+        assert!(matches!(index_and_low_memory_address, None));
         Self(index2address)
     }
 }
