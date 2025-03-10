@@ -28,10 +28,7 @@ use {
         mem,
         ops,
     },
-    crate::{
-        com2_println,
-        x64,
-    },
+    crate::x64,
 };
 
 /// # CFGADR - Configuration Address Register
@@ -149,7 +146,6 @@ impl Configuration {
     fn scan(&mut self, bus_number: u8, device_number: u8, function_number: u8) {
         if !self.has(bus_number, device_number, function_number) {
             if let Some(function) = Function::read(bus_number, device_number, function_number) {
-                com2_println!("Scan PCI ({:#x?}, {:#x?}, {:#x?})", bus_number, device_number, function_number);
                 let mut next_addresses: BTreeSet<(u8, u8, u8)> = BTreeSet::new();
                 match function.header().class_code() {
                     class::Code::HostBridge => {
@@ -236,6 +232,10 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
+    pub fn msi_capabilities<'a>(&'a self) -> msi::capability::Headers<'a> {
+        self.into()
+    }
+
     pub fn header<'a>(&'a self) -> Header<'a> {
         self.into()
     }
@@ -259,6 +259,9 @@ impl Function {
 impl fmt::Debug for Function {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
+        let capabilities: Vec<&msi::capability::Header> = self
+            .msi_capabilities()
+            .collect();
         match self.header() {
             Header::Type0(type0) => {
                 let vendor_id: u16 = type0.vendor_id;
@@ -276,7 +279,6 @@ impl fmt::Debug for Function {
                 let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
                 let subsystem_id: u16 = type0.subsystem_id;
                 let expansion_rom_base_address: expansion_rom_base_address::Register = type0.expansion_rom_base_address;
-                let capabilities_pointer: u8 = type0.capabilities_pointer;
                 let interrupt_line: u8 = type0.interrupt_line;
                 let interrupt_pin: u8 = type0.interrupt_pin;
                 let min_gnt: u8 = type0.min_gnt;
@@ -298,7 +300,7 @@ impl fmt::Debug for Function {
                     .field("subsystem_vendor_id", &subsystem_vendor_id)
                     .field("subsystem_id", &subsystem_id)
                     .field("expansion_rom_base_address", &expansion_rom_base_address)
-                    .field("capabilities_pointer", &capabilities_pointer)
+                    .field("capabilities", &capabilities)
                     .field("interrupt_line", &interrupt_line)
                     .field("interrupt_pin", &interrupt_pin)
                     .field("min_gnt", &min_gnt)
@@ -364,7 +366,7 @@ impl fmt::Debug for Function {
                     .field("prefetchable_memory_limit_upper_32bits", &prefetchable_memory_limit_upper_32bits)
                     .field("io_base_upper_16bits", &io_base_upper_16bits)
                     .field("io_limit_upper_16bits", &io_limit_upper_16bits)
-                    .field("capabilities_pointer", &capabilities_pointer)
+                    .field("capabilities", &capabilities)
                     .field("expantion_rom_base_address", &expantion_rom_base_address)
                     .field("interrupt_line", &interrupt_line)
                     .field("interrupt_pin", &interrupt_pin)
