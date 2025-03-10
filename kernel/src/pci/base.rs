@@ -140,6 +140,39 @@ impl Address {
             });
         read
     }
+
+    pub fn read_vector<T>(&self, length: usize) -> Vec<T> where T: Default {
+        let size: usize = mem::size_of::<T>();
+        (0..length)
+            .map(|index| {
+                let offset: usize = index * size;
+                let address: Self = match self {
+                    Self::Io {
+                        address,
+                    } => {
+                        let offset: u32 = offset as u32;
+                        let address: u32 = address + offset;
+                        Self::Io {
+                            address,
+                        }
+                    },
+                    Self::Memory {
+                        address,
+                        prefetchable,
+                    } => {
+                        let offset: u64 = offset as u64;
+                        let address: u64 = address + offset;
+                        let prefetchable: bool = *prefetchable;
+                        Self::Memory {
+                            address,
+                            prefetchable,
+                        }
+                    },
+                };
+                address.read()
+            })
+            .collect()
+    }
 }
 
 /// # Base Address Register for I/O
