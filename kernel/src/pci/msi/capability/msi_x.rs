@@ -1,7 +1,11 @@
 use {
+    alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::fmt,
-    super::Header,
+    super::{
+        Header,
+        super::super::base,
+    },
 };
 
 pub mod pba;
@@ -16,6 +20,26 @@ pub struct Structure {
     message_control: MessageControl,
     table: table::Register,
     pba: pba::Register,
+}
+
+impl Structure {
+    pub fn read_pba(&self, index2address: &base::Index2Address) -> Vec<pba::PendingBits> {
+        let pba: pba::Register = self.pba;
+        let table_length: usize = self.table_length();
+        pba.read(index2address, table_length)
+    }
+
+    pub fn read_table(&self, index2address: &base::Index2Address) -> Vec<table::Entry> {
+        let table: table::Register = self.table;
+        let table_length: usize = self.table_length();
+        table.read(index2address, table_length)
+    }
+
+    pub fn table_length(&self) -> usize {
+        let message_control: MessageControl = self.message_control;
+        let table_size: usize = message_control.table_size() as usize;
+        table_size + 1
+    }
 }
 
 impl fmt::Debug for Structure {

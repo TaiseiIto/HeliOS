@@ -16,7 +16,7 @@ pub struct Register {
 }
 
 impl Register {
-    pub fn read(&self, index2address: &base::Index2Address, table_size: usize) -> Vec<Entry> {
+    pub fn read(&self, index2address: &base::Index2Address, table_length: usize) -> Vec<Entry> {
         let bir: usize = self.bir() as usize;
         let offset: u32 = self.offset() << Self::OFFSET_OFFSET;
         let offset: usize = offset as usize;
@@ -24,7 +24,7 @@ impl Register {
             .get(bir)
             .unwrap()
             .offset(offset)
-            .read_vector(table_size)
+            .read_vector(table_length)
     }
 }
 
