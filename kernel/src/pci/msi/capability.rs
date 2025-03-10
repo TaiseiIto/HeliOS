@@ -37,9 +37,19 @@ impl fmt::Debug for Header {
     }
 }
 
+#[derive(Clone)]
 pub struct Headers<'a> {
     function: &'a Function,
     next_pointer: u8,
+}
+
+impl fmt::Debug for Headers<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_list()
+            .entries(self.clone())
+            .finish()
+    }
 }
 
 impl<'a> From<&'a Function> for Headers<'a> {

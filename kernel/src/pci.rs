@@ -259,9 +259,7 @@ impl Function {
 impl fmt::Debug for Function {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
-        let capabilities: Vec<&msi::capability::Header> = self
-            .msi_capabilities()
-            .collect();
+        let capabilities: msi::capability::Headers = self.msi_capabilities();
         match self.header() {
             Header::Type0(type0) => {
                 let vendor_id: u16 = type0.vendor_id;
