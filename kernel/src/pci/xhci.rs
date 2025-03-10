@@ -87,9 +87,8 @@ impl TryFrom<&Function> for Registers {
         (function.header().class_code() == class::Code::UsbXhci)
             .then(|| function
                 .header()
-                .base_addresses()
-                .iter()
-                .next()
+                .index2address()
+                .get(0)
                 .map(|address| match address {
                     base::Address::Memory {
                         address,

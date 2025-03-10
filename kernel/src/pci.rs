@@ -274,7 +274,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type0.latency_timer;
                 let header_type: header_type::Register = type0.header_type;
                 let bist: bist::Register = type0.bist;
-                let base_addresses: base::Addresses = type0.base_addresses();
+                let index2address: base::Index2Address = type0.index2address();
                 let cardbus_cis_pointer: u32 = type0.cardbus_cis_pointer;
                 let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
                 let subsystem_id: u16 = type0.subsystem_id;
@@ -295,7 +295,7 @@ impl fmt::Debug for Function {
                     .field("latency_timer", &latency_timer)
                     .field("header_type", &header_type)
                     .field("bist", &bist)
-                    .field("base_addresses", &base_addresses)
+                    .field("index2address", &index2address)
                     .field("cardbus_cis_pointer", &cardbus_cis_pointer)
                     .field("subsystem_vendor_id", &subsystem_vendor_id)
                     .field("subsystem_id", &subsystem_id)
@@ -317,7 +317,7 @@ impl fmt::Debug for Function {
                 let latency_timer: u8 = type1.latency_timer;
                 let header_type: header_type::Register = type1.header_type;
                 let bist: bist::Register = type1.bist;
-                let base_addresses: base::Addresses = type1.base_addresses();
+                let index2address: base::Index2Address = type1.index2address();
                 let primary_bus_number: u8 = type1.primary_bus_number;
                 let secondary_bus_number: u8 = type1.secondary_bus_number;
                 let subordinate_bus_number: u8 = type1.subordinate_bus_number;
@@ -350,7 +350,7 @@ impl fmt::Debug for Function {
                     .field("latency_timer", &latency_timer)
                     .field("header_type", &header_type)
                     .field("bist", &bist)
-                    .field("base_addresses", &base_addresses)
+                    .field("index2address", &index2address)
                     .field("primary_bus_number", &primary_bus_number)
                     .field("secondary_bus_number", &secondary_bus_number)
                     .field("subordinate_bus_number", &subordinate_bus_number)
@@ -392,10 +392,10 @@ pub enum Header<'a> {
 }
 
 impl Header<'_> {
-    pub fn base_addresses(&self) -> base::Addresses {
+    pub fn index2address(&self) -> base::Index2Address {
         match self {
-            Self::Type0(type0) => type0.base_addresses(),
-            Self::Type1(type1) => type1.base_addresses(),
+            Self::Type0(type0) => type0.index2address(),
+            Self::Type1(type1) => type1.index2address(),
         }
     }
 
@@ -467,7 +467,7 @@ pub struct Type0 {
 }
 
 impl Type0 {
-    fn base_addresses(&self) -> base::Addresses {
+    fn index2address(&self) -> base::Index2Address {
         let base_address_registers: [u32; 6] = self.base_address_registers;
         base_address_registers
             .as_slice()
@@ -532,7 +532,7 @@ pub struct Type1 {
 }
 
 impl Type1 {
-    fn base_addresses(&self) -> base::Addresses {
+    fn index2address(&self) -> base::Index2Address {
         let base_address_registers: [u32; 2] = self.base_address_registers;
         base_address_registers
             .as_slice()

@@ -1,5 +1,8 @@
 use {
-    alloc::vec::Vec,
+    alloc::{
+        collections::btree_map::BTreeMap,
+        vec::Vec,
+    },
     bitfield_struct::bitfield,
     core::{
         fmt,
@@ -9,24 +12,25 @@ use {
     crate::x64,
 };
 
-/// # Base Addresses
+/// # Index to Address
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.2.1 Base Address Registers (Offset 10h - 24h)
-pub struct Addresses(Vec<Address>);
+pub struct Index2Address(BTreeMap<usize, Address>);
 
-impl Addresses {
-    pub fn iter(&self) -> impl Iterator<Item = &Address> {
-        let Self(addresses) = self;
-        addresses.iter()
+impl Index2Address {
+    pub fn get(&self, index: usize) -> Option<&Address> {
+        let Self(index2address) = self;
+        index2address.get(&index)
     }
 }
 
-impl From<&[u32]> for Addresses {
+impl From<&[u32]> for Index2Address {
     fn from(registers: &[u32]) -> Self {
-        let (addresses, low_memory_address): (Vec<Address>, Option<Memory>) = registers
+        let (index2address, low_memory_address): (BTreeMap<usize, Address>, Option<Memory>) = registers
             .iter()
             .cloned()
-            .fold((Vec::new(), None), move |(mut addresses, low_memory_address), register| match low_memory_address {
+            .enumerate()
+            .fold((BTreeMap::new(), None), move |(mut index2address, low_memory_address), (index, register)| match low_memory_address {
                 Some(low_memory_address) => {
                     assert!(!low_memory_address.memory_space_indicator());
                     assert!(matches!(low_memory_address.size(), Size::Bits64));
@@ -40,8 +44,8 @@ impl From<&[u32]> for Addresses {
                         address,
                         prefetchable,
                     };
-                    addresses.push(address);
-                    (addresses, None)
+                    index2address.insert(index, address);
+                    (index2address, None)
                 },
                 None => {
                     let memory: Memory = register.into();
@@ -58,34 +62,34 @@ impl From<&[u32]> for Addresses {
                                     address,
                                     prefetchable,
                                 };
-                                addresses.push(address);
-                                (addresses, None)
+                                index2address.insert(index, address);
+                                (index2address, None)
                             },
-                            Size::Bits64 => (addresses, Some(memory)),
+                            Size::Bits64 => (index2address, Some(memory)),
                         },
                         (None, Some(io)) => {
                             let address: u32 = io.base_address() << Io::BASE_ADDRESS_OFFSET;
                             let address = Address::Io {
                                 address,
                             };
-                            addresses.push(address);
-                            (addresses, None)
+                            index2address.insert(index, address);
+                            (index2address, None)
                         },
                         _ => unreachable!(),
                     }
                 },
             });
         assert!(matches!(low_memory_address, None));
-        Self(addresses)
+        Self(index2address)
     }
 }
 
-impl fmt::Debug for Addresses {
+impl fmt::Debug for Index2Address {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(addresses) = self;
+        let Self(index2address) = self;
         formatter
-            .debug_list()
-            .entries(addresses.iter())
+            .debug_map()
+            .entries(index2address.iter())
             .finish()
     }
 }
