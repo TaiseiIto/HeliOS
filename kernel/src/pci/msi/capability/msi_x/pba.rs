@@ -34,6 +34,6 @@ impl Register {
 /// # Pending Bits
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.2.10. Pending Bits for MSI-X PBA-Entries
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct PendingBits(u64);
 

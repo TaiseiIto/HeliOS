@@ -4,7 +4,10 @@ use {
     core::fmt,
     super::{
         Header,
-        super::super::base,
+        super::super::{
+            Function,
+            base,
+        },
     },
 };
 
@@ -23,16 +26,22 @@ pub struct Structure {
 }
 
 impl Structure {
-    pub fn read_pba(&self, index2address: &base::Index2Address) -> Vec<pba::PendingBits> {
+    pub fn read_pba(&self, function: &Function) -> Vec<pba::PendingBits> {
         let pba: pba::Register = self.pba;
+        let index2address: base::Index2Address = function
+            .header()
+            .index2address();
         let table_length: usize = self.table_length();
-        pba.read(index2address, table_length)
+        pba.read(&index2address, table_length)
     }
 
-    pub fn read_table(&self, index2address: &base::Index2Address) -> Vec<table::Entry> {
+    pub fn read_table(&self, function: &Function) -> Vec<table::Entry> {
         let table: table::Register = self.table;
+        let index2address: base::Index2Address = function
+            .header()
+            .index2address();
         let table_length: usize = self.table_length();
-        table.read(index2address, table_length)
+        table.read(&index2address, table_length)
     }
 
     pub fn table_length(&self) -> usize {
@@ -68,6 +77,43 @@ impl<'a> From<&'a Header> for &'a Structure {
         unsafe {
             &*structure
         }
+    }
+}
+
+pub struct StructureWithFunction<'a> {
+    function: &'a Function,
+    structure: &'a Structure,
+}
+
+impl<'a> StructureWithFunction<'a> {
+    pub fn new(structure: &'a Structure, function: &'a Function) -> Self {
+        Self {
+            function,
+            structure,
+        }
+    }
+}
+
+impl fmt::Debug for StructureWithFunction<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            function,
+            structure,
+        } = self;
+        let header: Header = structure.header.clone();
+        let capability_id: u8 = header.capability_id();
+        let next_pointer: u8 = header.next_pointer();
+        let message_control: MessageControl = structure.message_control;
+        let table: Vec<table::Entry> = structure.read_table(function);
+        let pba: Vec<pba::PendingBits> = structure.read_pba(function);
+        formatter
+            .debug_struct("Structure")
+            .field("capability_id", &capability_id)
+            .field("next_pointer", &next_pointer)
+            .field("message_control", &message_control)
+            .field("table", &table)
+            .field("pba", &pba)
+            .finish()
     }
 }
 
