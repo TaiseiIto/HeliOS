@@ -25,18 +25,6 @@ impl Header {
     }
 }
 
-impl fmt::Debug for Header {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.capability_id().into() {
-            Id::MsiX => {
-                let structure: &msi_x::Structure = self.into();
-                structure.fmt(formatter)
-            },
-            _ => unimplemented!(),
-        }
-    }
-}
-
 pub struct HeaderWithFunction<'a> {
     function: &'a Function,
     header: &'a Header,

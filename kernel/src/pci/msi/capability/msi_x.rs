@@ -51,25 +51,6 @@ impl Structure {
     }
 }
 
-impl fmt::Debug for Structure {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let header: Header = self.header.clone();
-        let capability_id: u8 = header.capability_id();
-        let next_pointer: u8 = header.next_pointer();
-        let message_control: MessageControl = self.message_control;
-        let table: table::Register = self.table;
-        let pba: pba::Register = self.pba;
-        formatter
-            .debug_struct("Structure")
-            .field("capability_id", &capability_id)
-            .field("next_pointer", &next_pointer)
-            .field("message_control", &message_control)
-            .field("table", &table)
-            .field("pba", &pba)
-            .finish()
-    }
-}
-
 impl<'a> From<&'a Header> for &'a Structure {
     fn from(header: &'a Header) -> Self {
         let header: *const Header = header as *const Header;
