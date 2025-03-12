@@ -66,7 +66,8 @@ fn main(argument: &'static mut Argument<'static>) {
     // Boot application processors.
     processor::Manager::initialize(local_apic_id, local_apic_registers, heap_size, hpet);
     // Enumerate PCI devices.
-    let pci = pci::Configuration::read();
+    let mut pci = pci::Configuration::read();
+    pci.reset();
     com2_println!("pci = {:#x?}", pci);
     // Kernel loop.
     let mut shutdown: bool = false;

@@ -130,6 +130,12 @@ impl Configuration {
         pci
     }
 
+    pub fn reset(&mut self) {
+        self.buses
+            .values_mut()
+            .for_each(|bus| bus.reset())
+    }
+
     fn add(&mut self, bus_number: u8, device_number: u8, function_number: u8, function: Function) {
         self.buses
             .entry(bus_number)
@@ -199,6 +205,12 @@ impl Bus {
             .get(&device_number)
             .map_or(false, |device| device.has(function_number))
     }
+
+    fn reset(&mut self) {
+        self.devices
+            .values_mut()
+            .for_each(|device| device.reset());
+    }
 }
 
 /// # PCI Device
@@ -219,6 +231,12 @@ impl Device {
         self.functions
             .get(&function_number)
             .is_some()
+    }
+
+    fn reset(&mut self) {
+        self.functions
+            .values_mut()
+            .for_each(|device| device.reset());
     }
 }
 
@@ -253,6 +271,18 @@ impl Function {
             .then_some(Self {
                 space
             })
+    }
+
+    pub fn reset(&self) {
+        match self.header().class_code() {
+            class::Code::UsbXhci => {
+                let mut xhci: Result<xhci::Registers, ()> = self.try_into();
+                if let Ok(mut xhci) = xhci {
+                    xhci.reset();
+                }
+            },
+            _ => {},
+        }
     }
 }
 
