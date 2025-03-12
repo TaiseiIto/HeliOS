@@ -74,6 +74,23 @@ impl Registers {
         }
     }
 
+    pub fn operational_registers_mut(&mut self) -> &mut operational::Registers {
+        let caplength: u8 = self.caplength;
+        let caplength: usize = caplength as usize;
+        let address: *mut Self = self as *mut Self;
+        let address: usize = address as usize;
+        let operational_registers: usize = address + caplength;
+        let operational_registers: *mut operational::Registers = operational_registers as *mut operational::Registers;
+        unsafe {
+            &mut *operational_registers
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.operational_registers_mut()
+            .reset();
+    }
+
     pub fn runtime_registers(&self) -> &runtime::Registers {
         let rtsoff: rtsoff::Register = self.rtsoff;
         let runtime_register_space_offset: usize = rtsoff.get();

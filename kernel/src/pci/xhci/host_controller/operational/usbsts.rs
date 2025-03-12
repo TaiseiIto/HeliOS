@@ -21,3 +21,13 @@ pub struct Register {
     __: u32,
 }
 
+impl Register {
+    pub fn is_halted(&self) -> bool {
+        self.hch()
+    }
+
+    pub fn is_ready(&self) -> bool {
+        !self.cnr()
+    }
+}
+

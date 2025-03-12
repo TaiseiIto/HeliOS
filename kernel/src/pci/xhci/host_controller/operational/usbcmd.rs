@@ -1,4 +1,7 @@
-use bitfield_struct::bitfield;
+use {
+    bitfield_struct::bitfield,
+    crate::x64,
+};
 
 /// # USB Command Register (USBCMD)
 /// ## References
@@ -25,3 +28,12 @@ pub struct Register {
     __: u16,
 }
 
+impl Register {
+    pub fn is_reset(&self) -> bool {
+        !self.hcrst()
+    }
+
+    pub fn reset(self) -> Self {
+        self.with_hcrst(true)
+    }
+}

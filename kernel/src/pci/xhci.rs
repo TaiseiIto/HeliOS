@@ -32,6 +32,16 @@ impl Registers {
         }
     }
 
+    pub fn capability_registers_mut(&mut self) -> &mut host_controller::capability::Registers {
+        let Self {
+            address,
+        } = self;
+        let capability_register: *mut host_controller::capability::Registers = *address as *mut host_controller::capability::Registers;
+        unsafe {
+            &mut *capability_register
+        }
+    }
+
     fn doorbell_registers(&self) -> Vec<&doorbell::Register> {
         let capability_registers: &host_controller::capability::Registers = self.capability_registers();
         let number_of_slots: usize = capability_registers.number_of_slots();
@@ -53,6 +63,11 @@ impl Registers {
         (1..=number_of_ports)
             .map(|port| operational_registers.port_registers(port))
             .collect()
+    }
+
+    pub fn reset(&mut self) {
+        self.capability_registers_mut()
+            .reset()
     }
 
     fn runtime_registers(&self) -> &host_controller::runtime::Registers {

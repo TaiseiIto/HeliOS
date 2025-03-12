@@ -1,4 +1,7 @@
-use core::mem;
+use {
+    core::mem,
+    crate::x64,
+};
 
 pub mod config;
 pub mod crcr;
@@ -36,6 +39,27 @@ impl Registers {
         unsafe {
             &*port
         }
+    }
+
+    pub fn reset(&mut self) {
+        while !self.usbsts().is_halted() {
+            x64::pause();
+        }
+        self.usbcmd = self.usbcmd().reset();
+        while !self.usbcmd().is_reset() {
+            x64::pause();
+        }
+        while !self.usbsts().is_ready() {
+            x64::pause();
+        }
+    }
+
+    pub fn usbsts(&self) -> usbsts::Register {
+        self.usbsts
+    }
+
+    pub fn usbcmd(&self) -> usbcmd::Register {
+        self.usbcmd
     }
 }
 
