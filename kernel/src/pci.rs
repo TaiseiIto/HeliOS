@@ -12,7 +12,7 @@ pub mod header_type;
 pub mod msi;
 pub mod secondary_status;
 pub mod status;
-pub mod xhci;
+pub mod xhc;
 
 use {
     alloc::{
@@ -275,10 +275,10 @@ impl Function {
 
     pub fn reset(&self) {
         match self.header().class_code() {
-            class::Code::UsbXhci => {
-                let mut xhci: Result<xhci::Registers, ()> = self.try_into();
-                if let Ok(mut xhci) = xhci {
-                    xhci.reset();
+            class::Code::UsbXhc => {
+                let mut xhc: Result<xhc::Registers, ()> = self.try_into();
+                if let Ok(mut xhc) = xhc {
+                    xhc.reset();
                 }
             },
             _ => {},
@@ -402,10 +402,10 @@ impl fmt::Debug for Function {
             },
         };
         match self.header().class_code() {
-            class::Code::UsbXhci => {
-                let xhci: Result<xhci::Registers, ()> = self.try_into();
-                if let Ok(xhci) = xhci {
-                    debug_struct.field("xhci", &xhci);
+            class::Code::UsbXhc => {
+                let xhc: Result<xhc::Registers, ()> = self.try_into();
+                if let Ok(xhc) = xhc {
+                    debug_struct.field("xhc", &xhc);
                 }
             },
             _ => {},
