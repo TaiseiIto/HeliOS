@@ -14,10 +14,7 @@ use {
         ops::Range,
         slice,
     },
-    crate::{
-        com2_println,
-        memory,
-    },
+    crate::memory,
     super::{
         Addr,
         Off,
@@ -44,41 +41,30 @@ pub struct Header {
 
 impl Header {
     pub fn deploy(&self, elf: &[u8], pages: &mut [memory::Page]) {
-        com2_println!("Header = {:#x?}", self);
         let start: usize = self.p_offset as usize;
-        com2_println!("start = {:#x?}", start);
         let end: usize = start + self.p_filesz as usize;
-        com2_println!("end = {:#x?}", end);
         let source_range: Range<usize> = start..end;
-        com2_println!("source_range = {:#x?}", source_range);
         let vaddr_range_in_bytes: Range<usize> = self.vaddr_range_in_bytes();
-        com2_println!("vaddr_range_in_bytes = {:#x?}", vaddr_range_in_bytes);
         let vaddr_range_in_pages: Range<usize> = self.vaddr_range_in_pages();
-        com2_println!("vaddr_range_in_pages = {:#x?}", vaddr_range_in_pages);
         vaddr_range_in_pages
             .step_by(memory::page::SIZE)
             .for_each(|start| {
                 let page_range: Range<usize> = start..start + memory::page::SIZE;
-                com2_println!("page_range = {:#x?}", page_range);
                 let vaddr_range: Range<usize> = cmp::max(page_range.start, vaddr_range_in_bytes.start)..cmp::min(page_range.end, vaddr_range_in_bytes.end);
-                com2_println!("vaddr_range = {:#x?}", vaddr_range);
                 let page: &mut memory::Page = pages
                     .iter_mut()
                     .find(|page| page
                         .vaddr_range()
                         .contains(&vaddr_range.start))
                     .unwrap();
-                com2_println!("page = {:#x?}", page);
                 let paddr_range: Range<usize> = page.vaddr2paddr(vaddr_range.start)..if page.vaddr_range().contains(&vaddr_range.end) {
                     page.vaddr2paddr(vaddr_range.end)
                 } else {
                     page.paddr_range().end
                 };
-                com2_println!("paddr_range = {:#x?}", page_range);
                 let source_range_start: usize = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start;
                 let source_range_end: usize = cmp::min(source_range_start + vaddr_range.len(), source_range.end);
                 let source_range: Range<usize> = source_range_start..source_range_end;
-                com2_println!("source_range = {:#x?}", source_range);
                 let source: &[u8] = &elf[source_range];
                 let destination: *mut u8 = paddr_range.start as *mut u8;
                 let destination: &mut [u8] = unsafe {
