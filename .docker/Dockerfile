@@ -21,7 +21,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y libmpfr-dev
 RUN apt-get update && apt-get upgrade -y && apt-get install -y libpixman-1-dev
 RUN apt-get update && apt-get upgrade -y && apt-get install -y lld
 RUN apt-get update && apt-get upgrade -y && apt-get install -y nasm
-RUN apt-get update && apt-get upgrade -y && apt-get install -y netcat
+RUN apt-get update && apt-get upgrade -y && apt-get install -y netcat-traditional
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ninja-build
 RUN apt-get update && apt-get upgrade -y && apt-get install -y pkg-config
 RUN apt-get update && apt-get upgrade -y && apt-get install -y python3
