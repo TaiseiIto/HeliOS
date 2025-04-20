@@ -27,6 +27,10 @@
 1. USB compatibility is `USB 3.1`.
 1. Check `Automatically connect new USB devices`.
 1. Add device `Serial Port`.
+1. Select `Use output file` and enter COM1 log file path.
+1. Check `Yield CPU on poll`.
+1. Click `Close`.
+1. Add device `Serial Port`.
 1. Select `Use output file` and enter COM2 log file path.
 1. Check `Yield CPU on poll`.
 1. Click `Close`.
