@@ -2,6 +2,7 @@
 
 ## Create a virtual machine
 
+1. Open VirtualBox.
 1. Click `New` to create a new virtual machine.
 1. Machine name is `HeliOS`.
 1. Machine directory path must not have any space.
