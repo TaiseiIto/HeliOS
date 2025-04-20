@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n $$(which sudo) ]; then echo sudo; fi)
+SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n "$$(which sudo)" ]; then echo sudo; fi)
 
 # Product name
 PRODUCT=$(shell basename $$(pwd))
