@@ -33,7 +33,7 @@
 1. Click `Finish`.
 1. Click `Close`.
 
-# Enable UEFI
+## Enable UEFI
 
 Add the line below in the bottom of the vmx file of the virtual machine.
 
@@ -47,13 +47,13 @@ firmware = "efi"
 /some/where/HeliOS$ make tree
 ```
 
-# Write HeliOS to the virtual hard disk.
+## Write HeliOS to the virtual hard disk.
 
 ```
 /some/where/HeliOS/.vmware$ ./update_vmdk.sh /some/where/HeliOS.vmx
 ```
 
-# Start HeliOS on the virtual machine.
+## Start HeliOS on the virtual machine.
 
 1. Select the virtual machine on the VMware Workstation Pro.
 1. Click `Start up this guest operation system`.
