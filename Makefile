@@ -14,6 +14,8 @@ BLOCK_SIZE=4K
 # A number of blocks in the OS image
 BLOCK_COUNT=16K
 
+MEDIA_SIZE=$(shell numfmt --to=iec $$(expr $$(numfmt --from=iec $(BLOCK_COUNT)) \* $$(numfmt --from=iec $(BLOCK_SIZE))))
+
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
 
@@ -248,6 +250,12 @@ target:
 .PHONY: mount_directory
 mount_directory:
 	@echo $(abspath $(MOUNT_DIRECTORY))
+
+# Get an OS media size.
+# Usage: $ make media_size
+.PHONY: media_size
+media_size:
+	@echo $(MEDIA_SIZE)
 
 # Build an OS directory to run on VirtualBox or VMware.
 # Usage: $ make tree
