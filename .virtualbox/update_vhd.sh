@@ -2,16 +2,17 @@
 
 vhd=$(vboxmanage showvminfo "HeliOS" | grep vhd | awk -F ':' '{print $2}' | sed s/\"//g)
 nbd=/dev/nbd0
-mnt=mnt
+destination=destination
+source=$(make mount_directory -C .. -s)
 
 sudo modprobe nbd max_part=16
 sudo qemu-nbd --format=vpc --connect=$nbd $vhd
 sudo mkfs.vfat -v -c -F 32 $nbd
-mkdir $mnt
-sudo mount $nbd $mnt
-sudo cp -r ../HeliOS.mnt/* $mnt
-find $mnt
-sudo umount $mnt
-sudo rm -rf $mnt
+mkdir $destination
+sudo mount $nbd $destination
+sudo cp -r $source/* $destination
+find $destination
+sudo umount $destination
+sudo rm -rf $destination
 sudo qemu-nbd --disconnect $nbd
 

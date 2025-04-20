@@ -241,7 +241,13 @@ stop_on_tmux:
 # Usage: $ make target
 .PHONY: target
 target:
-	@echo $(TARGET)
+	@echo $(abspath $(TARGET))
+
+# Get an OS directory path.
+# Usage: $ make mount_directory
+.PHONY: mount_directory
+mount_directory:
+	@echo $(abspath $(MOUNT_DIRECTORY))
 
 # Build an OS directory to run on VirtualBox or VMware.
 # Usage: $ make tree
