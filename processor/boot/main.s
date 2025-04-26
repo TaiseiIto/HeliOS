@@ -11,7 +11,7 @@
 # Parameters: stack
 # Scratch registers: ax, cx, dx
 # Preserved registers: bx, si, di, bp, sp
-main16:	# IP == 0x1000
+main16:	# IP == 0x2000
 0:	# Disable interrupts.
 	cli
 	# Initialize the general registers.
