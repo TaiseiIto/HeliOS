@@ -34,14 +34,6 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 #[no_mangle]
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
-    efi_println!("Hello, World!");
-    com2_println!("Hello from /EFI/BOOT/BOOTX64.EFI");
-    let memory_map: efi::memory::Map = efi::SystemTable::get()
-        .memory_map()
-        .unwrap();
-    let memory_map: Vec<efi::memory::Descriptor> = memory_map.into();
-    com2_println!("memory_map = {:#x?}", memory_map);
-    panic!("test panic");
     // Allocate pages requested to be allocated at specific physical address preferentially.
     let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = processor::boot::Loader::allocate_pages(PROCESSOR_BOOT_LOADER_BASE, PROCESSOR_BOOT_LOADER_STACK_FLOOR);
     efi_println!("Hello, World!");
