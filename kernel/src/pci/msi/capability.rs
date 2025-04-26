@@ -3,6 +3,7 @@ use {
     super::super::Function,
 };
 
+pub mod msi;
 pub mod msi_x;
 
 /// # MSI Capability Structure
@@ -46,6 +47,10 @@ impl fmt::Debug for HeaderWithFunction<'_> {
             header,
         } = self;
         match header.capability_id().into() {
+            Id::Msi => {
+                let structure: &msi::Structure = (*header).into();
+                structure.fmt(formatter)
+            },
             Id::MsiX => {
                 let structure: &msi_x::Structure = (*header).into();
                 let structure_with_function = msi_x::StructureWithFunction::new(structure, function);

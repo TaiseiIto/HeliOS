@@ -54,7 +54,7 @@ impl Structure {
 impl<'a> From<&'a Header> for &'a Structure {
     fn from(header: &'a Header) -> Self {
         let header: *const Header = header as *const Header;
-        let structure: *const Structure = header as *const Structure;
+        let structure: *const Self = header as *const Self;
         unsafe {
             &*structure
         }
