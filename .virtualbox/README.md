@@ -57,16 +57,22 @@
 1. Check `USB -> Enable SUB Controller`.
 1. Select `USB 3.0 (xHCI) Controller`.
 
+### Enable HPET
+
+```
+/somewhere$ vboxmanage modifyvm HeliOS --hpet on
+```
+
 ## Build HeliOS.
 
 ```
-/some/where/HeliOS$ make tree
+/somewhere/HeliOS$ make tree
 ```
 
 # Write HeliOS to the virtual hard disk.
 
 ```
-/some/where/HeliOS/.virtualbox$ ./update_vhd.sh
+/somewhere/HeliOS/.virtualbox$ ./update_vhd.sh
 ```
 
 # Start HeliOS on the virtual machine.

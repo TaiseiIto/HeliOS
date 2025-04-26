@@ -48,13 +48,13 @@ firmware = "efi"
 ## Build HeliOS.
 
 ```
-/some/where/HeliOS$ make tree
+/somewhere/HeliOS$ make tree
 ```
 
 ## Write HeliOS to the virtual hard disk.
 
 ```
-/some/where/HeliOS/.vmware$ ./update_vmdk.sh /some/where/HeliOS.vmx
+/somewhere/HeliOS/.vmware$ ./update_vmdk.sh /somewhere/HeliOS.vmx
 ```
 
 ## Start HeliOS on the virtual machine.
