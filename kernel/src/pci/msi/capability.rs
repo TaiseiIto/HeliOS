@@ -73,7 +73,7 @@ impl Headers<'_> {
         (next_pointer != 0).then_some(next_pointer)
     }
 
-    fn get_next_header(&self) -> Option<Header> {
+    fn get_next_header(&self) -> Option<&Header> {
         self.get_next_pointer()
             .map(|next_pointer| {
                 let function: &Function = self.function;
@@ -84,7 +84,7 @@ impl Headers<'_> {
                 let next_header: *const Header = next_header as *const Header;
                 unsafe {
                     &*next_header
-                }.clone()
+                }
             })
     }
 }
@@ -115,7 +115,9 @@ impl<'a> Iterator for Headers<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.get_next_pointer()
-            .zip(self.get_next_header())
+            .zip(self
+                .get_next_header()
+                .cloned())
             .map(|(next_pointer, next_header)| {
                 self.next_pointer = next_header.next_pointer;
                 next_pointer
