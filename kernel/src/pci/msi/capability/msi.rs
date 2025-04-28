@@ -1,3 +1,5 @@
+pub mod message;
+
 use {
     core::fmt,
     super::Header,
@@ -9,7 +11,7 @@ use {
 #[repr(packed)]
 pub struct Structure {
     header: Header,
-    message_control: u16,
+    message_control: message::Control,
     message_address: u64,
     message_data: u16,
     __: u16,
@@ -32,7 +34,7 @@ impl fmt::Debug for Structure {
         let header: Header = self.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
-        let message_control: u16 = self.message_control;
+        let message_control: message::Control = self.message_control;
         let message_address: u64 = self.message_address;
         let message_data: u16 = self.message_data;
         let mask_bits: u32 = self.mask_bits;
