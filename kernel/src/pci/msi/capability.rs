@@ -26,41 +26,6 @@ impl Header {
     }
 }
 
-pub struct HeaderInFunction<'a> {
-    function: &'a Function,
-    header: &'a Header,
-}
-
-impl<'a> HeaderInFunction<'a> {
-    pub fn new(header: &'a Header, function: &'a Function) -> Self {
-        Self {
-            function,
-            header,
-        }
-    }
-}
-
-impl fmt::Debug for HeaderInFunction<'_> {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            function,
-            header,
-        } = self;
-        match header.capability_id().into() {
-            Id::Msi => {
-                let structure: &msi::Structure = (*header).into();
-                structure.fmt(formatter)
-            },
-            Id::MsiX => {
-                let structure: &msi_x::Structure = (*header).into();
-                let structure_in_function = msi_x::StructureInFunction::new(structure, function);
-                structure_in_function.fmt(formatter)
-            },
-            _ => unimplemented!(),
-        }
-    }
-}
-
 #[derive(Clone)]
 pub struct Headers<'a> {
     function: &'a Function,

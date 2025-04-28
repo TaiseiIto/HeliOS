@@ -4,6 +4,7 @@ use {
     core::fmt,
     super::{
         Header,
+        Id,
         super::super::{
             Function,
             base,
@@ -51,36 +52,43 @@ impl Structure {
     }
 }
 
-impl<'a> From<&'a Header> for &'a Structure {
-    fn from(header: &'a Header) -> Self {
-        let header: *const Header = header as *const Header;
-        let structure: *const Self = header as *const Self;
+pub struct StructureInFunction<'a> {
+    function: &'a Function,
+    structure_offset: u8,
+}
+
+impl StructureInFunction<'_> {
+    fn get_structure(&self) -> &Structure {
+        let Self {
+            function,
+            structure_offset,
+        } = self;
+        let function: &Function = *function;
+        let function: *const Function = function as *const Function;
+        let function: usize = function as usize;
+        let structure_offset: u8 = *structure_offset;
+        let structure_offset: usize = structure_offset as usize;
+        let structure: usize = function + structure_offset;
+        let structure: *const Structure = structure as *const Structure;
         unsafe {
             &*structure
         }
     }
 }
 
-pub struct StructureInFunction<'a> {
-    function: &'a Function,
-    structure: &'a Structure,
-}
-
 impl<'a> StructureInFunction<'a> {
-    pub fn new(structure: &'a Structure, function: &'a Function) -> Self {
+    pub fn new(structure_offset: u8, function: &'a Function) -> Self {
         Self {
             function,
-            structure,
+            structure_offset,
         }
     }
 }
 
 impl fmt::Debug for StructureInFunction<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            function,
-            structure,
-        } = self;
+        let function: &Function = self.function;
+        let structure: &Structure = self.get_structure();
         let header: Header = structure.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
