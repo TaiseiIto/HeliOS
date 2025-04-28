@@ -1,5 +1,6 @@
 use {
     core::{
+        cmp,
         fmt,
         mem,
         slice,
@@ -51,8 +52,7 @@ impl<'a> StructureInFunction<'a> {
 
     fn bytes(&'a self) -> &[u8] {
         let structure: &Structure = self.structure();
-        let length: u8 = structure.length;
-        let length: usize = length as usize;
+        let length: usize = self.length();
         let Self {
             function,
             structure_offset,
@@ -69,6 +69,13 @@ impl<'a> StructureInFunction<'a> {
         unsafe {
             slice::from_raw_parts(start, length)
         }
+    }
+
+    fn length(&self) -> usize {
+        let structure: &Structure = self.structure();
+        let length: u8 = structure.length;
+        let length: usize = length as usize;
+        cmp::max(length, mem::size_of::<Structure>())
     }
 }
 
