@@ -161,7 +161,7 @@ impl Structure<'_> {
         let header: &Header = unsafe {
             &*header
         };
-        match header.next_pointer().into() {
+        match header.capability_id().into() {
             Id::Msi => {
                 let structure: *const msi::Structure = structure as *const msi::Structure;
                 let structure: &msi::Structure = unsafe {
