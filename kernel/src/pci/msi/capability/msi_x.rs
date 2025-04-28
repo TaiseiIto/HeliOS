@@ -61,12 +61,12 @@ impl<'a> From<&'a Header> for &'a Structure {
     }
 }
 
-pub struct StructureWithFunction<'a> {
+pub struct StructureInFunction<'a> {
     function: &'a Function,
     structure: &'a Structure,
 }
 
-impl<'a> StructureWithFunction<'a> {
+impl<'a> StructureInFunction<'a> {
     pub fn new(structure: &'a Structure, function: &'a Function) -> Self {
         Self {
             function,
@@ -75,7 +75,7 @@ impl<'a> StructureWithFunction<'a> {
     }
 }
 
-impl fmt::Debug for StructureWithFunction<'_> {
+impl fmt::Debug for StructureInFunction<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             function,

@@ -26,12 +26,12 @@ impl Header {
     }
 }
 
-pub struct HeaderWithFunction<'a> {
+pub struct HeaderInFunction<'a> {
     function: &'a Function,
     header: &'a Header,
 }
 
-impl<'a> HeaderWithFunction<'a> {
+impl<'a> HeaderInFunction<'a> {
     pub fn new(header: &'a Header, function: &'a Function) -> Self {
         Self {
             function,
@@ -40,7 +40,7 @@ impl<'a> HeaderWithFunction<'a> {
     }
 }
 
-impl fmt::Debug for HeaderWithFunction<'_> {
+impl fmt::Debug for HeaderInFunction<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             function,
@@ -53,7 +53,7 @@ impl fmt::Debug for HeaderWithFunction<'_> {
             },
             Id::MsiX => {
                 let structure: &msi_x::Structure = (*header).into();
-                let structure_with_function = msi_x::StructureWithFunction::new(structure, function);
+                let structure_with_function = msi_x::StructureInFunction::new(structure, function);
                 structure_with_function.fmt(formatter)
             },
             _ => unimplemented!(),
@@ -73,7 +73,7 @@ impl fmt::Debug for Headers<'_> {
             .debug_list()
             .entries(self
                 .clone()
-                .map(|header| HeaderWithFunction::new(header, self.function)))
+                .map(|header| HeaderInFunction::new(header, self.function)))
             .finish()
     }
 }
