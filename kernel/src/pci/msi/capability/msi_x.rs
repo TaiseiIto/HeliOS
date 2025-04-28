@@ -81,7 +81,7 @@ impl<'a> StructureInFunction<'a> {
         }
     }
 
-    fn get_structure(&'a self) -> &'a Structure {
+    fn structure(&'a self) -> &'a Structure {
         let Self {
             function,
             structure_offset,
@@ -102,7 +102,7 @@ impl<'a> StructureInFunction<'a> {
 impl fmt::Debug for StructureInFunction<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let function: &Function = self.function;
-        let structure: &Structure = self.get_structure();
+        let structure: &Structure = self.structure();
         let header: Header = structure.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
