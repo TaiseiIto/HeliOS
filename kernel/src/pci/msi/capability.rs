@@ -147,6 +147,7 @@ impl From<u8> for Id {
 pub enum Structure<'a> {
     Msi(&'a msi::Structure),
     MsiX(&'a msi_x::Structure),
+    Reserved(u8),
 }
 
 impl Structure<'_> {
@@ -166,15 +167,16 @@ impl Structure<'_> {
                 let structure: &msi::Structure = unsafe {
                     &*structure
                 };
-                Structure::Msi(structure)
+                Self::Msi(structure)
             },
             Id::MsiX => {
                 let structure: *const msi_x::Structure = structure as *const msi_x::Structure;
                 let structure: &msi_x::Structure = unsafe {
                     &*structure
                 };
-                Structure::MsiX(structure)
+                Self::MsiX(structure)
             },
+            Id::Reserved(id) => Self::Reserved(id),
             id => unimplemented!("id = {:#x?}", id),
         }
     }
