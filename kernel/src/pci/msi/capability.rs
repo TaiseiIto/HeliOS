@@ -146,16 +146,16 @@ impl From<u8> for Id {
 #[derive(Debug)]
 pub enum Structure<'a> {
     Msi(&'a msi::Structure),
-    MsiX(&'a msi_x::Structure),
+    MsiX(msi_x::StructureInFunction<'a>),
     Reserved(u8),
 }
 
-impl Structure<'_> {
-    fn new(function: &Function, next_pointer: u8) -> Self {
-        let function: *const Function = function as *const Function;
-        let function: usize = function as usize;
-        let next_pointer: usize = next_pointer as usize;
-        let structure: usize = function + next_pointer;
+impl<'a> Structure<'a> {
+    fn new(function: &'a Function, next_pointer: u8) -> Self {
+        let function_address: *const Function = function as *const Function;
+        let function_address: usize = function_address as usize;
+        let next_pointer_usize: usize = next_pointer as usize;
+        let structure: usize = function_address + next_pointer_usize;
         let header: usize = structure;
         let header: *const Header = header as *const Header;
         let header: &Header = unsafe {
@@ -169,13 +169,7 @@ impl Structure<'_> {
                 };
                 Self::Msi(structure)
             },
-            Id::MsiX => {
-                let structure: *const msi_x::Structure = structure as *const msi_x::Structure;
-                let structure: &msi_x::Structure = unsafe {
-                    &*structure
-                };
-                Self::MsiX(structure)
-            },
+            Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
             Id::Reserved(id) => Self::Reserved(id),
             id => unimplemented!("id = {:#x?}", id),
         }

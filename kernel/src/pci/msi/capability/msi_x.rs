@@ -73,8 +73,15 @@ pub struct StructureInFunction<'a> {
     structure_offset: u8,
 }
 
-impl StructureInFunction<'_> {
-    fn get_structure(&self) -> &Structure {
+impl<'a> StructureInFunction<'a> {
+    pub fn new(function: &'a Function, structure_offset: u8) -> Self {
+        Self {
+            function,
+            structure_offset,
+        }
+    }
+
+    fn get_structure(&'a self) -> &'a Structure {
         let Self {
             function,
             structure_offset,
@@ -88,15 +95,6 @@ impl StructureInFunction<'_> {
         let structure: *const Structure = structure as *const Structure;
         unsafe {
             &*structure
-        }
-    }
-}
-
-impl<'a> StructureInFunction<'a> {
-    pub fn new(structure_offset: u8, function: &'a Function) -> Self {
-        Self {
-            function,
-            structure_offset,
         }
     }
 }
