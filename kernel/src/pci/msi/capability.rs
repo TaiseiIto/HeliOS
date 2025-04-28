@@ -53,8 +53,8 @@ impl fmt::Debug for HeaderInFunction<'_> {
             },
             Id::MsiX => {
                 let structure: &msi_x::Structure = (*header).into();
-                let structure_with_function = msi_x::StructureInFunction::new(structure, function);
-                structure_with_function.fmt(formatter)
+                let structure_in_function = msi_x::StructureInFunction::new(structure, function);
+                structure_in_function.fmt(formatter)
             },
             _ => unimplemented!(),
         }
