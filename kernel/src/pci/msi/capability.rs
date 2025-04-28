@@ -67,13 +67,33 @@ pub struct Headers<'a> {
     next_pointer: u8,
 }
 
+impl Headers<'_> {
+    fn get_next_pointer(&self) -> Option<u8> {
+        let next_pointer: u8 = self.next_pointer;
+        (next_pointer != 0).then_some(next_pointer)
+    }
+
+    fn get_next_header(&self) -> Option<Header> {
+        self.get_next_pointer()
+            .map(|next_pointer| {
+                let function: &Function = self.function;
+                let function: *const Function = function as *const Function;
+                let function: usize = function as usize;
+                let next_pointer: usize = next_pointer as usize;
+                let next_header: usize = function + next_pointer;
+                let next_header: *const Header = next_header as *const Header;
+                unsafe {
+                    &*next_header
+                }.clone()
+            })
+    }
+}
+
 impl fmt::Debug for Headers<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_list()
-            .entries(self
-                .clone()
-                .map(|header| HeaderInFunction::new(header, self.function)))
+            .entries(self.clone())
             .finish()
     }
 }
@@ -91,26 +111,15 @@ impl<'a> From<&'a Function> for Headers<'a> {
 }
 
 impl<'a> Iterator for Headers<'a> {
-    type Item = &'a Header;
+    type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self {
-            function,
-            next_pointer,
-        } = self;
-        let function: *const Function = *function as *const Function;
-        let function: usize = function as usize;
-        let offset: u8 = *next_pointer;
-        (offset != 0).then(|| {
-            let offset: usize = offset as usize;
-            let structure: usize = function + offset;
-            let structure: *const Header = structure as *const Header;
-            let structure: &Header = unsafe {
-                &*structure
-            };
-            *next_pointer = structure.next_pointer;
-            structure
-        })
+        self.get_next_pointer()
+            .zip(self.get_next_header())
+            .map(|(next_pointer, next_header)| {
+                self.next_pointer = next_header.next_pointer;
+                next_pointer
+            })
     }
 }
 
