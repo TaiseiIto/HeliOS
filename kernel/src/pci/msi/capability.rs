@@ -9,7 +9,7 @@ pub mod msi_x;
 /// # MSI Capability Structure
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) 6.8.1. MSI Capability Structure
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(packed)]
 pub struct Header {
     capability_id: u8,
@@ -33,13 +33,13 @@ pub struct Headers<'a> {
 }
 
 impl Headers<'_> {
-    fn get_next_pointer(&self) -> Option<u8> {
+    fn next_pointer(&self) -> Option<u8> {
         let next_pointer: u8 = self.next_pointer;
         (next_pointer != 0).then_some(next_pointer)
     }
 
-    fn get_next_header(&self) -> Option<&Header> {
-        self.get_next_pointer()
+    fn next_header(&self) -> Option<&Header> {
+        self.next_pointer()
             .map(|next_pointer| {
                 let function: &Function = self.function;
                 let function: *const Function = function as *const Function;
@@ -56,9 +56,12 @@ impl Headers<'_> {
 
 impl fmt::Debug for Headers<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let function: &Function = self.function;
         formatter
             .debug_list()
-            .entries(self.clone())
+            .entries(self
+                .clone()
+                .map(|next_pointer| Structure::new(function, next_pointer)))
             .finish()
     }
 }
@@ -79,9 +82,9 @@ impl<'a> Iterator for Headers<'a> {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.get_next_pointer()
+        self.next_pointer()
             .zip(self
-                .get_next_header()
+                .next_header()
                 .cloned())
             .map(|(next_pointer, next_header)| {
                 self.next_pointer = next_header.next_pointer;
@@ -136,6 +139,43 @@ impl From<u8> for Id {
             0x10 => Self::PciExpress,
             0x11 => Self::MsiX,
             id => Self::Reserved(id),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Structure<'a> {
+    Msi(&'a msi::Structure),
+    MsiX(&'a msi_x::Structure),
+}
+
+impl Structure<'_> {
+    fn new(function: &Function, next_pointer: u8) -> Self {
+        let function: *const Function = function as *const Function;
+        let function: usize = function as usize;
+        let next_pointer: usize = next_pointer as usize;
+        let structure: usize = function + next_pointer;
+        let header: usize = structure;
+        let header: *const Header = header as *const Header;
+        let header: &Header = unsafe {
+            &*header
+        };
+        match header.next_pointer().into() {
+            Id::Msi => {
+                let structure: *const msi::Structure = structure as *const msi::Structure;
+                let structure: &msi::Structure = unsafe {
+                    &*structure
+                };
+                Structure::Msi(structure)
+            },
+            Id::MsiX => {
+                let structure: *const msi_x::Structure = structure as *const msi_x::Structure;
+                let structure: &msi_x::Structure = unsafe {
+                    &*structure
+                };
+                Structure::MsiX(structure)
+            },
+            id => unimplemented!("id = {:#x?}", id),
         }
     }
 }

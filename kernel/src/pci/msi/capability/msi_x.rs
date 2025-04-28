@@ -52,6 +52,22 @@ impl Structure {
     }
 }
 
+impl fmt::Debug for Structure {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let header: Header = self.header.clone();
+        let message_control: MessageControl = self.message_control;
+        let table: table::Register = self.table;
+        let pba: pba::Register = self.pba;
+        formatter
+            .debug_struct("Structure")
+            .field("header", &header)
+            .field("message_control", &message_control)
+            .field("table", &table)
+            .field("pba", &pba)
+            .finish()
+    }
+}
+
 pub struct StructureInFunction<'a> {
     function: &'a Function,
     structure_offset: u8,
