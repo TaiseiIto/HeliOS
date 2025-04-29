@@ -6,6 +6,7 @@ use {
 pub mod msi;
 pub mod msi_x;
 pub mod pci_bridge_subsystem;
+pub mod pci_express;
 pub mod pci_power_management;
 pub mod vendor_specific;
 
@@ -151,6 +152,7 @@ pub enum Structure<'a> {
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
     PciBridgeSubsystemVendorId(&'a pci_bridge_subsystem::Structure),
+    PciExpress(&'a pci_express::Structure),
     PciPowerManagementInterface(&'a pci_power_management::Registers),
     Reserved(u8),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
@@ -182,6 +184,13 @@ impl<'a> Structure<'a> {
                     &*structure
                 };
                 Self::PciBridgeSubsystemVendorId(structure)
+            },
+            Id::PciExpress => {
+                let structure: *const pci_express::Structure = structure as *const pci_express::Structure;
+                let structure: &pci_express::Structure = unsafe {
+                    &*structure
+                };
+                Self::PciExpress(structure)
             },
             Id::PciPowerManagementInterface => {
                 let register: *const pci_power_management::Registers = structure as *const pci_power_management::Registers;
