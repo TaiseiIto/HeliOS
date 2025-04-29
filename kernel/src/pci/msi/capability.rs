@@ -5,6 +5,7 @@ use {
 
 pub mod msi;
 pub mod msi_x;
+pub mod pci_power_management;
 pub mod vendor_specific;
 
 /// # MSI Capability Structure
@@ -149,6 +150,7 @@ pub enum Structure<'a> {
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
     PciBridgeSubsystemVendorId,
+    PciPowerManagementInterface(&'a pci_power_management::Register),
     Reserved(u8),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
 }
@@ -174,6 +176,13 @@ impl<'a> Structure<'a> {
             },
             Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
             Id::PciBridgeSubsystemVendorId => Self::PciBridgeSubsystemVendorId,
+            Id::PciPowerManagementInterface => {
+                let register: *const pci_power_management::Register = structure as *const pci_power_management::Register;
+                let register: &pci_power_management::Register = unsafe {
+                    &*register
+                };
+                Self::PciPowerManagementInterface(register)
+            },
             Id::Reserved(id) => Self::Reserved(id),
             Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
             id => unimplemented!("id = {:#x?}", id),
