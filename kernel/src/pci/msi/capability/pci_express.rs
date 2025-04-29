@@ -1,3 +1,5 @@
+pub mod capability;
+
 use {
     core::fmt,
     super::Header,
@@ -9,7 +11,7 @@ use {
 #[repr(packed)]
 pub struct Structure {
     header: Header,
-    capability: u16,
+    capability: capability::Register,
     device_capabilities: u32,
     device_control: u16,
     device_status: u16,
@@ -35,7 +37,7 @@ impl fmt::Debug for Structure {
         let header: Header = self.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
-        let capability: u16 = self.capability;
+        let capability: capability::Register = self.capability;
         let device_capabilities: u32 = self.device_capabilities;
         let device_control: u16 = self.device_control;
         let device_status: u16 = self.device_status;
