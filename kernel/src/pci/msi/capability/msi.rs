@@ -19,16 +19,6 @@ pub struct Structure {
     pending_bits: u32,
 }
 
-impl<'a> From<&'a Header> for &'a Structure {
-    fn from(header: &'a Header) -> Self {
-        let header: *const Header = header as *const Header;
-        let structure: *const Self = header as *const Self;
-        unsafe {
-            &*structure
-        }
-    }
-}
-
 impl fmt::Debug for Structure {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: Header = self.header.clone();
