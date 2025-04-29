@@ -150,7 +150,7 @@ pub enum Structure<'a> {
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
     PciBridgeSubsystemVendorId,
-    PciPowerManagementInterface(&'a pci_power_management::Register),
+    PciPowerManagementInterface(&'a pci_power_management::Registers),
     Reserved(u8),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
 }
@@ -177,8 +177,8 @@ impl<'a> Structure<'a> {
             Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
             Id::PciBridgeSubsystemVendorId => Self::PciBridgeSubsystemVendorId,
             Id::PciPowerManagementInterface => {
-                let register: *const pci_power_management::Register = structure as *const pci_power_management::Register;
-                let register: &pci_power_management::Register = unsafe {
+                let register: *const pci_power_management::Registers = structure as *const pci_power_management::Registers;
+                let register: &pci_power_management::Registers = unsafe {
                     &*register
                 };
                 Self::PciPowerManagementInterface(register)

@@ -1,3 +1,5 @@
+pub mod pmc;
+
 use {
     core::fmt,
     super::Header,
@@ -5,27 +7,27 @@ use {
 
 /// # Power Management Register Block
 /// ## References
-/// * [PCI Power Management Interface Specification Revision 1.2](https://lekensteyn.nl/files/docs/PCI_Power_Management_12.pdf) 3.2 Power Management Register Block Definition
+/// * [PCI Power Management Interface Specification Revision 1.2](https://lekensteyn.nl/files/docs/PCI_Power_Management_12.pdf) 3.2. Power Management Register Block Definition
 #[repr(packed)]
-pub struct Register {
+pub struct Registers {
     header: Header,
-    pmc: u16,
+    pmc: pmc::Register,
     pmcsr: u16,
     pmcsr_bse: u8,
     data: u8,
 }
 
-impl fmt::Debug for Register {
+impl fmt::Debug for Registers {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: Header = self.header.clone();
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
-        let pmc: u16 = self.pmc;
+        let pmc: pmc::Register = self.pmc;
         let pmcsr: u16 = self.pmcsr;
         let pmcsr_bse: u8 = self.pmcsr_bse;
         let data: u8 = self.data;
         formatter
-            .debug_struct("Register")
+            .debug_struct("Registers")
             .field("capability_id", &capability_id)
             .field("next_pointer", &next_pointer)
             .field("pmc", &pmc)
