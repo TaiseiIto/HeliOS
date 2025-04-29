@@ -14,7 +14,7 @@ pub struct Structure {
     header: Header,
     capability: capability::Register,
     device_capabilities: device::capabilities::Register,
-    device_control: u16,
+    device_control: device::control::Register,
     device_status: u16,
     link_capabilities: u32,
     link_control: u16,
@@ -40,7 +40,7 @@ impl fmt::Debug for Structure {
         let next_pointer: u8 = header.next_pointer();
         let capability: capability::Register = self.capability;
         let device_capabilities: device::capabilities::Register = self.device_capabilities;
-        let device_control: u16 = self.device_control;
+        let device_control: device::control::Register = self.device_control;
         let device_status: u16 = self.device_status;
         let link_capabilities: u32 = self.link_capabilities;
         let link_control: u16 = self.link_control;
