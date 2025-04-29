@@ -1,4 +1,5 @@
 pub mod capability;
+pub mod device;
 
 use {
     core::fmt,
@@ -12,7 +13,7 @@ use {
 pub struct Structure {
     header: Header,
     capability: capability::Register,
-    device_capabilities: u32,
+    device_capabilities: device::capabilities::Register,
     device_control: u16,
     device_status: u16,
     link_capabilities: u32,
@@ -38,7 +39,7 @@ impl fmt::Debug for Structure {
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
         let capability: capability::Register = self.capability;
-        let device_capabilities: u32 = self.device_capabilities;
+        let device_capabilities: device::capabilities::Register = self.device_capabilities;
         let device_control: u16 = self.device_control;
         let device_status: u16 = self.device_status;
         let link_capabilities: u32 = self.link_capabilities;
