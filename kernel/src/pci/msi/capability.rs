@@ -148,8 +148,9 @@ impl From<u8> for Id {
 pub enum Structure<'a> {
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
-    VendorSpecific(vendor_specific::StructureInFunction<'a>),
+    PciBridgeSubsystemVendorId,
     Reserved(u8),
+    VendorSpecific(vendor_specific::StructureInFunction<'a>),
 }
 
 impl<'a> Structure<'a> {
@@ -172,8 +173,9 @@ impl<'a> Structure<'a> {
                 Self::Msi(structure)
             },
             Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
-            Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
+            Id::PciBridgeSubsystemVendorId => Self::PciBridgeSubsystemVendorId,
             Id::Reserved(id) => Self::Reserved(id),
+            Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
             id => unimplemented!("id = {:#x?}", id),
         }
     }
