@@ -11,7 +11,7 @@ pub struct Register {
     __: u8,
     extended_tag_supported: bool,
     #[bits(3)]
-    acceptable_los_latency: u8,
+    acceptable_l0s_latency: u8,
     #[bits(3)]
     acceptable_l1_latency: u8,
     #[bits(3)]
