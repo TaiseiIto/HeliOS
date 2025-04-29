@@ -1,4 +1,5 @@
 pub mod pmc;
+pub mod pmcsr;
 
 use {
     core::fmt,
@@ -12,7 +13,7 @@ use {
 pub struct Registers {
     header: Header,
     pmc: pmc::Register,
-    pmcsr: u16,
+    pmcsr: pmcsr::Register,
     pmcsr_bse: u8,
     data: u8,
 }
@@ -23,7 +24,7 @@ impl fmt::Debug for Registers {
         let capability_id: u8 = header.capability_id();
         let next_pointer: u8 = header.next_pointer();
         let pmc: pmc::Register = self.pmc;
-        let pmcsr: u16 = self.pmcsr;
+        let pmcsr: pmcsr::Register = self.pmcsr;
         let pmcsr_bse: u8 = self.pmcsr_bse;
         let data: u8 = self.data;
         formatter
