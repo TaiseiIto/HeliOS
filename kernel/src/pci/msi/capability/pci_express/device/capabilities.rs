@@ -1,8 +1,8 @@
 use bitfield_struct::bitfield;
 
-/// # PCI Express Device Capabilities Register - 0x84
+/// # PCI Express Device Capabilities Register - 0x084
 /// ## Referneces
-/// * [PCI Express Device Capabilities Register - 0x84](https://www.intel.com/content/www/us/en/docs/programmable/683686/20-4/pci-express-capability-structure.html) Table 57. PCI Express Device Capabilities Register - 0x84
+/// * [PCI Express Device Capabilities Register - 0x084](https://www.intel.com/content/www/us/en/docs/programmable/683686/20-4/pci-express-capability-structure.html) Table 57. PCI Express Device Capabilities Register - 0x084
 #[bitfield(u32)]
 pub struct Register {
     #[bits(3)]
