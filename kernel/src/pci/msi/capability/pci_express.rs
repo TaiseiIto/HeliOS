@@ -19,7 +19,7 @@ pub struct Structure {
     device_status: device::status::Register,
     link_capabilities: link::capabilities::Register,
     link_control: link::control::Register,
-    link_status: u16,
+    link_status: link::status::Register,
     slot_capabilities: u32,
     slot_control: u16,
     slot_status: u16,
@@ -45,7 +45,7 @@ impl fmt::Debug for Structure {
         let device_status: device::status::Register = self.device_status;
         let link_capabilities: link::capabilities::Register = self.link_capabilities;
         let link_control: link::control::Register = self.link_control;
-        let link_status: u16 = self.link_status;
+        let link_status: link::status::Register = self.link_status;
         let slot_capabilities: u32 = self.slot_capabilities;
         let slot_control: u16 = self.slot_control;
         let slot_status: u16 = self.slot_status;
