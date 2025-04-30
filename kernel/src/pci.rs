@@ -250,11 +250,11 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
-    pub fn msi_capabilities<'a>(&'a self) -> msi::capability::Headers<'a> {
+    pub fn msi_capabilities(&self) -> msi::capability::Headers<'_> {
         self.into()
     }
 
-    pub fn header<'a>(&'a self) -> Header<'a> {
+    pub fn header(&self) -> Header<'_> {
         self.into()
     }
 
@@ -274,14 +274,11 @@ impl Function {
     }
 
     pub fn reset(&self) {
-        match self.header().class_code() {
-            class::Code::UsbXhc => {
-                let mut xhc: Result<xhc::Registers, ()> = self.try_into();
-                if let Ok(mut xhc) = xhc {
-                    xhc.reset();
-                }
-            },
-            _ => {},
+        if self.header().class_code() == class::Code::UsbXhc {
+            let mut xhc: Result<xhc::Registers, ()> = self.try_into();
+            if let Ok(mut xhc) = xhc {
+                xhc.reset();
+            }
         }
     }
 }
