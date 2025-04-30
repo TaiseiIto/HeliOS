@@ -3,6 +3,7 @@ use {
     super::super::Function,
 };
 
+pub mod agp;
 pub mod msi;
 pub mod msi_x;
 pub mod pci_bridge_subsystem;
@@ -150,6 +151,7 @@ impl From<u8> for Id {
 
 #[derive(Debug)]
 pub enum Structure<'a> {
+    Agp(&'a agp::Space),
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
     PciBridgeSubsystemVendorId(&'a pci_bridge_subsystem::Structure),
@@ -172,6 +174,13 @@ impl<'a> Structure<'a> {
             &*header
         };
         match header.capability_id().into() {
+            Id::Agp => {
+                let space: *const agp::Space = structure as *const agp::Space;
+                let space: &agp::Space = unsafe {
+                    &*space
+                };
+                Self::Agp(space)
+            },
             Id::Msi => {
                 let structure: *const msi::Structure = structure as *const msi::Structure;
                 let structure: &msi::Structure = unsafe {
