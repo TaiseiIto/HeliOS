@@ -7,7 +7,6 @@ use {
     core::fmt,
     super::{
         Function,
-        Header,
         base,
         class,
     },

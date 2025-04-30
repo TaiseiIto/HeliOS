@@ -4,7 +4,6 @@ use {
     core::fmt,
     super::{
         Header,
-        Id,
         super::super::{
             Function,
             base,

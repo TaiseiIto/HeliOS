@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    crate::x64,
-};
+use bitfield_struct::bitfield;
 
 /// # USB Command Register (USBCMD)
 /// ## References

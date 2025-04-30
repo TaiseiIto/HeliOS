@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::Function,
-};
+use bitfield_struct::bitfield;
 
 /// # Header Type Register
 /// ## References

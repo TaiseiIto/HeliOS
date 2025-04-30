@@ -34,8 +34,11 @@ impl Register {
 #[derive(Debug, Default)]
 #[repr(packed)]
 pub struct Entry {
+    #[allow(dead_code)]
     msg_addr: u64,
+    #[allow(dead_code)]
     msg_data: u32,
+    #[allow(dead_code)]
     vector_control: VectorControl,
 }
 

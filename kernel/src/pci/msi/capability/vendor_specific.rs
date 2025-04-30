@@ -51,7 +51,6 @@ impl<'a> StructureInFunction<'a> {
     }
 
     fn bytes(&'a self) -> &[u8] {
-        let structure: &Structure = self.structure();
         let length: usize = self.length();
         let Self {
             function,

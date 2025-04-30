@@ -25,7 +25,6 @@ use {
     bitfield_struct::bitfield,
     core::{
         fmt,
-        mem,
         ops,
     },
     crate::x64,
@@ -244,6 +243,7 @@ impl Device {
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1 Type 0/1 Common Configuration Space Figure 7-4 Common Configuration Space Header
 pub struct Function {
+    #[allow(dead_code)]
     space: [u32; Self::LENGTH],
 }
 
@@ -275,7 +275,7 @@ impl Function {
 
     pub fn reset(&self) {
         if self.header().class_code() == class::Code::UsbXhc {
-            let mut xhc: Result<xhc::Registers, ()> = self.try_into();
+            let xhc: Result<xhc::Registers, ()> = self.try_into();
             if let Ok(mut xhc) = xhc {
                 xhc.reset();
             }
@@ -358,7 +358,6 @@ impl fmt::Debug for Function {
                 let prefetchable_memory_limit_upper_32bits: u32 = type1.prefetchable_memory_limit_upper_32bits;
                 let io_base_upper_16bits: u16 = type1.io_base_upper_16bits;
                 let io_limit_upper_16bits: u16 = type1.io_limit_upper_16bits;
-                let capabilities_pointer: u8 = type1.capabilities_pointer;
                 let expantion_rom_base_address: expansion_rom_base_address::Register = type1.expantion_rom_base_address;
                 let interrupt_line: u8 = type1.interrupt_line;
                 let interrupt_pin: u8 = type1.interrupt_pin;
