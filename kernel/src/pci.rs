@@ -401,14 +401,11 @@ impl fmt::Debug for Function {
                     .field("bridge_control", &bridge_control)
             },
         };
-        match self.header().class_code() {
-            class::Code::UsbXhc => {
-                let xhc: Result<xhc::Registers, ()> = self.try_into();
-                if let Ok(xhc) = xhc {
-                    debug_struct.field("xhc", &xhc);
-                }
-            },
-            _ => {},
+        if self.header().class_code() == class::Code::UsbXhc {
+            let xhc: Result<xhc::Registers, ()> = self.try_into();
+            if let Ok(xhc) = xhc {
+                debug_struct.field("xhc", &xhc);
+            }
         }
         debug_struct.finish()
     }
