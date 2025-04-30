@@ -1,3 +1,6 @@
+pub mod command;
+pub mod status;
+
 use {
     core::fmt,
     super::Header,
@@ -9,15 +12,15 @@ use {
 #[repr(packed)]
 pub struct Item {
     header: Header,
-    command: u16,
-    status: u32,
+    command: command::Register,
+    status: status::Register,
 }
 
 impl fmt::Debug for Item {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: Header = self.header.clone();
-        let command: u16 = self.command;
-        let status: u32 = self.status;
+        let command: command::Register = self.command;
+        let status: status::Register = self.status;
         formatter
             .debug_struct("Item")
             .field("header", &header)
