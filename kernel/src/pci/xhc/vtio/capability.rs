@@ -4,7 +4,9 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     pdmaid: u16,
+    #[allow(dead_code)]
     admaid: u16,
 }
 

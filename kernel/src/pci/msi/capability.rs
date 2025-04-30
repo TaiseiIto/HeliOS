@@ -117,7 +117,7 @@ pub enum Id {
     DebugPort,
     CompactPciCentralResourceControl,
     PciHotPlug,
-    PciBridgeSubsystemVendorId,
+    PciBridgeSubsystemVendor,
     Agp8x,
     SecureDevice,
     PciExpress,
@@ -139,7 +139,7 @@ impl From<u8> for Id {
             0x0a => Self::DebugPort,
             0x0b => Self::CompactPciCentralResourceControl,
             0x0c => Self::PciHotPlug,
-            0x0d => Self::PciBridgeSubsystemVendorId,
+            0x0d => Self::PciBridgeSubsystemVendor,
             0x0e => Self::Agp8x,
             0x0f => Self::SecureDevice,
             0x10 => Self::PciExpress,
@@ -154,7 +154,7 @@ pub enum Structure<'a> {
     Agp(&'a agp::Space),
     Msi(&'a msi::Structure),
     MsiX(msi_x::StructureInFunction<'a>),
-    PciBridgeSubsystemVendorId(&'a pci_bridge_subsystem::Structure),
+    PciBridgeSubsystemVendor(&'a pci_bridge_subsystem::Structure),
     PciExpress(&'a pci_express::Structure),
     PciPowerManagementInterface(&'a pci_power_management::Registers),
     PciX(&'a pci_x::Item),
@@ -189,12 +189,12 @@ impl<'a> Structure<'a> {
                 Self::Msi(structure)
             },
             Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
-            Id::PciBridgeSubsystemVendorId => {
+            Id::PciBridgeSubsystemVendor => {
                 let structure: *const pci_bridge_subsystem::Structure = structure as *const pci_bridge_subsystem::Structure;
                 let structure: &pci_bridge_subsystem::Structure = unsafe {
                     &*structure
                 };
-                Self::PciBridgeSubsystemVendorId(structure)
+                Self::PciBridgeSubsystemVendor(structure)
             },
             Id::PciExpress => {
                 let structure: *const pci_express::Structure = structure as *const pci_express::Structure;

@@ -79,7 +79,7 @@ impl From<&[u32]> for Index2Address {
                     }
                 },
             });
-        assert!(matches!(index_and_low_memory_address, None));
+        assert!(index_and_low_memory_address.is_none());
         Self(index2address)
     }
 }

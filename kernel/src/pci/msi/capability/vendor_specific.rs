@@ -38,7 +38,7 @@ impl<'a> StructureInFunction<'a> {
             function,
             structure_offset,
         } = self;
-        let function: &Function = *function;
+        let function: &Function = function;
         let function: *const Function = function as *const Function;
         let function: usize = function as usize;
         let structure_offset: u8 = *structure_offset;
