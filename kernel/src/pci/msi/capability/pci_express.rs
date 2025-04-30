@@ -22,7 +22,7 @@ pub struct Structure {
     link_control: link::control::Register,
     link_status: link::status::Register,
     slot_capabilities: slot::capabilities::Register,
-    slot_control: u16,
+    slot_control: slot::control::Register,
     slot_status: u16,
     root_control: u16,
     root_capabilities: u16,
@@ -48,7 +48,7 @@ impl fmt::Debug for Structure {
         let link_control: link::control::Register = self.link_control;
         let link_status: link::status::Register = self.link_status;
         let slot_capabilities: slot::capabilities::Register = self.slot_capabilities;
-        let slot_control: u16 = self.slot_control;
+        let slot_control: slot::control::Register = self.slot_control;
         let slot_status: u16 = self.slot_status;
         let root_control: u16 = self.root_control;
         let root_capabilities: u16 = self.root_capabilities;
