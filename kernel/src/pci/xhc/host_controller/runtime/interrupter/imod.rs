@@ -4,7 +4,9 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     interval: u16,
+    #[allow(dead_code)]
     counter: u16,
 }
 

@@ -4,6 +4,7 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     page_size: u16,
     __: u16,
 }

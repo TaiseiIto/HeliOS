@@ -9,9 +9,13 @@ pub mod sc;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
+    #[allow(dead_code)]
     sc: sc::Register,
+    #[allow(dead_code)]
     pmsc: u32,
+    #[allow(dead_code)]
     li: u32,
+    #[allow(dead_code)]
     hlpmc: u32,
 }
 

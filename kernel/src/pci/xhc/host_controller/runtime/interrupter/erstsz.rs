@@ -4,6 +4,7 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     event_ring_segment_table_size: u16,
     __: u16,
 }

@@ -7,8 +7,10 @@ pub mod mfindex;
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Registers {
+    #[allow(dead_code)]
     mfindex: mfindex::Register,
     __: [u32; 7],
+    #[allow(dead_code)]
     interrupter_register_sets: [interrupter::RegisterSet; 1024],
 }
 

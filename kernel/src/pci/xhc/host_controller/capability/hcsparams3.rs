@@ -4,7 +4,9 @@
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     u1_device_exit_latency: u8,
+    #[allow(dead_code)]
     u2_device_exit_latency: u8,
     __: u16,
 }

@@ -10,11 +10,16 @@ pub mod erdp;
 #[derive(Clone, Copy, Debug)]
 #[repr(packed)]
 pub struct RegisterSet {
+    #[allow(dead_code)]
     iman: iman::Register,
+    #[allow(dead_code)]
     imod: imod::Register,
+    #[allow(dead_code)]
     erstsz: erstsz::Register,
     __: u32,
+    #[allow(dead_code)]
     erstba: erstba::Register,
+    #[allow(dead_code)]
     erdp: erdp::Register,
 }
 

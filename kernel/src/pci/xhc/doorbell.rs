@@ -4,8 +4,10 @@
 #[derive(Debug)]
 #[repr(packed)]
 pub struct Register {
+    #[allow(dead_code)]
     db_target: u8,
     __: u16,
+    #[allow(dead_code)]
     db_task_id: u16,
 }
 

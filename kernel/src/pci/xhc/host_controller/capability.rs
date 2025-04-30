@@ -27,13 +27,18 @@ pub mod vtiosoff;
 pub struct Registers {
     caplength: u8,
     __: u8,
+    #[allow(dead_code)]
     hciversion: u16,
     hcsparams1: hcsparams1::Register,
+    #[allow(dead_code)]
     hcsparams2: hcsparams2::Register,
+    #[allow(dead_code)]
     hcsparams3: hcsparams3::Register,
+    #[allow(dead_code)]
     hccparams1: hccparams1::Register,
     dboff: dboff::Register,
     rtsoff: rtsoff::Register,
+    #[allow(dead_code)]
     hccparams2: hccparams2::Register,
     vtiosoff: vtiosoff::Register,
 }

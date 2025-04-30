@@ -20,12 +20,17 @@ pub mod usbsts;
 pub struct Registers {
     usbcmd: usbcmd::Register,
     usbsts: usbsts::Register,
+    #[allow(dead_code)]
     pagesize: pagesize::Register,
     _0: u64,
+    #[allow(dead_code)]
     dnctrl: dnctrl::Register,
+    #[allow(dead_code)]
     crcr: crcr::Register,
     _1: u128,
+    #[allow(dead_code)]
     dcbaap: dcbaap::Register,
+    #[allow(dead_code)]
     config: config::Register,
 }
 
