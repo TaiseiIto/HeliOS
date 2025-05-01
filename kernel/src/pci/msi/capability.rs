@@ -165,7 +165,7 @@ pub enum Structure<'a> {
     PciX(&'a pci_x::Item),
     Reserved(u8),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
-    Vpd(&'a vpd::Structure),
+    Vpd(vpd::StructureWithFunctionWithAddress<'a>),
 }
 
 impl<'a> Structure<'a> {
@@ -226,13 +226,7 @@ impl<'a> Structure<'a> {
             },
             Id::Reserved(id) => Self::Reserved(id),
             Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
-            Id::Vpd => {
-                let structure: *const vpd::Structure = structure as *const vpd::Structure;
-                let structure: &vpd::Structure = unsafe {
-                    &*structure
-                };
-                Self::Vpd(structure)
-            },
+            Id::Vpd => Self::Vpd(vpd::StructureWithFunctionWithAddress::new(function_with_address, next_pointer)),
             id => unimplemented!("id = {:#x?}", id),
         }
     }
