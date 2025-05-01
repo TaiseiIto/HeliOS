@@ -66,12 +66,12 @@ impl Headers<'_> {
 
 impl fmt::Debug for Headers<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function: &Function = self.function_with_address.function();
+        let function_with_address: &FunctionWithAddress = self.function_with_address;
         formatter
             .debug_list()
             .entries(self
                 .clone()
-                .map(|next_pointer| Structure::new(function, next_pointer)))
+                .map(|next_pointer| Structure::new(function_with_address, next_pointer)))
             .finish()
     }
 }
@@ -169,7 +169,8 @@ pub enum Structure<'a> {
 }
 
 impl<'a> Structure<'a> {
-    fn new(function: &'a Function, next_pointer: u8) -> Self {
+    fn new(function_with_address: &'a FunctionWithAddress<'a>, next_pointer: u8) -> Self {
+        let function: &Function = function_with_address.function();
         let function_address: *const Function = function as *const Function;
         let function_address: usize = function_address as usize;
         let next_pointer_usize: usize = next_pointer as usize;
