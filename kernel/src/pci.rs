@@ -111,7 +111,7 @@ impl Address {
 /// # PCI
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Configuration {
     buses: BTreeMap<u8, Bus>,
 }
@@ -183,10 +183,22 @@ impl Configuration {
     }
 }
 
+impl fmt::Debug for Configuration {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries(self
+                .buses
+                .iter()
+                .map(|(bus_number, bus)| (*bus_number, BusWithAddress::new(*bus_number, bus))))
+            .finish()
+    }
+}
+
 /// # PCI Bus
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Bus {
     devices: BTreeMap<u8, Device>,
 }
@@ -212,10 +224,43 @@ impl Bus {
     }
 }
 
+pub struct BusWithAddress<'a> {
+    bus_number: u8,
+    bus: &'a Bus,
+}
+
+impl<'a> BusWithAddress<'a> {
+    fn new(bus_number: u8, bus: &'a Bus) -> Self {
+        Self {
+            bus_number,
+            bus,
+        }
+    }
+}
+
+impl fmt::Debug for BusWithAddress<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries({
+                let Self {
+                    bus_number,
+                    bus: Bus {
+                        devices,
+                    },
+                } = self;
+                devices
+                    .iter()
+                    .map(|(device_number, device)| (*device_number, DeviceWithAddress::new(*bus_number, *device_number, device)))
+            })
+            .finish()
+    }
+}
+
 /// # PCI Device
 /// ## References
 /// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf)
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Device {
     functions: BTreeMap<u8, Function>,
 }
@@ -236,6 +281,42 @@ impl Device {
         self.functions
             .values_mut()
             .for_each(|device| device.reset());
+    }
+}
+
+pub struct DeviceWithAddress<'a> {
+    bus_number: u8,
+    device_number: u8,
+    device: &'a Device,
+}
+
+impl<'a> DeviceWithAddress<'a> {
+    fn new(bus_number: u8, device_number: u8, device: &'a Device) -> Self {
+        Self {
+            bus_number,
+            device_number,
+            device,
+        }
+    }
+}
+
+impl fmt::Debug for DeviceWithAddress<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_map()
+            .entries({
+                let Self {
+                    bus_number,
+                    device_number,
+                    device: Device {
+                        functions,
+                    },
+                } = self;
+                functions
+                    .iter()
+                    .map(|(function_number, function)| (*function_number, FunctionWithAddress::new(*bus_number, *device_number, *function_number, function)))
+            })
+            .finish()
     }
 }
 
@@ -283,11 +364,35 @@ impl Function {
     }
 }
 
-impl fmt::Debug for Function {
+pub struct FunctionWithAddress<'a> {
+    bus_number: u8,
+    device_number: u8,
+    function_number: u8,
+    function: &'a Function,
+}
+
+impl<'a> FunctionWithAddress<'a> {
+    fn new(bus_number: u8, device_number: u8, function_number: u8, function: &'a Function) -> Self {
+        Self {
+            bus_number,
+            device_number,
+            function_number,
+            function,
+        }
+    }
+}
+
+impl fmt::Debug for FunctionWithAddress<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
-        let capabilities: msi::capability::Headers = self.msi_capabilities();
-        match self.header() {
+        let Self {
+            bus_number,
+            device_number,
+            function_number,
+            function,
+        } = self;
+        let capabilities: msi::capability::Headers = function.msi_capabilities();
+        match function.header() {
             Header::Type0(type0) => {
                 let vendor_id: u16 = type0.vendor_id;
                 let device_id: u16 = type0.device_id;
@@ -397,8 +502,8 @@ impl fmt::Debug for Function {
                     .field("bridge_control", &bridge_control)
             },
         };
-        if self.header().class_code() == class::Code::UsbXhc {
-            let xhc: Result<xhc::Registers, ()> = self.try_into();
+        if function.header().class_code() == class::Code::UsbXhc {
+            let xhc: Result<xhc::Registers, ()> = (*function).try_into();
             if let Ok(xhc) = xhc {
                 debug_struct.field("xhc", &xhc);
             }
