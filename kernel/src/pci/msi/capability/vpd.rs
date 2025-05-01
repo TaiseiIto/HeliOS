@@ -173,3 +173,49 @@ impl Iterator for DwordIterator<'_> {
     }
 }
 
+pub struct ByteIterator<'a> {
+    dword_iterator: DwordIterator<'a>,
+    address: u16,
+    dword: Option<u32>,
+}
+
+impl<'a> From<DwordIterator<'a>> for ByteIterator<'a> {
+    fn from(dword_iterator: DwordIterator<'a>) -> Self {
+        let address: u16 = dword_iterator.address;
+        let dword: Option<u32> = None;
+        Self {
+            dword_iterator,
+            address,
+            dword,
+        }
+    }
+}
+
+impl Iterator for ByteIterator<'_> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            dword_iterator,
+            address,
+            dword,
+        } = self;
+        if dword.is_none() {
+            *dword = dword_iterator.next();
+        }
+        match *dword {
+            Some(current_dword) => {
+                let offset_in_byte: usize = ((*address) as usize) % mem::size_of::<u32>();
+                let offset_in_bit: usize = offset_in_byte * (u8::BITS as usize);
+                let byte: u8 = ((current_dword >> offset_in_bit) & 0xff) as u8;
+                *address += 1;
+                if (*address as usize) % mem::size_of::<u32>() == 0 {
+                    *dword = None;
+                }
+                Some(byte)
+            },
+            None => unreachable!(),
+        }
+    }
+}
+
