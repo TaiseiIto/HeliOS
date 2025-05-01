@@ -91,6 +91,7 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
     }
 
     fn read(&self, address: u16) -> u32 {
+        assert_eq!((address as usize) % mem::size_of::<u32>(), 0);
         let mut structure: Structure = self.read_structure();
         structure.address = address::Register::read_address(address);
         self.write_structure(structure);
@@ -117,6 +118,35 @@ impl fmt::Debug for StructureWithFunctionWithAddress<'_> {
             &*structure
         };
         structure.fmt(formatter)
+    }
+}
+
+pub struct DwordIterator<'a> {
+    structure_with_function_with_address: &'a StructureWithFunctionWithAddress<'a>,
+    address: u16,
+}
+
+impl<'a> From<&'a StructureWithFunctionWithAddress<'a>> for DwordIterator<'a> {
+    fn from(structure_with_function_with_address: &'a StructureWithFunctionWithAddress<'a>) -> Self {
+        let address: u16 = 0;
+        Self {
+            structure_with_function_with_address,
+            address,
+        }
+    }
+}
+
+impl Iterator for DwordIterator<'_> {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            structure_with_function_with_address,
+            address,
+        } = self;
+        let item: u32 = structure_with_function_with_address.read(*address);
+        *address += mem::size_of::<Self::Item>() as u16;
+        Some(item)
     }
 }
 
