@@ -25,6 +25,7 @@ use {
     bitfield_struct::bitfield,
     core::{
         fmt,
+        mem,
         ops,
     },
     crate::x64,
@@ -53,8 +54,15 @@ impl Address {
     const ADDRESS_PORT: u16 = 0x0cf8;
     const DATA_PORT: u16 = 0x0cfc;
 
+    pub fn add(self, offset: usize) -> Self {
+        assert_eq!(offset % mem::size_of::<u32>(), 0);
+        let address: u32 = self.0;
+        let address: u32 = address + (offset as u32);
+        address.into()
+    }
+
     pub fn create(bus: u8, device: u8, function: u8, register: u8) -> Self {
-        assert_eq!(register % 4, 0);
+        assert_eq!((register as usize) % mem::size_of::<u32>(), 0);
         Self::new()
             .with_enable(true)
             .with_bus(bus)
@@ -512,10 +520,12 @@ impl Header<'_> {
     }
 
     pub fn capabilities_pointer(&self) -> u8 {
-        match self {
+        let capabilities_pointer: u8 = match self {
             Self::Type0(type0) => type0.capabilities_pointer,
             Self::Type1(type1) => type1.capabilities_pointer,
-        }
+        };
+        assert_eq!((capabilities_pointer as usize) % mem::size_of::<u32>(), 0);
+        capabilities_pointer
     }
 
     pub fn class_code(&self) -> class::Code {

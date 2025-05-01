@@ -1,5 +1,8 @@
 use {
-    core::fmt,
+    core::{
+        fmt,
+        mem,
+    },
     super::super::{
         Function,
         FunctionWithAddress,
@@ -32,7 +35,9 @@ impl Header {
     }
 
     pub fn next_pointer(&self) -> u8 {
-        self.next_pointer
+        let next_pointer: u8 = self.next_pointer;
+        assert_eq!((next_pointer as usize) % mem::size_of::<u32>(), 0);
+        next_pointer
     }
 }
 
