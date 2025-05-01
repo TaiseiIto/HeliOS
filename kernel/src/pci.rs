@@ -63,37 +63,13 @@ impl Address {
             .with_register(register >> 2)
     }
 
-    pub fn read_u8(self) -> u8 {
-        let address: u32 = self.into();
-        x64::port::outl(Self::ADDRESS_PORT, address);
-        x64::port::inb(Self::DATA_PORT)
-    }
-
-    pub fn read_u16(self) -> u16 {
-        let address: u32 = self.into();
-        x64::port::outl(Self::ADDRESS_PORT, address);
-        x64::port::inw(Self::DATA_PORT)
-    }
-
-    pub fn read_u32(self) -> u32 {
+    pub fn read(self) -> u32 {
         let address: u32 = self.into();
         x64::port::outl(Self::ADDRESS_PORT, address);
         x64::port::inl(Self::DATA_PORT)
     }
 
-    pub fn write_u8(self, data: u8) {
-        let address: u32 = self.into();
-        x64::port::outl(Self::ADDRESS_PORT, address);
-        x64::port::outb(Self::DATA_PORT, data)
-    }
-
-    pub fn write_u16(self, data: u16) {
-        let address: u32 = self.into();
-        x64::port::outl(Self::ADDRESS_PORT, address);
-        x64::port::outw(Self::DATA_PORT, data)
-    }
-
-    pub fn write_u32(self, data: u32) {
+    pub fn write(self, data: u32) {
         let address: u32 = self.into();
         x64::port::outl(Self::ADDRESS_PORT, address);
         x64::port::outl(Self::DATA_PORT, data)
@@ -338,7 +314,7 @@ impl Function {
     pub fn read(bus: u8, device: u8, function: u8) -> Option<Self> {
         let space: Vec<u32> = (u8::MIN..=u8::MAX)
             .filter(|register| register % 4 == 0)
-            .map(|register| Address::create(bus, device, function, register).read_u32())
+            .map(|register| Address::create(bus, device, function, register).read())
             .collect();
         let space: [u32; Self::LENGTH] = space
             .try_into()
