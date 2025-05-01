@@ -41,6 +41,27 @@ impl Header {
     }
 }
 
+impl From<u16> for Header {
+    fn from(header: u16) -> Self {
+        let capability_id: u8 = (header & 0x00ff) as u8;
+        let next_pointer: u8 = ((header & 0xff00) >> u8::BITS) as u8;
+        Self {
+            capability_id,
+            next_pointer,
+        }
+    }
+}
+
+impl From<Header> for u16 {
+    fn from(header: Header) -> Self {
+        let capability_id: u8 = header.capability_id;
+        let capability_id: u16 = capability_id as u16;
+        let next_pointer: u8 = header.next_pointer;
+        let next_pointer: u16 = next_pointer as u16;
+        (next_pointer << u8::BITS) | capability_id
+    }
+}
+
 #[derive(Clone)]
 pub struct Headers<'a> {
     function_with_address: &'a FunctionWithAddress<'a>,

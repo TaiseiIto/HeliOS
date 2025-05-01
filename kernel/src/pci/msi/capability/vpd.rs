@@ -44,6 +44,33 @@ impl fmt::Debug for Structure {
     }
 }
 
+impl From<u32> for Structure {
+    fn from(structure: u32) -> Self {
+        let header = (structure & 0x0000ffff) as u16;
+        let address = ((structure & 0xffff0000) >> u16::BITS) as u16;
+        let header: Header = header.into();
+        let address: address::Register = address.into();
+        Self {
+            header,
+            address,
+        }
+    }
+}
+
+impl From<Structure> for u32 {
+    fn from(structure: Structure) -> Self {
+        let Structure {
+            header,
+            address,
+        } = structure;
+        let header: u16 = header.into();
+        let header: u32 = header as u32;
+        let address: u16 = address.into();
+        let address: u32 = address as u32;
+        (address << u16::BITS) | header
+    }
+}
+
 pub struct StructureWithFunctionWithAddress<'a> {
     function_with_address: &'a FunctionWithAddress<'a>,
     structure_offset: u8,
@@ -77,15 +104,11 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
         let structure: u32 = self
             .address_address()
             .read();
-        unsafe {
-            mem::transmute(structure)
-        }
+        structure.into()
     }
 
     fn write_structure(&self, structure: Structure) {
-        let structure: u32 = unsafe {
-            mem::transmute(structure)
-        };
+        let structure: u32 = structure.into();
         self.address_address()
             .write(structure);
     }
