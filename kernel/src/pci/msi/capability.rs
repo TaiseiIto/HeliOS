@@ -11,6 +11,7 @@ pub mod pci_express;
 pub mod pci_power_management;
 pub mod pci_x;
 pub mod vendor_specific;
+pub mod vpd;
 
 /// # MSI Capability Structure
 /// ## References
@@ -160,6 +161,7 @@ pub enum Structure<'a> {
     PciX(&'a pci_x::Item),
     Reserved(u8),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
+    Vpd(&'a vpd::Structure),
 }
 
 impl<'a> Structure<'a> {
@@ -219,6 +221,13 @@ impl<'a> Structure<'a> {
             },
             Id::Reserved(id) => Self::Reserved(id),
             Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
+            Id::Vpd => {
+                let structure: *const vpd::Structure = structure as *const vpd::Structure;
+                let structure: &vpd::Structure = unsafe {
+                    &*structure
+                };
+                Self::Vpd(structure)
+            },
             id => unimplemented!("id = {:#x?}", id),
         }
     }
