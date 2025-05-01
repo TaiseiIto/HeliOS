@@ -17,7 +17,7 @@ impl Header {
         byte_iterator
             .next()
             .and_then(|byte0| match (byte0::Small::try_from(byte0), byte0::Large::try_from(byte0)) {
-                (Some(small), None) => Some(Self::Small(small)),
+                (Some(byte0), None) => Some(Self::Small(byte0)),
                 (None, Some(tag)) => {
                     let length_low: Option<u8> = byte_iterator.next();
                     let length_high: Option<u8> = byte_iterator.next();
@@ -35,6 +35,16 @@ impl Header {
                 },
                 _ => unreachable!(),
             })
+    }
+
+    fn length(&self) -> u16 {
+        match self {
+            Self::Small(byte0) => byte0.get_length() as u16,
+            Self::Large {
+                tag: _,
+                length,
+            } => *length,
+        }
     }
 }
 

@@ -17,6 +17,14 @@ impl Small {
         let byte0: Self = byte0.into();
         (!byte0.is_large()).then_some(byte0)
     }
+
+    pub fn get_length(&self) -> u8 {
+        self.length()
+    }
+
+    pub fn get_tag(&self) -> u8 {
+        self.tag()
+    }
 }
 
 /// # Large Resource Data Type Tag Bit Definitions
@@ -33,6 +41,10 @@ impl Large {
     pub fn try_from(byte0: u8) -> Option<Self> {
         let byte0: Self = byte0.into();
         byte0.is_large().then_some(byte0)
+    }
+
+    pub fn get_tag(&self) -> u8 {
+        self.tag()
     }
 }
 
