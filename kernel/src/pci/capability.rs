@@ -3,7 +3,7 @@ use {
         fmt,
         mem,
     },
-    super::super::{
+    super::{
         Function,
         FunctionWithAddress,
     },

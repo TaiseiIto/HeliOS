@@ -8,7 +8,7 @@ use {
     crate::x64,
     super::{
         Header,
-        super::super::{
+        super::{
             Address,
             Function,
             FunctionWithAddress,

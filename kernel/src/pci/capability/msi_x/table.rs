@@ -1,7 +1,7 @@
 use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    super::super::super::super::base,
+    super::super::super::base,
 };
 
 /// # Table Offset/Table BIR for MSI-X

@@ -2,7 +2,7 @@ use {
     alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::mem,
-    super::super::super::super::base,
+    super::super::super::base,
 };
 
 /// # PBA Offset/PBA BIR for MSI-X

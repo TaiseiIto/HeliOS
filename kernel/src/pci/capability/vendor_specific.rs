@@ -7,7 +7,7 @@ use {
     },
     super::{
         Header,
-        super::super::Function,
+        super::Function,
     },
 };
 

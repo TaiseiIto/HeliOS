@@ -4,7 +4,7 @@ use {
     core::fmt,
     super::{
         Header,
-        super::super::{
+        super::{
             Function,
             base,
         },

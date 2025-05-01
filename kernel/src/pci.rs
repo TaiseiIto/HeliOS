@@ -5,11 +5,11 @@
 pub mod base;
 pub mod bist;
 pub mod bridge_control;
+pub mod capability;
 pub mod class;
 pub mod command;
 pub mod expansion_rom_base_address;
 pub mod header_type;
-pub mod msi;
 pub mod secondary_status;
 pub mod status;
 pub mod xhc;
@@ -377,7 +377,7 @@ impl<'a> FunctionWithAddress<'a> {
         }
     }
 
-    fn msi_capabilities(&self) -> msi::capability::Headers<'_> {
+    fn msi_capabilities(&self) -> capability::Headers<'_> {
         self.into()
     }
 }
@@ -385,7 +385,7 @@ impl<'a> FunctionWithAddress<'a> {
 impl fmt::Debug for FunctionWithAddress<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
-        let capabilities: msi::capability::Headers = self.msi_capabilities();
+        let capabilities: capability::Headers = self.msi_capabilities();
         match self.function.header() {
             Header::Type0(type0) => {
                 let vendor_id: u16 = type0.vendor_id;
