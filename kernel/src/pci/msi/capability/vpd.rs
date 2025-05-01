@@ -5,6 +5,7 @@ use {
         fmt,
         mem,
     },
+    crate::x64,
     super::{
         Header,
         super::super::{
@@ -22,6 +23,13 @@ use {
 pub struct Structure {
     header: Header,
     address: address::Register,
+}
+
+impl Structure {
+    fn can_read_data(&self) -> bool {
+        let address: address::Register = self.address;
+        address.can_read_data()
+    }
 }
 
 impl fmt::Debug for Structure {
@@ -61,7 +69,35 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
     }
 
     fn data_address(&self) -> Address {
-        self.address_address().add(mem::size_of::<Structure>())
+        self.address_address()
+            .add(mem::size_of::<Structure>())
+    }
+
+    fn read_structure(&self) -> Structure {
+        let structure: u32 = self
+            .address_address()
+            .read();
+        unsafe {
+            mem::transmute(structure)
+        }
+    }
+
+    fn write_structure(&self, structure: Structure) {
+        let structure: u32 = unsafe {
+            mem::transmute(structure)
+        };
+        self.address_address()
+            .write(structure);
+    }
+
+    fn read(&self, address: u16) -> u32 {
+        let mut structure: Structure = self.read_structure();
+        structure.address = address::Register::read_address(address);
+        self.write_structure(structure);
+        while !self.read_structure().can_read_data() {
+            x64::pause();
+        }
+        self.data_address().read()
     }
 }
 
