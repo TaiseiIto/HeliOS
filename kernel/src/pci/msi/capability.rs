@@ -1,6 +1,9 @@
 use {
     core::fmt,
-    super::super::Function,
+    super::super::{
+        Function,
+        FunctionWithAddress,
+    },
 };
 
 pub mod agp;
@@ -35,7 +38,7 @@ impl Header {
 
 #[derive(Clone)]
 pub struct Headers<'a> {
-    function: &'a Function,
+    function_with_address: &'a FunctionWithAddress<'a>,
     next_pointer: u8,
 }
 
@@ -48,7 +51,7 @@ impl Headers<'_> {
     fn next_header(&self) -> Option<&Header> {
         self.next_pointer()
             .map(|next_pointer| {
-                let function: &Function = self.function;
+                let function: &Function = self.function_with_address.function();
                 let function: *const Function = function as *const Function;
                 let function: usize = function as usize;
                 let next_pointer: usize = next_pointer as usize;
@@ -63,7 +66,7 @@ impl Headers<'_> {
 
 impl fmt::Debug for Headers<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let function: &Function = self.function;
+        let function: &Function = self.function_with_address.function();
         formatter
             .debug_list()
             .entries(self
@@ -73,13 +76,14 @@ impl fmt::Debug for Headers<'_> {
     }
 }
 
-impl<'a> From<&'a Function> for Headers<'a> {
-    fn from(function: &'a Function) -> Self {
-        let next_pointer: u8 = function
+impl<'a> From<&'a FunctionWithAddress<'a>> for Headers<'a> {
+    fn from(function_with_address: &'a FunctionWithAddress<'a>) -> Self {
+        let next_pointer: u8 = function_with_address
+            .function()
             .header()
             .capabilities_pointer();
         Self {
-            function,
+            function_with_address,
             next_pointer,
         }
     }

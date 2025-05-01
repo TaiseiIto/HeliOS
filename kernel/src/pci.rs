@@ -331,10 +331,6 @@ pub struct Function {
 impl Function {
     const LENGTH: usize = 0x40;
 
-    pub fn msi_capabilities(&self) -> msi::capability::Headers<'_> {
-        self.into()
-    }
-
     pub fn header(&self) -> Header<'_> {
         self.into()
     }
@@ -372,6 +368,22 @@ pub struct FunctionWithAddress<'a> {
 }
 
 impl<'a> FunctionWithAddress<'a> {
+    pub fn function(&'a self) -> &'a Function {
+        self.function
+    }
+
+    pub fn bus_number(&self) -> u8 {
+        self.bus_number
+    }
+
+    pub fn device_number(&self) -> u8 {
+        self.device_number
+    }
+
+    pub fn function_number(&self) -> u8 {
+        self.function_number
+    }
+
     fn new(bus_number: u8, device_number: u8, function_number: u8, function: &'a Function) -> Self {
         Self {
             bus_number,
@@ -380,19 +392,17 @@ impl<'a> FunctionWithAddress<'a> {
             function,
         }
     }
+
+    fn msi_capabilities(&self) -> msi::capability::Headers<'_> {
+        self.into()
+    }
 }
 
 impl fmt::Debug for FunctionWithAddress<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Function");
-        let Self {
-            bus_number,
-            device_number,
-            function_number,
-            function,
-        } = self;
-        let capabilities: msi::capability::Headers = function.msi_capabilities();
-        match function.header() {
+        let capabilities: msi::capability::Headers = self.msi_capabilities();
+        match self.function.header() {
             Header::Type0(type0) => {
                 let vendor_id: u16 = type0.vendor_id;
                 let device_id: u16 = type0.device_id;
@@ -502,8 +512,8 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                     .field("bridge_control", &bridge_control)
             },
         };
-        if function.header().class_code() == class::Code::UsbXhc {
-            let xhc: Result<xhc::Registers, ()> = (*function).try_into();
+        if self.function.header().class_code() == class::Code::UsbXhc {
+            let xhc: Result<xhc::Registers, ()> = self.function.try_into();
             if let Ok(xhc) = xhc {
                 debug_struct.field("xhc", &xhc);
             }
