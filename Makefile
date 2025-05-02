@@ -262,3 +262,8 @@ media_size:
 .PHONY: tree
 tree: $(MOUNT_DIRECTORY)
 
+# Touch the all source files.
+.PHONY: touch
+touch:
+	touch $$(git ls-files)
+
