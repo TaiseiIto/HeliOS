@@ -1,17 +1,7 @@
-use {
-    alloc::{
-        string::String,
-        vec,
-        vec::Vec,
-    },
-    core::{
-        iter,
-        slice,
-    },
-    super::{
-        Data,
-        Tag,
-    },
+use alloc::{
+    string::String,
+    vec,
+    vec::Vec,
 };
 
 /// # VPD Format
