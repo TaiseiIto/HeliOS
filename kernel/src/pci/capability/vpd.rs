@@ -217,3 +217,38 @@ impl Iterator for ByteIterator<'_> {
     }
 }
 
+pub struct ResourceDataIterator<'a> {
+    byte_iterator: ByteIterator<'a>,
+    reaches_end: bool,
+}
+
+impl<'a> From<ByteIterator<'a>> for ResourceDataIterator<'a> {
+    fn from(byte_iterator: ByteIterator<'a>) -> Self {
+        let reaches_end: bool = false;
+        Self {
+            byte_iterator,
+            reaches_end,
+        }
+    }
+}
+
+impl Iterator for ResourceDataIterator<'_> {
+    type Item = resource::Data;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            byte_iterator,
+            reaches_end,
+        } = self;
+        let resource_data: Option<Self::Item> = (!*reaches_end)
+            .then(|| Self::Item::from_byte_iterator(byte_iterator))
+            .flatten();
+        *reaches_end = resource_data
+            .as_ref()
+            .map_or(true, |resource_data| resource_data
+                .header()
+                .tag() == resource::Tag::End);
+        resource_data
+    }
+}
+

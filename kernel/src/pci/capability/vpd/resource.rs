@@ -1,9 +1,37 @@
 pub mod byte0;
 
+use alloc::vec::Vec;
+
+#[derive(Debug)]
+pub struct Data {
+    header: Header,
+    data: Vec<u8>,
+}
+
+impl Data {
+    pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self> where T: Iterator<Item = u8> {
+        Header::from_byte_iterator(byte_iterator).map(|header| {
+            let length: u16 = header.length();
+            let data: Vec<u8> = (0..length)
+                .filter_map(|_| byte_iterator.next())
+                .collect();
+            Self {
+                header,
+                data,
+            }
+        })
+    }
+
+    pub fn header(&self) -> &Header {
+        &self.header
+    }
+}
+
 /// # Small Resource Data Type Tag Bit Definitions
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-2: Small Resource Data Type Tag Bit Definitions
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-3: Large Resource Data Type Tag Bit Definitions
+#[derive(Debug)]
 pub enum Header {
     Small(byte0::Small),
     Large {
@@ -37,7 +65,7 @@ impl Header {
             })
     }
 
-    fn length(&self) -> u16 {
+    pub fn length(&self) -> u16 {
         match self {
             Self::Small(byte0) => byte0.get_length() as u16,
             Self::Large {
@@ -47,7 +75,7 @@ impl Header {
         }
     }
 
-    fn tag(&self) -> Tag {
+    pub fn tag(&self) -> Tag {
         match self {
             Self::Small(byte0) => byte0.get_tag(),
             Self::Large {
@@ -61,7 +89,8 @@ impl Header {
 /// # Resource Data Type Flags for a Typical VPD
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-4: Resource Data Type Flags for a Typical VPD
-enum Tag {
+#[derive(Eq, PartialEq)]
+pub enum Tag {
     IdentifierString,
     VpdR,
     VpdW,
