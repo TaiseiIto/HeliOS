@@ -15,6 +15,10 @@ pub struct Data {
 }
 
 impl Data {
+    pub fn data(&self) -> &[u8] {
+        &self.data
+    }
+
     pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self> where T: Iterator<Item = u8> {
         Header::from_byte_iterator(byte_iterator).map(|header| {
             let length: u16 = header.length();

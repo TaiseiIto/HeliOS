@@ -1,7 +1,10 @@
-use alloc::{
-    string::String,
-    vec,
-    vec::Vec,
+use {
+    alloc::{
+        string::String,
+        vec,
+        vec::Vec,
+    },
+    super::Data,
 };
 
 /// # VPD Format
@@ -35,6 +38,21 @@ impl Format {
             },
             _ => None,
         }
+    }
+}
+
+pub struct FormatIterator<T> where T: Iterator<Item = u8> {
+    byte_iterator: T,
+}
+
+impl<T> Iterator for FormatIterator<T> where T: Iterator<Item = u8> {
+    type Item = Format;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            byte_iterator,
+        } = self;
+        Self::Item::from_byte_iterator(byte_iterator)
     }
 }
 
