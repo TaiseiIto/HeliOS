@@ -85,6 +85,12 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
         }
     }
 
+    pub fn resource_data_iterator(&'a self) -> ResourceDataIterator<'a> {
+        self.dword_iterator()
+            .byte_iterator()
+            .resource_data_iterator()
+    }
+
     fn address_address(&self) -> Address {
         let Self {
             function_with_address,
@@ -101,17 +107,8 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
             .add(mem::size_of::<Structure>())
     }
 
-    fn read_structure(&self) -> Structure {
-        let structure: u32 = self
-            .address_address()
-            .read();
-        structure.into()
-    }
-
-    fn write_structure(&self, structure: Structure) {
-        let structure: u32 = structure.into();
-        self.address_address()
-            .write(structure);
+    fn dword_iterator(&'a self) -> DwordIterator<'a> {
+        self.into()
     }
 
     fn read(&self, address: u16) -> u32 {
@@ -124,30 +121,39 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
         }
         self.data_address().read()
     }
+
+    fn read_structure(&self) -> Structure {
+        let structure: u32 = self
+            .address_address()
+            .read();
+        structure.into()
+    }
+
+    fn write_structure(&self, structure: Structure) {
+        let structure: u32 = structure.into();
+        self.address_address()
+            .write(structure);
+    }
 }
 
 impl fmt::Debug for StructureWithFunctionWithAddress<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            function_with_address,
-            structure_offset,
-        } = self;
-        let function: &Function = function_with_address.function();
-        let function_address: *const Function = function as *const Function;
-        let function_address: usize = function_address as usize;
-        let structure_offset: usize = (*structure_offset) as usize;
-        let structure: usize = function_address + structure_offset;
-        let structure: *const Structure = structure as *const Structure;
-        let structure: &Structure = unsafe {
-            &*structure
-        };
-        structure.fmt(formatter)
+        formatter
+            .debug_list()
+            .entries(self.resource_data_iterator())
+            .finish()
     }
 }
 
 pub struct DwordIterator<'a> {
     structure_with_function_with_address: &'a StructureWithFunctionWithAddress<'a>,
     address: u16,
+}
+
+impl<'a> DwordIterator<'a> {
+    fn byte_iterator(self) -> ByteIterator<'a> {
+        self.into()
+    }
 }
 
 impl<'a> From<&'a StructureWithFunctionWithAddress<'a>> for DwordIterator<'a> {
@@ -178,6 +184,12 @@ pub struct ByteIterator<'a> {
     dword_iterator: DwordIterator<'a>,
     address: u16,
     dword: Option<u32>,
+}
+
+impl<'a> ByteIterator<'a> {
+    fn resource_data_iterator(self) -> ResourceDataIterator<'a> {
+        self.into()
+    }
 }
 
 impl<'a> From<DwordIterator<'a>> for ByteIterator<'a> {
