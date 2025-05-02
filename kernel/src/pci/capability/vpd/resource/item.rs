@@ -4,12 +4,20 @@ use {
         vec,
         vec::Vec,
     },
-    super::Data,
+    core::{
+        iter,
+        slice,
+    },
+    super::{
+        Data,
+        Tag,
+    },
 };
 
 /// # VPD Format
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I.1. VPD Format. Figure I-5: VPD Format
+#[derive(Debug)]
 pub struct Format {
     keyword: String,
     length: u8,
@@ -43,6 +51,19 @@ impl Format {
 
 pub struct FormatIterator<T> where T: Iterator<Item = u8> {
     byte_iterator: T,
+}
+
+impl<'a> From<&'a Data> for FormatIterator<iter::Cloned<slice::Iter<'a, u8>>> {
+    fn from(data: &'a Data) -> Self {
+        assert!(matches!(data.header().tag(), Tag::VpdR | Tag::VpdW));
+        let byte_iterator = data
+            .data()
+            .iter()
+            .cloned();
+        Self {
+            byte_iterator,
+        }
+    }
 }
 
 impl<T> Iterator for FormatIterator<T> where T: Iterator<Item = u8> {
