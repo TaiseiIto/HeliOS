@@ -1,4 +1,5 @@
 pub mod byte0;
+pub mod item;
 
 use {
     alloc::vec::Vec,
@@ -18,7 +19,9 @@ impl Data {
         Header::from_byte_iterator(byte_iterator).map(|header| {
             let length: u16 = header.length();
             let data: Vec<u8> = (0..length)
-                .filter_map(|_| byte_iterator.next())
+                .map(|_| byte_iterator
+                    .next()
+                    .unwrap())
                 .collect();
             Self {
                 header,
