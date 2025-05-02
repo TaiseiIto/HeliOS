@@ -4,13 +4,15 @@ use {
         vec,
         vec::Vec,
     },
-    core::str,
+    core::{
+        str,
+        fmt,
+    },
 };
 
 /// # VPD Format
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I.1. VPD Format. Figure I-5: VPD Format
-#[derive(Debug)]
 pub struct Format {
     keyword: Keyword,
     length: u8,
@@ -41,6 +43,41 @@ impl Format {
             },
             _ => None,
         }
+    }
+
+    fn string(&self) -> Option<String> {
+        let Self {
+            keyword,
+            length: _,
+            data,
+        } = self;
+        match keyword {
+            Keyword::Cp
+            | Keyword::Ec
+            | Keyword::Fg
+            | Keyword::Lc
+            | Keyword::Mn
+            | Keyword::Pg
+            | Keyword::Pn
+            | Keyword::Sn
+            | Keyword::V(_)
+            | Keyword::Ya
+            | Keyword::Y(_) => String::from_utf8(data.to_vec()).ok(),
+            Keyword::Rv | Keyword::Rw => None,
+        }
+    }
+}
+
+impl fmt::Debug for Format {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Format");
+        debug_struct
+            .field("keyword", &self.keyword)
+            .field("length", &self.length);
+        if let Some(string) = self.string() {
+            debug_struct.field("data", &string);
+        }
+        debug_struct.finish()
     }
 }
 
