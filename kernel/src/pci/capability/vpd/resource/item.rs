@@ -53,13 +53,8 @@ pub struct FormatIterator<T> where T: Iterator<Item = u8> {
     byte_iterator: T,
 }
 
-impl<'a> From<&'a Data> for FormatIterator<iter::Cloned<slice::Iter<'a, u8>>> {
-    fn from(data: &'a Data) -> Self {
-        assert!(matches!(data.header().tag(), Tag::VpdR | Tag::VpdW));
-        let byte_iterator = data
-            .data()
-            .iter()
-            .cloned();
+impl<T> FormatIterator<T> where T: Iterator<Item = u8> {
+    pub fn new(byte_iterator: T) -> Self {
         Self {
             byte_iterator,
         }

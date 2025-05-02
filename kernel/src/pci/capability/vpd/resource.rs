@@ -2,7 +2,10 @@ pub mod byte0;
 pub mod item;
 
 use {
-    alloc::vec::Vec,
+    alloc::{
+        string::String,
+        vec::Vec,
+    },
     core::{
         fmt,
         str,
@@ -56,6 +59,34 @@ impl fmt::Debug for Data {
             Tag::End => {},
         }
         debug_struct.finish()
+    }
+}
+
+#[derive(Debug)]
+pub enum Type {
+    String(String),
+    Items(Vec<item::Format>),
+    End,
+}
+
+impl From<&Data> for Type {
+    fn from(data: &Data) -> Self {
+        let Data {
+            header,
+            data,
+        } = data;
+        match header.tag() {
+            Tag::IdentifierString => Self::String(String::from_utf8(data
+                    .iter()
+                    .cloned()
+                    .collect())
+                .unwrap()),
+            Tag::VpdR | Tag::VpdW => Self::Items(item::FormatIterator::new(data
+                    .iter()
+                    .cloned())
+                .collect()),
+            Tag::End => Self::End,
+        }
     }
 }
 
