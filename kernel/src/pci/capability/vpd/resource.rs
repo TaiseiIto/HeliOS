@@ -44,21 +44,13 @@ impl Data {
 
 impl fmt::Debug for Data {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            header,
-            data,
-        } = self;
-        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Data");
-        debug_struct.field("header", header);
-        match header.tag() {
-            Tag::IdentifierString => {
-                debug_struct.field("data", &str::from_utf8(data).unwrap());
-            },
-            Tag::VpdR => {},
-            Tag::VpdW => {},
-            Tag::End => {},
-        }
-        debug_struct.finish()
+        let header: &Header = &self.header;
+        let data: Type = self.into();
+        formatter
+            .debug_struct("Data")
+            .field("header", header)
+            .field("data", &data)
+            .finish()
     }
 }
 
@@ -76,11 +68,7 @@ impl From<&Data> for Type {
             data,
         } = data;
         match header.tag() {
-            Tag::IdentifierString => Self::String(String::from_utf8(data
-                    .iter()
-                    .cloned()
-                    .collect())
-                .unwrap()),
+            Tag::IdentifierString => Self::String(String::from_utf8(data.to_vec()).unwrap()),
             Tag::VpdR | Tag::VpdW => Self::Items(item::FormatIterator::new(data
                     .iter()
                     .cloned())
