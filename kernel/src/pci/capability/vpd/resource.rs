@@ -46,5 +46,37 @@ impl Header {
             } => *length,
         }
     }
+
+    fn tag(&self) -> Tag {
+        match self {
+            Self::Small(byte0) => byte0.get_tag(),
+            Self::Large {
+                tag,
+                length: _,
+            } => tag.get_tag(),
+        }.into()
+    }
+}
+
+/// # Resource Data Type Flags for a Typical VPD
+/// ## References
+/// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-4: Resource Data Type Flags for a Typical VPD
+enum Tag {
+    IdentifierString,
+    VpdR,
+    VpdW,
+    End,
+}
+
+impl From<u8> for Tag {
+    fn from(tag: u8) -> Self {
+        match tag {
+            0x02 => Self::IdentifierString,
+            0x10 => Self::VpdR,
+            0x11 => Self::VpdW,
+            0x0f => Self::End,
+            tag => unreachable!("tag = {:#x?}", tag),
+        }
+    }
 }
 
