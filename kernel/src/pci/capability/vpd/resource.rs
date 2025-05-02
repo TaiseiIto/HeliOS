@@ -1,8 +1,13 @@
 pub mod byte0;
 
-use alloc::vec::Vec;
+use {
+    alloc::vec::Vec,
+    core::{
+        fmt,
+        str,
+    },
+};
 
-#[derive(Debug)]
 pub struct Data {
     header: Header,
     data: Vec<u8>,
@@ -27,11 +32,30 @@ impl Data {
     }
 }
 
+impl fmt::Debug for Data {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            header,
+            data,
+        } = self;
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Data");
+        debug_struct.field("header", header);
+        match header.tag() {
+            Tag::IdentifierString => {
+                debug_struct.field("data", &str::from_utf8(data).unwrap());
+            },
+            Tag::VpdR => {},
+            Tag::VpdW => {},
+            Tag::End => {},
+        }
+        debug_struct.finish()
+    }
+}
+
 /// # Small Resource Data Type Tag Bit Definitions
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-2: Small Resource Data Type Tag Bit Definitions
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-3: Large Resource Data Type Tag Bit Definitions
-#[derive(Debug)]
 pub enum Header {
     Small(byte0::Small),
     Large {
@@ -86,10 +110,20 @@ impl Header {
     }
 }
 
+impl fmt::Debug for Header {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Header")
+            .field("tag", &self.tag())
+            .field("length", &self.length())
+            .finish()
+    }
+}
+
 /// # Resource Data Type Flags for a Typical VPD
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-4: Resource Data Type Flags for a Typical VPD
-#[derive(Eq, PartialEq)]
+#[derive(Eq, Debug, PartialEq)]
 pub enum Tag {
     IdentifierString,
     VpdR,

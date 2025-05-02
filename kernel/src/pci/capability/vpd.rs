@@ -11,7 +11,6 @@ use {
         Header,
         super::{
             Address,
-            Function,
             FunctionWithAddress,
         },
     },
