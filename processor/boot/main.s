@@ -85,6 +85,28 @@ puts16:
 	leave
 	ret
 
+put_nibble16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movb	0x04(%bp),	%al
+	andb	$0x0f,	%al
+	movb	%al,	%dl
+	subb	$10,	%dl
+	jae	2f
+1:	# From '0' to '9'
+	addb	$'0,	%al
+	movb	%al,	%dl
+	jmp	3f
+2:	# From 'a' to 'f'
+	addb	$'a,	%dl
+3:
+	pushw	%dx
+	call	putchar16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
 	.code32
 # Calling convention = System V i386
 # Return value: eax, edx
