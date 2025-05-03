@@ -19,7 +19,6 @@ sudo mkfs.vfat -v -c -F 32 $nbd
 mkdir $destination_path
 sudo mount $nbd $destination_path
 sudo cp -r $source_path/* $destination_path
-find $destination_path
 sudo umount $destination_path
 sudo rm -rf $destination_path
 sudo qemu-nbd --disconnect $nbd
