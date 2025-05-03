@@ -56,9 +56,6 @@ impl Event {
             Self::ApicTimer => com2_println!("APIC timer event."),
             Self::Hpet => {
                 com2_println!("HPET event.");
-                processor::Controller::get_mut_all()
-                    .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::HpetInterrupt));
             },
             Self::Interprocessor {
                 sender_local_apic_id,
@@ -71,15 +68,9 @@ impl Event {
             },
             Self::Pit => {
                 com2_println!("PIT event.");
-                processor::Controller::get_mut_all()
-                    .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::PitInterrupt));
             },
             Self::Rtc => {
                 com2_println!("RTC event.");
-                processor::Controller::get_mut_all()
-                    .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::RtcInterrupt));
             },
         }
     }
