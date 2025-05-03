@@ -108,7 +108,6 @@ impl<T> Iterator for FormatIterator<T> where T: Iterator<Item = u8> {
 /// ## References
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I.3.1.1. Read-Only Fields
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I.3.1.2. Read/Write Fields
-#[derive(Debug)]
 pub enum Keyword {
     Cp,
     Ec,
@@ -158,6 +157,26 @@ impl From<&str> for Keyword {
                     _ => unreachable!(),
                 }
             },
+        }
+    }
+}
+
+impl fmt::Debug for Keyword {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Cp => write!(formatter, "CP"),
+            Self::Ec => write!(formatter, "EC"),
+            Self::Fg => write!(formatter, "FG"),
+            Self::Lc => write!(formatter, "LC"),
+            Self::Mn => write!(formatter, "MN"),
+            Self::Pg => write!(formatter, "PG"),
+            Self::Pn => write!(formatter, "PN"),
+            Self::Rv => write!(formatter, "RV"),
+            Self::Rw => write!(formatter, "RW"),
+            Self::Sn => write!(formatter, "SN"),
+            Self::V(x) => write!(formatter, "V{}", x),
+            Self::Ya => write!(formatter, "YA"),
+            Self::Y(x) => write!(formatter, "Y{}", x),
         }
     }
 }
