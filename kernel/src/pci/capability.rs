@@ -16,6 +16,7 @@ pub mod pci_bridge_subsystem;
 pub mod pci_express;
 pub mod pci_power_management;
 pub mod pci_x;
+pub mod slot_identification;
 pub mod vendor_specific;
 pub mod vpd;
 
@@ -190,6 +191,7 @@ pub enum Structure<'a> {
     PciPowerManagementInterface(&'a pci_power_management::Registers),
     PciX(&'a pci_x::Item),
     Reserved(u8),
+    SlotIdentification(&'a slot_identification::Register),
     VendorSpecific(vendor_specific::StructureInFunction<'a>),
     Vpd(vpd::StructureWithFunctionWithAddress<'a>),
 }
@@ -251,6 +253,13 @@ impl<'a> Structure<'a> {
                 Self::PciX(item)
             },
             Id::Reserved(id) => Self::Reserved(id),
+            Id::SlotIdentification => {
+                let register: *const slot_identification::Register = structure as *const slot_identification::Register;
+                let register: &slot_identification::Register = unsafe {
+                    &*register
+                };
+                Self::SlotIdentification(register)
+            },
             Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
             Id::Vpd => Self::Vpd(vpd::StructureWithFunctionWithAddress::new(function_with_address, next_pointer)),
             id => unimplemented!("id = {:#x?}", id),
