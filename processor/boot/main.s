@@ -42,6 +42,16 @@ main16:	# IP == 0x2000
 	pushw	%dx
 	call	puts16
 	addw	$0x0002,	%sp
+	# Print CS register.
+	leaw	cs_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	movw	%cs,	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	call	put_new_line16
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -85,6 +95,16 @@ puts16:
 	leave
 	ret
 
+put_new_line16:
+0:
+	enter	$0x0000,	$0x00
+	movb	$'\n,	%dl
+	pushw	%dx
+	call	putchar16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
 put_nibble16:
 0:
 	enter	$0x0000,	$0x00
@@ -104,6 +124,40 @@ put_nibble16:
 	pushw	%dx
 	call	putchar16
 	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_byte16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%bx
+	movb	0x04(%bp),	%bl
+	movb	%bl,	%dl
+	shrb	$0x04,	%dl
+	pushw	%dx
+	call	put_nibble16
+	addw	$0x0002,	%sp
+	pushw	%bx
+	call	put_nibble16
+	addw	$0x0002,	%sp
+	popw	%bx
+	leave
+	ret
+
+put_word16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%bx
+	movw	0x04(%bp),	%bx
+	movw	%bx,	%dx
+	shrw	$0x08,	%dx
+	pushw	%dx
+	call	put_byte16
+	addw	$0x0002,	%sp
+	pushw	%bx
+	call	put_byte16
+	addw	$0x0002,	%sp
+	popw	%bx
 	leave
 	ret
 
@@ -701,6 +755,8 @@ cpuid_max_eax_message:
 	.string "CPUID max EAX = 0x"
 cr3_message:
 	.string "CR3 = 0x"
+cs_message:
+	.string "CS = 0x"
 error_message:
 	.string	"ERROR!"
 bsp_heap_start_message:
