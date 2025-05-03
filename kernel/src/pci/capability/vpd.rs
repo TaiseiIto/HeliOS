@@ -1,6 +1,3 @@
-pub mod address;
-pub mod resource;
-
 use {
     core::{
         fmt,
@@ -15,6 +12,9 @@ use {
         },
     },
 };
+
+pub mod address;
+pub mod resource;
 
 /// # VPD Capability Structure
 /// ## References

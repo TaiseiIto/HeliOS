@@ -1,10 +1,10 @@
-pub mod command;
-pub mod status;
-
 use {
     core::fmt,
     super::Header,
 };
+
+pub mod command;
+pub mod status;
 
 /// # PCI-X Capability List Item
 /// ## References

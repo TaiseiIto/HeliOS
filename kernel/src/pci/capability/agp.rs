@@ -1,11 +1,11 @@
-pub mod command;
-pub mod revision;
-pub mod status;
-
 use {
     core::fmt,
     super::Header,
 };
+
+pub mod command;
+pub mod revision;
+pub mod status;
 
 /// # AGP Capabilities
 /// ## References

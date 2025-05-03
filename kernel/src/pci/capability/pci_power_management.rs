@@ -1,11 +1,11 @@
-pub mod pmc;
-pub mod pmcsr;
-pub mod pmcsr_bse;
-
 use {
     core::fmt,
     super::Header,
 };
+
+pub mod pmc;
+pub mod pmcsr;
+pub mod pmcsr_bse;
 
 /// # Power Management Register Block
 /// ## References

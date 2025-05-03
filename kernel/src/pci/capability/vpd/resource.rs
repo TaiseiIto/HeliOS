@@ -1,6 +1,3 @@
-pub mod byte0;
-pub mod item;
-
 use {
     alloc::{
         string::String,
@@ -8,6 +5,9 @@ use {
     },
     core::fmt,
 };
+
+pub mod byte0;
+pub mod item;
 
 pub struct Data {
     header: Header,
