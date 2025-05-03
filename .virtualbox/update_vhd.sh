@@ -8,6 +8,9 @@ source=$(make mount_directory -C .. -s)
 
 sudo modprobe nbd max_part=16
 sudo qemu-nbd --format=vpc --connect=$nbd $vhd
+while [ $(sudo blockdev --getsize64 $nbd) -eq 0 ]; do
+	sleep 0.1
+done
 sudo mkfs.vfat -v -c -F 32 $nbd
 mkdir $destination
 sudo mount $nbd $destination
