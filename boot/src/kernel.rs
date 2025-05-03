@@ -6,6 +6,7 @@ use {
     },
     core::ops::Range,
     crate::{
+        com2_println,
         processor,
         efi,
         elf,
@@ -104,6 +105,7 @@ impl Loader {
             .memory_map()
             .unwrap()
             .into();
+        com2_println!("memory_map = {:#x?}", memory_map);
         let higher_half_range: Range<u128> = paging.higher_half_range();
         let heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
         let heap_start: usize = heap_start as usize;
