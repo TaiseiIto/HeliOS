@@ -61,17 +61,22 @@ impl Loader {
         binary
             .iter()
             .cloned()
-            .zip(program_address_range.clone())
-            .for_each(|(source, destination)| {
-                let destination: *mut u8 = destination as *mut u8;
-                unsafe {
-                    ptr::write_volatile(destination, source);
-                }
+            .zip(program_address_range
+                .clone()
+                .map(|program_address| program_address as *mut u8))
+            .for_each(|(source, destination)| unsafe {
+                ptr::write_volatile(destination, source);
             });
         let stack_ceil: usize = program_end;
         let stack_floor: usize = physical_range.end as usize;
         let stack_size: usize = stack_floor - stack_ceil;
         let stack_address_range: ops::Range<usize> = stack_ceil..stack_floor;
+        stack_address_range
+            .clone()
+            .map(|stack_address| stack_address as *mut u8)
+            .for_each(|stack_address| unsafe {
+                ptr::write_volatile(stack_address, 0);
+            });
         com2_println!("processor::boot::Loader program_address_range = {:#x?}", program_address_range);
         com2_println!("processor::boot::Loader stack_address_range = {:#x?}", stack_address_range);
         Self {
@@ -83,11 +88,9 @@ impl Loader {
     pub fn program(&self) -> Vec<u8> {
         self.program_address_range
             .clone()
-            .map(|program_address| {
-                let program_address: *const u8 = program_address as *const u8;
-                unsafe {
-                    ptr::read_volatile(program_address)
-                }
+            .map(|program_address| program_address as *const u8)
+            .map(|program_address| unsafe {
+                ptr::read_volatile(program_address)
             })
             .collect()
     }
@@ -95,11 +98,9 @@ impl Loader {
     pub fn stack(&self) -> Vec<u8> {
         self.stack_address_range
             .clone()
-            .map(|stack_address| {
-                let stack_address: *const u8 = stack_address as *const u8;
-                unsafe {
-                    ptr::read_volatile(stack_address)
-                }
+            .map(|stack_address| stack_address as *const u8)
+            .map(|stack_address| unsafe {
+                ptr::read_volatile(stack_address)
             })
             .collect()
     }
