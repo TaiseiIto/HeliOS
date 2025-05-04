@@ -5,6 +5,7 @@ use {
         slice,
     },
     crate::{
+        com2_println,
         efi,
         memory,
     },
@@ -17,6 +18,13 @@ pub struct Loader {
 
 impl Loader {
     pub fn allocate_pages(base: usize, stack_floor: usize) -> Range<efi::memory::PhysicalAddress> {
+        efi::SystemTable::get()
+            .memory_map()
+            .unwrap()
+            .iter()
+            .for_each(|descriptor| {
+                com2_println!("descriptor = {:#x?}", descriptor);
+            });
         let processor_boot_loader_pages: usize = (stack_floor - base) / memory::page::SIZE;
         efi::SystemTable::get()
             .allocate_specific_pages(base, processor_boot_loader_pages)

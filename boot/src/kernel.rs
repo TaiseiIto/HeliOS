@@ -101,18 +101,13 @@ impl Loader {
                 paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
             });
         let stack_floor: usize = 0;
-        let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
-            .memory_map()
-            .unwrap()
-            .iter()
-            .cloned()
-            .collect();
-        com2_println!("memory_map = {:#x?}", memory_map);
         let higher_half_range: Range<u128> = paging.higher_half_range();
         let heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
         let heap_start: usize = heap_start as usize;
-        let heap_pages: usize = memory_map
-            .into_iter()
+        let heap_pages: usize = efi::SystemTable::get()
+            .memory_map()
+            .unwrap()
+            .iter()
             .filter(|memory_descriptor| memory_descriptor.is_available())
             .map(|memory_descriptor| memory_descriptor.number_of_pages())
             .sum();
