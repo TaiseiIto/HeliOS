@@ -1,10 +1,10 @@
 use {
+    alloc::vec::Vec,
     core::{
         cmp,
         fmt,
         ops,
         ptr,
-        slice,
     },
     crate::{
         com2_println,
@@ -64,7 +64,9 @@ impl Loader {
             .zip(program_address_range.clone())
             .for_each(|(source, destination)| {
                 let destination: *mut u8 = destination as *mut u8;
-                ptr::write_volatile(destination, source);
+                unsafe {
+                    ptr::write_volatile(destination, source);
+                }
             });
         let stack_ceil: usize = program_end;
         let stack_floor: usize = physical_range.end as usize;
@@ -78,20 +80,28 @@ impl Loader {
         }
     }
 
-    pub fn program(&self) -> &[u8] {
-        let start: *const u8 = self.program_address_range.start as *const u8;
-        let length: usize = self.program_address_range.end - self.program_address_range.start;
-        unsafe {
-            slice::from_raw_parts(start, length)
-        }
+    pub fn program(&self) -> Vec<u8> {
+        self.program_address_range
+            .clone()
+            .map(|program_address| {
+                let program_address: *const u8 = program_address as *const u8;
+                unsafe {
+                    ptr::read_volatile(program_address)
+                }
+            })
+            .collect()
     }
 
-    pub fn stack(&self) -> &[u8] {
-        let start: *const u8 = self.stack_address_range.start as *const u8;
-        let length: usize = self.stack_address_range.end - self.stack_address_range.start;
-        unsafe {
-            slice::from_raw_parts(start, length)
-        }
+    pub fn stack(&self) -> Vec<u8> {
+        self.stack_address_range
+            .clone()
+            .map(|stack_address| {
+                let stack_address: *const u8 = stack_address as *const u8;
+                unsafe {
+                    ptr::read_volatile(stack_address)
+                }
+            })
+            .collect()
     }
 }
 
