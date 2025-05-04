@@ -20,8 +20,7 @@ main16:	# IP == 0x0000
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
-	movw	boot_argument_ss,	%dx
-	movw	%dx,	%ss
+	movw	boot_argument_ss,	%ss
 	xorw	%bp,	%bp
 	xorw	%sp,	%sp
 	# Enter 16bit main function.
