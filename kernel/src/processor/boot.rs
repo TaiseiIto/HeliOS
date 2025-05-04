@@ -10,6 +10,7 @@ use {
             MaybeUninit,
         },
         ops::Range,
+        ptr,
         slice,
     },
     crate::{
@@ -22,6 +23,8 @@ use {
         message,
     },
 };
+
+pub mod real_mode;
 
 pub struct Loader {
     program_address_range: Range<usize>,
@@ -48,20 +51,24 @@ impl Loader {
         String::from_utf8(log).unwrap()
     }
 
-    pub fn program(&self) -> &[u8] {
-        let start: *const u8 = self.program_address_range.start as *const u8;
-        let length: usize = self.program_address_range.end - self.program_address_range.start;
-        unsafe {
-            slice::from_raw_parts(start, length)
-        }
+    pub fn program(&self) -> Vec<u8> {
+        self.program_address_range
+            .clone()
+            .map(|program_address| program_address as *const u8)
+            .map(|program_address| unsafe {
+                ptr::read_volatile(program_address)
+            })
+            .collect()
     }
 
-    pub fn stack(&self) -> &[u8] {
-        let start: *const u8 = self.stack_address_range.start as *const u8;
-        let length: usize = self.stack_address_range.end - self.stack_address_range.start;
-        unsafe {
-            slice::from_raw_parts(start, length)
-        }
+    pub fn stack(&self) -> Vec<u8> {
+        self.stack_address_range
+            .clone()
+            .map(|stack_address| stack_address as *const u8)
+            .map(|stack_address| unsafe {
+                ptr::read_volatile(stack_address)
+            })
+            .collect()
     }
 
     fn arguments_mut(&mut self) -> &mut Arguments {
@@ -79,7 +86,7 @@ impl Loader {
     }
 
     fn set_arguments(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
-        *self.arguments_mut() = Arguments::new(controller, bsp_heap_start, bsp_local_apic_id);
+        *self.arguments_mut() = Arguments::new(self, controller, bsp_heap_start, bsp_local_apic_id);
     }
 
     fn set_temporary_pml4_table(&mut self, controller: &Controller) {
@@ -93,6 +100,13 @@ impl Loader {
         unsafe {
             slice::from_raw_parts_mut(start, length)
         }
+    }
+
+    fn ss(&self) -> u16 {
+        let stack_floor: usize = self.stack_address_range.end;
+        let stack_ceil: usize = stack_floor - real_mode::segment::SIZE;
+        let ss: usize = stack_ceil >> real_mode::segment::SHIFT;
+        ss as u16
     }
 
     fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
@@ -135,12 +149,15 @@ struct Arguments {
     #[allow(dead_code)]
     sender: usize,
     #[allow(dead_code)]
+    ss: u16,
+    #[allow(dead_code)]
     bsp_local_apic_id: u8,
 }
 
 impl Arguments {
-    pub fn new(controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) -> Self {
+    pub fn new(loader: &Loader, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) -> Self {
         let paging: &memory::Paging = controller.paging();
+        let cr3: u64 = paging.cr3().into();
         let kernel_entry: usize = controller.kernel_entry();
         let kernel_stack_floor: usize = controller.kernel_stack_floor();
         let heap: &[MaybeUninit<u8>] = controller.heap();
@@ -152,8 +169,7 @@ impl Arguments {
         let sender: &sync::spin::Lock<Option<message::Content>> = controller.sender();
         let sender: *const sync::spin::Lock<Option<message::Content>> = sender as *const sync::spin::Lock<Option<message::Content>>;
         let sender: usize = sender as usize;
-        let cr3: u64 = paging.cr3().into();
-        com2_println!("cr3 = {:#x?}", cr3);
+        let ss: u16 = loader.ss();
         Self {
             cr3,
             kernel_entry,
@@ -163,6 +179,7 @@ impl Arguments {
             heap_size,
             receiver,
             sender,
+            ss,
             bsp_local_apic_id,
         }
     }

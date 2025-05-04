@@ -818,6 +818,8 @@ boot_argument_sender:
 	.quad	0x0000000000000000
 boot_argument_receiver:
 	.quad	0x0000000000000000
+boot_argument_ss:
+	.word	0x0000
 boot_argument_bsp_local_apic_id:
 	.byte	0x00
 log_start:
