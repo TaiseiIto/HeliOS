@@ -22,6 +22,8 @@ main16:	# IP == 0x0000
 	movw	%dx,	%gs
 	movw	boot_argument_ss,	%dx
 	movw	%dx,	%ss
+	xorw	%bp,	%bp
+	xorw	%sp,	%sp
 	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
