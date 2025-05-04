@@ -1,7 +1,8 @@
 use {
     core::{
+        cmp,
         fmt,
-        ops::Range,
+        ops,
         slice,
     },
     crate::{
@@ -11,21 +12,39 @@ use {
     },
 };
 
+pub mod real_mode;
+
 pub struct Loader {
-    program_address_range: Range<usize>,
-    stack_address_range: Range<usize>,
+    program_address_range: ops::Range<usize>,
+    stack_address_range: ops::Range<usize>,
 }
 
 impl Loader {
-    pub fn allocate_pages(base: usize, stack_floor: usize) -> Range<efi::memory::PhysicalAddress> {
+    pub fn allocate_pages(base: usize, stack_floor: usize) -> ops::Range<efi::memory::PhysicalAddress> {
         efi::SystemTable::get()
             .memory_map()
             .unwrap()
             .iter()
             .filter(|descriptor| descriptor.is_available())
             .map(|descriptor| descriptor.physical_address_range())
-            .for_each(|physical_address_range| {
-                com2_println!("physical_address_range = {:#x?}", physical_address_range);
+            .filter_map(|descriptor_range| {
+                let ops::Range {
+                    start: descriptor_start,
+                    end: descriptor_end,
+                } = descriptor_range;
+                let descriptor_start: usize = descriptor_start as usize;
+                let descriptor_end: usize = descriptor_end as usize;
+                let ops::Range {
+                    start: real_start,
+                    end: real_end,
+                } = real_mode::memory::address::RANGE;
+                let start: usize = cmp::max(descriptor_start, real_start);
+                let end: usize = cmp::min(descriptor_end, real_end);
+                let loader_range: ops::Range<usize> = start..end;
+                (!loader_range.is_empty()).then_some(loader_range)
+            })
+            .for_each(|loader_range| {
+                com2_println!("loader_range = {:#x?}", loader_range);
             });
         let processor_boot_loader_pages: usize = (stack_floor - base) / memory::page::SIZE;
         efi::SystemTable::get()
@@ -33,11 +52,11 @@ impl Loader {
             .unwrap()
     }
 
-    pub fn new(binary: &[u8], physical_range: Range<efi::memory::PhysicalAddress>) -> Self {
+    pub fn new(binary: &[u8], physical_range: ops::Range<efi::memory::PhysicalAddress>) -> Self {
         let program_start: usize = physical_range.start as usize;
         let program_size: usize = binary.len();
         let program_end: usize = program_start + program_size;
-        let program_address_range: Range<usize> = program_start..program_end;
+        let program_address_range: ops::Range<usize> = program_start..program_end;
         let program_destination: &mut [u8] = unsafe {
             slice::from_raw_parts_mut(program_start as *mut u8, program_size)
         };
@@ -45,7 +64,7 @@ impl Loader {
         let stack_ceil: usize = program_end;
         let stack_floor: usize = physical_range.end as usize;
         let stack_size: usize = stack_floor - stack_ceil;
-        let stack_address_range: Range<usize> = stack_ceil..stack_floor;
+        let stack_address_range: ops::Range<usize> = stack_ceil..stack_floor;
         let stack_destination: &mut [u8] = unsafe {
             slice::from_raw_parts_mut(stack_ceil as *mut u8, stack_size)
         };
