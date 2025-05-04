@@ -71,6 +71,8 @@ fn main(argument: &'static mut Argument<'static>) {
     let hpet = timer::hpet::Registers::initialize(local_apic_id);
     // Set APIC Timer.
     local_apic_registers.initialize_apic(hpet);
+    // Boot application processors.
+    processor::Manager::initialize(local_apic_id, local_apic_registers, heap_size, hpet);
     // Enumerate PCI devices.
     let mut pci = pci::Configuration::read();
     pci.reset();
@@ -83,7 +85,11 @@ fn main(argument: &'static mut Argument<'static>) {
             Some(event) => event.process(),
             None => x64::hlt(),
         }
-        loop_counter += 1;
+        loop_counter += if processor::Controller::get_all().all(|processor| processor.is_initialized()) {
+            1
+        } else {
+            0
+        };
         shutdown = 0x100 <= loop_counter;
     }
     // Stop RTC interruptions.
@@ -96,6 +102,8 @@ fn main(argument: &'static mut Argument<'static>) {
     task::Controller::get_current_mut()
         .unwrap()
         .cli();
+    // Print AP log.
+    processor::Manager::finalize();
     // Shutdown.
     com2_println!("Shutting down.");
     Argument::get()
