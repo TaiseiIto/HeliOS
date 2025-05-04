@@ -44,6 +44,16 @@ main16:	# IP == 0x0000
 	call	put_word16
 	addw	$0x0002,	%sp
 	call	put_new_line16
+	# Print SS register.
+	leaw	ss_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	movw	%ss,	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	call	put_new_line16
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -771,6 +781,8 @@ message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
 my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
+ss_message:
+	.string "SS = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	0x8
