@@ -8,10 +8,6 @@ use std::{
 fn main() {
     let processor_boot_loader: String = env::var("PROCESSOR_BOOT_LOADER").unwrap();
     println!("processor_boot_loader = {:#x?}", processor_boot_loader);
-    let processor_boot_loader_base: String = env::var("PROCESSOR_BOOT_LOADER_BASE").unwrap();
-    println!("processor_boot_loader_base = {:#x?}", processor_boot_loader_base);
-    let processor_boot_loader_stack_floor: String = env::var("PROCESSOR_BOOT_LOADER_STACK_FLOOR").unwrap();
-    println!("processor_boot_loader_stack_floor = {:#x?}", processor_boot_loader_stack_floor);
     let processor_kernel: String = env::var("PROCESSOR_KERNEL").unwrap();
     println!("processor_kernel = {:#x?}", processor_kernel);
     let kernel: String = env::var("KERNEL").unwrap();
@@ -22,8 +18,6 @@ fn main() {
     println!("constants = {:#x?}", constants);
     let mut constants = File::create(&constants).unwrap();
     writeln!(&mut constants, "const PROCESSOR_BOOT_LOADER: &str = {:#x?};", processor_boot_loader).unwrap();
-    writeln!(&mut constants, "const PROCESSOR_BOOT_LOADER_BASE: usize = {};", processor_boot_loader_base).unwrap();
-    writeln!(&mut constants, "const PROCESSOR_BOOT_LOADER_STACK_FLOOR: usize = {};", processor_boot_loader_stack_floor).unwrap();
     writeln!(&mut constants, "const PROCESSOR_KERNEL: &str = {:#x?};", processor_kernel).unwrap();
     writeln!(&mut constants, "const KERNEL: &str = {:#x?};", kernel).unwrap();
 }
