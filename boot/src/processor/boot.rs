@@ -3,6 +3,7 @@ use {
         cmp,
         fmt,
         ops,
+        ptr,
         slice,
     },
     crate::{
@@ -57,20 +58,18 @@ impl Loader {
         let program_size: usize = binary.len();
         let program_end: usize = program_start + program_size;
         let program_address_range: ops::Range<usize> = program_start..program_end;
-        let program_destination: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(program_start as *mut u8, program_size)
-        };
-        program_destination.copy_from_slice(binary);
+        binary
+            .iter()
+            .cloned()
+            .zip(program_address_range.clone())
+            .for_each(|(source, destination)| {
+                let destination: *mut u8 = destination as *mut u8;
+                ptr::write_volatile(destination, source);
+            });
         let stack_ceil: usize = program_end;
         let stack_floor: usize = physical_range.end as usize;
         let stack_size: usize = stack_floor - stack_ceil;
         let stack_address_range: ops::Range<usize> = stack_ceil..stack_floor;
-        let stack_destination: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(stack_ceil as *mut u8, stack_size)
-        };
-        stack_destination
-            .iter_mut()
-            .for_each(|byte| *byte = 0);
         com2_println!("processor::boot::Loader program_address_range = {:#x?}", program_address_range);
         com2_println!("processor::boot::Loader stack_address_range = {:#x?}", stack_address_range);
         Self {
