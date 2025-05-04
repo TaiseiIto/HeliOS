@@ -57,6 +57,8 @@ main16:	# IP == 0x0000
 	# Leave 16bit main function.
 	popw	%di
 	leave
+	# Stop for test.
+	hlt
 	# Move to 32bit protected mode.
 	lgdt	gdtr
 	movl	%cr0,	%edx
