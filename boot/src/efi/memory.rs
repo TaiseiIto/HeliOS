@@ -109,6 +109,28 @@ pub struct Map {
 }
 
 impl Map {
+    pub fn iter(&self) -> impl Iterator<Item = &Descriptor> {
+        let Self {
+            descriptors,
+            descriptor_size,
+            descriptor_version: _,
+            key: _,
+        } = self;
+        (0..)
+            .map_while(|index| {
+                let offset: usize = index * (*descriptor_size);
+                descriptors
+                    .get(offset)
+                    .map(|descriptor| {
+                        let descriptor: *const u8 = descriptor as *const u8;
+                        let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                        unsafe {
+                            &*descriptor
+                        }
+                    })
+            })
+    }
+
     pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
         Self {
             descriptors,
@@ -120,52 +142,6 @@ impl Map {
 
     pub fn key(&self) -> usize {
         self.key
-    }
-
-    pub fn iter<'a>(&'a self) -> DescriptorIterator<'a> {
-        self.into()
-    }
-}
-
-pub struct DescriptorIterator<'a> {
-    map: &'a Map,
-    index: usize,
-}
-
-impl<'a> From<&'a Map> for DescriptorIterator<'a> {
-    fn from(map: &'a Map) -> Self {
-        let index: usize = 0;
-        Self {
-            map,
-            index,
-        }
-    }
-}
-
-impl<'a> Iterator for DescriptorIterator<'a> {
-    type Item = &'a Descriptor;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let Self {
-            map: Map {
-                descriptors,
-                descriptor_size,
-                descriptor_version: _,
-                key: _,
-            },
-            index,
-        } = self;
-        let offset: usize = (*index) * (*descriptor_size);
-        descriptors
-            .get(offset)
-            .map(|descriptor| {
-                *index += 1;
-                let descriptor: *const u8 = descriptor as *const u8;
-                let descriptor: *const Descriptor = descriptor as *const Descriptor;
-                unsafe {
-                    &*descriptor
-                }
-            })
     }
 }
 
