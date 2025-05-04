@@ -121,21 +121,51 @@ impl Map {
     pub fn key(&self) -> usize {
         self.key
     }
+
+    pub fn iter<'a>(&'a self) -> DescriptorIterator<'a> {
+        self.into()
+    }
 }
 
-impl From<Map> for Vec<Descriptor> {
-    fn from(map: Map) -> Vec<Descriptor> {
-        map.descriptors
-            .chunks(map.descriptor_size)
+pub struct DescriptorIterator<'a> {
+    map: &'a Map,
+    index: usize,
+}
+
+impl<'a> From<&'a Map> for DescriptorIterator<'a> {
+    fn from(map: &'a Map) -> Self {
+        let index: usize = 0;
+        Self {
+            map,
+            index,
+        }
+    }
+}
+
+impl<'a> Iterator for DescriptorIterator<'a> {
+    type Item = &'a Descriptor;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Self {
+            map: Map {
+                descriptors,
+                descriptor_size,
+                descriptor_version: _,
+                key: _,
+            },
+            index,
+        } = self;
+        let offset: usize = (*index) * (*descriptor_size);
+        descriptors
+            .get(offset)
             .map(|descriptor| {
-                let descriptor: *const [u8] = descriptor as *const [u8];
+                *index += 1;
+                let descriptor: *const u8 = descriptor as *const u8;
                 let descriptor: *const Descriptor = descriptor as *const Descriptor;
-                let descriptor: &Descriptor = unsafe {
+                unsafe {
                     &*descriptor
-                };
-                descriptor.clone()
+                }
             })
-            .collect()
     }
 }
 

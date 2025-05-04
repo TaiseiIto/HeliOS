@@ -104,7 +104,9 @@ impl Loader {
         let memory_map: Vec<efi::memory::Descriptor> = efi::SystemTable::get()
             .memory_map()
             .unwrap()
-            .into();
+            .iter()
+            .cloned()
+            .collect();
         com2_println!("memory_map = {:#x?}", memory_map);
         let higher_half_range: Range<u128> = paging.higher_half_range();
         let heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
