@@ -6,7 +6,6 @@ use {
     },
     core::ops::Range,
     crate::{
-        com2_println,
         processor,
         efi,
         elf,

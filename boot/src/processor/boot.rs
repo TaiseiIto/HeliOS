@@ -20,7 +20,7 @@ pub struct Loader {
 }
 
 impl Loader {
-    pub fn allocate_pages(base: usize, stack_floor: usize) -> ops::Range<efi::memory::PhysicalAddress> {
+    pub fn allocate_pages() -> ops::Range<efi::memory::PhysicalAddress> {
         let range: ops::Range<usize> = efi::SystemTable::get()
             .memory_map()
             .unwrap()
@@ -46,9 +46,9 @@ impl Loader {
             .max_by(|x, y| (x.end - x.start).cmp(&(y.end - y.start)))
             .unwrap();
         com2_println!("range = {:#x?}", range);
-        let processor_boot_loader_pages: usize = (stack_floor - base) / memory::page::SIZE;
+        let pages: usize = (range.end - range.start) / memory::page::SIZE;
         efi::SystemTable::get()
-            .allocate_specific_pages(base, processor_boot_loader_pages)
+            .allocate_specific_pages(range.start, pages)
             .unwrap()
     }
 
@@ -71,6 +71,8 @@ impl Loader {
         stack_destination
             .iter_mut()
             .for_each(|byte| *byte = 0);
+        com2_println!("processor::boot::Loader program_address_range = {:#x?}", program_address_range);
+        com2_println!("processor::boot::Loader stack_address_range = {:#x?}", stack_address_range);
         Self {
             program_address_range,
             stack_address_range,

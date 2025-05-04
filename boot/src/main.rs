@@ -35,7 +35,7 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
     system_table.set();
     // Allocate pages requested to be allocated at specific physical address preferentially.
-    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = processor::boot::Loader::allocate_pages(PROCESSOR_BOOT_LOADER_BASE, PROCESSOR_BOOT_LOADER_STACK_FLOOR);
+    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = processor::boot::Loader::allocate_pages();
     efi_println!("Hello, World!");
     com2_println!("Hello from /EFI/BOOT/BOOTX64.EFI");
     let font_protocol = efi::font::Protocol::get();
@@ -49,6 +49,7 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
     let (processor_boot_loader, processor_kernel): (processor::boot::Loader, Vec<u8>) = processor::prepare(&directory_tree, PROCESSOR_BOOT_LOADER, PROCESSOR_KERNEL, processor_boot_loader_pages);
+    com2_println!("processor_boot_loader = {:#x?}", processor_boot_loader);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();

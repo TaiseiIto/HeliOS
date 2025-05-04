@@ -32,6 +32,14 @@ fn main(argument: &'static mut Argument<'static>) {
     x64::cli();
     // Set argument from the bootloader to the kernel.
     argument.set();
+    // Check memory map.
+    com2_println!("The kernel checks memory map.");
+    Argument::get()
+        .memory_map()
+        .iter()
+        .for_each(|descriptor| {
+            com2_println!("descriptor = {:#x?}", descriptor);
+        });
     // Initialize heap memory.
     let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
     // Initialize GDT.
