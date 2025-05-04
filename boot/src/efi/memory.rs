@@ -1,5 +1,7 @@
 use {
     alloc::vec::Vec,
+    core::ops::Range,
+    crate::memory,
     super::Void,
 };
 
@@ -96,6 +98,13 @@ impl Descriptor {
 
     pub fn number_of_pages(&self) -> usize {
         self.number_of_pages as usize
+    }
+
+    pub fn physical_address_range(&self) -> Range<PhysicalAddress> {
+        let start: PhysicalAddress = self.physical_start;
+        let length: PhysicalAddress = self.number_of_pages * (memory::page::SIZE as PhysicalAddress);
+        let end: PhysicalAddress = start + length;
+        start..end
     }
 }
 

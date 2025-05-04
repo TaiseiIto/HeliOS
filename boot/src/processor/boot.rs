@@ -22,8 +22,10 @@ impl Loader {
             .memory_map()
             .unwrap()
             .iter()
-            .for_each(|descriptor| {
-                com2_println!("descriptor = {:#x?}", descriptor);
+            .filter(|descriptor| descriptor.is_available())
+            .map(|descriptor| descriptor.physical_address_range())
+            .for_each(|physical_address_range| {
+                com2_println!("physical_address_range = {:#x?}", physical_address_range);
             });
         let processor_boot_loader_pages: usize = (stack_floor - base) / memory::page::SIZE;
         efi::SystemTable::get()
