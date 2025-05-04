@@ -11,25 +11,17 @@
 # Parameters: stack
 # Scratch registers: ax, cx, dx
 # Preserved registers: bx, si, di, bp, sp
-main16:	# IP == 0x2000
+main16:	# IP == 0x0000
 0:	# Disable interrupts.
 	cli
-	# Initialize the general registers.
-	xorw	%ax,	%ax
-	movw	%ax,	%bx
-	movw	%ax,	%cx
-	movw	%ax,	%dx
-	movw	%ax,	%si
-	movw	%ax,	%di
-	movw	%ax,	%sp
-	movw	%ax,	%bp
 	# Initialize the segment registers.
-	movw	%ax,	%ds	
-	movw	%ax,	%es	
-	movw	%ax,	%fs	
-	movw	%ax,	%gs	
-	movw	$STACK_SEGMENT,	%ax
-	movw	%ax,	%ss
+	movw	%cs,	%dx
+	movw	%dx,	%ds
+	movw	%dx,	%es
+	movw	%dx,	%fs
+	movw	%dx,	%gs
+	movw	boot_argument_ss,	%dx
+	movw	%dx,	%ss
 	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
