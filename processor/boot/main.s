@@ -153,7 +153,7 @@ set_gdt_base:
 1:	# If GDT base low addition carried over.
 	incw	%ax			# %ax = (data_segment >> 12) + 1
 2:	# End if.
-	movw	%ax,	0x02(%di)	# Write GDT base high.
+	movw	%ax,	0x04(%di)	# Write GDT base high.
 	popw	%di
 	leave
 	ret
