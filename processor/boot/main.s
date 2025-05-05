@@ -103,6 +103,17 @@ main16:	# IP == 0x0000
 	call	put_quad_pointer16
 	addw	$0x0002,	%sp
 	call	put_new_line16
+	# Fix GDTR
+	# Check GDT base
+	leaw	gdt_base_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	(gdtr + 0x0002),	%dx
+	pushw	%dx
+	call	put_long_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -223,6 +234,21 @@ put_long16:
 	pushw	%dx
 	call	put_word16
 	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_long_pointer16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movw	0x04(%bp),	%si
+	movw	0x02(%si),	%dx
+	pushw	%dx
+	movw	(%si),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	popw	%si
 	leave
 	ret
 
@@ -882,6 +908,8 @@ gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	gdt_start + 0x1000
+bsp_heap_start_message:
+	.string "bsp_heap_start = 0x"
 bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
 cpuid_max_eax_message:
@@ -892,8 +920,8 @@ cs_message:
 	.string "CS = 0x"
 error_message:
 	.string	"ERROR!"
-bsp_heap_start_message:
-	.string "bsp_heap_start = 0x"
+gdt_base_message:
+	.string "GDT base = 0x"
 heap_start_message:
 	.string "heap_start = 0x"
 heap_size_message:
