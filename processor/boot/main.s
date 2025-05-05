@@ -1,8 +1,4 @@
-	.set	SEGMENT_LENGTH,	0x00010000
-	.set	SEGMENT_SHIFT,	4
-	.set	STACK_FLOOR,	0x00010000
-	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
-	.set	RFLAGS_ID,	1 << 21
+.set    RFLAGS_ID,      1 << 21
 
 	.text
 	.code16
@@ -179,9 +175,10 @@ main32:
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
+	movw	$0x0018,	%dx
 	movw	%dx,	%ss
-	leal	STACK_FLOOR,	%ebp
-	leal	STACK_FLOOR,	%esp
+	movl	$0x00010000,	%ebp
+	movl	$0x00010000,	%esp
 	# Enter 32bit main function.
 	enter	$0x0000,	$0x00
 	# Print message32.
@@ -220,7 +217,7 @@ main32:
 	orl	$0x80000000,	%edx
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
-	ljmp	$0x0018,	$main64
+	ljmp	$0x0020,	$main64
 
 putchar32:
 0:
@@ -373,14 +370,14 @@ put_quad_pointer32:
 # Preserved registers: rbx, rsp, rbp, r12, r13, r14, r15
 main64:
 0:	# Set 64bit data segment.
-	movw	$0x0020,	%dx
+	movw	$0x0028,	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
 	movw	%dx,	%ss
-	leaq	STACK_FLOOR,	%rbp
-	leaq	STACK_FLOOR,	%rsp
+	movq	$0x0000000000010000,	%rbp
+	movq	$0x0000000000010000,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
 	# Print message64.
@@ -720,28 +717,35 @@ segment_descriptor_32bit_data:			#0x10
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_code:		# 0x18
-	.word	0xffff	# Limit 15:00
-	.word	0x0000	# Base 15:00
-	.byte	0x00	# Base 23:16
-	.byte	0x9a	# Type, S, DPL, P
-	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
-	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_data:		# 0x20
+segment_descriptor_32bit_stack:			#0x18
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_data:	# 0x28
+segment_descriptor_64bit_kernel_code:		# 0x20
+	.word	0xffff	# Limit 15:00
+	.word	0x0000	# Base 15:00
+	.byte	0x00	# Base 23:16
+	.byte	0x9a	# Type, S, DPL, P
+	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x00	# Base 31:24
+segment_descriptor_64bit_kernel_data:		# 0x28
+	.word	0xffff	# Limit 15:00
+	.word	0x0000	# Base 15:00
+	.byte	0x00	# Base 23:16
+	.byte	0x92	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x00	# Base 31:24
+segment_descriptor_64bit_application_data:	# 0x30
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0xf2	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_code:	# 0x30
+segment_descriptor_64bit_application_code:	# 0x38
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
