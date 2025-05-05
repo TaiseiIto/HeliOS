@@ -104,6 +104,13 @@ main16:	# IP == 0x0000
 	addw	$0x0002,	%sp
 	call	put_new_line16
 	# Fix GDTR
+	pushw	%ds
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	leaw	gdtr,	%dx
+	pushw	%dx
+	call	set_gdt_base
+	addw	$0x0006,	%sp
 	# Check GDT base
 	leaw	gdt_base_message,	%dx
 	pushw	%dx
@@ -124,6 +131,32 @@ main16:	# IP == 0x0000
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
 	ljmp	$(segment_descriptor_32bit_code - segment_descriptor_null),	$main32
+
+# set_gdb_base(gdtr: u16, gdt_start: u16, data_segment: u16)
+set_gdt_base:
+.set	FLAGS_CF,	1
+0:
+	enter	$0x0000,	$0x00
+	pushw	%di
+	movw	0x04(%bp),	%di	# %di = gdtr
+	movw	0x06(%bp),	%ax	# %ax = gdt_start
+	movw	0x08(%bp),	%dx	# %dx = data_segment
+	shlw	$0x04,		%dx	# %dx = data_segment << 4
+	addw	%dx,		%ax	# %ax = gdt_start + (data_segment << 4)
+	pushfw				# Save FLAGS.
+	movw	%ax,	0x02(%di)	# Write GDT base low.
+	movw	0x08(%bp),	%ax	# %ax = data_segment
+	shrw	$0x0a,		%ax	# %ax = data_segment >> 12
+	popw	%dx			# Read FLAGS.
+	andw	$FLAGS_CF,	%dx
+	jz	2f
+1:	# If GDT base low addition carried over.
+	incw	%ax			# %ax = (data_segment >> 12) + 1
+2:	# End if.
+	movw	%ax,	0x04(%di)	# Write GDT base high.
+	popw	%di
+	leave
+	ret
 
 putchar16:
 0:
@@ -289,7 +322,7 @@ put_quad_pointer16:
 	leave
 	ret
 
-# set_segment_base(gdt_start: u16, segment_selector_bit32: u16, segment_register_bit16: u16);
+# set_segment_base(gdt_start: u16, segment_selector_bit32: u16, segment_register_bit16: u16)
 set_segment_base16:
 0:
 	enter	$0x0000,	$0x00
@@ -941,7 +974,7 @@ gdt_end:
 	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
-	.long	gdt_start + 0x1000
+	.long	0xdeadbeef # This will be overwritten by set_gdb_base function.
 bsp_heap_start_message:
 	.string "bsp_heap_start = 0x"
 bsp_local_apic_id_message:
