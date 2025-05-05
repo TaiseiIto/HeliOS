@@ -73,6 +73,36 @@ main16:	# IP == 0x0000
 	pushw	%dx
 	call	set_segment_base16
 	addw	$0x0006,	%sp
+	# Check 32bit code segment.
+	leaw	segment_descriptor_32bit_code_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_code,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Check 32bit data segment.
+	leaw	segment_descriptor_32bit_data_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_data,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Check 32bit stack segment.
+	leaw	segment_descriptor_32bit_stack_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_stack,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -82,6 +112,8 @@ main16:	# IP == 0x0000
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
+	# Stop for test.
+	hlt
 	ljmp	$(segment_descriptor_32bit_code - segment_descriptor_null),	$main32
 
 putchar16:
@@ -182,6 +214,57 @@ put_word16:
 	leave
 	ret
 
+put_long16:
+0:
+	enter	$0x0000,	$0x00
+	movw	0x06(%bp),	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	movw	0x04(%bp),	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_quad16:
+0:
+	enter	$0x0000,	$0x00
+	movw	0x0a(%bp),	%dx
+	pushw	%dx
+	movw	0x08(%bp),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	movw	0x06(%bp),	%dx
+	pushw	%dx
+	movw	0x04(%bp),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	leave
+	ret
+
+put_quad_pointer16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movw	0x04(%bp),	%si
+	movw	0x06(%si),	%dx
+	pushw	%dx
+	movw	0x04(%si),	%dx
+	pushw	%dx
+	movw	0x02(%si),	%dx
+	pushw	%dx
+	movw	(%si),	%dx
+	pushw	%dx
+	call	put_quad16
+	addw	$0x0008,	%sp
+	popw	%si
+	leave
+	ret
+
 # set_segment_base(gdt_start: u16, segment_selector_bit32: u16, segment_register_bit16: u16);
 set_segment_base16:
 0:
@@ -210,8 +293,6 @@ set_segment_base16:
 # Preserved registers: ebx, esi, edi, ebp, esp
 main32:
 0:	# Set 32bit data segment.
-	# Stop for test.
-	hlt
 	movw	$(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
@@ -378,11 +459,11 @@ put_long32:
 put_quad32:
 0:
 	enter	$0x0000,	$0x00
-	movl	0x08(%ebp),	%edx
+	movl	0x0c(%ebp),	%edx
 	pushl	%edx
 	call	put_long32
 	addl	$0x00000004,	%esp
-	movl	0x0c(%ebp),	%edx
+	movl	0x08(%ebp),	%edx
 	pushl	%edx
 	call	put_long32
 	addl	$0x00000004,	%esp
@@ -394,9 +475,9 @@ put_quad_pointer32:
 	enter	$0x0000,	$0x00
 	pushl	%esi
 	movl	0x08(%ebp),	%esi
-	movl	(%esi),	%edx
-	pushl	%edx
 	movl	0x04(%esi),	%edx
+	pushl	%edx
+	movl	(%esi),	%edx
 	pushl	%edx
 	call	put_quad32
 	addl	$0x00000008,	%esp
@@ -831,6 +912,12 @@ message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
 my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
+segment_descriptor_32bit_code_message:
+	.string "Segment descriptor 32bit code = 0x"
+segment_descriptor_32bit_data_message:
+	.string "Segment descriptor 32bit data = 0x"
+segment_descriptor_32bit_stack_message:
+	.string "Segment descriptor 32bit stack = 0x"
 ss_message:
 	.string "SS = 0x"
 log_end_pointer:
