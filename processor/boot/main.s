@@ -1,5 +1,3 @@
-.set    RFLAGS_ID,      1 << 21
-
 	.text
 	.code16
 # Calling convention = System V i386
@@ -62,7 +60,7 @@ main16:	# IP == 0x0000
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	ljmp	$0x0008,	$main32
+	ljmp	$(segment_descriptor_32bit_code - segment_descriptor_null),	$main32
 
 putchar16:
 0:
@@ -170,12 +168,12 @@ put_word16:
 # Preserved registers: ebx, esi, edi, ebp, esp
 main32:
 0:	# Set 32bit data segment.
-	movw	$0x0010,	%dx
+	movw	$(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
-	movw	$0x0018,	%dx
+	movw	$(segment_descriptor_32bit_stack - segment_descriptor_null),	%dx
 	movw	%dx,	%ss
 	movl	$0x00010000,	%ebp
 	movl	$0x00010000,	%esp
@@ -217,7 +215,7 @@ main32:
 	orl	$0x80000000,	%edx
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
-	ljmp	$0x0020,	$main64
+	ljmp	$(segment_descriptor_64bit_kernel_code - segment_descriptor_null),	$main64
 
 putchar32:
 0:
@@ -370,7 +368,7 @@ put_quad_pointer32:
 # Preserved registers: rbx, rsp, rbp, r12, r13, r14, r15
 main64:
 0:	# Set 64bit data segment.
-	movw	$0x0028,	%dx
+	movw	$(segment_descriptor_64bit_kernel_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
@@ -480,6 +478,7 @@ apic_is_supported:
 	ret
 
 cpuid_is_supported:
+.set    RFLAGS_ID,      1 << 21
 0:
 	enter	$0x0000,	$0x00
 	call	get_rflags
