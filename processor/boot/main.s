@@ -112,8 +112,6 @@ main16:	# IP == 0x0000
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	# Stop for test.
-	hlt
 	ljmp	$(segment_descriptor_32bit_code - segment_descriptor_null),	$main32
 
 putchar16:
@@ -293,6 +291,8 @@ set_segment_base16:
 # Preserved registers: ebx, esi, edi, ebp, esp
 main32:
 0:	# Set 32bit data segment.
+	# Stop for test.
+	hlt
 	movw	$(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
@@ -881,7 +881,7 @@ gdt_end:
 	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
-	.long	gdt_start
+	.long	gdt_start + 0x1000
 bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
 cpuid_max_eax_message:
