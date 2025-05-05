@@ -317,8 +317,6 @@ set_segment_base16:
 # Preserved registers: ebx, esi, edi, ebp, esp
 main32:
 0:	# Set 32bit data segment.
-	# Stop for test.
-	hlt
 	movw	$(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
@@ -345,6 +343,9 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
+	# Stop for test.
+	cli
+	hlt
 	# Leave 32bit main function.
 	leave
 	# Set temporary CR3.
