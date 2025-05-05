@@ -376,8 +376,8 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
-	# Check 32bit code segment base.
-	leal	code_segment_base_message,	%edx
+	# Check ljmp destination address.
+	leal	ljmp_destination_address_message,	%edx
 	pushl	%edx
 	call	puts32
 	addl	$0x00000004,	%esp
@@ -385,6 +385,9 @@ main32:
 	pushl	%edx
 	call	get_segment_base
 	addl	$0x00000004,	%esp
+	addl	$main64,	%eax
+	leal	ljmp_destination,	%edi
+	movl	%eax,	(%edi)
 	pushl	%eax
 	call	put_long32
 	addl	$0x00000004,	%esp
@@ -413,7 +416,7 @@ main32:
 	orl	$0x80000000,	%edx
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
-	ljmp	$(segment_descriptor_64bit_kernel_code - segment_descriptor_null),	$main64
+	ljmp	*(%edi)
 
 # get_segment_base(segment_descriptor_address: u32) -> u32
 get_segment_base:
@@ -975,14 +978,15 @@ gdt_end:
 gdtr:
 	.word	gdt_end - gdt_start - 1
 	.long	0xdeadbeef # This will be overwritten by set_gdb_base function.
+ljmp_destination:
+	.long	0xdeadbeef
+	.word	(segment_descriptor_64bit_kernel_code - segment_descriptor_null)
 bsp_heap_start_message:
 	.string "bsp_heap_start = 0x"
 bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
 cpuid_max_eax_message:
 	.string "CPUID max EAX = 0x"
-code_segment_base_message:
-	.string "code segment base = 0x"
 cr3_message:
 	.string "CR3 = 0x"
 cs_message:
@@ -999,6 +1003,8 @@ kernel_entry_message:
 	.string "kernel_entry = 0x"
 kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
+ljmp_destination_address_message:
+	.string "ljmp destination address = 0x"
 message_message:
 	.string "message = 0x"
 message16:
