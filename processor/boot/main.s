@@ -343,6 +343,19 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
+	# Check 32bit code segment base.
+	leal	code_segment_base_message,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x00000004,	%esp
+	leal	segment_descriptor_32bit_code,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	pushl	%eax
+	call	put_long32
+	addl	$0x00000004,	%esp
+	call	put_new_line32
 	# Stop for test.
 	cli
 	hlt
@@ -368,6 +381,26 @@ main32:
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
 	ljmp	$(segment_descriptor_64bit_kernel_code - segment_descriptor_null),	$main64
+
+# get_segment_base(segment_descriptor_address: u32) -> u32
+get_segment_base:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%esi
+	movl	0x08(%ebp),	%esi	# %esi = segment_descriptor_address
+	movl	0x04(%esi),	%edx	# %edx = segment_descriptor_high
+	movl	%edx,		%eax	# %eax = segment_descriptor_high
+	shrl	$0x18,		%eax	# %eax = segment_discriptor_high >> 0x18
+	shll	$0x08,		%eax	# %eax = (segment_discriptor_high >> 0x18) << 0x08
+	andl	$0x000000ff,	%edx	# %edx = segment_descriptor_high && 0x000000ff
+	addl	%edx,		%eax	# %eax = ((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)
+	shll	$0x10,		%eax	# %eax = (((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)) << 0x10
+	movl	(%esi),		%edx	# %edx = segment_descriptor_low
+	shrl	$0x10,		%edx	# %edx = segment_descriptor_low >> 0x10
+	addl	%edx,		%eax	# %eax = ((((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)) << 0x10) + (segment_descriptor_low >> 0x10)
+	popl	%esi
+	leave
+	ret
 
 putchar32:
 0:
@@ -915,6 +948,8 @@ bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
 cpuid_max_eax_message:
 	.string "CPUID max EAX = 0x"
+code_segment_base_message:
+	.string "code segment base = 0x"
 cr3_message:
 	.string "CR3 = 0x"
 cs_message:
