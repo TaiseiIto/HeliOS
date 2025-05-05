@@ -271,8 +271,8 @@ set_segment_base16:
 	enter	$0x0000,	$0x00
 	pushw	%di
 	movw	0x04(%bp),	%di	# %di = gdt_start
-	addw	0x08(%bp),	%di	# %di = gdt_start + segment_selector_bit32
-	movw	0x0c(%bp),	%ax	# %ax = segment_register_bit16
+	addw	0x06(%bp),	%di	# %di = gdt_start + segment_selector_bit32
+	movw	0x08(%bp),	%ax	# %ax = segment_register_bit16
 	movw	%ax,		%dx	# %dx = segment_register_bit16
 	shlw	$0x04,		%dx	# %dx = segment_register_bit16 << 4
 	movw	%dx,	0x02(%di)	# Set base 15:00
