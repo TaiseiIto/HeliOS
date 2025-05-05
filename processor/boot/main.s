@@ -49,6 +49,14 @@ main16:	# IP == 0x0000
 	call	put_word16
 	addw	$0x0002,	%sp
 	call	put_new_line16
+	# Set 32bit code segment base.
+	pushw	%cs
+	leaw	(segment_descriptor_32bit_code - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -157,6 +165,26 @@ put_word16:
 	call	put_byte16
 	addw	$0x0002,	%sp
 	popw	%bx
+	leave
+	ret
+
+# set_segment_base(gdt_start: u16, segment_selector_bit32: u16, segment_register_bit16: u16);
+set_segment_base16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%di
+	movw	0x04(%bp),	%di	# %di = gdt_start
+	addw	0x08(%bp),	%di	# %di = gdt_start + segment_selector_bit32
+	movw	0x0c(%bp),	%ax	# %ax = segment_register_bit16
+	movw	%ax,		%dx	# %dx = segment_register_bit16
+	shlw	$0x04,		%dx	# %dx = segment_register_bit16 << 4
+	movw	%dx,	0x02(%di)	# Set base 15:00
+	movw	%ax,		%dx	# %dx = segment_register_bit16
+	shrw	$0x0c,		%dx	# %dx = segment_register_bit16 >> 12
+	movb	%dl,	0x04(%di)	# Set base 23:16
+	xorb	%dl,	%dl		# %dl = 0
+	movb	%dl,	0x07(%di)	# Set base 31:24
+	popw	%di
 	leave
 	ret
 
