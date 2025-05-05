@@ -57,11 +57,25 @@ main16:	# IP == 0x0000
 	pushw	%dx
 	call	set_segment_base16
 	addw	$0x0006,	%sp
+	# Set 32bit data segment base.
+	pushw	%ds
+	leaw	(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
+	# Set 32bit stack segment base.
+	pushw	%ss
+	leaw	(segment_descriptor_32bit_stack - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
 	# Leave 16bit main function.
 	popw	%di
 	leave
-	# Stop for test.
-	hlt
 	# Move to 32bit protected mode.
 	lgdt	gdtr
 	movl	%cr0,	%edx
@@ -224,6 +238,8 @@ main32:
 	call	put_new_line32
 	# Leave 32bit main function.
 	leave
+	# Stop for test.
+	hlt
 	# Set temporary CR3.
 	movl	boot_argument_cr3,	%edx
 	andl	$0x00000fff,	%edx
