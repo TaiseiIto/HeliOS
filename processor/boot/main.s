@@ -146,7 +146,7 @@ set_gdt_base:
 	pushfw				# Save FLAGS.
 	movw	%ax,	0x02(%di)	# Write GDT base low.
 	movw	0x08(%bp),	%ax	# %ax = data_segment
-	shrw	$0x0a,		%ax	# %ax = data_segment >> 12
+	shrw	$0x0c,		%ax	# %ax = data_segment >> 12
 	popw	%dx			# Read FLAGS.
 	andw	$FLAGS_CF,	%dx
 	jz	2f
