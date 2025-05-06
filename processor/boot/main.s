@@ -651,14 +651,14 @@ main64:
 	call	put_quad64
 	call	put_new_line64
 	# Print receiver
-	leaq	message_message(%rip),	%rdi
+	leaq	receiver_message(%rip),	%rdi
 	call	puts64
 	movq	boot_argument_receiver(%rip),	%rdi
 	movq	%rdi,	kernel_argument_receiver(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print sender
-	leaq	message_message(%rip),	%rdi
+	leaq	sender_message(%rip),	%rdi
 	call	puts64
 	movq	boot_argument_sender(%rip),	%rdi
 	movq	%rdi,	kernel_argument_sender(%rip)
@@ -1019,8 +1019,6 @@ kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
 ljmp_destination_address_message:
 	.string "ljmp destination address = 0x"
-message_message:
-	.string "message = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
@@ -1029,12 +1027,16 @@ message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
 my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
+receiver_message:
+	.string "receiver = 0x"
 segment_descriptor_32bit_code_message:
 	.string "Segment descriptor 32bit code = 0x"
 segment_descriptor_32bit_data_message:
 	.string "Segment descriptor 32bit data = 0x"
 segment_descriptor_32bit_stack_message:
 	.string "Segment descriptor 32bit stack = 0x"
+sender_message:
+	.string "sender = 0x"
 ss_message:
 	.string "SS = 0x"
 log_end_pointer:
