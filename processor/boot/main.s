@@ -402,6 +402,13 @@ main32:
 	andl	$0x00000fff,	%edx
 	orl	%edx,	%eax
 	movl	%eax,	%cr3
+	# Fix log_end_pointer for 64bit long mode.
+	leal	segment_descriptor_32bit_data,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	addl	log_end_pointer,	%eax
+	movl	%eax,	log_end_pointer
 	# Leave 32bit main function.
 	leave
 	# Set PAE.
