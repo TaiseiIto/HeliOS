@@ -392,13 +392,18 @@ main32:
 	call	put_long32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
-	# Leave 32bit main function.
-	leave
 	# Set temporary CR3.
+	leal	segment_descriptor_32bit_data,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	addl	$temporary_pml4_table,	%eax
 	movl	boot_argument_cr3,	%edx
 	andl	$0x00000fff,	%edx
-	orl	$temporary_pml4_table,	%edx
-	movl	%edx,	%cr3
+	orl	%edx,	%eax
+	movl	%eax,	%cr3
+	# Leave 32bit main function.
+	leave
 	# Set PAE.
 	movl	%cr4,	%edx
 	orl	$0x00000020,	%edx
