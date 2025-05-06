@@ -49,7 +49,6 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
     let (processor_boot_loader, processor_kernel): (processor::boot::Loader, Vec<u8>) = processor::prepare(&directory_tree, PROCESSOR_BOOT_LOADER, PROCESSOR_KERNEL, processor_boot_loader_pages);
-    com2_println!("processor_boot_loader = {:#x?}", processor_boot_loader);
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
