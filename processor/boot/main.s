@@ -678,17 +678,12 @@ main64:
 	movb	%dil,	kernel_argument_bsp_local_apic_id(%rip)
 	call	put_byte64
 	call	put_new_line64
-	# Stop for test.
-1:
-	cli
-	hlt
-	jmp	1b
 	# Leave 64bit main function.
 	leave
 	# Jump to the kernel.
-	movq	boot_argument_kernel_stack_floor,	%rsp
-	leaq	kernel_argument,	%rdi
-	call	*boot_argument_kernel_entry
+	movq	boot_argument_kernel_stack_floor(%rip),	%rsp
+	leaq	kernel_argument(%rip),	%rdi
+	call	*boot_argument_kernel_entry(%rip)
 
 apic_is_supported:
 0:
