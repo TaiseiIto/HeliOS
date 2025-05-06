@@ -591,10 +591,6 @@ put_quad_pointer32:
 # Preserved registers: rbx, rsp, rbp, r12, r13, r14, r15
 main64:
 0:	# Set 64bit data segment.
-	# Stop for test.
-	cli
-	hlt
-	jmp	0b
 	movw	$(segment_descriptor_64bit_kernel_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
@@ -605,8 +601,13 @@ main64:
 	movq	$0x0000000000010000,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
+	# Stop for test.
+1:
+	cli
+	hlt
+	jmp	1b
 	# Print message64.
-	leaq	message64,	%rdi
+	leaq	message64(%rip),	%rdi
 	call	puts64
 	# Set CR3.
 	movq	boot_argument_cr3,	%rdx
