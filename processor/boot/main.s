@@ -623,24 +623,24 @@ main64:
 	movq	boot_argument_kernel_entry(%rip),	%rdi
 	call	put_quad64
 	call	put_new_line64
+	# Print bootstrap processor kernel stack floor.
+	leaq	kernel_stack_floor_message(%rip),	%rdi
+	call	puts64
+	movq	boot_argument_kernel_stack_floor(%rip),	%rdi
+	call	put_quad64
+	call	put_new_line64
+	# Print BSP heap start
+	leaq	bsp_heap_start_message(%rip),	%rdi
+	call	puts64
+	movq	boot_argument_bsp_heap_start(%rip),	%rdi
+	movq	%rdi,	kernel_argument_bsp_heap_start(%rip)
+	call	put_quad64
+	call	put_new_line64
 	# Stop for test.
 1:
 	cli
 	hlt
 	jmp	1b
-	# Print bootstrap processor kernel stack floor.
-	leaq	kernel_stack_floor_message,	%rdi
-	call	puts64
-	movq	boot_argument_kernel_stack_floor,	%rdi
-	call	put_quad64
-	call	put_new_line64
-	# Print BSP heap start
-	leaq	bsp_heap_start_message,	%rdi
-	call	puts64
-	movq	boot_argument_bsp_heap_start,	%rdi
-	movq	%rdi,	kernel_argument_bsp_heap_start
-	call	put_quad64
-	call	put_new_line64
 	# Print heap start
 	leaq	heap_start_message,	%rdi
 	call	puts64
@@ -762,7 +762,7 @@ cpuid_max_eax:
 error:
 0:
 	enter	$0x0000,	$0x00
-	leaq	error_message,	%rdi
+	leaq	error_message(%rip),	%rdi
 	call	puts64
 	call	put_new_line64
 	cli
