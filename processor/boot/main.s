@@ -611,23 +611,23 @@ main64:
 	# Print message64.
 	leaq	message64(%rip),	%rdi
 	call	puts64
+	# Set CR3.
+	movq	boot_argument_cr3(%rip),	%rdx
+	movq	%rdx,	%cr3
+	# Get IA32_APIC_BASE
+	call	get_ia32_apic_base
+	movq	%rax,	kernel_argument_ia32_apic_base(%rip)
+	# Print bootstrap processor kernel entry.
+	leaq	kernel_entry_message(%rip),	%rdi
+	call	puts64
+	movq	boot_argument_kernel_entry(%rip),	%rdi
+	call	put_quad64
+	call	put_new_line64
 	# Stop for test.
 1:
 	cli
 	hlt
 	jmp	1b
-	# Set CR3.
-	movq	boot_argument_cr3,	%rdx
-	movq	%rdx,	%cr3
-	# Get IA32_APIC_BASE
-	call	get_ia32_apic_base
-	movq	%rax,	kernel_argument_ia32_apic_base
-	# Print bootstrap processor kernel entry.
-	leaq	kernel_entry_message,	%rdi
-	call	puts64
-	movq	boot_argument_kernel_entry,	%rdi
-	call	put_quad64
-	call	put_new_line64
 	# Print bootstrap processor kernel stack floor.
 	leaq	kernel_stack_floor_message,	%rdi
 	call	puts64
