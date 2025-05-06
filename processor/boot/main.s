@@ -636,53 +636,53 @@ main64:
 	movq	%rdi,	kernel_argument_bsp_heap_start(%rip)
 	call	put_quad64
 	call	put_new_line64
-	# Stop for test.
-1:
-	cli
-	hlt
-	jmp	1b
 	# Print heap start
-	leaq	heap_start_message,	%rdi
+	leaq	heap_start_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_heap_start,	%rdi
-	movq	%rdi,	kernel_argument_heap_start
+	movq	boot_argument_heap_start(%rip),	%rdi
+	movq	%rdi,	kernel_argument_heap_start(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print heap size
-	leaq	heap_size_message,	%rdi
+	leaq	heap_size_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_heap_size,	%rdi
-	movq	%rdi,	kernel_argument_heap_size
+	movq	boot_argument_heap_size(%rip),	%rdi
+	movq	%rdi,	kernel_argument_heap_size(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print receiver
-	leaq	message_message,	%rdi
+	leaq	message_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_receiver,	%rdi
-	movq	%rdi,	kernel_argument_receiver
+	movq	boot_argument_receiver(%rip),	%rdi
+	movq	%rdi,	kernel_argument_receiver(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print sender
-	leaq	message_message,	%rdi
+	leaq	message_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_sender,	%rdi
-	movq	%rdi,	kernel_argument_sender
+	movq	boot_argument_sender(%rip),	%rdi
+	movq	%rdi,	kernel_argument_sender(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print my local APIC ID.
-	leaq	my_local_apic_id_message,	%rdi
+	leaq	my_local_apic_id_message(%rip),	%rdi
 	call	puts64
 	call	get_local_apic_id
 	movb	%al,	%dil
 	call	put_byte64
 	call	put_new_line64
 	# Print BSP local APIC ID.
-	leaq	bsp_local_apic_id_message,	%rdi
+	leaq	bsp_local_apic_id_message(%rip),	%rdi
 	call	puts64
-	movb	boot_argument_bsp_local_apic_id,	%dil
-	movb	%dil,	kernel_argument_bsp_local_apic_id
+	movb	boot_argument_bsp_local_apic_id(%rip),	%dil
+	movb	%dil,	kernel_argument_bsp_local_apic_id(%rip)
 	call	put_byte64
 	call	put_new_line64
+	# Stop for test.
+1:
+	cli
+	hlt
+	jmp	1b
 	# Leave 64bit main function.
 	leave
 	# Jump to the kernel.
