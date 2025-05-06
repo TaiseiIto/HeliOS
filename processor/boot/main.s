@@ -601,14 +601,14 @@ main64:
 	movq	$0x0000000000010000,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
+	# Print message64.
+	leaq	message64(%rip),	%rdi
+	call	puts64
 	# Stop for test.
 1:
 	cli
 	hlt
 	jmp	1b
-	# Print message64.
-	leaq	message64(%rip),	%rdi
-	call	puts64
 	# Set CR3.
 	movq	boot_argument_cr3,	%rdx
 	movq	%rdx,	%cr3
@@ -817,10 +817,10 @@ putchar64:
 0:
 	enter	$0x0000,	$0x00
 	movb	%dil,	%dl
-	movq	log_end_pointer,	%rdi
+	movq	log_end_pointer(%rip),	%rdi
 	movb	%dl,	(%rdi)
 	incq	%rdi
-	movq	%rdi,	log_end_pointer
+	movq	%rdi,	log_end_pointer(%rip)
 	leave
 	ret
 
