@@ -57,7 +57,9 @@ impl Controller {
         local_apic_registers.send_init(local_apic_id, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
         local_apic_registers.send_sipi(local_apic_id, entry_point, hpet);
-        hpet.wait_seconds(1);
+        while !self.boot_completed.load(Ordering::Acquire) {
+            x64::pause();
+        }
         com2_println!("{}", boot_loader.log());
     }
 
