@@ -69,7 +69,6 @@ impl Loader {
             });
         let stack_ceil: usize = program_end;
         let stack_floor: usize = physical_range.end as usize;
-        let stack_size: usize = stack_floor - stack_ceil;
         let stack_address_range: ops::Range<usize> = stack_ceil..stack_floor;
         stack_address_range
             .clone()
