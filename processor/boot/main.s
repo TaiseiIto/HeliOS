@@ -24,6 +24,10 @@ main16:	# IP == 0x0000
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
+	xorw	%dx,	%dx
+	movw	%dx,	0x02(%di)
+	movw	%dx,	0x04(%di)
+	movw	%dx,	0x06(%di)
 	# Print message16.
 	leaw	message16,	%dx
 	pushw	%dx
@@ -425,7 +429,7 @@ main32:
 	orl	$0x80000000,	%edx
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
-	ljmp	(%edi)
+	ljmp	*(%edi)
 
 # get_segment_base(segment_descriptor_address: u32) -> u32
 get_segment_base:
