@@ -1,6 +1,6 @@
 include ../../.make/common.mk
 
-FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
+FORMAT=$(shell sed -n "s/^\s*targets\s*=\s*\[\"\(.*\)\"\]$$/\1/p" rust-toolchain.toml)
 TARGET=target/$(FORMAT)/debug/$(PRODUCT)
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
