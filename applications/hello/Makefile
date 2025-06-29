@@ -1,11 +1,11 @@
-SHELL=/bin/bash
-PRODUCT=$(shell basename $$(pwd))
+include ../../.make/common.mk
+
 FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
 TARGET=target/$(FORMAT)/debug/$(PRODUCT)
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build the application.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(call source_files, .)
 	cargo build --target $(FORMAT)
 
 # Clippy rust codes.

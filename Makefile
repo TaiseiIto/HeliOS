@@ -1,9 +1,6 @@
-SHELL=/bin/bash
+include .make/common.mk
 
 SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n "$$(which sudo)" ]; then echo sudo; fi)
-
-# Product name
-PRODUCT=$(shell basename $$(pwd))
 
 # An OS image file name
 TARGET=$(PRODUCT).img
@@ -47,10 +44,6 @@ endef
 
 define destination2source
 	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
-endef
-
-define source_files
-	$(shell git ls-files -- $(1) && git ls-files --others --exclude-standard -- $(1))
 endef
 
 # A bootloader file path

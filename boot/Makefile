@@ -1,11 +1,11 @@
-SHELL=/bin/bash
-PRODUCT=$(shell basename $$(pwd))
+include ../.make/common.mk
+
 FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
 TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a bootloader.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(call source_files, .)
 	KERNEL=$(KERNEL) cargo build --target $(FORMAT)
 
 # Clippy rust codes.
@@ -19,7 +19,7 @@ clippy:
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(DOCUMENT): $(call source_files, .)
 	KERNEL=$(KERNEL) cargo doc
 
 # Get a bootloader file path.

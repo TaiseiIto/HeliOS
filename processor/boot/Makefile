@@ -1,4 +1,5 @@
-SHELL=/bin/bash
+include ../../.make/common.mk
+
 TARGET=loader.bin
 SOURCES=$(shell ls *.s)
 OBJECTS=$(SOURCES:.s=.o)
@@ -11,7 +12,7 @@ DISASSEMBLE64=disassemble64.txt
 .PHONY: all
 all: $(TARGET) $(DISASSEMBLE16) $(DISASSEMBLE32) $(DISASSEMBLE64)
 
-$(TARGET): $(OBJECTS) $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(OBJECTS) $(call source_files, .)
 	ld $(OBJECTS) -T $(LINKER_SCRIPT) -Map $(MAP) -o $@
 
 $(DISASSEMBLE16): $(TARGET)
