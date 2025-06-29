@@ -15,7 +15,7 @@ ssh_key_source=$5
 gpg_key_source=$6
 
 docker start $container
-home=$(docker exec $container env | grep HOME | awk -F '=' '{print $2}')
+home=$(docker exec $container printenv HOME)
 ssh_key_destination=$home/.github/key
 gpg_key_destination=$home/.gnupg
 docker cp $ssh_key_source $container:$ssh_key_destination
