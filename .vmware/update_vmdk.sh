@@ -2,8 +2,8 @@
 
 vmx=$1
 virtual_machine_directory=$(dirname $vmx)
-vmdk=$virtual_machine_directory/$(grep vmdk $vmx | awk -F '=' '{print $NF}' | sed s/\"//g | sed 's/ //g')
-vhd=$(echo $vmdk | sed s/vmdk$/vhd/)
+vmdk=$virtual_machine_directory/$(sed -n "s/^.*\s*=\s*\"\(.*\.vmdk\)\"$/\1/p" $vmx)
+vhd=$(echo $vmdk | sed "s/vmdk$/vhd/")
 nbd=/dev/nbd0
 destination_path=destination
 source_path=$(make mount_directory -C .. -s)
