@@ -9,17 +9,17 @@ image=$1
 container=$2
 
 # If there is a running container named $container, stop it.
-if [ -n "$(docker ps --format {{.Names}} | grep -x $container)" ]; then
+if [ -n "$(docker ps --format {{.Names}} --filter name=^$container\$)" ]; then
 	docker stop $container
 fi
 
 # If there is a container named $container, create it.
-if [ -n "$(docker ps -a --format {{.Names}} | grep -x $container)" ]; then
+if [ -n "$(docker ps -a --format {{.Names}} --filter name=^$container\$)" ]; then
 	docker rm $container
 fi
 
 # If there is an image named $image, build it.
-if [ -n "$(docker images --format {{.Repository}} | grep -x $image)" ]; then
+if [ -n "$(docker images --format {{.Repository}} $image)" ]; then
 	docker rmi $image
 fi
 

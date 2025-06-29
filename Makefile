@@ -132,7 +132,7 @@ $(KERNEL_SOURCE): $(call source_files, $(KERNEL_DIRECTORY))
 
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
-.PHONY: build_environment
+.PHONY: environment
 environment:
 	make build -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
 
