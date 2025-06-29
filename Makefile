@@ -49,6 +49,10 @@ define destination2source
 	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
 endef
 
+define source_files
+	$(shell git ls-files -- $(1) && git ls-files --others --exclude-standard -- $(1))
+endef
+
 # A bootloader file path
 BOOTLOADER=EFI/BOOT/BOOTX64.EFI
 BOOTLOADER_DIRECTORY=boot
@@ -72,7 +76,7 @@ TELNET_PORT=23
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
-$(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(call source_files, .)
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -90,7 +94,7 @@ $(TARGET): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-fi
 	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(MOUNT_DIRECTORY): $(shell find . -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(MOUNT_DIRECTORY): $(call source_files, .)
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
@@ -109,28 +113,28 @@ $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(PROCESSOR_BOOT_LOADER_SOURCE): $(shell find $(PROCESSOR_BOOT_LOADER_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(PROCESSOR_BOOT_LOADER_SOURCE): $(call source_files, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
 	make -C $(PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(PROCESSOR_KERNEL_DESTINATION): $(PROCESSOR_KERNEL_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(PROCESSOR_KERNEL_SOURCE): $(shell find $(PROCESSOR_KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(PROCESSOR_KERNEL_SOURCE): $(call source_files, $(PROCESSOR_KERNEL_DIRECTORY))
 	make -C $(PROCESSOR_KERNEL_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(BOOTLOADER_SOURCE): $(shell find $(BOOTLOADER_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(BOOTLOADER_SOURCE): $(call source_files, $(BOOTLOADER_DIRECTORY))
 	make -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) KERNEL=$(KERNEL)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(KERNEL_SOURCE): $(shell find $(KERNEL_DIRECTORY) -type f | grep -v ^.*/\.git/.*$ | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(KERNEL_SOURCE): $(call source_files, $(KERNEL_DIRECTORY))
 	make -C $(KERNEL_DIRECTORY)
 
 # Build and enter development environment as a Docker container.
@@ -263,5 +267,5 @@ tree: $(MOUNT_DIRECTORY)
 # Touch the all source files.
 .PHONY: touch
 touch:
-	touch $$(git ls-files)
+	touch $(call source_files, .)
 
