@@ -1,7 +1,7 @@
 #!/bin/bash
 
-product=$(git remote get-url origin | awk -F '/' '{print $NF}' | awk -F '.' '{print $1}')
-vhd=$(vboxmanage showvminfo $product | grep vhd | awk -F ':' '{print $2}' | sed s/\"//g)
+product=$(git remote get-url origin | awk -F '[/.]' '{print $(NF-1)}')
+vhd=$(vboxmanage showvminfo HeliOS | sed -n "s/^\s*Location:\s*\"\(.*\.vhd\)\"$/\1/p")
 nbd=/dev/nbd0
 destination=destination
 source=$(make mount_directory -C .. -s)
