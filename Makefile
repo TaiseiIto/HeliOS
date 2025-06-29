@@ -193,7 +193,7 @@ debug_qemu_without_hpet_on_tmux:
 # Delete all "#[allow(dead_code)]" lines
 .PHONY: delete_allow_dead_code
 delete_allow_dead_code:
-	for i in $$(git ls-files | grep ^.*\.rs$$); do sed -i '/#\[allow(dead_code)\]/d' $$i; done
+	sed -i '/#\[allow(dead_code)\]/d' $$(git ls-files | grep ^.*\.rs$$)
 
 # Delete development environment.
 # Usage: $ make delete_environment
