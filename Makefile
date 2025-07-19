@@ -155,7 +155,7 @@ debug: $(TARGET)
 # Don't execute this directly.
 .PHONY: debug_on_tmux
 debug_on_tmux:
-	-make debug -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
+	-make debug -C .qemu OS_PATH=$(abspath $(TARGET)) OS_NAME=$(PRODUCT) DEBUG_PORT=$(DEBUG_PORT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Debug QEMU by GDB.
 # Usage: make debug_qemu
@@ -168,7 +168,7 @@ debug_qemu: $(TARGET)
 # Don't execute this directly.
 .PHONY: debug_qemu_on_tmux
 debug_qemu_on_tmux:
-	-make debug_qemu -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+	-make debug_qemu -C .qemu OS_PATH=$(abspath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Debug QEMU without HPET by GDB.
 # Usage: make debug_qemu_without_hpet
@@ -181,7 +181,7 @@ debug_qemu_without_hpet: $(TARGET)
 # Don't execute this directly.
 .PHONY: debug_qemu_without_hpet_on_tmux
 debug_qemu_without_hpet_on_tmux:
-	-make debug_qemu_without_hpet -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+	-make debug_qemu_without_hpet -C .qemu OS_PATH=$(abspath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Delete all "#[allow(dead_code)]" lines
 .PHONY: delete_allow_dead_code
@@ -200,7 +200,7 @@ delete_environment:
 # Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
 .PHONY: permission
 permission:
-	make permission -C .docker SSHKEY=$(realpath $(SSHKEY)) GPGKEY=$(realpath $(GPGKEY))
+	make permission -C .docker SSHKEY=$(abspath $(SSHKEY)) GPGKEY=$(abspath $(GPGKEY))
 
 # Rebuild and enter development environment.
 # Usage: $ make rebuild_environment
@@ -219,7 +219,7 @@ run: $(TARGET)
 # Don't execute this directly.
 .PHONY: run_on_tmux
 run_on_tmux:
-	-make run -C .qemu OS_PATH=$(realpath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
+	-make run -C .qemu OS_PATH=$(abspath $(TARGET)) OS_NAME=$(PRODUCT) TELNET_PORT=$(TELNET_PORT) -s
 
 # Stop the OS on QEMU.
 # Usage: make stop
