@@ -75,10 +75,12 @@ RUN cat .bash/.bashrc >> ../.bashrc
 
 # Put GDB settings.
 ARG debug_port
-RUN echo add-auto-load-safe-path $(pwd)/.gdb/.gdbinit >> ../.gdbinit
-RUN echo add-auto-load-safe-path $(pwd)/.qemu/.gdbinit >> ../.gdbinit
-RUN echo set print elements 0 >> ../.gdbinit
-RUN echo set print pretty on >> ../.gdbinit
+RUN cat <<EOF >> ../.gdbinit
+add-auto-load-safe-path $(pwd)/.gdb/.gdbinit
+add-auto-load-safe-path $(pwd)/.qemu/.gdbinit
+set print elements 0
+set print pretty on
+EOF
 RUN echo target remote localhost:$debug_port >> .gdb/.gdbinit
 
 # Put tmux settings.
