@@ -69,13 +69,13 @@
 /somewhere/HeliOS$ make tree
 ```
 
-# Write HeliOS to the virtual hard disk.
+## Write HeliOS to the virtual hard disk.
 
 ```
 /somewhere/HeliOS/.virtualbox$ ./update_vhd.sh
 ```
 
-# Start HeliOS on the virtual machine.
+## Start HeliOS on the virtual machine.
 
 1. Select the virtual machine on the VirtualBox.
 1. Click `Start`.
