@@ -4,7 +4,7 @@ TARGET=target/$(shell ls *.json | awk -F '.' '{print $$1}')/debug/$(PRODUCT).elf
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a kernel.
-$(TARGET): $(call source_files, .)
+$(TARGET): $(call SOURCE_FILES, .)
 	rustup component add rust-src --toolchain nightly-2024-01-01-x86_64-unknown-linux-gnu
 	cargo build
 
@@ -19,7 +19,7 @@ clippy:
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(call source_files, .)
+$(DOCUMENT): $(call SOURCE_FILES, .)
 	cargo doc
 
 # Get a kernel file path.

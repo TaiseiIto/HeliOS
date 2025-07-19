@@ -5,7 +5,7 @@ TARGET=target/$(FORMAT)/debug/$(PRODUCT)
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build the application.
-$(TARGET): $(call source_files, .)
+$(TARGET): $(call SOURCE_FILES, .)
 	cargo build --target $(FORMAT)
 
 # Clippy rust codes.

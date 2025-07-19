@@ -61,7 +61,7 @@ TELNET_PORT=23
 
 # Build an OS image runs on QEMU.
 # Usage: $ make
-$(TARGET): $(call source_files, .)
+$(TARGET): $(call SOURCE_FILES, .)
 	rm -f $@
 	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
 	rm -rf $(MOUNT_DIRECTORY)
@@ -79,7 +79,7 @@ $(TARGET): $(call source_files, .)
 	$(SUDO) umount $(MOUNT_DIRECTORY)
 	rm -rf $(MOUNT_DIRECTORY)
 
-$(MOUNT_DIRECTORY): $(call source_files, .)
+$(MOUNT_DIRECTORY): $(call SOURCE_FILES, .)
 	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
@@ -98,28 +98,28 @@ $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(PROCESSOR_BOOT_LOADER_SOURCE): $(call source_files, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
+$(PROCESSOR_BOOT_LOADER_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
 	make -C $(PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(PROCESSOR_KERNEL_DESTINATION): $(PROCESSOR_KERNEL_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(PROCESSOR_KERNEL_SOURCE): $(call source_files, $(PROCESSOR_KERNEL_DIRECTORY))
+$(PROCESSOR_KERNEL_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_KERNEL_DIRECTORY))
 	make -C $(PROCESSOR_KERNEL_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(BOOTLOADER_SOURCE): $(call source_files, $(BOOTLOADER_DIRECTORY))
+$(BOOTLOADER_SOURCE): $(call SOURCE_FILES, $(BOOTLOADER_DIRECTORY))
 	make -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) KERNEL=$(KERNEL)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
 	$(SUDO) cp $^ $@
 
-$(KERNEL_SOURCE): $(call source_files, $(KERNEL_DIRECTORY))
+$(KERNEL_SOURCE): $(call SOURCE_FILES, $(KERNEL_DIRECTORY))
 	make -C $(KERNEL_DIRECTORY)
 
 # Build and enter development environment as a Docker container.
@@ -252,5 +252,5 @@ tree: $(MOUNT_DIRECTORY)
 # Touch the all source files.
 .PHONY: touch
 touch:
-	touch $(call source_files, .)
+	touch $(call SOURCE_FILES, .)
 

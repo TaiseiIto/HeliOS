@@ -12,7 +12,7 @@ DISASSEMBLE64=disassemble64.txt
 .PHONY: all
 all: $(TARGET) $(DISASSEMBLE16) $(DISASSEMBLE32) $(DISASSEMBLE64)
 
-$(TARGET): $(OBJECTS) $(call source_files, .)
+$(TARGET): $(OBJECTS) $(call SOURCE_FILES, .)
 	ld $(OBJECTS) -T $(LINKER_SCRIPT) -Map $(MAP) -o $@
 
 $(DISASSEMBLE16): $(TARGET)

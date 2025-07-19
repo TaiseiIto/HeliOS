@@ -5,7 +5,7 @@ TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a bootloader.
-$(TARGET): $(call source_files, .)
+$(TARGET): $(call SOURCE_FILES, .)
 	KERNEL=$(KERNEL) cargo build --target $(FORMAT)
 
 # Clippy rust codes.
@@ -19,7 +19,7 @@ clippy:
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(call source_files, .)
+$(DOCUMENT): $(call SOURCE_FILES, .)
 	KERNEL=$(KERNEL) cargo doc
 
 # Get a bootloader file path.
