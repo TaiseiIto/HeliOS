@@ -80,3 +80,23 @@
 1. Select the virtual machine on the VirtualBox.
 1. Click `Start`.
 
+If the following error occured,
+
+```
+VirtualBox can't operate in VMX root mode. Please disable the KVM kernel extension, recompile your kernel and reboot.
+```
+
+First, close the docker desktop and wait for stopping QEMU.
+
+```
+* $ while pgrep -a qemu; do sleep 1; done
+```
+
+Then, disable the KVM modules.
+
+```
+* $ for module in $(lsmod | awk '{print $1}' | grep kvm); do sudo rmmod $module; done
+```
+
+Now, you can restart HeliOS on the virtual machine.
+
