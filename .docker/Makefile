@@ -2,7 +2,7 @@
 # Don't execute it directly.
 
 REPOSITORY=$(shell git config --get remote.origin.url)
-DOMAIN=$(shell echo $(REPOSITORY) | awk -F '[/:@]' '{print $$(NF-2)}')
+DOMAIN=$(shell echo $(REPOSITORY) | awk -F '[:@]' '{print $$(NF-1)}')
 DEVELOPER=$(shell echo $(REPOSITORY) | awk -F '[/:]' '{print $$(NF-1)}')
 PRODUCT=$(shell echo $(REPOSITORY) | awk -F '[./]' '{print $$(NF-1)}')
 IMAGE=$(shell echo $(PRODUCT) | awk '{print tolower($$0)}')
