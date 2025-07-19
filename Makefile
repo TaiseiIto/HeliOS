@@ -11,7 +11,7 @@ BLOCK_SIZE=4K
 # A number of blocks in the OS image
 BLOCK_COUNT=16K
 
-MEDIA_SIZE=$(shell numfmt --to=iec $$(expr $$(numfmt --from=iec $(BLOCK_COUNT)) \* $$(numfmt --from=iec $(BLOCK_SIZE))))
+MEDIA_SIZE=$(shell numfmt --to=iec $$(($$(numfmt --from=iec $(BLOCK_COUNT)) * $$(numfmt --from=iec $(BLOCK_SIZE)))))
 
 # A mount directory to build the OS image
 MOUNT_DIRECTORY=$(PRODUCT).mnt
