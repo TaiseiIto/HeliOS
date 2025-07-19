@@ -95,28 +95,28 @@ $(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
 	$(SUDO) cp $(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@)) -s) $@
 
 $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
-	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) mkdir -p $(dir $@)
 	$(SUDO) cp $^ $@
 
 $(PROCESSOR_BOOT_LOADER_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
 	make -C $(PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(PROCESSOR_KERNEL_DESTINATION): $(PROCESSOR_KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) mkdir -p $(dir $@)
 	$(SUDO) cp $^ $@
 
 $(PROCESSOR_KERNEL_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_KERNEL_DIRECTORY))
 	make -C $(PROCESSOR_KERNEL_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
-	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) mkdir -p $(dir $@)
 	$(SUDO) cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(call SOURCE_FILES, $(BOOTLOADER_DIRECTORY))
 	make -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) KERNEL=$(KERNEL)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(shell dirname $@)
+	$(SUDO) mkdir -p $(dir $@)
 	$(SUDO) cp $^ $@
 
 $(KERNEL_SOURCE): $(call SOURCE_FILES, $(KERNEL_DIRECTORY))
