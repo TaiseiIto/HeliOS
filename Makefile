@@ -38,10 +38,6 @@ APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
 APPLICATIONS=$(wildcard $(APPLICATION_SOURCE_DIRECTORY)/*)
 APPLICATION_DESTINATIONS=$(addprefix $(APPLICATION_DESTINATION_DIRECTORY)/, $(addsuffix .elf, $(notdir $(APPLICATIONS))))
 
-define destination2source
-	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
-endef
-
 # A bootloader file path
 BOOTLOADER=EFI/BOOT/BOOTX64.EFI
 BOOTLOADER_DIRECTORY=boot
@@ -96,7 +92,7 @@ $(MOUNT_DIRECTORY): $(call source_files, .)
 	make $(APPLICATION_DESTINATIONS)
 
 $(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
-	$(SUDO) cp $(call destination2source,$@) $@
+	$(SUDO) cp $(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@)) -s) $@
 
 $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
 	$(SUDO) mkdir -p $(shell dirname $@)
