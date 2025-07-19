@@ -1,7 +1,7 @@
 include ../../.make/common.mk
 
 TARGET=loader.bin
-SOURCES=$(shell ls *.s)
+SOURCES=$(wildcard *.s)
 OBJECTS=$(SOURCES:.s=.o)
 LINKER_SCRIPT=linker_script.ld
 MAP=memory.map
