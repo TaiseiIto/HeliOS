@@ -35,12 +35,8 @@ PROCESSOR_KERNEL=$(shell echo $(PROCESSOR_KERNEL_DESTINATION) | cut -d '/' -f 2-
 # Applications
 APPLICATION_SOURCE_DIRECTORY=applications
 APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
-APPLICATIONS=$(shell ls $(APPLICATION_SOURCE_DIRECTORY))
-APPLICATION_DESTINATIONS=$(foreach APPLICATION,$(APPLICATIONS),$(call application2destination,$(APPLICATION)))
-
-define application2destination
-	$(APPLICATION_DESTINATION_DIRECTORY)/$(1).elf
-endef
+APPLICATIONS=$(wildcard $(APPLICATION_SOURCE_DIRECTORY)/*)
+APPLICATION_DESTINATIONS=$(addprefix $(APPLICATION_DESTINATION_DIRECTORY)/, $(addsuffix .elf, $(notdir $(APPLICATIONS))))
 
 define destination2source
 	$(shell make target -C $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $(1))) -s)
@@ -81,7 +77,7 @@ $(TARGET): $(call source_files, .)
 	$(SUDO) make $(PROCESSOR_KERNEL_DESTINATION)
 	$(SUDO) make $(BOOTLOADER_DESTINATION) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
 	$(SUDO) make $(KERNEL_DESTINATION)
-	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	for application in $(APPLICATIONS); do make -C $$application; done
 	$(SUDO) mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
 	$(SUDO) make $(APPLICATION_DESTINATIONS)
 	$(SUDO) umount $(MOUNT_DIRECTORY)
@@ -95,7 +91,7 @@ $(MOUNT_DIRECTORY): $(call source_files, .)
 	make $(PROCESSOR_KERNEL_DESTINATION)
 	make $(BOOTLOADER_DESTINATION) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
 	make $(KERNEL_DESTINATION)
-	for application in $(APPLICATIONS); do make -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	for application in $(APPLICATIONS); do make -C $$application; done
 	mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
 	make $(APPLICATION_DESTINATIONS)
 
@@ -142,7 +138,7 @@ clippy:
 	make clippy -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
 	make clippy -C $(KERNEL_DIRECTORY)
 	make clippy -C $(PROCESSOR_KERNEL_DIRECTORY)
-	for application in $(APPLICATIONS); do make clippy -C $(APPLICATION_SOURCE_DIRECTORY)/$$application; done
+	for application in $(APPLICATIONS); do make clippy -C $$application; done
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
