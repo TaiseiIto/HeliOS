@@ -22,8 +22,3 @@ doc: $(DOCUMENT)
 $(DOCUMENT): $(call SOURCE_FILES, .)
 	KERNEL=$(KERNEL) cargo doc
 
-# Get a bootloader file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
-

@@ -29,8 +29,3 @@ $(OBJECTS): $(@:.o=.s)
 %.o: %.s
 	gcc $^ -c -nostdlib -Wall -Wextra -o $@
 
-# Get a target file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
-

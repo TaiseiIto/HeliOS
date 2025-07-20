@@ -18,8 +18,3 @@ clippy:
 .PHONY: doc
 doc: $(DOCUMENT)
 
-# Get the application file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
-

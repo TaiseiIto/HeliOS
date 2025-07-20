@@ -226,12 +226,6 @@ stop:
 stop_on_tmux:
 	-make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
 
-# Get an OS image file name.
-# Usage: $ make target
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
-
 # Get an OS directory path.
 # Usage: $ make mount_directory
 .PHONY: mount_directory

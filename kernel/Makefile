@@ -22,8 +22,3 @@ doc: $(DOCUMENT)
 $(DOCUMENT): $(call SOURCE_FILES, .)
 	cargo doc
 
-# Get a kernel file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
-
