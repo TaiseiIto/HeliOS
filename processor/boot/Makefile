@@ -1,4 +1,4 @@
-include ../../.make/common.mk
+include $(shell git rev-parse --show-toplevel)/.make/common.mk
 
 TARGET=loader.bin
 SOURCES=$(wildcard *.s)
@@ -29,5 +29,5 @@ $(OBJECTS): $(@:.o=.s)
 %.o: %.s
 	gcc $^ -c -nostdlib -Wall -Wextra -o $@
 
-include ../../.make/target.mk
+include $(shell git rev-parse --show-toplevel)/.make/target.mk
 

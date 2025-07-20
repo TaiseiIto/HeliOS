@@ -1,4 +1,4 @@
-include ../../.make/common.mk
+include $(shell git rev-parse --show-toplevel)/.make/common.mk
 
 TARGET=target/$(basename $(wildcard *.json))/debug/$(PRODUCT).elf
 DOCUMENT=target/doc/$(PRODUCT)/index.html
@@ -22,5 +22,5 @@ doc: $(DOCUMENT)
 $(DOCUMENT): $(call SOURCE_FILES, .)
 	cargo doc
 
-include ../../.make/target.mk
+include $(shell git rev-parse --show-toplevel)/.make/target.mk
 

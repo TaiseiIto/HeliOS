@@ -1,4 +1,4 @@
-include .make/common.mk
+include $(shell git rev-parse --show-toplevel)/.make/common.mk
 
 SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n "$$(which sudo)" ]; then echo sudo; fi)
 
@@ -248,5 +248,5 @@ tree: $(MOUNT_DIRECTORY)
 touch:
 	touch $(call SOURCE_FILES, .)
 
-include .make/target.mk
+include $(shell git rev-parse --show-toplevel)/.make/target.mk
 
