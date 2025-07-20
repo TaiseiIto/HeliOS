@@ -248,3 +248,5 @@ tree: $(MOUNT_DIRECTORY)
 touch:
 	touch $(call SOURCE_FILES, .)
 
+include .make/target.mk
+

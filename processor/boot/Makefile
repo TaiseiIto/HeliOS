@@ -29,3 +29,5 @@ $(OBJECTS): $(@:.o=.s)
 %.o: %.s
 	gcc $^ -c -nostdlib -Wall -Wextra -o $@
 
+include ../../.make/target.mk
+

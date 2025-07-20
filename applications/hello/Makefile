@@ -18,3 +18,5 @@ clippy:
 .PHONY: doc
 doc: $(DOCUMENT)
 
+include ../../.make/target.mk
+

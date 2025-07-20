@@ -22,3 +22,5 @@ doc: $(DOCUMENT)
 $(DOCUMENT): $(call SOURCE_FILES, .)
 	cargo doc
 
+include ../.make/target.mk
+
