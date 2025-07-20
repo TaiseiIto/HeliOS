@@ -1,4 +1,4 @@
-include $(shell git rev-parse --show-toplevel)/.make/common.mk
+include $(shell git rev-parse --show-toplevel)/.make/header.mk
 
 FORMAT=$(shell sed -n "s/^\s*targets\s*=\s*\[\"\(.*\)\"\]$$/\1/p" rust-toolchain.toml)
 TARGET=target/$(FORMAT)/debug/$(PRODUCT)
@@ -18,5 +18,5 @@ clippy:
 .PHONY: doc
 doc: $(DOCUMENT)
 
-include $(shell git rev-parse --show-toplevel)/.make/target.mk
+include $(shell git rev-parse --show-toplevel)/.make/footer.mk
 
