@@ -6,12 +6,12 @@ DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a bootloader.
 $(TARGET): $(call SOURCE_FILES, .)
-	KERNEL=$(KERNEL) cargo build --target $(FORMAT)
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo build --target $(FORMAT)
 
 # Clippy rust codes.
 .PHONY: clippy
 clippy:
-	KERNEL=$(KERNEL) cargo clippy
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo clippy
 
 # Generate documents.
 # Usage: $ make doc
@@ -20,7 +20,7 @@ doc: $(DOCUMENT)
 
 # Generate documents.
 $(DOCUMENT): $(call SOURCE_FILES, .)
-	KERNEL=$(KERNEL) cargo doc
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo doc
 
 include $(shell git rev-parse --show-toplevel)/.make/footer.mk
 
