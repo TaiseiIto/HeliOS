@@ -40,12 +40,6 @@ debug:
 debug_qemu:
 	gdb --args $(COMMAND)
 
-# Debug QEMU without HPET by GDB.
-# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
-.PHONY: debug_qemu_without_hpet
-debug_qemu_without_hpet:
-	gdb --args $(COMMAND) -machine hpet=off
-
 # Stop the OS on QEMU.
 # Usage: $ make stop
 .PHONY: stop
