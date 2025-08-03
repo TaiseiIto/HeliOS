@@ -10,9 +10,9 @@
 domain=$1
 developer=$2
 email=$3
-product=$3
-ssh_key=$4
-gpg_key=$5
+product=$4
+ssh_key=$5
+gpg_key=$6
 
 current_directory=$(pwd)
 work_directory=$(dirname $0)

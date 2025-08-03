@@ -88,9 +88,6 @@ And `make permission` like below.
 ```
 ~/HeliOS # exit
 /somewhere/Helios $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
-Your GitHub user name: Someone
-Your Github email address: someone@example.com
-/somewhere/HeliOS $
 ```
 
 Now you have development permission!
