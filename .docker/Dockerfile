@@ -53,7 +53,7 @@ RUN make install
 WORKDIR ..
 
 # Install QEMU.
-RUN git clone --branch v8.0.0 --depth 1 --recursive --shallow-submodules --single-branch https://gitlab.com/qemu-project/qemu.git
+RUN git clone --branch v8.1.0 --depth 1 --recursive --shallow-submodules --single-branch https://gitlab.com/qemu-project/qemu.git
 WORKDIR qemu
 RUN ./configure --target-list=x86_64-softmmu CFLAGS="-O0 -g -fno-inline" CXXFLAGS="-O0 -g -fno-inline"
 RUN make
