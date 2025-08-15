@@ -72,7 +72,7 @@
 ## Write HeliOS to the virtual hard disk.
 
 ```
-/somewhere/HeliOS/.virtualbox$ ./update_vhd.sh
+/somewhere/HeliOS/.virtualbox$ ./write_vhd.sh
 ```
 
 ## Start HeliOS on the virtual machine.

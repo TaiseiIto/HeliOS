@@ -54,7 +54,7 @@ firmware = "efi"
 ## Write HeliOS to the virtual hard disk.
 
 ```
-/somewhere/HeliOS/.vmware$ ./update_vmdk.sh /somewhere/HeliOS.vmx
+/somewhere/HeliOS/.vmware$ ./write_vmdk.sh /somewhere/HeliOS.vmx
 ```
 
 ## Start HeliOS on the virtual machine.
