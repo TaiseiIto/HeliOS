@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Install ld.lld
-        run: apt-get update && apt-get upgrade -y && apt-get install lld -y
+        run: sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install lld -y
       - name: Checkout the repository
         uses: actions/checkout@main
       - name: Install rust nightly
