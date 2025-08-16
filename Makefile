@@ -122,6 +122,13 @@ $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
 $(KERNEL_SOURCE): $(call SOURCE_FILES, $(KERNEL_DIRECTORY))
 	make -C $(KERNEL_DIRECTORY)
 
+# Build the OS on GitHub Actions.
+# This target is called from .github/workflow/build.yml
+# Don't execute this directly.
+.PHONY: build_on_github
+build_on_github:
+	make build_on_github -C .docker VNC_PORT=$(VNC_PORT) DEBUG_PORT=$(DEBUG_PORT)
+
 # Build and enter development environment as a Docker container.
 # Usage: $ make environment
 .PHONY: environment
