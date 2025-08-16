@@ -32,16 +32,20 @@ if [ -z "$(docker ps --format {{.Names}} --filter name=^$container\$)" ]; then
 fi
 
 case $action in
-	"attach") docker attach $container;;
+	"attach")
+		docker attach $container
+		;;
 	"build_on_github")
 		working_directory=$(docker inspect $container --format {{.Config.WorkingDir}})
-		docker exec -w $working_directory $container bash -lc "make tree"
-		mount_directory=$(docker exec $container make mount_directory -sC $working_directory)
+		docker exec -w $working_directory $container bash -l -c "make tree"
+		mount_directory=$(docker exec $container make mount_directory -C $working_directory -s)
 		docker stop $container
 		docker cp $container:$mount_directory $(dirname $0)/..
 		docker rm $container
 		docker rmi $image
 		;;
-	*) false;
+	*)
+		false
+		;;
 esac
 
