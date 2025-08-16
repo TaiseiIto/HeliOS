@@ -3,15 +3,17 @@
 # Build development environment as a Docker container.
 # This script is called from the Makefile in the same directory.
 # Don't execute it directly.
-# Usage: ./build.sh <domain> <developer> <product> <image> <container> <vnc_port> <debug_port>
+# Attach usage: ./build.sh attach <domain> <developer> <product> <image> <container> <vnc_port> <debug_port>
+# Build on GitHub usage: ./build.sh build_on_github <domain> <developer> <product> <image> <container> <vnc_port> <debug_port>
 
-domain=$1
-developer=$2
-product=$3
-image=$4
-container=$5
-vnc_port=$6
-debug_port=$7
+action=$1
+domain=$2
+developer=$3
+product=$4
+image=$5
+container=$6
+vnc_port=$7
+debug_port=$8
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 # If there is no image named $image, build it.
@@ -29,6 +31,14 @@ if [ -z "$(docker ps --format {{.Names}} --filter name=^$container\$)" ]; then
 	docker start $container
 fi
 
-# Attach a runnning container $container.
-docker attach $container
+case $action in
+	"attach") docker attach $container;;
+	"build_on_github")
+		working_directory=$(docker inspect $container --format {{.Config.WorkingDir}})
+		mount_directory=$(docker exec $container make mount_directory -sC $working_directory)
+		docker exec -w $working_directory $container bash -lc "make tree"
+		docker cp $container:$mount_directory ..
+		;;
+	*) false;
+esac
 

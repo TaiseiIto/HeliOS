@@ -12,7 +12,13 @@ CONTAINER=$(IMAGE)
 # Usage: make build VNC_PORT=<vnc port> DEBUG_PORT=<debug port>
 .PHONY: build
 build:
-	./build.sh $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT) $(DEBUG_PORT)
+	./build.sh attach $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT) $(DEBUG_PORT)
+
+# Build the OS on GitHub Actions.
+# Usage: make build_on_github VNC_PORT=<vnc port> DEBUG_PORT=<debug port>
+.PHONY: build_on_github
+build_on_github:
+	./build.sh build_on_github $(DOMAIN) $(DEVELOPER) $(PRODUCT) $(IMAGE) $(CONTAINER) $(VNC_PORT) $(DEBUG_PORT)
 
 # Delete development environment.
 # Usage: make delete
