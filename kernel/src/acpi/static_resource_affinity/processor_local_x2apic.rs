@@ -10,7 +10,7 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     #[allow(dead_code)]
-    reserved0: u16,
+    _0: u16,
     #[allow(dead_code)]
     proximity_domain: u32,
     #[allow(dead_code)]
@@ -20,7 +20,7 @@ pub struct Structure {
     #[allow(dead_code)]
     clock_domain: u32,
     #[allow(dead_code)]
-    reserved1: u32,
+    _1: u32,
 }
 
 impl Structure {

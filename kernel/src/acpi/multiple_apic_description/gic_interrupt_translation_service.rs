@@ -8,13 +8,13 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     #[allow(dead_code)]
-    reserved0: u16,
+    _0: u16,
     #[allow(dead_code)]
     gic_its_id: u32,
     #[allow(dead_code)]
     physical_base_address: u64,
     #[allow(dead_code)]
-    reserved1: u32,
+    _1: u32,
 }
 
 impl Structure {

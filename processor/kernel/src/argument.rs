@@ -21,8 +21,8 @@ static mut ARGUMENT: OnceCell<Argument> = OnceCell::new();
 
 #[macro_export]
 macro_rules! bsp_println {
-    ($fmt:expr) => (bsp_print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (bsp_print!(concat!($fmt, "\n"), $($arg)*));
+    ($fmt:expr) => ($crate::bsp_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => ($crate::bsp_print!(concat!($fmt, "\n"), $($arg)*));
 }
 
 #[macro_export]

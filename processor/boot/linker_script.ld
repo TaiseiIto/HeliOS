@@ -1,9 +1,7 @@
 OUTPUT_FORMAT("binary");
 
-BASE = 0x1000;
-
 SECTIONS {
-	. = BASE;
+	. = 0x0000000000000000;
 	.text : {
 		main.o(.text)
 	}

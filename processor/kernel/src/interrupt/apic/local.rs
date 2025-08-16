@@ -24,8 +24,10 @@ pub mod trigger_mode;
 use {
     core::fmt,
     crate::{
+        bsp_println,
         x64,
     },
+    super::super::SPURIOUS_INTERRUPT,
 };
 
 /// # Local APIC Registers
@@ -35,14 +37,14 @@ use {
 pub struct Registers {
     // 0xfee00000
     #[allow(dead_code)]
-    reserved0: [u128; 2],
+    _0: [u128; 2],
     // 0xfee00020
     local_apic_id: local_apic_id::FatRegister,
     // 0xfee00030
     local_apic_version: local_apic_version::FatRegister,
     // 0xfee00040
     #[allow(dead_code)]
-    reserved1: [u128; 4],
+    _1: [u128; 4],
     // 0xfee00080
     task_priority: task_priority::FatRegister,
     // 0xfee00090
@@ -69,7 +71,7 @@ pub struct Registers {
     error_status: error_status::FatRegister,
     // 0xfee00290
     #[allow(dead_code)]
-    reserved2: [u128; 6],
+    _2: [u128; 6],
     // 0xfee002f0
     lvt_corrected_machine_check_interrupt: local_vector_table::FatRegister,
     // 0xfee00300
@@ -90,12 +92,12 @@ pub struct Registers {
     current_count: current_count::FatRegister,
     // 0xfee003a0
     #[allow(dead_code)]
-    reserved3: [u128; 4],
+    _3: [u128; 4],
     // 0xfee003e0
     divide_configuration: divide_configuration::FatRegister,
     // 0xfee003f0
     #[allow(dead_code)]
-    reserved4: u128,
+    _4: u128,
 }
 
 impl Registers {
@@ -113,6 +115,16 @@ impl Registers {
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+
+    pub fn initialize(ia32_apic_base: &mut x64::msr::ia32::ApicBase) -> &mut Self {
+        bsp_println!("ia32_apic_base = {:#x?}", ia32_apic_base);
+        let registers: &mut Self = ia32_apic_base.registers_mut();
+        let focus_processor_checking: bool = true;
+        let eoi_broadcast: bool = true;
+        registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, SPURIOUS_INTERRUPT);
+        bsp_println!("registers = {:#x?}", registers);
+        registers
     }
 
     pub fn send_interrupt(&mut self, destination_local_apic_id: u8, destination_vector: u8) {

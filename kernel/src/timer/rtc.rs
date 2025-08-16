@@ -10,6 +10,7 @@ use {
     core::fmt,
     crate::{
         Argument,
+        com2_println,
         interrupt,
         task,
         x64,
@@ -52,6 +53,22 @@ pub fn enable_periodic_interrupt(hz: usize) -> u8 {
 
 pub fn end_interruption() {
     status_register::C::read();
+}
+
+pub fn initialize(local_apic_id: u8) {
+    let time = Time::get();
+    com2_println!("time = {:#?}", time);
+    let rtc_frequency: usize = 0x2; // Hz
+    let rtc_irq: u8 = enable_periodic_interrupt(rtc_frequency);
+    com2_println!("rtc_irq = {:#x?}", rtc_irq);
+    Argument::get()
+        .efi_system_table_mut()
+        .rsdp_mut()
+        .xsdt_mut()
+        .madt_mut()
+        .io_apic_mut()
+        .registers_mut()
+        .redirect(rtc_irq, local_apic_id, interrupt::RTC_INTERRUPT);
 }
 
 pub struct Time {

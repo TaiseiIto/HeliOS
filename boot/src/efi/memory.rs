@@ -1,5 +1,7 @@
 use {
     alloc::vec::Vec,
+    core::ops::Range,
+    crate::memory,
     super::Void,
 };
 
@@ -97,6 +99,13 @@ impl Descriptor {
     pub fn number_of_pages(&self) -> usize {
         self.number_of_pages as usize
     }
+
+    pub fn physical_address_range(&self) -> Range<PhysicalAddress> {
+        let start: PhysicalAddress = self.physical_start;
+        let length: PhysicalAddress = self.number_of_pages * (memory::page::SIZE as PhysicalAddress);
+        let end: PhysicalAddress = start + length;
+        start..end
+    }
 }
 
 #[derive(Debug)]
@@ -109,6 +118,28 @@ pub struct Map {
 }
 
 impl Map {
+    pub fn iter(&self) -> impl Iterator<Item = &Descriptor> {
+        let Self {
+            descriptors,
+            descriptor_size,
+            descriptor_version: _,
+            key: _,
+        } = self;
+        (0..)
+            .map_while(|index| {
+                let offset: usize = index * (*descriptor_size);
+                descriptors
+                    .get(offset)
+                    .map(|descriptor| {
+                        let descriptor: *const u8 = descriptor as *const u8;
+                        let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                        unsafe {
+                            &*descriptor
+                        }
+                    })
+            })
+    }
+
     pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
         Self {
             descriptors,
@@ -120,22 +151,6 @@ impl Map {
 
     pub fn key(&self) -> usize {
         self.key
-    }
-}
-
-impl From<Map> for Vec<Descriptor> {
-    fn from(map: Map) -> Vec<Descriptor> {
-        map.descriptors
-            .chunks(map.descriptor_size)
-            .map(|descriptor| {
-                let descriptor: *const [u8] = descriptor as *const [u8];
-                let descriptor: *const Descriptor = descriptor as *const Descriptor;
-                let descriptor: &Descriptor = unsafe {
-                    &*descriptor
-                };
-                descriptor.clone()
-            })
-            .collect()
     }
 }
 

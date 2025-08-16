@@ -1,9 +1,3 @@
-	.set	SEGMENT_LENGTH,	0x00010000
-	.set	SEGMENT_SHIFT,	4
-	.set	STACK_FLOOR,	0x00010000
-	.set	STACK_SEGMENT,	(STACK_FLOOR - SEGMENT_LENGTH) >> SEGMENT_SHIFT
-	.set	RFLAGS_ID,	1 << 21
-
 	.text
 	.code16
 # Calling convention = System V i386
@@ -11,25 +5,18 @@
 # Parameters: stack
 # Scratch registers: ax, cx, dx
 # Preserved registers: bx, si, di, bp, sp
-main16:	# IP == 0x1000
+main16:	# IP == 0x0000
 0:	# Disable interrupts.
 	cli
-	# Initialize the general registers.
-	xorw	%ax,	%ax
-	movw	%ax,	%bx
-	movw	%ax,	%cx
-	movw	%ax,	%dx
-	movw	%ax,	%si
-	movw	%ax,	%di
-	movw	%ax,	%sp
-	movw	%ax,	%bp
 	# Initialize the segment registers.
-	movw	%ax,	%ds	
-	movw	%ax,	%es	
-	movw	%ax,	%fs	
-	movw	%ax,	%gs	
-	movw	$STACK_SEGMENT,	%ax
-	movw	%ax,	%ss
+	movw	%cs,	%dx
+	movw	%dx,	%ds
+	movw	%dx,	%es
+	movw	%dx,	%fs
+	movw	%dx,	%gs
+	movw	boot_argument_ss,	%ss
+	xorw	%bp,	%bp
+	xorw	%sp,	%sp
 	# Enter 16bit main function.
 	enter	$0x0000,	$0x00
 	pushw	%di
@@ -37,11 +24,107 @@ main16:	# IP == 0x1000
 	leaw	log_start,	%dx
 	leaw	log_end_pointer,	%di
 	movw	%dx,	(%di)
+	xorw	%dx,	%dx
+	movw	%dx,	0x02(%di)
+	movw	%dx,	0x04(%di)
+	movw	%dx,	0x06(%di)
 	# Print message16.
 	leaw	message16,	%dx
 	pushw	%dx
 	call	puts16
 	addw	$0x0002,	%sp
+	# Print CS register.
+	leaw	cs_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	movw	%cs,	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Print SS register.
+	leaw	ss_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	movw	%ss,	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Set 32bit code segment base.
+	pushw	%cs
+	leaw	(segment_descriptor_32bit_code - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
+	# Set 32bit data segment base.
+	pushw	%ds
+	leaw	(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
+	# Set 32bit stack segment base.
+	pushw	%ss
+	leaw	(segment_descriptor_32bit_stack - segment_descriptor_null),	%dx
+	pushw	%dx
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	call	set_segment_base16
+	addw	$0x0006,	%sp
+	# Check 32bit code segment.
+	leaw	segment_descriptor_32bit_code_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_code,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Check 32bit data segment.
+	leaw	segment_descriptor_32bit_data_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_data,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Check 32bit stack segment.
+	leaw	segment_descriptor_32bit_stack_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	segment_descriptor_32bit_stack,	%dx
+	pushw	%dx
+	call	put_quad_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
+	# Fix GDTR
+	pushw	%ds
+	leaw	gdt_start,	%dx
+	pushw	%dx
+	leaw	gdtr,	%dx
+	pushw	%dx
+	call	set_gdt_base
+	addw	$0x0006,	%sp
+	# Check GDT base
+	leaw	gdt_base_message,	%dx
+	pushw	%dx
+	call	puts16
+	addw	$0x0002,	%sp
+	leaw	(gdtr + 0x0002),	%dx
+	pushw	%dx
+	call	put_long_pointer16
+	addw	$0x0002,	%sp
+	call	put_new_line16
 	# Leave 16bit main function.
 	popw	%di
 	leave
@@ -51,7 +134,33 @@ main16:	# IP == 0x1000
 	andl	$0x7fffffff,	%edx	# Disable paging,
 	orl	$0x00000001,	%edx	# Enable 32bit protected mode.
 	movl	%edx,	%cr0
-	ljmp	$0x0008,	$main32
+	ljmp	$(segment_descriptor_32bit_code - segment_descriptor_null),	$main32
+
+# set_gdb_base(gdtr: u16, gdt_start: u16, data_segment: u16)
+set_gdt_base:
+.set	FLAGS_CF,	1
+0:
+	enter	$0x0000,	$0x00
+	pushw	%di
+	movw	0x04(%bp),	%di	# %di = gdtr
+	movw	0x06(%bp),	%ax	# %ax = gdt_start
+	movw	0x08(%bp),	%dx	# %dx = data_segment
+	shlw	$0x04,		%dx	# %dx = data_segment << 4
+	addw	%dx,		%ax	# %ax = gdt_start + (data_segment << 4)
+	pushfw				# Save FLAGS.
+	movw	%ax,	0x02(%di)	# Write GDT base low.
+	movw	0x08(%bp),	%ax	# %ax = data_segment
+	shrw	$0x0c,		%ax	# %ax = data_segment >> 12
+	popw	%dx			# Read FLAGS.
+	andw	$FLAGS_CF,	%dx
+	jz	2f
+1:	# If GDT base low addition carried over.
+	incw	%ax			# %ax = (data_segment >> 12) + 1
+2:	# End if.
+	movw	%ax,	0x04(%di)	# Write GDT base high.
+	popw	%di
+	leave
+	ret
 
 putchar16:
 0:
@@ -85,6 +194,158 @@ puts16:
 	leave
 	ret
 
+put_new_line16:
+0:
+	enter	$0x0000,	$0x00
+	movb	$'\n,	%dl
+	pushw	%dx
+	call	putchar16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_nibble16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movb	0x04(%bp),	%al
+	andb	$0x0f,	%al
+	movb	%al,	%dl
+	subb	$10,	%dl
+	jae	2f
+1:	# From '0' to '9'
+	addb	$'0,	%al
+	movb	%al,	%dl
+	jmp	3f
+2:	# From 'a' to 'f'
+	addb	$'a,	%dl
+3:
+	pushw	%dx
+	call	putchar16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_byte16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%bx
+	movb	0x04(%bp),	%bl
+	movb	%bl,	%dl
+	shrb	$0x04,	%dl
+	pushw	%dx
+	call	put_nibble16
+	addw	$0x0002,	%sp
+	pushw	%bx
+	call	put_nibble16
+	addw	$0x0002,	%sp
+	popw	%bx
+	leave
+	ret
+
+put_word16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%bx
+	movw	0x04(%bp),	%bx
+	movw	%bx,	%dx
+	shrw	$0x08,	%dx
+	pushw	%dx
+	call	put_byte16
+	addw	$0x0002,	%sp
+	pushw	%bx
+	call	put_byte16
+	addw	$0x0002,	%sp
+	popw	%bx
+	leave
+	ret
+
+put_long16:
+0:
+	enter	$0x0000,	$0x00
+	movw	0x06(%bp),	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	movw	0x04(%bp),	%dx
+	pushw	%dx
+	call	put_word16
+	addw	$0x0002,	%sp
+	leave
+	ret
+
+put_long_pointer16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movw	0x04(%bp),	%si
+	movw	0x02(%si),	%dx
+	pushw	%dx
+	movw	(%si),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	popw	%si
+	leave
+	ret
+
+put_quad16:
+0:
+	enter	$0x0000,	$0x00
+	movw	0x0a(%bp),	%dx
+	pushw	%dx
+	movw	0x08(%bp),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	movw	0x06(%bp),	%dx
+	pushw	%dx
+	movw	0x04(%bp),	%dx
+	pushw	%dx
+	call	put_long16
+	addw	$0x0004,	%sp
+	leave
+	ret
+
+put_quad_pointer16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%si
+	movw	0x04(%bp),	%si
+	movw	0x06(%si),	%dx
+	pushw	%dx
+	movw	0x04(%si),	%dx
+	pushw	%dx
+	movw	0x02(%si),	%dx
+	pushw	%dx
+	movw	(%si),	%dx
+	pushw	%dx
+	call	put_quad16
+	addw	$0x0008,	%sp
+	popw	%si
+	leave
+	ret
+
+# set_segment_base(gdt_start: u16, segment_selector_bit32: u16, segment_register_bit16: u16)
+set_segment_base16:
+0:
+	enter	$0x0000,	$0x00
+	pushw	%di
+	movw	0x04(%bp),	%di	# %di = gdt_start
+	addw	0x06(%bp),	%di	# %di = gdt_start + segment_selector_bit32
+	movw	0x08(%bp),	%ax	# %ax = segment_register_bit16
+	movw	%ax,		%dx	# %dx = segment_register_bit16
+	shlw	$0x04,		%dx	# %dx = segment_register_bit16 << 4
+	movw	%dx,	0x02(%di)	# Set base 15:00
+	movw	%ax,		%dx	# %dx = segment_register_bit16
+	shrw	$0x0c,		%dx	# %dx = segment_register_bit16 >> 12
+	movb	%dl,	0x04(%di)	# Set base 23:16
+	xorb	%dl,	%dl		# %dl = 0
+	movb	%dl,	0x07(%di)	# Set base 31:24
+	popw	%di
+	leave
+	ret
+
 	.code32
 # Calling convention = System V i386
 # Return value: eax, edx
@@ -93,14 +354,15 @@ puts16:
 # Preserved registers: ebx, esi, edi, ebp, esp
 main32:
 0:	# Set 32bit data segment.
-	movw	$0x0010,	%dx
+	movw	$(segment_descriptor_32bit_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
+	movw	$(segment_descriptor_32bit_stack - segment_descriptor_null),	%dx
 	movw	%dx,	%ss
-	leal	STACK_FLOOR,	%ebp
-	leal	STACK_FLOOR,	%esp
+	movl	$0x00010000,	%ebp
+	movl	$0x00010000,	%esp
 	# Enter 32bit main function.
 	enter	$0x0000,	$0x00
 	# Print message32.
@@ -118,13 +380,41 @@ main32:
 	call	put_quad_pointer32
 	addl	$0x00000004,	%esp
 	call	put_new_line32
-	# Leave 32bit main function.
-	leave
+	# Check ljmp destination address.
+	leal	ljmp_destination_address_message,	%edx
+	pushl	%edx
+	call	puts32
+	addl	$0x00000004,	%esp
+	leal	segment_descriptor_32bit_code,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	addl	$main64,	%eax
+	leal	ljmp_destination,	%edi
+	movl	%eax,	(%edi)
+	pushl	%eax
+	call	put_long32
+	addl	$0x00000004,	%esp
+	call	put_new_line32
 	# Set temporary CR3.
+	leal	segment_descriptor_32bit_data,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	addl	$temporary_pml4_table,	%eax
 	movl	boot_argument_cr3,	%edx
 	andl	$0x00000fff,	%edx
-	orl	$temporary_pml4_table,	%edx
-	movl	%edx,	%cr3
+	orl	%edx,	%eax
+	movl	%eax,	%cr3
+	# Fix log_end_pointer for 64bit long mode.
+	leal	segment_descriptor_32bit_data,	%edx
+	pushl	%edx
+	call	get_segment_base
+	addl	$0x00000004,	%esp
+	addl	log_end_pointer,	%eax
+	movl	%eax,	log_end_pointer
+	# Leave 32bit main function.
+	leave
 	# Set PAE.
 	movl	%cr4,	%edx
 	orl	$0x00000020,	%edx
@@ -139,7 +429,27 @@ main32:
 	orl	$0x80000000,	%edx
 	mov	%edx,	%cr0
 	# Move to 64bit mode.
-	ljmp	$0x0018,	$main64
+	ljmp	*(%edi)
+
+# get_segment_base(segment_descriptor_address: u32) -> u32
+get_segment_base:
+0:
+	enter	$0x0000,	$0x00
+	pushl	%esi
+	movl	0x08(%ebp),	%esi	# %esi = segment_descriptor_address
+	movl	0x04(%esi),	%edx	# %edx = segment_descriptor_high
+	movl	%edx,		%eax	# %eax = segment_descriptor_high
+	shrl	$0x18,		%eax	# %eax = segment_discriptor_high >> 0x18
+	shll	$0x08,		%eax	# %eax = (segment_discriptor_high >> 0x18) << 0x08
+	andl	$0x000000ff,	%edx	# %edx = segment_descriptor_high && 0x000000ff
+	addl	%edx,		%eax	# %eax = ((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)
+	shll	$0x10,		%eax	# %eax = (((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)) << 0x10
+	movl	(%esi),		%edx	# %edx = segment_descriptor_low
+	shrl	$0x10,		%edx	# %edx = segment_descriptor_low >> 0x10
+	addl	%edx,		%eax	# %eax = ((((segment_discriptor_high >> 0x18) << 0x08) + (segment_descriptor_high && 0x000000ff)) << 0x10) + (segment_descriptor_low >> 0x10)
+	popl	%esi
+	leave
+	ret
 
 putchar32:
 0:
@@ -258,11 +568,11 @@ put_long32:
 put_quad32:
 0:
 	enter	$0x0000,	$0x00
-	movl	0x08(%ebp),	%edx
+	movl	0x0c(%ebp),	%edx
 	pushl	%edx
 	call	put_long32
 	addl	$0x00000004,	%esp
-	movl	0x0c(%ebp),	%edx
+	movl	0x08(%ebp),	%edx
 	pushl	%edx
 	call	put_long32
 	addl	$0x00000004,	%esp
@@ -274,9 +584,9 @@ put_quad_pointer32:
 	enter	$0x0000,	$0x00
 	pushl	%esi
 	movl	0x08(%ebp),	%esi
-	movl	(%esi),	%edx
-	pushl	%edx
 	movl	0x04(%esi),	%edx
+	pushl	%edx
+	movl	(%esi),	%edx
 	pushl	%edx
 	call	put_quad32
 	addl	$0x00000008,	%esp
@@ -292,92 +602,92 @@ put_quad_pointer32:
 # Preserved registers: rbx, rsp, rbp, r12, r13, r14, r15
 main64:
 0:	# Set 64bit data segment.
-	movw	$0x0020,	%dx
+	movw	$(segment_descriptor_64bit_kernel_data - segment_descriptor_null),	%dx
 	movw	%dx,	%ds
 	movw	%dx,	%es
 	movw	%dx,	%fs
 	movw	%dx,	%gs
 	movw	%dx,	%ss
-	leaq	STACK_FLOOR,	%rbp
-	leaq	STACK_FLOOR,	%rsp
+	movq	$0x0000000000010000,	%rbp
+	movq	$0x0000000000010000,	%rsp
 	# Enter 64bit main function.
 	enter	$0x0000,	$0x00
 	# Print message64.
-	leaq	message64,	%rdi
+	leaq	message64(%rip),	%rdi
 	call	puts64
 	# Set CR3.
-	movq	boot_argument_cr3,	%rdx
+	movq	boot_argument_cr3(%rip),	%rdx
 	movq	%rdx,	%cr3
 	# Get IA32_APIC_BASE
 	call	get_ia32_apic_base
-	movq	%rax,	kernel_argument_ia32_apic_base
+	movq	%rax,	kernel_argument_ia32_apic_base(%rip)
 	# Print bootstrap processor kernel entry.
-	leaq	kernel_entry_message,	%rdi
+	leaq	kernel_entry_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_kernel_entry,	%rdi
+	movq	boot_argument_kernel_entry(%rip),	%rdi
 	call	put_quad64
 	call	put_new_line64
 	# Print bootstrap processor kernel stack floor.
-	leaq	kernel_stack_floor_message,	%rdi
+	leaq	kernel_stack_floor_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_kernel_stack_floor,	%rdi
+	movq	boot_argument_kernel_stack_floor(%rip),	%rdi
 	call	put_quad64
 	call	put_new_line64
 	# Print BSP heap start
-	leaq	bsp_heap_start_message,	%rdi
+	leaq	bsp_heap_start_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_bsp_heap_start,	%rdi
-	movq	%rdi,	kernel_argument_bsp_heap_start
+	movq	boot_argument_bsp_heap_start(%rip),	%rdi
+	movq	%rdi,	kernel_argument_bsp_heap_start(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print heap start
-	leaq	heap_start_message,	%rdi
+	leaq	heap_start_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_heap_start,	%rdi
-	movq	%rdi,	kernel_argument_heap_start
+	movq	boot_argument_heap_start(%rip),	%rdi
+	movq	%rdi,	kernel_argument_heap_start(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print heap size
-	leaq	heap_size_message,	%rdi
+	leaq	heap_size_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_heap_size,	%rdi
-	movq	%rdi,	kernel_argument_heap_size
+	movq	boot_argument_heap_size(%rip),	%rdi
+	movq	%rdi,	kernel_argument_heap_size(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print receiver
-	leaq	message_message,	%rdi
+	leaq	receiver_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_receiver,	%rdi
-	movq	%rdi,	kernel_argument_receiver
+	movq	boot_argument_receiver(%rip),	%rdi
+	movq	%rdi,	kernel_argument_receiver(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print sender
-	leaq	message_message,	%rdi
+	leaq	sender_message(%rip),	%rdi
 	call	puts64
-	movq	boot_argument_sender,	%rdi
-	movq	%rdi,	kernel_argument_sender
+	movq	boot_argument_sender(%rip),	%rdi
+	movq	%rdi,	kernel_argument_sender(%rip)
 	call	put_quad64
 	call	put_new_line64
 	# Print my local APIC ID.
-	leaq	my_local_apic_id_message,	%rdi
+	leaq	my_local_apic_id_message(%rip),	%rdi
 	call	puts64
 	call	get_local_apic_id
 	movb	%al,	%dil
 	call	put_byte64
 	call	put_new_line64
 	# Print BSP local APIC ID.
-	leaq	bsp_local_apic_id_message,	%rdi
+	leaq	bsp_local_apic_id_message(%rip),	%rdi
 	call	puts64
-	movb	boot_argument_bsp_local_apic_id,	%dil
-	movb	%dil,	kernel_argument_bsp_local_apic_id
+	movb	boot_argument_bsp_local_apic_id(%rip),	%dil
+	movb	%dil,	kernel_argument_bsp_local_apic_id(%rip)
 	call	put_byte64
 	call	put_new_line64
 	# Leave 64bit main function.
 	leave
 	# Jump to the kernel.
-	movq	boot_argument_kernel_stack_floor,	%rsp
-	leaq	kernel_argument,	%rdi
-	call	*boot_argument_kernel_entry
+	movq	boot_argument_kernel_stack_floor(%rip),	%rsp
+	leaq	kernel_argument(%rip),	%rdi
+	call	*boot_argument_kernel_entry(%rip)
 
 apic_is_supported:
 0:
@@ -402,6 +712,7 @@ apic_is_supported:
 	ret
 
 cpuid_is_supported:
+.set    RFLAGS_ID,      1 << 21
 0:
 	enter	$0x0000,	$0x00
 	call	get_rflags
@@ -450,7 +761,7 @@ cpuid_max_eax:
 error:
 0:
 	enter	$0x0000,	$0x00
-	leaq	error_message,	%rdi
+	leaq	error_message(%rip),	%rdi
 	call	puts64
 	call	put_new_line64
 	cli
@@ -512,10 +823,10 @@ putchar64:
 0:
 	enter	$0x0000,	$0x00
 	movb	%dil,	%dl
-	movq	log_end_pointer,	%rdi
+	movq	log_end_pointer(%rip),	%rdi
 	movb	%dl,	(%rdi)
 	incq	%rdi
-	movq	%rdi,	log_end_pointer
+	movq	%rdi,	log_end_pointer(%rip)
 	leave
 	ret
 
@@ -639,28 +950,35 @@ segment_descriptor_32bit_data:			#0x10
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_code:		# 0x18
-	.word	0xffff	# Limit 15:00
-	.word	0x0000	# Base 15:00
-	.byte	0x00	# Base 23:16
-	.byte	0x9a	# Type, S, DPL, P
-	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
-	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_kernel_data:		# 0x20
+segment_descriptor_32bit_stack:			#0x18
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0x92	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_data:	# 0x28
+segment_descriptor_64bit_kernel_code:		# 0x20
+	.word	0xffff	# Limit 15:00
+	.word	0x0000	# Base 15:00
+	.byte	0x00	# Base 23:16
+	.byte	0x9a	# Type, S, DPL, P
+	.byte	0xaf	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x00	# Base 31:24
+segment_descriptor_64bit_kernel_data:		# 0x28
+	.word	0xffff	# Limit 15:00
+	.word	0x0000	# Base 15:00
+	.byte	0x00	# Base 23:16
+	.byte	0x92	# Type, S, DPL, P
+	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
+	.byte	0x00	# Base 31:24
+segment_descriptor_64bit_application_data:	# 0x30
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
 	.byte	0xf2	# Type, S, DPL, P
 	.byte	0xcf	# Limit 19:16, AVL, L, D/B, G
 	.byte	0x00	# Base 31:24
-segment_descriptor_64bit_application_code:	# 0x30
+segment_descriptor_64bit_application_code:	# 0x38
 	.word	0xffff	# Limit 15:00
 	.word	0x0000	# Base 15:00
 	.byte	0x00	# Base 23:16
@@ -672,17 +990,24 @@ gdt_end:
 	.word	0x0000
 gdtr:
 	.word	gdt_end - gdt_start - 1
-	.long	gdt_start
+	.long	0xdeadbeef # This will be overwritten by set_gdb_base function.
+ljmp_destination:
+	.long	0xdeadbeef
+	.word	(segment_descriptor_64bit_kernel_code - segment_descriptor_null)
+bsp_heap_start_message:
+	.string "bsp_heap_start = 0x"
 bsp_local_apic_id_message:
 	.string "BSP local APIC ID = 0x"
 cpuid_max_eax_message:
 	.string "CPUID max EAX = 0x"
 cr3_message:
 	.string "CR3 = 0x"
+cs_message:
+	.string "CS = 0x"
 error_message:
 	.string	"ERROR!"
-bsp_heap_start_message:
-	.string "bsp_heap_start = 0x"
+gdt_base_message:
+	.string "GDT base = 0x"
 heap_start_message:
 	.string "heap_start = 0x"
 heap_size_message:
@@ -691,8 +1016,8 @@ kernel_entry_message:
 	.string "kernel_entry = 0x"
 kernel_stack_floor_message:
 	.string "kernel_stack_floor = 0x"
-message_message:
-	.string "message = 0x"
+ljmp_destination_address_message:
+	.string "ljmp destination address = 0x"
 message16:
 	.string	"Hello from an application processor in 16bit mode!\n"
 message32:
@@ -701,6 +1026,18 @@ message64:
 	.string	"Hello from an application processor in 64bit mode!\n"
 my_local_apic_id_message:
 	.string "My local APIC ID = 0x"
+receiver_message:
+	.string "receiver = 0x"
+segment_descriptor_32bit_code_message:
+	.string "Segment descriptor 32bit code = 0x"
+segment_descriptor_32bit_data_message:
+	.string "Segment descriptor 32bit data = 0x"
+segment_descriptor_32bit_stack_message:
+	.string "Segment descriptor 32bit stack = 0x"
+sender_message:
+	.string "sender = 0x"
+ss_message:
+	.string "SS = 0x"
 log_end_pointer:
 	.quad	log_start
 	.align	0x8
@@ -740,6 +1077,8 @@ boot_argument_sender:
 	.quad	0x0000000000000000
 boot_argument_receiver:
 	.quad	0x0000000000000000
+boot_argument_ss:
+	.word	0x0000
 boot_argument_bsp_local_apic_id:
 	.byte	0x00
 log_start:

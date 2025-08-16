@@ -10,7 +10,7 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     #[allow(dead_code)]
-    reserved0: u16,
+    _0: u16,
     #[allow(dead_code)]
     cpu_interface_number: u32,
     #[allow(dead_code)]
@@ -38,7 +38,7 @@ pub struct Structure {
     #[allow(dead_code)]
     processor_power_efficiency_class: u8,
     #[allow(dead_code)]
-    reserved1: u8,
+    _1: u8,
     #[allow(dead_code)]
     spe_overflow_interrupt: u16,
     #[allow(dead_code)]

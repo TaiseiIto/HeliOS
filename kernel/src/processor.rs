@@ -3,6 +3,7 @@ pub mod message;
 
 use {
     alloc::{
+        collections::BTreeMap,
         string::String,
         vec::Vec,
     },
@@ -27,7 +28,7 @@ use {
     },
 };
 
-static mut CONTROLLERS: OnceCell<Vec<Controller>> = OnceCell::new();
+static mut MANAGER: OnceCell<Manager> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Controller {
@@ -75,15 +76,17 @@ impl Controller {
 
     pub fn get_all() -> impl Iterator<Item = &'static Self> {
         unsafe {
-            CONTROLLERS.get()
+            MANAGER.get()
         }   .unwrap()
+			.controllers
             .iter()
     }
 
     pub fn get_mut_all() -> impl Iterator<Item = &'static mut Self> {
         unsafe {
-            CONTROLLERS.get_mut()
+            MANAGER.get_mut()
         }   .unwrap()
+			.controllers
             .iter_mut()
     }
 
@@ -166,7 +169,7 @@ impl Controller {
 
     pub fn send(&mut self, message: message::Content) {
         *self.sender.lock() = Some(message);
-        x64::msr::ia32::ApicBase::get(Argument::get().cpuid())
+        x64::msr::ia32::ApicBase::get()
             .unwrap()
             .registers_mut()
             .send_interrupt(self.local_apic_id(), interrupt::INTERPROCESSOR_INTERRUPT);
@@ -179,11 +182,82 @@ impl Controller {
     pub fn receive_character(&mut self, character: char) {
         self.log.push(character);
     }
+}
 
-    pub fn set_all(controllers: Vec<Self>) {
+#[derive(Debug)]
+pub struct Manager {
+    controllers: Vec<Controller>,
+    #[allow(dead_code)]
+    kernel: elf::File,
+    #[allow(dead_code)]
+    kernel_read_only_pages: Vec<memory::Page>,
+    #[allow(dead_code)]
+    paging: memory::Paging,
+}
+
+impl Manager {
+    pub fn initialize(local_apic_id: u8, local_apic_registers: &mut interrupt::apic::local::Registers, heap_size: usize, hpet: &timer::hpet::Registers) {
+        let mut paging: memory::Paging = Argument::get()
+            .paging()
+            .clone();
+        let kernel: elf::File = Argument::get()
+            .processor_kernel()
+            .to_vec()
+            .into();
+        let kernel_read_only_pages: Vec<memory::Page> = kernel.deploy_unwritable_segments(&mut paging);
+        let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .xsdt()
+            .madt()
+            .processor_local_apic_structures()
+            .into_iter()
+            .filter(|local_apic| local_apic.is_enabled())
+            .collect();
+        let number_of_processors: usize = processors.len();
+        com2_println!("number_of_processors = {:#x?}", number_of_processors);
+        let heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
+        let heap_size: usize = heap_size / if heap_size / 2 + (number_of_processors - 1) * heap_size < heap_size {
+            1
+        } else {
+            2
+        };
+        com2_println!("heap_size = {:#x?}", heap_size);
+        let controllers: Vec<Controller> = processors
+            .into_iter()
+            .filter(|local_apic| local_apic.apic_id() != local_apic_id)
+            .map(|local_apic| {
+                let mut heap: Vec<MaybeUninit<u8>> = Vec::with_capacity(heap_size);
+                unsafe {
+                    heap.set_len(heap_size);
+                }
+                Controller::new(local_apic.clone(), paging.clone(), &kernel, heap)
+            })
+            .collect();
+        let manager = Self {
+            controllers,
+            kernel,
+            kernel_read_only_pages,
+            paging,
+        };
         unsafe {
-            CONTROLLERS.set(controllers)
+            MANAGER.set(manager)
         }.unwrap();
+        Controller::get_all()
+            .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
+    }
+
+    pub fn finalize() {
+        let local_apic_id2log: BTreeMap<u8, &str> = Controller::get_all()
+            .map(|processor| (processor.local_apic_id(), processor.log()))
+            .collect();
+        local_apic_id2log
+            .into_iter()
+            .for_each(|(local_apic_id, log)| {
+                com2_println!("Application processor log");
+                com2_println!("Local APIC ID = {:#x?}", local_apic_id);
+                com2_println!("{}", log);
+            });
     }
 }
 

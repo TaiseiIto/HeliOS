@@ -19,30 +19,26 @@ OVMF_VARS=-drive file=$(OVMF_VARS_PATH),format=raw,if=pflash,readonly=on
 OVMF_VARS_PATH=../../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_VARS.fd
 VNC=-vnc :0
 DEBUG=-S -gdb tcp::$(DEBUG_PORT)
+XHCI=-device qemu-xhci
+COMMAND=$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) $(XHCI)
 
 # Run the OS on QEMU.
 # Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
 .PHONY: run
 run:
-	-$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) | tee $(COM2_LOG)
+	-$(COMMAND) | tee $(COM2_LOG)
 
 # Debug the OS on QEMU by GDB.
 # Usage: $ make debug OS_PATH=<os image file path> OS_NAME=<os name> DEBUG_PORT=<debug port>
 .PHONY: debug
 debug:
-	-$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) $(DEBUG) | tee $(COM2_LOG)
+	-$(COMMAND) $(DEBUG) | tee $(COM2_LOG)
 
 # Debug QEMU by GDB.
 # Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
 .PHONY: debug_qemu
 debug_qemu:
-	gdb --args $(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC)
-
-# Debug QEMU without HPET by GDB.
-# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
-.PHONY: debug_qemu_without_hpet
-debug_qemu_without_hpet:
-	gdb --args $(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) -machine hpet=off
+	gdb --args $(COMMAND)
 
 # Stop the OS on QEMU.
 # Usage: $ make stop

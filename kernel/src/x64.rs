@@ -55,6 +55,7 @@ pub fn pause() {
 /// # Read Timer Stamp Counter
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.2B 4-550
+#[allow(dead_code)]
 #[inline(never)]
 pub fn rdtsc() -> u64 {
     let eax: u32;

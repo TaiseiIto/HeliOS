@@ -8,7 +8,6 @@ use {
     core::cell::OnceCell,
     crate::{
         efi,
-        elf,
         memory,
         processor,
         rs232c,
@@ -30,8 +29,6 @@ pub struct Argument<'a> {
     #[allow(dead_code)]
     graphics_output_protocol: &'a efi::graphics_output::Protocol<'a>,
     heap_start: usize,
-    #[allow(dead_code)]
-    hello_application: elf::File,
     memory_map: efi::memory::Map,
     paging: memory::Paging,
 }
@@ -79,14 +76,15 @@ impl Argument<'static> {
         &mut self.processor_boot_loader
     }
 
-    pub fn processor_kernel(&self) -> &Vec<u8> {
+    pub fn processor_kernel(&self) -> &[u8] {
         &self.processor_kernel
     }
 
     pub fn set(&'static mut self) {
         unsafe {
             ARGUMENT.set(self)
-        }.unwrap()
+        }.unwrap();
+        rs232c::set_com2(Self::get().com2_mut());
     }
 }
 

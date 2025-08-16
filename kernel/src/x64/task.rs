@@ -18,6 +18,7 @@ pub struct Register {
 }
 
 impl Register {
+    #[allow(dead_code)]
     #[inline(never)]
     pub fn get() -> Self {
         let mut segment_selector: u16;

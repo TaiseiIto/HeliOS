@@ -1,17 +1,17 @@
-SHELL=/bin/bash
-PRODUCT=$(shell basename $$(pwd))
-FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
+include $(shell git rev-parse --show-toplevel)/.make/header.mk
+
+FORMAT=$(shell sed -n "s/^\s*targets\s*=\s*\[\"\(.*\)\"\]$$/\1/p" rust-toolchain.toml)
 TARGET=target/$(FORMAT)/debug/$(PRODUCT).efi
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a bootloader.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	PROCESSOR_BOOT_LOADER_BASE=$(PROCESSOR_BOOT_LOADER_BASE) PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(PROCESSOR_BOOT_LOADER_STACK_FLOOR) KERNEL=$(KERNEL) cargo build --target $(FORMAT)
+$(TARGET): $(call SOURCE_FILES, .)
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo build --target $(FORMAT)
 
 # Clippy rust codes.
 .PHONY: clippy
 clippy:
-	PROCESSOR_BOOT_LOADER_BASE=$(PROCESSOR_BOOT_LOADER_BASE) PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(PROCESSOR_BOOT_LOADER_STACK_FLOOR) KERNEL=$(KERNEL) cargo clippy
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo clippy
 
 # Generate documents.
 # Usage: $ make doc
@@ -19,11 +19,8 @@ clippy:
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
-	PROCESSOR_BOOT_LOADER_BASE=$(PROCESSOR_BOOT_LOADER_BASE) PROCESSOR_BOOT_LOADER_STACK_FLOOR=$(PROCESSOR_BOOT_LOADER_STACK_FLOOR) KERNEL=$(KERNEL) cargo doc
+$(DOCUMENT): $(call SOURCE_FILES, .)
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo doc
 
-# Get a bootloader file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
+include $(shell git rev-parse --show-toplevel)/.make/footer.mk
 

@@ -10,7 +10,7 @@ pub struct Structure {
     structure_type: u8,
     length: u8,
     #[allow(dead_code)]
-    reserved0: u8,
+    _0: u8,
     #[allow(dead_code)]
     device_handle_type: u8,
     #[allow(dead_code)]
@@ -20,7 +20,7 @@ pub struct Structure {
     #[allow(dead_code)]
     flags: generic_port::Flags,
     #[allow(dead_code)]
-    reserved1: u32,
+    _1: u32,
 }
 
 impl Structure {

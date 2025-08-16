@@ -16,7 +16,7 @@ struct FatRegister {
     #[allow(dead_code)]
     register: Register,
     #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl FatRegister {

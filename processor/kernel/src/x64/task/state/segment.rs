@@ -20,7 +20,7 @@ pub struct AndIoPermissionBitMap {
 }
 
 impl AndIoPermissionBitMap {
-    pub fn new(interrupt_stacks: &Vec<memory::Stack>) -> Box<Self> {
+    pub fn new(interrupt_stacks: &[memory::Stack]) -> Box<Self> {
         let segment = Segment::new(interrupt_stacks, size_of::<Segment>());
         let io_permission_bit_map = IoPermissionBitMap::default();
         Box::new(Self {
@@ -54,12 +54,11 @@ impl Segment {
     pub const NUMBER_OF_STACK_POINTERS: usize = 3;
     pub const NUMBER_OF_INTERRUPT_STACKS: usize = 7;
 
-    pub fn new(interrupt_stacks: &Vec<memory::Stack>, io_map_base_address: usize) -> Self {
+    pub fn new(interrupt_stacks: &[memory::Stack], io_map_base_address: usize) -> Self {
         assert_eq!(interrupt_stacks.len(), Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS);
         let reserved0: u32 = 0;
         let reserved1: u64 = 0;
         let reserved2: u16 = 0;
-        let interrupt_stacks: &[memory::Stack] = interrupt_stacks.as_slice();
         let rsp: &[memory::Stack] = &interrupt_stacks[..Self::NUMBER_OF_STACK_POINTERS];
         let rsp: Vec<usize> = rsp
             .iter()

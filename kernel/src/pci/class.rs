@@ -1,8 +1,19 @@
+/// # Class Code Register
+/// ## References
+/// * [PCI Express Base Specification Revision 5.0 Version 1.0](https://picture.iczhiku.com/resource/eetop/SYkDTqhOLhpUTnMx.pdf) 7.5.1.1.6 Class Code Register
+#[derive(Clone)]
+#[repr(packed)]
+pub struct Register {
+    programming_interface: u8,
+    sub_class: u8,
+    base_class: u8,
+}
+
 /// # Class Code
 /// ## References
 /// * [PCI Code and ID Assignment Specification Revision 1.11](https://pcisig.com/sites/default/files/files/PCI_Code-ID_r_1_11__v24_Jan_2019.pdf)
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Code {
     AllCurrentlyImplemented,                    // 00 00 00
     VgaCompatibleDevice,                        // 00 01 00
@@ -134,10 +145,10 @@ pub enum Code {
     Ieee1394OpenHci,                            // 0c 00 10
     AccessBus,                                  // 0c 01 00
     Ssa,                                        // 0c 02 00
-    UsbUhci,                                    // 0c 03 00
-    UsbOhci,                                    // 0c 03 10
-    UsbEhci,                                    // 0c 03 20
-    Usbxhci,                                    // 0c 03 30
+    UsbUhc,                                    // 0c 03 00
+    UsbOhc,                                    // 0c 03 10
+    UsbEhc,                                    // 0c 03 20
+    UsbXhc,                                    // 0c 03 30
     UsbNoSpecificProgrammingInterface,          // 0c 03 80
     UsbNoHostController,                        // 0c 03 fe
     FibreChannel,                               // 0c 04 00
@@ -187,8 +198,13 @@ pub enum Code {
     },
 }
 
-impl Code {
-    pub fn new(base_class: u8, sub_class: u8, programming_interface: u8) -> Self {
+impl From<Register> for Code {
+    fn from(register: Register) -> Self {
+        let Register {
+            programming_interface,
+            sub_class,
+            base_class,
+        } = register;
         match (base_class, sub_class, programming_interface) {
             (0x00, 0x00, 0x00) => Self::AllCurrentlyImplemented,                    // 00 00 00
             (0x00, 0x01, 0x00) => Self::VgaCompatibleDevice,                        // 00 01 00
@@ -320,10 +336,10 @@ impl Code {
             (0x0c, 0x00, 0x10) => Self::Ieee1394OpenHci,                            // 0c 00 10
             (0x0c, 0x01, 0x00) => Self::AccessBus,                                  // 0c 01 00
             (0x0c, 0x02, 0x00) => Self::Ssa,                                        // 0c 02 00
-            (0x0c, 0x03, 0x00) => Self::UsbUhci,                                    // 0c 03 00
-            (0x0c, 0x03, 0x10) => Self::UsbOhci,                                    // 0c 03 10
-            (0x0c, 0x03, 0x20) => Self::UsbEhci,                                    // 0c 03 20
-            (0x0c, 0x03, 0x30) => Self::Usbxhci,                                    // 0c 03 30
+            (0x0c, 0x03, 0x00) => Self::UsbUhc,                                    // 0c 03 00
+            (0x0c, 0x03, 0x10) => Self::UsbOhc,                                    // 0c 03 10
+            (0x0c, 0x03, 0x20) => Self::UsbEhc,                                    // 0c 03 20
+            (0x0c, 0x03, 0x30) => Self::UsbXhc,                                    // 0c 03 30
             (0x0c, 0x03, 0x80) => Self::UsbNoSpecificProgrammingInterface,          // 0c 03 80
             (0x0c, 0x03, 0xfe) => Self::UsbNoHostController,                        // 0c 03 fe
             (0x0c, 0x04, 0x00) => Self::FibreChannel,                               // 0c 04 00

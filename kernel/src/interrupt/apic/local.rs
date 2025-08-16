@@ -22,15 +22,22 @@ pub mod task_priority;
 pub mod trigger_mode;
 
 use {
+    alloc::vec::Vec,
     core::fmt,
     crate::{
+        Argument,
+        com2_println,
         timer,
         x64,
     },
     super::{
         DeliveryMode,
         TriggerMode,
-        super::APIC_TIMER_INTERRUPT,
+        io,
+        super::{
+            APIC_TIMER_INTERRUPT,
+            SPURIOUS_INTERRUPT,
+        },
     },
 };
 
@@ -41,14 +48,14 @@ use {
 pub struct Registers {
     // 0xfee00000
     #[allow(dead_code)]
-    reserved0: [u128; 2],
+    _0: [u128; 2],
     // 0xfee00020
     local_apic_id: local_apic_id::FatRegister,
     // 0xfee00030
     local_apic_version: local_apic_version::FatRegister,
     // 0xfee00040
     #[allow(dead_code)]
-    reserved1: [u128; 4],
+    _1: [u128; 4],
     // 0xfee00080
     task_priority: task_priority::FatRegister,
     // 0xfee00090
@@ -75,7 +82,7 @@ pub struct Registers {
     error_status: error_status::FatRegister,
     // 0xfee00290
     #[allow(dead_code)]
-    reserved2: [u128; 6],
+    _2: [u128; 6],
     // 0xfee002f0
     lvt_corrected_machine_check_interrupt: local_vector_table::FatRegister,
     // 0xfee00300
@@ -96,12 +103,12 @@ pub struct Registers {
     current_count: current_count::FatRegister,
     // 0xfee003a0
     #[allow(dead_code)]
-    reserved3: [u128; 4],
+    _3: [u128; 4],
     // 0xfee003e0
     divide_configuration: divide_configuration::FatRegister,
     // 0xfee003f0
     #[allow(dead_code)]
-    reserved4: u128,
+    _4: u128,
 }
 
 impl Registers {
@@ -130,6 +137,34 @@ impl Registers {
 
     pub fn get(apic_base: &x64::msr::ia32::ApicBase) -> &Self {
         apic_base.registers()
+    }
+
+    pub fn initialize(ia32_apic_base: &mut x64::msr::ia32::ApicBase) -> &mut Self {
+        let io_apic: &mut io::Registers = Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .madt_mut()
+            .io_apic_mut()
+            .registers_mut();
+        let io_apic_identification: io::identification::Register = io_apic.identification();
+        com2_println!("io_apic_identification = {:#x?}", io_apic_identification);
+        let io_apic_version: io::version::Register = io_apic.version();
+        com2_println!("io_apic_version = {:#x?}", io_apic_version);
+        let io_apic_redirection_table_entries: Vec<io::redirection::table::Entry> = io_apic.redirection_table_entries();
+        com2_println!("io_apic_redirection_table_entries = {:#x?}", io_apic_redirection_table_entries);
+        ia32_apic_base.enable();
+        let registers: &mut Self = ia32_apic_base.registers_mut();
+        let focus_processor_checking: bool = true;
+        let eoi_broadcast: bool = true;
+        registers.enable_spurious_interrupt(focus_processor_checking, eoi_broadcast, SPURIOUS_INTERRUPT);
+        com2_println!("registers = {:#x?}", registers);
+        registers
+    }
+
+    pub fn initialize_apic(&mut self, hpet: &timer::hpet::Registers) {
+        let apic_timer_interrupt_frequency: usize = 1; // Hz
+        self.enable_periodic_interrupt(hpet, apic_timer_interrupt_frequency);
     }
 
     pub fn send_init(&mut self, processor_local_apic_id: u8, hpet: &timer::hpet::Registers) {

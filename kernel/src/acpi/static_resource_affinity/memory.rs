@@ -12,17 +12,17 @@ pub struct Structure {
     #[allow(dead_code)]
     proximity_domain: u32,
     #[allow(dead_code)]
-    reserved0: u16,
+    _0: u16,
     #[allow(dead_code)]
     base_address: u64,
     #[allow(dead_code)]
     length1: u64,
     #[allow(dead_code)]
-    reserved1: u32,
+    _1: u32,
     #[allow(dead_code)]
     flags: Flags,
     #[allow(dead_code)]
-    reserved2: u64,
+    _2: u64,
 }
 
 impl Structure {

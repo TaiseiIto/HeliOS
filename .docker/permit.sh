@@ -13,13 +13,13 @@ developer=$3
 product=$4
 ssh_key_source=$5
 gpg_key_source=$6
-
+email=$(git config --global user.email)
 docker start $container
-home=$(docker exec $container env | grep HOME | awk -F '=' '{print $2}')
+home=$(docker exec $container printenv HOME)
 ssh_key_destination=$home/.github/key
 gpg_key_destination=$home/.gnupg
 docker cp $ssh_key_source $container:$ssh_key_destination
 docker cp $gpg_key_source $container:$gpg_key_destination
-docker exec -i -t $container $home/$product/.git.conf/permit.sh $domain $developer $product $ssh_key_destination $gpg_key_destination
+docker exec -i -t $container $home/$product/.git.conf/permit.sh $domain $developer $email $product $ssh_key_destination $gpg_key_destination
 docker stop $container
 

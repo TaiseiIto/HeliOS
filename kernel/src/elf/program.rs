@@ -62,7 +62,9 @@ impl Header {
                 } else {
                     page.paddr_range().end
                 };
-                let source_range: Range<usize> = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start..source_range.end + vaddr_range.end - vaddr_range_in_bytes.end;
+                let source_range_start: usize = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start;
+                let source_range_end: usize = cmp::min(source_range_start + vaddr_range.len(), source_range.end);
+                let source_range: Range<usize> = source_range_start..source_range_end;
                 let source: &[u8] = &elf[source_range];
                 let destination: *mut u8 = paddr_range.start as *mut u8;
                 let destination: &mut [u8] = unsafe {

@@ -91,7 +91,7 @@ impl Register {
 struct FatLow {
     register: Low,
     #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl FatLow {
@@ -367,7 +367,7 @@ impl From<DestinationShorthand> for u8 {
 struct FatHigh {
     register: High,
     #[allow(dead_code)]
-    reserved0: [u32; 3],
+    __: [u32; 3],
 }
 
 impl fmt::Debug for FatHigh {

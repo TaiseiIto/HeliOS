@@ -2320,7 +2320,7 @@ impl DefOpRegion {
                                         let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
                                         let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
                                         let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).read_u32()
+                                        pci::Address::create(bus, device, function, offset).read()
                                     },
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u32(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
@@ -2595,7 +2595,7 @@ impl DefOpRegion {
                                         let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
                                         let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
                                         let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).read_u32()
+                                        pci::Address::create(bus, device, function, offset).read()
                                     },
                                     interpreter::RegionSpace::SystemCmos => x64::cmos::read_u32(address as u8),
                                     region_space => unimplemented!("reagion_space = {:#x?}", region_space),
@@ -2632,7 +2632,7 @@ impl DefOpRegion {
                                         let device: u8 = ((address >> 0x20) & 0x00000000000000ff) as u8;
                                         let function: u8 = ((address >> 0x10) & 0x00000000000000ff) as u8;
                                         let offset: u8 = (address & 0x00000000000000ff) as u8;
-                                        pci::Address::create(bus, device, function, offset).write_u32(written);
+                                        pci::Address::create(bus, device, function, offset).write(written);
                                     },
                                     interpreter::RegionSpace::SystemCmos => {
                                         x64::cmos::write_u32(address as u8, written);

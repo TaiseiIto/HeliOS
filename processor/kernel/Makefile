@@ -1,10 +1,10 @@
-SHELL=/bin/bash
-PRODUCT=$(shell basename $$(pwd))
-TARGET=target/$(shell ls | grep ^.*\.json$$ | awk -F '.' '{print $$1}')/debug/$(PRODUCT).elf
+include $(shell git rev-parse --show-toplevel)/.make/header.mk
+
+TARGET=target/$(basename $(wildcard *.json))/debug/$(PRODUCT).elf
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build a kernel.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(call SOURCE_FILES, .)
 	rustup component add rust-src --toolchain nightly-2024-01-01-x86_64-unknown-linux-gnu
 	cargo build
 
@@ -19,11 +19,8 @@ clippy:
 doc: $(DOCUMENT)
 
 # Generate documents.
-$(DOCUMENT): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(DOCUMENT): $(call SOURCE_FILES, .)
 	cargo doc
 
-# Get a kernel file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
+include $(shell git rev-parse --show-toplevel)/.make/footer.mk
 

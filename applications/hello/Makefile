@@ -1,11 +1,11 @@
-SHELL=/bin/bash
-PRODUCT=$(shell basename $$(pwd))
-FORMAT=$(shell cat rust-toolchain.toml | grep ^targets.*$$ | awk -F '"' '{print $$2}')
+include $(shell git rev-parse --show-toplevel)/.make/header.mk
+
+FORMAT=$(shell sed -n "s/^\s*targets\s*=\s*\[\"\(.*\)\"\]$$/\1/p" rust-toolchain.toml)
 TARGET=target/$(FORMAT)/debug/$(PRODUCT)
 DOCUMENT=target/doc/$(PRODUCT)/index.html
 
 # Build the application.
-$(TARGET): $(shell find . -type f | grep -vf <(git ls-files --exclude-standard --ignored -o))
+$(TARGET): $(call SOURCE_FILES, .)
 	cargo build --target $(FORMAT)
 
 # Clippy rust codes.
@@ -18,8 +18,5 @@ clippy:
 .PHONY: doc
 doc: $(DOCUMENT)
 
-# Get the application file path.
-.PHONY: target
-target:
-	@echo $(abspath $(TARGET))
+include $(shell git rev-parse --show-toplevel)/.make/footer.mk
 

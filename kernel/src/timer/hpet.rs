@@ -14,7 +14,12 @@ use {
         fmt,
         slice,
     },
-    crate::x64,
+    crate::{
+        Argument,
+        com2_println,
+        interrupt,
+        x64,
+    },
 };
 
 /// # Register Overview
@@ -24,16 +29,16 @@ use {
 pub struct Registers {
     general_capabilities_and_id: general_capabilities_and_id::Register,
     #[allow(dead_code)]
-    reserved0: u64,
+    _0: u64,
     general_configuration: general_configuration::Register,
     #[allow(dead_code)]
-    reserved1: u64,
+    _1: u64,
     general_interrupt_status: general_interrupt_status::Register,
     #[allow(dead_code)]
-    reserved2: [u64; 0x19],
+    _2: [u64; 0x19],
     main_counter_value: main_counter_value::Register,
     #[allow(dead_code)]
-    reserved3: u64,
+    _3: u64,
 }
 
 impl Registers {
@@ -59,6 +64,47 @@ impl Registers {
             .find(|timer| timer.supports_periodic_interrupt() && !timer.is_enable())
             .unwrap()
             .enable_periodic_interrupt(comparator)
+    }
+
+    pub fn finalize() {
+        let hpet: &mut Self = Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .hpet_mut()
+            .registers_mut();
+        hpet.stop();
+        hpet.disable_periodic_interrupt();
+    }
+
+    pub fn initialize(local_apic_id: u8) -> &'static Self {
+        let hpet: &mut Self = Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .hpet_mut()
+            .registers_mut();
+        hpet.enable_legacy_replacement_route();
+        let hpet_interrupt_period_milliseconds: usize = 1000;
+        let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
+        com2_println!("hpet_irq = {:#x?}", hpet_irq);
+        Argument::get()
+            .efi_system_table_mut()
+            .rsdp_mut()
+            .xsdt_mut()
+            .madt_mut()
+            .io_apic_mut()
+            .registers_mut()
+            .redirect(hpet_irq, local_apic_id, interrupt::HPET_INTERRUPT);
+        hpet.start();
+        let hpet: &Self = Argument::get()
+            .efi_system_table()
+            .rsdp()
+            .xsdt()
+            .hpet()
+            .registers();
+        com2_println!("hpet = {:#x?}", hpet);
+        hpet
     }
 
     pub fn start(&mut self) {
