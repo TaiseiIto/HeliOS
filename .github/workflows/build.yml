@@ -2,19 +2,19 @@ name: build
 on:
   push:
     branches:
-      - '*'
+      - main
 jobs:
   build:
     name: build
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
       - name: Build the OS
         run: make build_on_github
       - name: Upload the OS
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
-          name: The OS
+          name: HeliOS
           path: HeliOS.mnt
 
