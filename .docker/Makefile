@@ -1,11 +1,11 @@
 # This makefile is called from ../Makefile
 # Don't execute it directly.
 
-# This makefile should be able to analyze both HTTPS URL and SSH URL.
+# This makefile should be able to analyze both HTTPS URL and SSH URL regardless of whether the URL has a .git extension.
 REPOSITORY=$(shell git config --get remote.origin.url)
-DOMAIN=$(shell echo $(REPOSITORY) | awk -F '[/:@]' '{print $$(NF-1)}')
+DOMAIN=$(shell echo $(REPOSITORY) | awk -F '[/:@]' '{print $$(NF-2)}')
 DEVELOPER=$(shell echo $(REPOSITORY) | awk -F '[/:]' '{print $$(NF-1)}')
-PRODUCT=$(shell echo $(REPOSITORY) | awk -F '[./]' '{print $$(NF-1)}')
+PRODUCT=$(shell echo $(REPOSITORY) | awk -F '[/]' '{print $$NF}' | awk -F '.' '{print $$1}')
 IMAGE=$(shell echo $(PRODUCT) | awk '{print tolower($$0)}')
 CONTAINER=$(IMAGE)
 
