@@ -52,4 +52,3 @@ pub struct DevicePath {
     sub_type: u8,
     length: [u8; 2],
 }
-

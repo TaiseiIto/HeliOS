@@ -1,8 +1,5 @@
 use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
+    alloc::{string::String, vec::Vec},
     core::fmt,
 };
 
@@ -15,18 +12,14 @@ pub struct Data {
 }
 
 impl Data {
-    pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self> where T: Iterator<Item = u8> {
+    pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
         Header::from_byte_iterator(byte_iterator).map(|header| {
             let length: u16 = header.length();
-            let data: Vec<u8> = (0..length)
-                .map(|_| byte_iterator
-                    .next()
-                    .unwrap())
-                .collect();
-            Self {
-                header,
-                data,
-            }
+            let data: Vec<u8> = (0..length).map(|_| byte_iterator.next().unwrap()).collect();
+            Self { header, data }
         })
     }
 
@@ -56,16 +49,12 @@ pub enum Type {
 
 impl From<&Data> for Type {
     fn from(data: &Data) -> Self {
-        let Data {
-            header,
-            data,
-        } = data;
+        let Data { header, data } = data;
         match header.tag() {
             Tag::IdentifierString => Self::String(String::from_utf8(data.to_vec()).unwrap()),
-            Tag::VpdR | Tag::VpdW => Self::Items(item::FormatIterator::new(data
-                    .iter()
-                    .cloned())
-                .collect()),
+            Tag::VpdR | Tag::VpdW => {
+                Self::Items(item::FormatIterator::new(data.iter().cloned()).collect())
+            }
             Tag::End => Self::End,
         }
     }
@@ -77,17 +66,16 @@ impl From<&Data> for Type {
 /// * [PCI Local Bus Specification Revision 3.0](https://lekensteyn.nl/files/docs/PCI_SPEV_V3_0.pdf) I. Vital Product Data. Figure I-3: Large Resource Data Type Tag Bit Definitions
 pub enum Header {
     Small(byte0::Small),
-    Large {
-        tag: byte0::Large,
-        length: u16,
-    },
+    Large { tag: byte0::Large, length: u16 },
 }
 
 impl Header {
-    pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self> where T: Iterator<Item = u8> {
-        byte_iterator
-            .next()
-            .and_then(|byte0| match (byte0::Small::try_from(byte0), byte0::Large::try_from(byte0)) {
+    pub fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
+        byte_iterator.next().and_then(|byte0| {
+            match (byte0::Small::try_from(byte0), byte0::Large::try_from(byte0)) {
                 (Some(byte0), None) => Some(Self::Small(byte0)),
                 (None, Some(tag)) => {
                     let length_low: Option<u8> = byte_iterator.next();
@@ -98,34 +86,27 @@ impl Header {
                             let length_low: u16 = length_low as u16;
                             let length_high: u16 = length_high as u16;
                             let length: u16 = length_low | (length_high << u8::BITS);
-                            Self::Large {
-                                tag,
-                                length,
-                            }
+                            Self::Large { tag, length }
                         })
-                },
+                }
                 _ => unreachable!(),
-            })
+            }
+        })
     }
 
     pub fn length(&self) -> u16 {
         match self {
             Self::Small(byte0) => byte0.get_length() as u16,
-            Self::Large {
-                tag: _,
-                length,
-            } => *length,
+            Self::Large { tag: _, length } => *length,
         }
     }
 
     pub fn tag(&self) -> Tag {
         match self {
             Self::Small(byte0) => byte0.get_tag(),
-            Self::Large {
-                tag,
-                length: _,
-            } => tag.get_tag(),
-        }.into()
+            Self::Large { tag, length: _ } => tag.get_tag(),
+        }
+        .into()
     }
 }
 
@@ -161,4 +142,3 @@ impl From<u8> for Tag {
         }
     }
 }
-

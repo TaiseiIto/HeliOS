@@ -3,11 +3,8 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
 use {
+    super::{super::Return, Ecx0x00000000},
     bitfield_struct::bitfield,
-    super::{
-        Ecx0x00000000,
-        super::Return,
-    },
 };
 
 #[derive(Debug)]
@@ -28,11 +25,7 @@ impl Ecx0x00000001 {
             let eax: Eax = ecx0x00000001.eax().into();
             let ebx: Ebx = ecx0x00000001.ebx().into();
             let edx: Edx = ecx0x00000001.edx().into();
-            Self {
-                eax,
-                ebx,
-                edx,
-            }
+            Self { eax, ebx, edx }
         })
     }
 }
@@ -72,4 +65,3 @@ struct Edx {
     #[bits(13)]
     __: u16,
 }
-

@@ -1,8 +1,4 @@
-use {
-    alloc::collections::BTreeSet,
-    bitfield_struct::bitfield,
-    crate::Argument,
-};
+use {crate::Argument, alloc::collections::BTreeSet, bitfield_struct::bitfield};
 
 /// # Timer N Configuration and Capabilities Register
 /// ## References
@@ -39,19 +35,22 @@ impl Register {
         assert!(self.supports_periodic_interrupt());
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
-            .zip(Argument::get()
-                .efi_system_table_mut()
-                .rsdp_mut()
-                .xsdt_mut()
-                .madt_mut()
-                .io_apic_mut()
-                .registers_mut()
-                .redirection_table_entries())
-            .find(|(irq, redirection_table_entry)| tn_int_route_cap & (1 << irq) != 0 && !redirection_table_entry.is_enabled())
-            .unwrap().0 as u8;
-        let interrupt_destination = InterruptDestination::IoApic {
-            irq,
-        };
+            .zip(
+                Argument::get()
+                    .efi_system_table_mut()
+                    .rsdp_mut()
+                    .xsdt_mut()
+                    .madt_mut()
+                    .io_apic_mut()
+                    .registers_mut()
+                    .redirection_table_entries(),
+            )
+            .find(|(irq, redirection_table_entry)| {
+                tn_int_route_cap & (1 << irq) != 0 && !redirection_table_entry.is_enabled()
+            })
+            .unwrap()
+            .0 as u8;
+        let interrupt_destination = InterruptDestination::IoApic { irq };
         self.with_tn_int_type_cnf(InterruptType::Edge.into())
             .with_tn_int_enb_cnf(true)
             .with_tn_type_cnf(Type::Periodic.into())
@@ -74,15 +73,10 @@ impl Register {
 
     fn with_interrupt_destination(self, interrupt_destination: &InterruptDestination) -> Self {
         match interrupt_destination {
-            InterruptDestination::Fsb => {
-                self.with_tn_fsb_en_cnf(true)
-            },
-            InterruptDestination::IoApic {
-                irq,
-            } => {
-                self.with_tn_fsb_en_cnf(false)
-                    .with_tn_int_route_cnf(*irq)
-            },
+            InterruptDestination::Fsb => self.with_tn_fsb_en_cnf(true),
+            InterruptDestination::IoApic { irq } => {
+                self.with_tn_fsb_en_cnf(false).with_tn_int_route_cnf(*irq)
+            }
         }
     }
 }
@@ -258,9 +252,7 @@ impl From<Mode> for bool {
 #[derive(Debug)]
 enum InterruptDestination {
     Fsb,
-    IoApic {
-        irq: u8,
-    },
+    IoApic { irq: u8 },
 }
 
 impl From<&Register> for InterruptDestination {
@@ -269,10 +261,7 @@ impl From<&Register> for InterruptDestination {
             Self::Fsb
         } else {
             let irq: u8 = register.tn_int_route_cnf();
-            Self::IoApic {
-                irq,
-            }
+            Self::IoApic { irq }
         }
     }
 }
-

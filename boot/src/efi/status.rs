@@ -36,4 +36,3 @@ impl From<Status> for Result<(), Status> {
         }
     }
 }
-

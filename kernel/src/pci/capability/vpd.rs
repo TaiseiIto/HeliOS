@@ -1,16 +1,10 @@
 use {
-    core::{
-        fmt,
-        mem,
+    super::{
+        super::{Address, FunctionWithAddress},
+        Header,
     },
     crate::x64,
-    super::{
-        Header,
-        super::{
-            Address,
-            FunctionWithAddress,
-        },
-    },
+    core::{fmt, mem},
 };
 
 pub mod address;
@@ -50,19 +44,13 @@ impl From<u32> for Structure {
         let address = ((structure & 0xffff0000) >> u16::BITS) as u16;
         let header: Header = header.into();
         let address: address::Register = address.into();
-        Self {
-            header,
-            address,
-        }
+        Self { header, address }
     }
 }
 
 impl From<Structure> for u32 {
     fn from(structure: Structure) -> Self {
-        let Structure {
-            header,
-            address,
-        } = structure;
+        let Structure { header, address } = structure;
         let header: u16 = header.into();
         let header: u32 = header as u32;
         let address: u16 = address.into();
@@ -98,12 +86,16 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
         let bus_number: u8 = function_with_address.bus_number();
         let device_number: u8 = function_with_address.device_number();
         let function_number: u8 = function_with_address.function_number();
-        Address::create(bus_number, device_number, function_number, *structure_offset)
+        Address::create(
+            bus_number,
+            device_number,
+            function_number,
+            *structure_offset,
+        )
     }
 
     fn data_address(&self) -> Address {
-        self.address_address()
-            .add(mem::size_of::<Structure>())
+        self.address_address().add(mem::size_of::<Structure>())
     }
 
     fn dword_iterator(&'a self) -> DwordIterator<'a> {
@@ -122,16 +114,13 @@ impl<'a> StructureWithFunctionWithAddress<'a> {
     }
 
     fn read_structure(&self) -> Structure {
-        let structure: u32 = self
-            .address_address()
-            .read();
+        let structure: u32 = self.address_address().read();
         structure.into()
     }
 
     fn write_structure(&self, structure: Structure) {
         let structure: u32 = structure.into();
-        self.address_address()
-            .write(structure);
+        self.address_address().write(structure);
     }
 }
 
@@ -156,7 +145,9 @@ impl<'a> DwordIterator<'a> {
 }
 
 impl<'a> From<&'a StructureWithFunctionWithAddress<'a>> for DwordIterator<'a> {
-    fn from(structure_with_function_with_address: &'a StructureWithFunctionWithAddress<'a>) -> Self {
+    fn from(
+        structure_with_function_with_address: &'a StructureWithFunctionWithAddress<'a>,
+    ) -> Self {
         let address: u16 = 0;
         Self {
             structure_with_function_with_address,
@@ -254,12 +245,9 @@ impl Iterator for ResourceDataIterator<'_> {
         let resource_data: Option<Self::Item> = (!*reaches_end)
             .then(|| Self::Item::from_byte_iterator(byte_iterator))
             .flatten();
-        *reaches_end = resource_data
-            .as_ref()
-            .map_or(true, |resource_data| resource_data
-                .header()
-                .tag() == resource::Tag::End);
+        *reaches_end = resource_data.as_ref().map_or(true, |resource_data| {
+            resource_data.header().tag() == resource::Tag::End
+        });
         resource_data
     }
 }
-

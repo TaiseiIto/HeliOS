@@ -18,4 +18,3 @@ impl Register {
         (self.maximum_redirection_entries() as usize) + 1
     }
 }
-

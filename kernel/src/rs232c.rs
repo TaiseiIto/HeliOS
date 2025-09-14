@@ -6,14 +6,11 @@
 //! * [Look RS232](https://www.lookrs232.com/rs232/registers.htm)
 
 use {
+    crate::x64,
     core::{
         cell::OnceCell,
-        fmt::{
-            self,
-            Write,
-        },
+        fmt::{self, Write},
     },
-    crate::x64,
 };
 
 mod fifo_control;
@@ -38,22 +35,15 @@ macro_rules! com2_print {
 }
 
 pub fn com2_print(args: fmt::Arguments) {
-    get_com2()
-        .write_fmt(args)
-        .unwrap()
+    get_com2().write_fmt(args).unwrap()
 }
 
 pub fn get_com2() -> &'static mut Com {
-    unsafe {
-        COM2.get_mut()
-            .unwrap()
-    }
+    unsafe { COM2.get_mut().unwrap() }
 }
 
 pub fn set_com2(com2: &'static mut Com) {
-    unsafe {
-        COM2.set(com2)
-    }.unwrap();
+    unsafe { COM2.set(com2) }.unwrap();
 }
 
 static mut COM2: OnceCell<&'static mut Com> = OnceCell::new();
@@ -106,9 +96,7 @@ impl Com {
 
     #[allow(dead_code)]
     fn new(port: u16, baud_rate: u32) -> Self {
-        let com = Self {
-            port
-        };
+        let com = Self { port };
         com.disable_all_interrupts();
         com.write_baud_rate(baud_rate);
         // 8 bits, no parity, one stop bit
@@ -272,10 +260,7 @@ impl Com {
 
 impl fmt::Write for Com {
     fn write_str(&mut self, string: &str) -> fmt::Result {
-        string
-            .bytes()
-            .for_each(|byte| self.send(byte));
+        string.bytes().for_each(|byte| self.send(byte));
         Ok(())
     }
 }
-

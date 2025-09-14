@@ -5,11 +5,8 @@
 mod ecx0x00000000;
 
 use {
+    super::{Eax0x00000000, Return},
     alloc::string::String,
-    super::{
-        Eax0x00000000,
-        Return,
-    },
     ecx0x00000000::Ecx0x00000000,
 };
 
@@ -26,14 +23,17 @@ impl Eax0x00000017 {
         let eax: u32 = 0x00000017;
         (eax <= eax0x00000000.max_eax()).then(|| {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
-            let soc_vendor_brand_string = String::from_utf8((1..=3)
-                .flat_map(|ecx| Return::get(eax, ecx)
-                    .eax_ebx_ecx_edx()
-                    .into_iter()
-                    .flat_map(|dword| dword
-                        .to_le_bytes()
-                        .into_iter()))
-                .collect()).ok();
+            let soc_vendor_brand_string = String::from_utf8(
+                (1..=3)
+                    .flat_map(|ecx| {
+                        Return::get(eax, ecx)
+                            .eax_ebx_ecx_edx()
+                            .into_iter()
+                            .flat_map(|dword| dword.to_le_bytes().into_iter())
+                    })
+                    .collect(),
+            )
+            .ok();
             Self {
                 ecx0x00000000,
                 soc_vendor_brand_string,
@@ -41,4 +41,3 @@ impl Eax0x00000017 {
         })
     }
 }
-

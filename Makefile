@@ -143,6 +143,14 @@ clippy:
 	make clippy -C $(PROCESSOR_KERNEL_DIRECTORY)
 	for application in $(APPLICATIONS); do make clippy -C $$application; done
 
+# Format rust codes.
+.PHONY: fmt
+fmt:
+	make fmt -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
+	make fmt -C $(KERNEL_DIRECTORY)
+	make fmt -C $(PROCESSOR_KERNEL_DIRECTORY)
+	for application in $(APPLICATIONS); do make fmt -C $$application; done
+
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
 .PHONY: debug

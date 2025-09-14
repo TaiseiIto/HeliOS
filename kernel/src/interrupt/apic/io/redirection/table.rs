@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::super::super::DeliveryMode,
-};
+use {super::super::super::DeliveryMode, bitfield_struct::bitfield};
 
 /// # Redirection Table Entry
 /// ## References
@@ -41,4 +38,3 @@ impl Entry {
             .with_destination_id(local_apic_id)
     }
 }
-

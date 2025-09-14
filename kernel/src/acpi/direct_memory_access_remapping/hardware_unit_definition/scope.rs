@@ -1,10 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Device Scope Structure
@@ -22,17 +18,13 @@ pub struct Structure {
 
 impl Structure {
     pub fn scan(bytes: &[u8]) -> Option<(&Self, &[u8])> {
-        bytes
-            .first()
-            .map(|structure| {
-                let structure: *const u8 = structure as *const u8;
-                let structure: *const Self = structure as *const Self;
-                let structure: &Self = unsafe {
-                    &*structure
-                };
-                let remaining_bytes: &[u8] = &bytes[structure.length()..];
-                (structure, remaining_bytes)
-            })
+        bytes.first().map(|structure| {
+            let structure: *const u8 = structure as *const u8;
+            let structure: *const Self = structure as *const Self;
+            let structure: &Self = unsafe { &*structure };
+            let remaining_bytes: &[u8] = &bytes[structure.length()..];
+            (structure, remaining_bytes)
+        })
     }
 
     fn length(&self) -> usize {
@@ -41,14 +33,10 @@ impl Structure {
 
     fn path(&self) -> &[u16] {
         let structure: *const Self = self as *const Self;
-        let path: *const Self = unsafe {
-            structure.add(1)
-        };
+        let path: *const Self = unsafe { structure.add(1) };
         let path: *const u16 = path as *const u16;
         let length: usize = (self.length() - size_of::<Self>()) / size_of::<u16>();
-        unsafe {
-            slice::from_raw_parts(path, length)
-        }
+        unsafe { slice::from_raw_parts(path, length) }
     }
 }
 
@@ -81,4 +69,3 @@ struct Flags {
     #[bits(3)]
     __: u8,
 }
-

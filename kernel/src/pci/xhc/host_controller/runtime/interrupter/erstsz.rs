@@ -8,4 +8,3 @@ pub struct Register {
     event_ring_segment_table_size: u16,
     __: u16,
 }
-

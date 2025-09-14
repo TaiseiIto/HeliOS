@@ -5,21 +5,9 @@
 pub mod system;
 
 use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
+    super::super::{char16, null, Char16, Event, Guid, Status, Time, Void},
+    alloc::{string::String, vec::Vec},
     bitfield_struct::bitfield,
-    super::super::{
-        Char16,
-        Event,
-        Guid,
-        Status,
-        Time,
-        Void,
-        char16,
-        null,
-    },
 };
 
 /// # EFI_FILE_PROTOCOL
@@ -48,7 +36,13 @@ pub struct Protocol {
 /// # EFI_FILE_OPEN
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type Open = extern "efiapi" fn(/* This */ &Protocol, /* NewHandle */ &mut &Protocol, /* FileName */ char16::NullTerminatedString, /* OpenMode */OpenMode, /* Attributes */ Attributes) -> Status;
+type Open = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* NewHandle */ &mut &Protocol,
+    /* FileName */ char16::NullTerminatedString,
+    /* OpenMode */ OpenMode,
+    /* Attributes */ Attributes,
+) -> Status;
 
 /// # OpenMode
 /// ## References
@@ -89,17 +83,32 @@ type Delete = extern "efiapi" fn(/* This */ &Protocol) -> Status;
 /// # EFI_FILE_READ
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type Read = extern "efiapi" fn(/* This */ &Protocol, /* BufferSize */ &mut usize, /* Buffer */ &mut Void) -> Status;
+type Read = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* BufferSize */ &mut usize,
+    /* Buffer */ &mut Void,
+) -> Status;
 
 /// # EFI_FILE_WRITE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type Write = extern "efiapi" fn(/* This */ &Protocol, /* BufferSize */ &mut usize, /* Buffer */ &Void) -> Status;
+type Write = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* BufferSize */ &mut usize,
+    /* Buffer */ &Void,
+) -> Status;
 
 /// # EFI_FILE_OPEN_EX
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type OpenEx = extern "efiapi" fn(/* This */ &Protocol, /* NewHandle */ &mut &Protocol, /* FileName */ char16::NullTerminatedString, /* OpenMode */OpenMode, /* Attributes */ Attributes, /* Token */ &mut IoToken) -> Status;
+type OpenEx = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* NewHandle */ &mut &Protocol,
+    /* FileName */ char16::NullTerminatedString,
+    /* OpenMode */ OpenMode,
+    /* Attributes */ Attributes,
+    /* Token */ &mut IoToken,
+) -> Status;
 
 /// # EFI_FILE_IO_TOKEN
 /// ## References
@@ -116,17 +125,20 @@ pub struct IoToken<'a> {
 /// # EFI_FILE_READ_EX
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type ReadEx = extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
+type ReadEx =
+    extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
 
 /// # EFI_FILE_WRITE_EX
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type WriteEx = extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
+type WriteEx =
+    extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
 
 /// # EFI_FILE_FLUSH_EX
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type FlushEx = extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
+type FlushEx =
+    extern "efiapi" fn(/* This */ &Protocol, /* Token */ &mut IoToken) -> Status;
 
 /// # EFI_FILE_SET_POSITION
 /// ## References
@@ -136,17 +148,28 @@ type SetPosition = extern "efiapi" fn(/* This */ &Protocol, /* Position */ u64) 
 /// # EFI_FILE_GET_POSITION
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type GetPosition = extern "efiapi" fn(/* This */ &Protocol, /* Position */ &mut u64) -> Status;
+type GetPosition =
+    extern "efiapi" fn(/* This */ &Protocol, /* Position */ &mut u64) -> Status;
 
 /// # EFI_FILE_GET_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type GetInfo = extern "efiapi" fn(/* This */ &Protocol, /* InformationType */ &Guid, /* BufferSize */ &mut usize, /* Buffer */ &mut Void) -> Status;
+type GetInfo = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* InformationType */ &Guid,
+    /* BufferSize */ &mut usize,
+    /* Buffer */ &mut Void,
+) -> Status;
 
 /// # EFI_FILE_SET_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 13.5 File Protocol
-type SetInfo = extern "efiapi" fn(/* This */ &Protocol, /* InformationType */ &Guid, /* BufferSize */ usize, /* Buffer */ &Void) -> Status;
+type SetInfo = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* InformationType */ &Guid,
+    /* BufferSize */ usize,
+    /* Buffer */ &Void,
+) -> Status;
 
 /// # EFI_FILE_FLUSH
 /// ## References
@@ -233,31 +256,31 @@ impl From<&Info> for Information {
 
 impl From<&Protocol> for Information {
     fn from(protocol: &Protocol) -> Information {
-        let information_type = Guid::new(0x09576e92, 0x6d3f, 0x11d2, [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b]);
+        let information_type = Guid::new(
+            0x09576e92,
+            0x6d3f,
+            0x11d2,
+            [0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b],
+        );
         let mut buffer_size: usize = 0;
         let mut buffer = Void;
-        let status: Status = (protocol.get_info)(protocol, &information_type, &mut buffer_size, &mut buffer)
-            .result()
-            .unwrap_err();
+        let status: Status =
+            (protocol.get_info)(protocol, &information_type, &mut buffer_size, &mut buffer)
+                .result()
+                .unwrap_err();
         assert!(status == Status::BUFFER_TOO_SMALL);
-        let mut buffer: Vec<u8> = (0..buffer_size)
-            .map(|_| 0)
-            .collect();
+        let mut buffer: Vec<u8> = (0..buffer_size).map(|_| 0).collect();
         let buffer: &mut u8 = &mut buffer[0];
         let buffer: *mut u8 = buffer as *mut u8;
         let buffer: *mut Void = buffer as *mut Void;
-        let buffer: &mut Void = unsafe {
-            &mut *buffer
-        };
+        let buffer: &mut Void = unsafe { &mut *buffer };
         (protocol.get_info)(protocol, &information_type, &mut buffer_size, buffer)
             .result()
             .unwrap();
         let buffer: &Void = buffer;
         let buffer: *const Void = buffer as *const Void;
         let buffer: *const Info = buffer as *const Info;
-        let buffer: &Info = unsafe {
-            &*buffer
-        };
+        let buffer: &Info = unsafe { &*buffer };
         buffer.into()
     }
 }
@@ -277,15 +300,11 @@ impl Node<'_> {
     pub fn read(&self) -> Vec<u8> {
         (!self.is_directory())
             .then(|| {
-                let mut bytes: Vec<u8> = (0..self.information.file_size)
-                    .map(|_| 0)
-                    .collect();
+                let mut bytes: Vec<u8> = (0..self.information.file_size).map(|_| 0).collect();
                 let buffer: &mut u8 = &mut bytes[0];
                 let buffer: *mut u8 = buffer as *mut u8;
                 let buffer: *mut Void = buffer as *mut Void;
-                let buffer: &mut Void = unsafe {
-                    &mut *buffer
-                };
+                let buffer: &mut Void = unsafe { &mut *buffer };
                 let mut buffer_size: usize = bytes.len();
                 (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
                     .result()
@@ -316,15 +335,11 @@ impl<'a> Iterator for Node<'a> {
             .flatten()
             .and_then(|(status, mut buffer_size)| {
                 assert!(status == Status::BUFFER_TOO_SMALL);
-                let mut buffer: Vec<u8> = (0..buffer_size)
-                    .map(|_| 0)
-                    .collect();
+                let mut buffer: Vec<u8> = (0..buffer_size).map(|_| 0).collect();
                 let buffer: &mut u8 = &mut buffer[0];
                 let buffer: *mut u8 = buffer as *mut u8;
                 let buffer: *mut Void = buffer as *mut Void;
-                let buffer: &mut Void = unsafe {
-                    &mut *buffer
-                };
+                let buffer: &mut Void = unsafe { &mut *buffer };
                 (self.protocol.read)(self.protocol, &mut buffer_size, buffer)
                     .result()
                     .unwrap();
@@ -332,23 +347,27 @@ impl<'a> Iterator for Node<'a> {
                     let buffer: &Void = buffer;
                     let buffer: *const Void = buffer as *const Void;
                     let buffer: *const Info = buffer as *const Info;
-                    let buffer: &Info = unsafe {
-                        &*buffer
-                    };
+                    let buffer: &Info = unsafe { &*buffer };
                     let buffer: Information = buffer.into();
                     buffer
                 })
             })
             .map(|information| {
                 let mut protocol: &Protocol = null();
-                let file_name: Vec<u16> = char16::NullTerminatedString::string2vec(&information.file_name);
+                let file_name: Vec<u16> =
+                    char16::NullTerminatedString::string2vec(&information.file_name);
                 let file_name: char16::NullTerminatedString = (&file_name).into();
-                let open_mode = OpenMode::default()
-                    .with_read(true);
+                let open_mode = OpenMode::default().with_read(true);
                 let attributes = Attributes::default();
-                (self.protocol.open)(self.protocol, &mut protocol, file_name, open_mode, attributes)
-                    .result()
-                    .unwrap();
+                (self.protocol.open)(
+                    self.protocol,
+                    &mut protocol,
+                    file_name,
+                    open_mode,
+                    attributes,
+                )
+                .result()
+                .unwrap();
                 Self {
                     information,
                     protocol,
@@ -366,4 +385,3 @@ impl<'a> From<&'a Protocol> for Node<'a> {
         }
     }
 }
-

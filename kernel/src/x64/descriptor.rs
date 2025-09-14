@@ -26,7 +26,6 @@ pub enum Type {
     TrapGate,
 }
 
-
 impl Type {
     const BITS: usize = 4;
 
@@ -56,7 +55,12 @@ impl Type {
                 16 => false,
                 _ => panic!("Can't get db flag."),
             },
-            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+            Self::Ldt
+            | Self::AvailableTss
+            | Self::BusyTss
+            | Self::CallGate
+            | Self::InterruptGate
+            | Self::TrapGate => false,
         }
     }
 
@@ -120,7 +124,12 @@ impl Type {
                 expand_down: _,
                 default_bits: _,
             } => false,
-            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+            Self::Ldt
+            | Self::AvailableTss
+            | Self::BusyTss
+            | Self::CallGate
+            | Self::InterruptGate
+            | Self::TrapGate => false,
         }
     }
 
@@ -129,9 +138,7 @@ impl Type {
             let segment_type: Vec<bool> = (0..Self::BITS)
                 .map(|offset| segment_type & (1 << offset) != 0)
                 .collect();
-            let segment_type: [bool; Self::BITS] = segment_type
-                .try_into()
-                .unwrap();
+            let segment_type: [bool; Self::BITS] = segment_type.try_into().unwrap();
             let accessed: bool = segment_type[0];
             if segment_type[3] {
                 let readable: bool = segment_type[1];
@@ -151,11 +158,7 @@ impl Type {
             } else {
                 let writable: bool = segment_type[1];
                 let expand_down: bool = segment_type[2];
-                let default_bits: usize = if db {
-                    32
-                } else {
-                    16
-                };
+                let default_bits: usize = if db { 32 } else { 16 };
                 Self::Data {
                     accessed,
                     writable,
@@ -190,7 +193,12 @@ impl Type {
                 expand_down: _,
                 default_bits: _,
             } => true,
-            Self::Ldt | Self::AvailableTss | Self::BusyTss | Self::CallGate | Self::InterruptGate | Self::TrapGate => false,
+            Self::Ldt
+            | Self::AvailableTss
+            | Self::BusyTss
+            | Self::CallGate
+            | Self::InterruptGate
+            | Self::TrapGate => false,
         }
     }
 
@@ -201,33 +209,18 @@ impl Type {
                 readable,
                 conforming,
                 default_bits: _,
-            } => (if *accessed {
-                1 << 0
-            } else {
-                0
-            }) + (if *readable {
-                1 << 1
-            } else {
-                0
-            }) + (if *conforming {
-                1 << 2
-            } else {
-                0
-            }) + (1 << 3),
+            } => {
+                (if *accessed { 1 << 0 } else { 0 })
+                    + (if *readable { 1 << 1 } else { 0 })
+                    + (if *conforming { 1 << 2 } else { 0 })
+                    + (1 << 3)
+            }
             Self::Data {
                 accessed: _,
                 writable,
                 expand_down,
                 default_bits: _,
-            } => (if *writable {
-                 1 << 1
-            } else {
-                0
-            }) + (if *expand_down {
-                1 << 2
-            } else {
-                0
-            }),
+            } => (if *writable { 1 << 1 } else { 0 }) + (if *expand_down { 1 << 2 } else { 0 }),
             Self::Ldt => 2,
             Self::AvailableTss => 9,
             Self::BusyTss => 11,
@@ -237,4 +230,3 @@ impl Type {
         }
     }
 }
-

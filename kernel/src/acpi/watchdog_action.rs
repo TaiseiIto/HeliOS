@@ -1,13 +1,9 @@
 mod instruction;
 
 use {
-    bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    bitfield_struct::bitfield,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Watchdog Action Table (WDAT)
@@ -39,14 +35,12 @@ impl Table {
 
     fn instruction_entries(&self) -> &[instruction::Entry] {
         let table: *const Self = self as *const Self;
-        let instruction_entries: *const Self = unsafe {
-            table.add(1)
-        };
-        let instruction_entries: *const instruction::Entry = instruction_entries as *const instruction::Entry;
-        let length: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<instruction::Entry>();
-        unsafe {
-            slice::from_raw_parts(instruction_entries, length)
-        }
+        let instruction_entries: *const Self = unsafe { table.add(1) };
+        let instruction_entries: *const instruction::Entry =
+            instruction_entries as *const instruction::Entry;
+        let length: usize =
+            (self.header.table_size() - size_of::<Self>()) / size_of::<instruction::Entry>();
+        unsafe { slice::from_raw_parts(instruction_entries, length) }
     }
 }
 
@@ -76,7 +70,10 @@ impl fmt::Debug for Table {
             .field("maximum_count", &maximum_count)
             .field("minimum_count", &minimum_count)
             .field("flags", &flags)
-            .field("number_watchdog_instruction_entries", &number_watchdog_instruction_entries)
+            .field(
+                "number_watchdog_instruction_entries",
+                &number_watchdog_instruction_entries,
+            )
             .field("instruction_entries", &instruction_entries)
             .finish()
     }
@@ -89,4 +86,3 @@ struct Flags {
     __: u8,
     stopped_in_sleep_state: bool,
 }
-

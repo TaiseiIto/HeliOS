@@ -1,16 +1,7 @@
 use {
+    crate::{com2_println, efi, memory},
     alloc::vec::Vec,
-    core::{
-        cmp,
-        fmt,
-        ops,
-        ptr,
-    },
-    crate::{
-        com2_println,
-        efi,
-        memory,
-    },
+    core::{cmp, fmt, ops, ptr},
 };
 
 pub mod real_mode;
@@ -61,9 +52,11 @@ impl Loader {
         binary
             .iter()
             .cloned()
-            .zip(program_address_range
-                .clone()
-                .map(|program_address| program_address as *mut u8))
+            .zip(
+                program_address_range
+                    .clone()
+                    .map(|program_address| program_address as *mut u8),
+            )
             .for_each(|(source, destination)| unsafe {
                 ptr::write_volatile(destination, source);
             });
@@ -76,8 +69,14 @@ impl Loader {
             .for_each(|stack_address| unsafe {
                 ptr::write_volatile(stack_address, 0);
             });
-        com2_println!("processor::boot::Loader program_address_range = {:#x?}", program_address_range);
-        com2_println!("processor::boot::Loader stack_address_range = {:#x?}", stack_address_range);
+        com2_println!(
+            "processor::boot::Loader program_address_range = {:#x?}",
+            program_address_range
+        );
+        com2_println!(
+            "processor::boot::Loader stack_address_range = {:#x?}",
+            stack_address_range
+        );
         Self {
             program_address_range,
             stack_address_range,
@@ -88,9 +87,7 @@ impl Loader {
         self.program_address_range
             .clone()
             .map(|program_address| program_address as *const u8)
-            .map(|program_address| unsafe {
-                ptr::read_volatile(program_address)
-            })
+            .map(|program_address| unsafe { ptr::read_volatile(program_address) })
             .collect()
     }
 
@@ -98,9 +95,7 @@ impl Loader {
         self.stack_address_range
             .clone()
             .map(|stack_address| stack_address as *const u8)
-            .map(|stack_address| unsafe {
-                ptr::read_volatile(stack_address)
-            })
+            .map(|stack_address| unsafe { ptr::read_volatile(stack_address) })
             .collect()
     }
 }
@@ -114,4 +109,3 @@ impl fmt::Debug for Loader {
             .finish()
     }
 }
-

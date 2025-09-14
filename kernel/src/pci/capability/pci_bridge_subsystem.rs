@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 /// # Pci Bridge Subsystem Vendor ID
 /// ## References
@@ -31,4 +28,3 @@ impl fmt::Debug for Structure {
             .finish()
     }
 }
-

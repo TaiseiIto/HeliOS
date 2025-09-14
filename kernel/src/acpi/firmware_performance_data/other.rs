@@ -11,4 +11,3 @@ impl Record {
         self.header.length()
     }
 }
-

@@ -18,4 +18,3 @@ pub struct Entry {
     #[allow(dead_code)]
     mask: u32,
 }
-

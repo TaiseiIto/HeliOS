@@ -8,4 +8,3 @@ pub struct Register {
     page_size: u16,
     __: u16,
 }
-

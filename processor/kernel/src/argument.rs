@@ -1,19 +1,11 @@
 //! Kernel arguments.
 
 use {
+    crate::{interrupt, processor, sync, x64},
     core::{
         cell::OnceCell,
-        fmt::{
-            self,
-            Write,
-        },
+        fmt::{self, Write},
         ops::Range,
-    },
-    crate::{
-        interrupt,
-        processor,
-        sync,
-        x64,
     },
 };
 
@@ -31,9 +23,7 @@ macro_rules! bsp_print {
 }
 
 pub fn bsp_print(args: fmt::Arguments) {
-    Argument::get_mut()
-        .write_fmt(args)
-        .unwrap()
+    Argument::get_mut().write_fmt(args).unwrap()
 }
 
 #[derive(Clone, Debug)]
@@ -69,19 +59,11 @@ impl Argument<'_> {
     }
 
     pub fn get() -> &'static Self {
-        unsafe {
-            ARGUMENT
-                .get()
-                .unwrap()
-        }
+        unsafe { ARGUMENT.get().unwrap() }
     }
 
     pub fn get_mut() -> &'static mut Self {
-        unsafe {
-            ARGUMENT
-                .get_mut()
-                .unwrap()
-        }
+        unsafe { ARGUMENT.get_mut().unwrap() }
     }
 
     pub fn heap_range(&self) -> Range<usize> {
@@ -105,7 +87,10 @@ impl Argument<'_> {
         let message: Option<processor::message::Content> = self.receiver.lock().clone();
         let sender_local_apic_id: u8 = self.bsp_local_apic_id;
         if let Some(message) = message {
-            interrupt::Event::push(interrupt::Event::interprocessor(sender_local_apic_id, message));
+            interrupt::Event::push(interrupt::Event::interprocessor(
+                sender_local_apic_id,
+                message,
+            ));
         }
     }
 
@@ -123,9 +108,7 @@ impl Argument<'_> {
 
 impl Argument<'static> {
     pub fn set(self) {
-        unsafe {
-            ARGUMENT.set(self)
-        }.unwrap()
+        unsafe { ARGUMENT.set(self) }.unwrap()
     }
 }
 
@@ -137,4 +120,3 @@ impl fmt::Write for Argument<'_> {
         Ok(())
     }
 }
-

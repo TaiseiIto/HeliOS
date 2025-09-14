@@ -37,4 +37,3 @@ pub struct Flags {
     #[bits(12)]
     __: u16,
 }
-

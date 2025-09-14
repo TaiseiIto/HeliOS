@@ -22,4 +22,3 @@ impl Register {
         self.max_slots() as usize
     }
 }
-

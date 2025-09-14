@@ -13,4 +13,3 @@ impl Header {
         self.length as usize
     }
 }
-

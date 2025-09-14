@@ -6,7 +6,7 @@
 pub struct Register {
     int_sts: u32,
     #[allow(dead_code)]
-    __: u32
+    __: u32,
 }
 
 impl Register {
@@ -15,4 +15,3 @@ impl Register {
         (self.int_sts & (1 << timer)) != 0
     }
 }
-

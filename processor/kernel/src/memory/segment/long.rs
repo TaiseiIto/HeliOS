@@ -1,13 +1,7 @@
 use {
+    super::{descriptor, short},
+    crate::{memory, x64},
     bitfield_struct::bitfield,
-    crate::{
-        memory,
-        x64,
-    },
-    super::{
-        descriptor,
-        short,
-    },
 };
 
 /// # TSS and LDT Descriptor in 64-Bit mode
@@ -28,7 +22,8 @@ impl Descriptor {
     pub fn base_address(&self) -> Option<usize> {
         let higher_base_address: usize = (self.base() as usize) << u32::BITS;
         let lower_descriptor: short::Descriptor = self.lower_descriptor();
-        let lower_descriptor: Option<memory::segment::descriptor::Interface> = (&lower_descriptor).into();
+        let lower_descriptor: Option<memory::segment::descriptor::Interface> =
+            (&lower_descriptor).into();
         lower_descriptor.map(|lower_descriptor| lower_descriptor.base() + higher_base_address)
     }
 
@@ -43,22 +38,21 @@ impl From<&descriptor::Interface> for Descriptor {
         let descriptor: u64 = descriptor.into();
         let base: usize = interface.base();
         let base: u32 = (base >> u32::BITS) as u32;
-        Self::default()
-            .with_descriptor(descriptor)
-            .with_base(base)
+        Self::default().with_descriptor(descriptor).with_base(base)
     }
 }
 
 impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Descriptor {
-    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
+    fn from(
+        segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap,
+    ) -> Self {
         let descriptor: short::Descriptor = segment_and_io_permission_bit_map.into();
         let descriptor: u64 = descriptor.into();
-        let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
+        let base: *const x64::task::state::segment::AndIoPermissionBitMap =
+            segment_and_io_permission_bit_map
+                as *const x64::task::state::segment::AndIoPermissionBitMap;
         let base: u64 = base as u64;
         let base: u32 = (base >> u32::BITS) as u32;
-        Self::default()
-            .with_descriptor(descriptor)
-            .with_base(base)
+        Self::default().with_descriptor(descriptor).with_base(base)
     }
 }
-

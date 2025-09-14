@@ -3,14 +3,9 @@ pub mod suspend_performance;
 pub mod table;
 
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-        str,
-    },
     super::other,
+    alloc::vec::Vec,
+    core::{fmt, mem::size_of, slice, str},
 };
 
 /// # S3 Performance Table
@@ -25,14 +20,10 @@ pub struct Table {
 impl Table {
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let bytes: *const Self = unsafe {
-            table.add(1)
-        };
+        let bytes: *const Self = unsafe { table.add(1) };
         let bytes: *const u8 = bytes as *const u8;
         let length: usize = self.length() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(bytes, length)
-        }
+        unsafe { slice::from_raw_parts(bytes, length) }
     }
 
     fn iter(&self) -> PerformanceRecords<'_> {
@@ -53,9 +44,7 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let signature: &str = self.signature();
         let length: usize = self.length();
-        let performance_records: Vec<PerformanceRecord> = self
-            .iter()
-            .collect();
+        let performance_records: Vec<PerformanceRecord> = self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("signature", &signature)
@@ -72,9 +61,7 @@ struct PerformanceRecords<'a> {
 impl<'a> From<&'a Table> for PerformanceRecords<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -103,38 +90,35 @@ impl<'a> PerformanceRecord<'a> {
             .first()
             .zip(bytes.get(1))
             .map(|(record_type_low, record_type_high)| {
-                let record_type = (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
+                let record_type =
+                    (*record_type_low as u16) + ((*record_type_high as u16) << u8::BITS);
                 match record_type {
                     0x0000 => {
                         let record: *const u8 = record_type_low as *const u8;
-                        let record: *const resume_performance::Record = record as *const resume_performance::Record;
-                        let record: &resume_performance::Record = unsafe {
-                            &*record
-                        };
+                        let record: *const resume_performance::Record =
+                            record as *const resume_performance::Record;
+                        let record: &resume_performance::Record = unsafe { &*record };
                         let record = Self::ResumePerformance(record);
                         let remaining_bytes: &[u8] = &bytes[record.size()..];
                         (record, remaining_bytes)
-                    },
+                    }
                     0x0001 => {
                         let record: *const u8 = record_type_low as *const u8;
-                        let record: *const suspend_performance::Record = record as *const suspend_performance::Record;
-                        let record: &suspend_performance::Record = unsafe {
-                            &*record
-                        };
+                        let record: *const suspend_performance::Record =
+                            record as *const suspend_performance::Record;
+                        let record: &suspend_performance::Record = unsafe { &*record };
                         let record = Self::SuspendPerformance(record);
                         let remaining_bytes: &[u8] = &bytes[record.size()..];
                         (record, remaining_bytes)
-                    },
+                    }
                     _ => {
                         let record: *const u8 = record_type_low as *const u8;
                         let record: *const other::Record = record as *const other::Record;
-                        let record: &other::Record = unsafe {
-                            &*record
-                        };
+                        let record: &other::Record = unsafe { &*record };
                         let record = Self::Other(record);
                         let remaining_bytes: &[u8] = &bytes[record.size()..];
                         (record, remaining_bytes)
-                    },
+                    }
                 }
             })
     }
@@ -147,4 +131,3 @@ impl<'a> PerformanceRecord<'a> {
         }
     }
 }
-

@@ -13,6 +13,11 @@ $(TARGET): $(call SOURCE_FILES, .)
 clippy:
 	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo clippy
 
+# Format rust codes.
+.PHONY: fmt
+fmt:
+	PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL) cargo fmt
+
 # Generate documents.
 # Usage: $ make doc
 .PHONY: doc

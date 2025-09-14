@@ -9,4 +9,3 @@ pub struct Register {
     #[allow(dead_code)]
     counter: u16,
 }
-

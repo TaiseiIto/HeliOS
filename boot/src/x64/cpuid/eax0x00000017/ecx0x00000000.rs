@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
-use {
-    bitfield_struct::bitfield,
-    super::super::Return,
-};
+use {super::super::Return, bitfield_struct::bitfield};
 
 #[derive(Debug)]
 pub struct Ecx0x00000000 {
@@ -27,12 +24,7 @@ impl Ecx0x00000000 {
         let ebx: Ebx = ecx0x00000000.ebx().into();
         let ecx: Ecx = ecx0x00000000.ecx().into();
         let edx: Edx = ecx0x00000000.edx().into();
-        Self {
-            eax,
-            ebx,
-            ecx,
-            edx,
-        }
+        Self { eax, ebx, ecx, edx }
     }
 }
 
@@ -58,4 +50,3 @@ struct Ecx {
 struct Edx {
     stepping_id: u32,
 }
-

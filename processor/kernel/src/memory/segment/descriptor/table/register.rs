@@ -1,12 +1,6 @@
 use {
-    core::{
-        arch::asm,
-        mem::size_of,
-    },
-    super::super::{
-        super::short,
-        Table,
-    },
+    super::super::{super::short, Table},
+    core::{arch::asm, mem::size_of},
 };
 
 #[derive(Debug, Default)]
@@ -52,10 +46,6 @@ impl From<&Table> for Register {
     fn from(table: &Table) -> Self {
         let limit: u16 = table.limit();
         let base: u64 = table.base();
-        Self {
-            limit,
-            base,
-        }
+        Self { limit, base }
     }
 }
-

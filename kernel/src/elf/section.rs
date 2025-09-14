@@ -6,19 +6,10 @@
 pub mod symbol;
 
 use {
+    super::{Addr, Off, Word, Xword},
     alloc::collections::BTreeMap,
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        iter,
-        str,
-    },
-    super::{
-        Addr,
-        Off,
-        Word,
-        Xword,
-    },
+    core::{fmt, iter, str},
 };
 
 /// # ELF Section Header
@@ -51,21 +42,32 @@ impl Header {
         self.sh_name
     }
 
-    pub fn string_table<'a>(&'a self, section: &'a [u8]) -> Option<BTreeMap</* Offset, in bytes, relative to the start of the string table section */ usize, /* String */ &'a str>> {
-        (self.sh_type == Sht::Strtab)
-            .then(|| iter::once(0)
-                .chain(section
-                    .iter()
-                    .enumerate()
-                    .filter(|(_index, byte)| **byte == 0)
-                    .map(|(index, _byte)| index + 1))
-                .zip(section
-                    .split(|byte| *byte == 0)
-                    .map(|bytes| str::from_utf8(bytes)))
-                .filter_map(|(index, string)| string
-                    .map(|string| (index, string))
-                    .ok())
-                .collect())
+    pub fn string_table<'a>(
+        &'a self,
+        section: &'a [u8],
+    ) -> Option<
+        BTreeMap<
+            /* Offset, in bytes, relative to the start of the string table section */ usize,
+            /* String */ &'a str,
+        >,
+    > {
+        (self.sh_type == Sht::Strtab).then(|| {
+            iter::once(0)
+                .chain(
+                    section
+                        .iter()
+                        .enumerate()
+                        .filter(|(_index, byte)| **byte == 0)
+                        .map(|(index, _byte)| index + 1),
+                )
+                .zip(
+                    section
+                        .split(|byte| *byte == 0)
+                        .map(|bytes| str::from_utf8(bytes)),
+                )
+                .filter_map(|(index, string)| string.map(|string| (index, string)).ok())
+                .collect()
+        })
     }
 }
 
@@ -147,4 +149,3 @@ impl fmt::Debug for Name<'_> {
         str::from_utf8(self.0).fmt(formatter)
     }
 }
-

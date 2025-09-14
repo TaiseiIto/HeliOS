@@ -5,15 +5,8 @@ pub mod non_maskable;
 pub use descriptor::Descriptor;
 
 use {
+    crate::{com2_println, memory, processor, task, timer, x64},
     alloc::collections::VecDeque,
-    crate::{
-        com2_println,
-        memory,
-        processor,
-        task,
-        timer,
-        x64,
-    },
 };
 
 static mut EVENTS: VecDeque<Event> = VecDeque::new();
@@ -30,7 +23,10 @@ pub enum Event {
 }
 
 impl Event {
-    pub fn interprocessor(controller: &processor::Controller, message: processor::message::Content) -> Self {
+    pub fn interprocessor(
+        controller: &processor::Controller,
+        message: processor::message::Content,
+    ) -> Self {
         let sender_local_apic_id: u8 = controller.local_apic_id();
         Self::Interprocessor {
             sender_local_apic_id,
@@ -39,15 +35,9 @@ impl Event {
     }
 
     pub fn pop() -> Option<Event> {
-        task::Controller::get_current_mut()
-            .unwrap()
-            .cli();
-        let event: Option<Event> = unsafe {
-            EVENTS.pop_back()
-        };
-        task::Controller::get_current_mut()
-            .unwrap()
-            .sti();
+        task::Controller::get_current_mut().unwrap().cli();
+        let event: Option<Event> = unsafe { EVENTS.pop_back() };
+        task::Controller::get_current_mut().unwrap().sti();
         event
     }
 
@@ -58,8 +48,10 @@ impl Event {
                 com2_println!("HPET event.");
                 processor::Controller::get_mut_all()
                     .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::HpetInterrupt));
-            },
+                    .for_each(|processor| {
+                        processor.send(processor::message::Content::HpetInterrupt)
+                    });
+            }
             Self::Interprocessor {
                 sender_local_apic_id,
                 message,
@@ -68,32 +60,32 @@ impl Event {
                     .find(|processor| processor.local_apic_id() == sender_local_apic_id)
                     .unwrap();
                 message.process(processor);
-            },
+            }
             Self::Pit => {
                 com2_println!("PIT event.");
                 processor::Controller::get_mut_all()
                     .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::PitInterrupt));
-            },
+                    .for_each(|processor| {
+                        processor.send(processor::message::Content::PitInterrupt)
+                    });
+            }
             Self::Rtc => {
                 com2_println!("RTC event.");
                 processor::Controller::get_mut_all()
                     .filter(|processor| processor.is_initialized())
-                    .for_each(|processor| processor.send(processor::message::Content::RtcInterrupt));
-            },
+                    .for_each(|processor| {
+                        processor.send(processor::message::Content::RtcInterrupt)
+                    });
+            }
         }
     }
-    
+
     pub fn push(event: Event) {
-        task::Controller::get_current_mut()
-            .unwrap()
-            .cli();
+        task::Controller::get_current_mut().unwrap().cli();
         unsafe {
             EVENTS.push_front(event);
         }
-        task::Controller::get_current_mut()
-            .unwrap()
-            .sti();
+        task::Controller::get_current_mut().unwrap().sti();
     }
 }
 
@@ -670,15 +662,12 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0xfe
         1, // int 0xff
     ];
-    idt
-        .iter_mut()
-        .zip(handlers
-            .as_slice()
-            .iter())
-        .zip(interrupt_stack_table
-            .as_slice()
-            .iter())
-        .map(|((descriptor, handler), interrupt_stack_table)| (descriptor, handler, interrupt_stack_table))
+    idt.iter_mut()
+        .zip(handlers.as_slice().iter())
+        .zip(interrupt_stack_table.as_slice().iter())
+        .map(|((descriptor, handler), interrupt_stack_table)| {
+            (descriptor, handler, interrupt_stack_table)
+        })
         .for_each(|(descriptor, handler, interrupt_stack_table)| {
             let interface = descriptor::Interface::new(handler, *interrupt_stack_table);
             *descriptor = (&interface).into();
@@ -831,7 +820,10 @@ extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Double Fault Exception (#DF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -865,7 +857,10 @@ extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Invalid TSS Exception (#TS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -882,7 +877,10 @@ extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Segment Not Present (#NP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -899,7 +897,10 @@ extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Stack Fault Exception (#SS)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -916,7 +917,10 @@ extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("General Protection Exception (#GP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -933,7 +937,10 @@ extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Page-Fault Exception (#PF)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -984,7 +991,10 @@ extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Alignment Check Exception (#AC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1052,7 +1062,10 @@ extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Control Protection Exception (#CP)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1188,7 +1201,10 @@ extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("VMM Communication Exception (#VC)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1205,7 +1221,10 @@ extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAnd
     }
     com2_println!("Security Exception (#SX)");
     com2_println!("interrupt_number = {:#x?}", interrupt_number);
-    com2_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    com2_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -4052,4 +4071,3 @@ extern "x86-interrupt" fn handler_0xff(stack_frame: StackFrame) {
         current_task.end_interrupt();
     }
 }
-

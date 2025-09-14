@@ -1,14 +1,6 @@
 use {
-    core::{
-        cmp,
-        fmt,
-        mem,
-        slice,
-    },
-    super::{
-        Header,
-        super::Function,
-    },
+    super::{super::Function, Header},
+    core::{cmp, fmt, mem, slice},
 };
 
 /// # Capability IDs
@@ -45,9 +37,7 @@ impl<'a> StructureInFunction<'a> {
         let structure_offset: usize = structure_offset as usize;
         let structure: usize = function + structure_offset;
         let structure: *const Structure = structure as *const Structure;
-        unsafe {
-            &*structure
-        }
+        unsafe { &*structure }
     }
 
     fn bytes(&'a self) -> &[u8] {
@@ -62,12 +52,8 @@ impl<'a> StructureInFunction<'a> {
         let length: usize = end - start;
         let function: *const Function = (*function) as *const Function;
         let function: *const u8 = function as *const u8;
-        let start: *const u8 = unsafe {
-            function.add(start)
-        };
-        unsafe {
-            slice::from_raw_parts(start, length)
-        }
+        let start: *const u8 = unsafe { function.add(start) };
+        unsafe { slice::from_raw_parts(start, length) }
     }
 
     fn length(&self) -> usize {
@@ -80,10 +66,7 @@ impl<'a> StructureInFunction<'a> {
 
 impl fmt::Debug for StructureInFunction<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Structure {
-            header,
-            length,
-        } = self.structure();
+        let Structure { header, length } = self.structure();
         let bytes: &[u8] = self.bytes();
         formatter
             .debug_struct("StructureInFunction")
@@ -93,4 +76,3 @@ impl fmt::Debug for StructureInFunction<'_> {
             .finish()
     }
 }
-

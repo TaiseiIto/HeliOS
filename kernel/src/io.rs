@@ -1,7 +1,4 @@
-use crate::{
-    acpi,
-    x64,
-};
+use crate::{acpi, x64};
 
 pub enum Mapped {
     Memory(usize),
@@ -22,10 +19,8 @@ impl Mapped {
             Self::Memory(address) => {
                 let address: usize = *address;
                 let address: *const u8 = address as *const u8;
-                unsafe {
-                    *address
-                }
-            },
+                unsafe { *address }
+            }
             Self::Port(port) => x64::port::inb(*port),
         }
     }
@@ -35,10 +30,8 @@ impl Mapped {
             Self::Memory(address) => {
                 let address: usize = *address;
                 let address: *const u16 = address as *const u16;
-                unsafe {
-                    *address
-                }
-            },
+                unsafe { *address }
+            }
             Self::Port(port) => x64::port::inw(*port),
         }
     }
@@ -48,10 +41,8 @@ impl Mapped {
             Self::Memory(address) => {
                 let address: usize = *address;
                 let address: *const u32 = address as *const u32;
-                unsafe {
-                    *address
-                }
-            },
+                unsafe { *address }
+            }
             Self::Port(port) => x64::port::inl(*port),
         }
     }
@@ -64,7 +55,7 @@ impl Mapped {
                 unsafe {
                     *address = value;
                 }
-            },
+            }
             Self::Port(port) => x64::port::outb(*port, value),
         }
     }
@@ -77,7 +68,7 @@ impl Mapped {
                 unsafe {
                     *address = value;
                 }
-            },
+            }
             Self::Port(port) => x64::port::outw(*port, value),
         }
     }
@@ -90,7 +81,7 @@ impl Mapped {
                 unsafe {
                     *address = value;
                 }
-            },
+            }
             Self::Port(port) => x64::port::outl(*port, value),
         }
     }
@@ -102,4 +93,3 @@ impl From<&acpi::generic_address::Structure> for Mapped {
         Self::Memory(address)
     }
 }
-

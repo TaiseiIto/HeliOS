@@ -10,4 +10,3 @@ pub struct Register {
     #[allow(dead_code)]
     db_task_id: u16,
 }
-

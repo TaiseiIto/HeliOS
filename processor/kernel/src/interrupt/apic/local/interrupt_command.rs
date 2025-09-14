@@ -1,13 +1,7 @@
 use {
+    crate::{memory, x64},
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-    },
-    crate::{
-        memory,
-        x64,
-    },
+    core::{fmt, mem::size_of},
 };
 
 /// # Interrupt Command Register
@@ -67,9 +61,7 @@ impl Register {
     fn high_mut(&mut self) -> &mut u32 {
         let high: usize = self.address() + size_of::<FatLow>();
         let high: *mut u32 = high as *mut u32;
-        unsafe {
-            &mut *high
-        }
+        unsafe { &mut *high }
     }
 
     fn is_sending(&self) -> bool {
@@ -80,9 +72,7 @@ impl Register {
     fn low_mut(&mut self) -> &mut u32 {
         let low: usize = self.address();
         let low: *mut u32 = low as *mut u32;
-        unsafe {
-            &mut *low
-        }
+        unsafe { &mut *low }
     }
 }
 
@@ -390,8 +380,6 @@ struct High {
 
 impl High {
     fn select_processor(processor_local_apic_id: u8) -> Self {
-        Self::new()
-            .with_destination_field(processor_local_apic_id)
+        Self::new().with_destination_field(processor_local_apic_id)
     }
 }
-

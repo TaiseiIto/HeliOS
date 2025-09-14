@@ -3,12 +3,9 @@ pub mod table;
 pub use table::Table;
 
 use {
-    bitfield_struct::bitfield,
-    crate::{
-        memory,
-        x64,
-    },
     super::Handler,
+    crate::{memory, x64},
+    bitfield_struct::bitfield,
 };
 
 /// # Interrupt Descriptor
@@ -90,9 +87,7 @@ impl From<&Descriptor> for Option<Interface> {
             let offset0: usize = descriptor.offset0() as usize;
             let offset1: usize = descriptor.offset1() as usize;
             let offset: usize = offset0 + (offset1 << Descriptor::OFFSET0_BITS);
-            let segment_selector: memory::segment::Selector = descriptor
-                .segment_selector()
-                .into();
+            let segment_selector: memory::segment::Selector = descriptor.segment_selector().into();
             let interrupt_stack_table: u8 = descriptor.ist();
             let descriptor_type: u8 = descriptor.descriptor_type();
             let descriptor_type = x64::descriptor::Type::new(descriptor_type, false, false, false);
@@ -107,4 +102,3 @@ impl From<&Descriptor> for Option<Interface> {
         })
     }
 }
-

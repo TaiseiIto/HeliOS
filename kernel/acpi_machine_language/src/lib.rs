@@ -2,55 +2,32 @@ extern crate proc_macro;
 
 use {
     proc_macro2::TokenTree,
-    quote::{
-        ToTokens,
-        format_ident,
-        quote,
-    },
+    quote::{format_ident, quote, ToTokens},
     std::ops::RangeInclusive,
     syn::{
-        AngleBracketedGenericArguments,
-        Attribute,
-        Data,
-        DataEnum,
-        DataStruct,
-        DeriveInput,
-        Expr,
-        ExprLit,
-        Field,
-        Fields,
-        FieldsUnnamed,
-        GenericArgument,
-        Ident,
-        Lit,
-        LitStr,
-        Meta,
-        MetaList,
-        MetaNameValue,
-        Path,
-        PathArguments,
-        PathSegment,
-        Type,
-        TypeArray,
-        TypePath,
+        parse, AngleBracketedGenericArguments, Attribute, Data, DataEnum, DataStruct, DeriveInput,
+        Expr, ExprLit, Field, Fields, FieldsUnnamed, GenericArgument, Ident, Lit, LitStr, Meta,
+        MetaList, MetaNameValue, Path, PathArguments, PathSegment, Type, TypeArray, TypePath,
         Variant,
-        parse,
     },
 };
 
-#[proc_macro_derive(Analyzer, attributes(
-    debug,
-    delimiter,
-    encoding_value,
-    encoding_value_max,
-    encoding_value_min,
-    manual,
-    matching_elements,
-    matching_type,
-    no_leftover,
-    not_string,
-    string,
-))]
+#[proc_macro_derive(
+    Analyzer,
+    attributes(
+        debug,
+        delimiter,
+        encoding_value,
+        encoding_value_max,
+        encoding_value_min,
+        manual,
+        matching_elements,
+        matching_type,
+        no_leftover,
+        not_string,
+        string,
+    )
+)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let derive_input: DeriveInput = parse(input).unwrap();
     let analyzer: proc_macro2::TokenStream = derive_analyzer(&derive_input);
@@ -64,7 +41,8 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let path_getter: proc_macro2::TokenStream = derive_path_getter(&derive_input);
     let reader: proc_macro2::TokenStream = derive_reader(&derive_input);
     let reader_inside_method: proc_macro2::TokenStream = derive_reader_inside_method(&derive_input);
-    let reader_outside_method: proc_macro2::TokenStream = derive_reader_outside_method(&derive_input);
+    let reader_outside_method: proc_macro2::TokenStream =
+        derive_reader_outside_method(&derive_input);
     let string_from_self: proc_macro2::TokenStream = derive_string_from_self(&derive_input);
     quote! {
         #analyzer
@@ -80,8 +58,9 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         #reader_inside_method
         #reader_outside_method
         #string_from_self
-    }   .try_into()
-        .unwrap()
+    }
+    .try_into()
+    .unwrap()
 }
 
 enum Encoding {
@@ -133,677 +112,562 @@ impl From<&DeriveInput> for TypeAttribute {
             .to_string()
             .strip_prefix("Def")
             .map(|defined_object_name| format_ident!("{}", defined_object_name));
-        let derive_debug: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "debug")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_first_reader: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "first_reader")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_lender: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "lender")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_matcher: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "matcher")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_path_getter: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "path_getter")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_reader: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "reader")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_reader_inside_method: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "reader_inside_method")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_reader_outside_method: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg.to_string();
-                                        !matches!(manual_arg.as_str(), "reader_outside_method")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let derive_string_from_self: bool = attrs
-            .iter()
-            .all(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        match ident
-                            .to_string()
-                            .as_str() {
-                            "manual" => tokens
-                                .clone()
-                                .into_iter()
-                                .all(|token_tree| match token_tree {
-                                    TokenTree::Ident(manual_arg) => {
-                                        let manual_arg: String = manual_arg .to_string();
-                                        !matches!(manual_arg.as_str(), "string_from_self")
-                                    },
-                                    _ => true,
-                                }),
-                            _ => true,
-                        }
-                    },
-                    _ => true,
-                }
-            });
-        let encoding_value: Option<u8> = attrs
-            .iter()
-            .find_map(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token: _,
-                        value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "encoding_value" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => lit_int
-                                .base10_parse()
-                                .ok(),
-                            _ => unimplemented!(),
-                        },
-                        _ => None,
-                    },
-                    _ => None,
-                }
-            });
-        let encoding_value_max: Option<u8> = attrs
-            .iter()
-            .find_map(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token: _,
-                        value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "encoding_value_max" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => lit_int
-                                .base10_parse()
-                                .ok(),
-                            _ => unimplemented!(),
-                        }
-                        _ => None,
+        let derive_debug: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "debug")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
                     }
-                    _ => None,
                 }
-            });
-        let encoding_value_min: Option<u8> = attrs
-            .iter()
-            .find_map(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token: _,
-                        value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "encoding_value_min" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => lit_int
-                                .base10_parse()
-                                .ok(),
-                            _ => unimplemented!(),
-                        }
-                        _ => None,
+                _ => true,
+            }
+        });
+        let derive_first_reader: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "first_reader")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
                     }
-                    _ => None,
                 }
-            });
-        let flags: bool = attrs
-            .iter()
-            .any(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::List(MetaList {
-                        path,
-                        delimiter: _,
-                        tokens: _,
-                    }) => {
-                        let Path {
-                            leading_colon: _,
-                            segments,
-                        } = path;
-                        let PathSegment {
-                            ident,
-                            arguments: _,
-                        } = segments
-                            .iter()
-                            .last()
-                            .unwrap();
-                        let ident: String = ident.to_string();
-                        matches!(ident.as_str(), "bitfield")
+                _ => true,
+            }
+        });
+        let derive_lender: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "lender")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_matcher: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "matcher")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_path_getter: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "path_getter")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_reader: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "reader")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_reader_inside_method: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "reader_inside_method")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_reader_outside_method: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "reader_outside_method")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let derive_string_from_self: bool = attrs.iter().all(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    match ident.to_string().as_str() {
+                        "manual" => tokens
+                            .clone()
+                            .into_iter()
+                            .all(|token_tree| match token_tree {
+                                TokenTree::Ident(manual_arg) => {
+                                    let manual_arg: String = manual_arg.to_string();
+                                    !matches!(manual_arg.as_str(), "string_from_self")
+                                }
+                                _ => true,
+                            }),
+                        _ => true,
+                    }
+                }
+                _ => true,
+            }
+        });
+        let encoding_value: Option<u8> = attrs.iter().find_map(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::NameValue(MetaNameValue {
+                    path,
+                    eq_token: _,
+                    value,
+                }) => match path.to_token_stream().to_string().as_str() {
+                    "encoding_value" => match value {
+                        Expr::Lit(ExprLit {
+                            attrs: _,
+                            lit: Lit::Int(lit_int),
+                        }) => lit_int.base10_parse().ok(),
+                        _ => unimplemented!(),
                     },
-                    _ => false,
+                    _ => None,
+                },
+                _ => None,
+            }
+        });
+        let encoding_value_max: Option<u8> = attrs.iter().find_map(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::NameValue(MetaNameValue {
+                    path,
+                    eq_token: _,
+                    value,
+                }) => match path.to_token_stream().to_string().as_str() {
+                    "encoding_value_max" => match value {
+                        Expr::Lit(ExprLit {
+                            attrs: _,
+                            lit: Lit::Int(lit_int),
+                        }) => lit_int.base10_parse().ok(),
+                        _ => unimplemented!(),
+                    },
+                    _ => None,
+                },
+                _ => None,
+            }
+        });
+        let encoding_value_min: Option<u8> = attrs.iter().find_map(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::NameValue(MetaNameValue {
+                    path,
+                    eq_token: _,
+                    value,
+                }) => match path.to_token_stream().to_string().as_str() {
+                    "encoding_value_min" => match value {
+                        Expr::Lit(ExprLit {
+                            attrs: _,
+                            lit: Lit::Int(lit_int),
+                        }) => lit_int.base10_parse().ok(),
+                        _ => unimplemented!(),
+                    },
+                    _ => None,
+                },
+                _ => None,
+            }
+        });
+        let flags: bool = attrs.iter().any(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::List(MetaList {
+                    path,
+                    delimiter: _,
+                    tokens: _,
+                }) => {
+                    let Path {
+                        leading_colon: _,
+                        segments,
+                    } = path;
+                    let PathSegment {
+                        ident,
+                        arguments: _,
+                    } = segments.iter().last().unwrap();
+                    let ident: String = ident.to_string();
+                    matches!(ident.as_str(), "bitfield")
                 }
-            });
+                _ => false,
+            }
+        });
         let has_field_list: bool = match data {
             Data::Struct(DataStruct {
                 struct_token: _,
-                fields: Fields::Unnamed(FieldsUnnamed {
-                    paren_token: _,
-                    unnamed,
-                }),
+                fields:
+                    Fields::Unnamed(FieldsUnnamed {
+                        paren_token: _,
+                        unnamed,
+                    }),
                 semi_token: _,
-            }) => unnamed
-                .iter()
-                .any(|field| {
-                    let Field {
-                        attrs: _,
-                        vis: _,
-                        mutability: _,
-                        ident: _,
-                        colon_token: _,
-                        ty,
-                    } = field;
-                    ty
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() == "FieldList"
-                }),
+            }) => unnamed.iter().any(|field| {
+                let Field {
+                    attrs: _,
+                    vis: _,
+                    mutability: _,
+                    ident: _,
+                    colon_token: _,
+                    ty,
+                } = field;
+                ty.to_token_stream().to_string().as_str() == "FieldList"
+            }),
             _ => false,
         };
         let has_name_string: bool = match data {
             Data::Struct(DataStruct {
                 struct_token: _,
-                fields: Fields::Unnamed(FieldsUnnamed {
-                    paren_token: _,
-                    unnamed,
-                }),
+                fields:
+                    Fields::Unnamed(FieldsUnnamed {
+                        paren_token: _,
+                        unnamed,
+                    }),
                 semi_token: _,
-            }) => unnamed
-                .iter()
-                .any(|field| {
-                    let Field {
-                        attrs: _,
-                        vis: _,
-                        mutability: _,
-                        ident: _,
-                        colon_token: _,
-                        ty,
-                    } = field;
-                    match ty {
-                        Type::Array(TypeArray {
-                            bracket_token: _,
-                            elem,
-                            semi_token: _,
-                            len: _,
-                        }) => elem
-                            .to_token_stream()
-                            .to_string()
-                            .as_str() == "NameString",
-                        Type::Path(TypePath {
-                            qself: _,
-                            path,
-                        }) => {
-                            let Path {
-                                leading_colon: _,
-                                segments,
-                            } = path;
-                            let PathSegment {
-                                ident,
-                                arguments: _,
-                            } = segments
-                                .iter()
-                                .last()
-                                .unwrap();
-                            ident
-                                .to_string()
-                                .as_str() == "NameString"
-                        },
-                        _ => false,
+            }) => unnamed.iter().any(|field| {
+                let Field {
+                    attrs: _,
+                    vis: _,
+                    mutability: _,
+                    ident: _,
+                    colon_token: _,
+                    ty,
+                } = field;
+                match ty {
+                    Type::Array(TypeArray {
+                        bracket_token: _,
+                        elem,
+                        semi_token: _,
+                        len: _,
+                    }) => elem.to_token_stream().to_string().as_str() == "NameString",
+                    Type::Path(TypePath { qself: _, path }) => {
+                        let Path {
+                            leading_colon: _,
+                            segments,
+                        } = path;
+                        let PathSegment {
+                            ident,
+                            arguments: _,
+                        } = segments.iter().last().unwrap();
+                        ident.to_string().as_str() == "NameString"
                     }
-                }),
-            _ => false,
-        };
-        let matching_elements: Option<usize> = attrs
-            .iter()
-            .find_map(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::NameValue(MetaNameValue {
-                        path,
-                        eq_token: _,
-                        value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
-                        "matching_elements" => match value {
-                            Expr::Lit(ExprLit {
-                                attrs: _,
-                                lit: Lit::Int(lit_int),
-                            }) => lit_int
-                                .base10_parse()
-                                .ok(),
-                            _ => unimplemented!(),
-                        },
-                        _ => None,
-                    }
-                    _ => None,
-                }
-            });
-        let string: bool = attrs
-            .iter()
-            .any(|attribute| {
-                let Attribute {
-                    pound_token: _,
-                    style: _,
-                    bracket_token: _,
-                    meta,
-                } = attribute;
-                match meta {
-                    Meta::Path(path) => {
-                        let path: String = path
-                            .to_token_stream()
-                            .to_string();
-                        matches!(path.as_str(), "string")
-                    },
                     _ => false,
                 }
-            });
-        let encoding: Option<Encoding> = match (encoding_value, encoding_value_max, encoding_value_min) {
-            (Some(encoding_value), None, None) => Some(encoding_value.into()),
-            (None, Some(encoding_value_max), Some(encoding_value_min)) => {
-                assert!(encoding_value_min < encoding_value_max);
-                Some((encoding_value_min..=encoding_value_max).into())
-            },
-            _ => None,
+            }),
+            _ => false,
         };
+        let matching_elements: Option<usize> = attrs.iter().find_map(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::NameValue(MetaNameValue {
+                    path,
+                    eq_token: _,
+                    value,
+                }) => match path.to_token_stream().to_string().as_str() {
+                    "matching_elements" => match value {
+                        Expr::Lit(ExprLit {
+                            attrs: _,
+                            lit: Lit::Int(lit_int),
+                        }) => lit_int.base10_parse().ok(),
+                        _ => unimplemented!(),
+                    },
+                    _ => None,
+                },
+                _ => None,
+            }
+        });
+        let string: bool = attrs.iter().any(|attribute| {
+            let Attribute {
+                pound_token: _,
+                style: _,
+                bracket_token: _,
+                meta,
+            } = attribute;
+            match meta {
+                Meta::Path(path) => {
+                    let path: String = path.to_token_stream().to_string();
+                    matches!(path.as_str(), "string")
+                }
+                _ => false,
+            }
+        });
+        let encoding: Option<Encoding> =
+            match (encoding_value, encoding_value_max, encoding_value_min) {
+                (Some(encoding_value), None, None) => Some(encoding_value.into()),
+                (None, Some(encoding_value_max), Some(encoding_value_min)) => {
+                    assert!(encoding_value_min < encoding_value_max);
+                    Some((encoding_value_min..=encoding_value_max).into())
+                }
+                _ => None,
+            };
         let matching_elements: usize = matching_elements.unwrap_or(1);
         Self {
             defined_object_name,
@@ -857,10 +721,7 @@ impl From<&Field> for FieldAttribute {
                         path,
                         eq_token: _,
                         value,
-                    }) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
+                    }) => match path.to_token_stream().to_string().as_str() {
                         "delimiter" => match value {
                             Expr::Lit(ExprLit {
                                 attrs: _,
@@ -870,10 +731,7 @@ impl From<&Field> for FieldAttribute {
                         },
                         _ => (false, None, false, false),
                     },
-                    Meta::Path(path) => match path
-                        .to_token_stream()
-                        .to_string()
-                        .as_str() {
+                    Meta::Path(path) => match path.to_token_stream().to_string().as_str() {
                         "debug" => (true, None, false, false),
                         "no_leftover" => (false, None, true, false),
                         "not_string" => (false, None, false, true),
@@ -882,7 +740,18 @@ impl From<&Field> for FieldAttribute {
                     _ => (false, None, false, false),
                 }
             })
-            .fold((false, None, false, false), |(debug, delimiter, no_leftover, not_string), (next_debug, next_delimiter, next_no_leftover, next_not_string)| (debug || next_debug, delimiter.or(next_delimiter), no_leftover || next_no_leftover, not_string || next_not_string));
+            .fold(
+                (false, None, false, false),
+                |(debug, delimiter, no_leftover, not_string),
+                 (next_debug, next_delimiter, next_no_leftover, next_not_string)| {
+                    (
+                        debug || next_debug,
+                        delimiter.or(next_delimiter),
+                        no_leftover || next_no_leftover,
+                        not_string || next_not_string,
+                    )
+                },
+            );
         Self {
             debug,
             delimiter,
@@ -917,10 +786,11 @@ fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream
     match data {
         Data::Struct(DataStruct {
             struct_token: _,
-            fields: Fields::Unnamed(FieldsUnnamed {
-                paren_token: _,
-                unnamed,
-            }),
+            fields:
+                Fields::Unnamed(FieldsUnnamed {
+                    paren_token: _,
+                    unnamed,
+                }),
             semi_token: _,
         }) => match unnamed.first() {
             Some(Field {
@@ -930,10 +800,7 @@ fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream
                 ident: _,
                 colon_token: _,
                 ty,
-            }) => match ty
-                .to_token_stream()
-                .to_string()
-                .as_str() {
+            }) => match ty.to_token_stream().to_string().as_str() {
                 "char" => quote! {
                     impl From<&#ident> for char {
                         fn from(source: &#ident) -> Self {
@@ -942,14 +809,11 @@ fn derive_char_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStream
                         }
                     }
                 },
-                _ => quote! {
-                },
+                _ => quote! {},
             },
-            _ => quote! {
-            },
+            _ => quote! {},
         },
-        _ => quote! {
-        },
+        _ => quote! {},
     }
 }
 
@@ -980,8 +844,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
         string,
     } = derive_input.into();
     if !derive_debug || flags {
-        quote! {
-        }
+        quote! {}
     } else if string {
         quote! {
             impl core::fmt::Debug for #ident {
@@ -1025,8 +888,10 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     .collect();
                                 let format_fields: Vec<proc_macro2::TokenStream> = field_names
                                     .iter()
-                                    .map(|field_name| quote! {
-                                        field(#field_name)
+                                    .map(|field_name| {
+                                        quote! {
+                                            field(#field_name)
+                                        }
                                     })
                                     .collect();
                                 quote! {
@@ -1034,7 +899,7 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         debug_tuple.#(#format_fields).*;
                                     }
                                 }
-                            },
+                            }
                             _ => unimplemented!(),
                         }
                     })
@@ -1046,111 +911,109 @@ fn derive_debug(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     };
                     debug_tuple.finish()
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
                 semi_token: _,
             }) => {
-                let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) = match fields {
-                    Fields::Unit => {
-                        let unpack: proc_macro2::TokenStream = quote! {
-                        };
-                        let format: proc_macro2::TokenStream = quote! {
-                            formatter.write_str(stringify!(#ident))
-                        };
-                        (unpack, format)
-                    },
-                    Fields::Unnamed(FieldsUnnamed {
-                        paren_token: _,
-                        unnamed,
-                    }) => {
-                        let (unpack, format): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
-                            .iter()
-                            .enumerate()
-                            .map(|(index, field)| {
-                                let Field {
-                                    attrs: _,
-                                    vis: _,
-                                    mutability: _,
-                                    ident: _,
-                                    colon_token: _,
-                                    ty,
-                                } = field;
-                                let field_name: Ident = format_ident!("field{}", index);
-                                let unpack: proc_macro2::TokenStream = quote! {
-                                    #field_name
-                                };
-                                let format: proc_macro2::TokenStream = match ty {
-                                    Type::Array(_) => quote! {
+                let (unpack, format): (proc_macro2::TokenStream, proc_macro2::TokenStream) =
+                    match fields {
+                        Fields::Unit => {
+                            let unpack: proc_macro2::TokenStream = quote! {};
+                            let format: proc_macro2::TokenStream = quote! {
+                                formatter.write_str(stringify!(#ident))
+                            };
+                            (unpack, format)
+                        }
+                        Fields::Unnamed(FieldsUnnamed {
+                            paren_token: _,
+                            unnamed,
+                        }) => {
+                            let (unpack, format): (
+                                Vec<proc_macro2::TokenStream>,
+                                Vec<proc_macro2::TokenStream>,
+                            ) = unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(index, field)| {
+                                    let Field {
+                                        attrs: _,
+                                        vis: _,
+                                        mutability: _,
+                                        ident: _,
+                                        colon_token: _,
+                                        ty,
+                                    } = field;
+                                    let field_name: Ident = format_ident!("field{}", index);
+                                    let unpack: proc_macro2::TokenStream = quote! {
                                         #field_name
-                                            .as_slice()
-                                            .iter()
-                                            .for_each(|element| {
-                                                debug_tuple.field(element);
-                                            });
-                                    },
-                                    Type::Path(TypePath {
-                                        qself: _,
-                                        path,
-                                    }) => {
-                                        let Path {
-                                            leading_colon: _,
-                                            segments,
-                                        } = path;
-                                        let PathSegment {
-                                            ident,
-                                            arguments: _,
-                                        } = segments
-                                            .iter()
-                                            .last()
-                                            .unwrap();
-                                        match ident
-                                            .to_string()
-                                            .as_str() {
-                                            "Option" => quote! {
-                                                if let Some(element) = #field_name {
+                                    };
+                                    let format: proc_macro2::TokenStream = match ty {
+                                        Type::Array(_) => quote! {
+                                            #field_name
+                                                .as_slice()
+                                                .iter()
+                                                .for_each(|element| {
                                                     debug_tuple.field(element);
-                                                }
-                                            },
-                                            "Vec" => quote! {
-                                                #field_name
-                                                    .iter()
-                                                    .for_each(|element| {
+                                                });
+                                        },
+                                        Type::Path(TypePath { qself: _, path }) => {
+                                            let Path {
+                                                leading_colon: _,
+                                                segments,
+                                            } = path;
+                                            let PathSegment {
+                                                ident,
+                                                arguments: _,
+                                            } = segments.iter().last().unwrap();
+                                            match ident.to_string().as_str() {
+                                                "Option" => quote! {
+                                                    if let Some(element) = #field_name {
                                                         debug_tuple.field(element);
-                                                    });
-                                            },
-                                            _ => quote! {
-                                                debug_tuple.field(#field_name);
-                                            },
+                                                    }
+                                                },
+                                                "Vec" => quote! {
+                                                    #field_name
+                                                        .iter()
+                                                        .for_each(|element| {
+                                                            debug_tuple.field(element);
+                                                        });
+                                                },
+                                                _ => quote! {
+                                                    debug_tuple.field(#field_name);
+                                                },
+                                            }
                                         }
+                                        _ => unimplemented!(),
+                                    };
+                                    (unpack, format)
+                                })
+                                .fold(
+                                    (Vec::new(), Vec::new()),
+                                    |(mut unpack, mut format), (next_unpack, next_format)| {
+                                        unpack.push(next_unpack);
+                                        format.push(next_format);
+                                        (unpack, format)
                                     },
-                                    _ => unimplemented!(),
-                                };
-                                (unpack, format)
-                            })
-                            .fold((Vec::new(), Vec::new()), |(mut unpack, mut format), (next_unpack, next_format)| {
-                                unpack.push(next_unpack);
-                                format.push(next_format);
-                                (unpack, format)
-                            });
-                        let unpack: proc_macro2::TokenStream = quote! {
-                            let Self(#(#unpack),*) = self;
-                        };
-                        let format: proc_macro2::TokenStream = quote! {
-                            let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
-                            #(#format)*
-                            debug_tuple.finish()
-                        };
-                        (unpack, format)
-                    },
-                    _ => unimplemented!(),
-                };
+                                );
+                            let unpack: proc_macro2::TokenStream = quote! {
+                                let Self(#(#unpack),*) = self;
+                            };
+                            let format: proc_macro2::TokenStream = quote! {
+                                let mut debug_tuple: core::fmt::DebugTuple = formatter.debug_tuple(stringify!(#ident));
+                                #(#format)*
+                                debug_tuple.finish()
+                            };
+                            (unpack, format)
+                        }
+                        _ => unimplemented!(),
+                    };
                 quote! {
                     #unpack
                     #format
                 }
-            },
+            }
             _ => unimplemented!(),
         };
         quote! {
@@ -1364,7 +1227,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             panic!("aml = {:#x?}", aml)
                         }
                     }
-                },
+                }
                 Data::Struct(DataStruct {
                     struct_token: _,
                     fields,
@@ -1640,7 +1503,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             let aml: &[u8] = &aml[symbol.length()..];
                             (symbol, aml)
                         }
-                    },
+                    }
                     _ => unimplemented!(),
                 },
                 _ => unimplemented!(),
@@ -1655,8 +1518,7 @@ fn derive_first_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -1693,12 +1555,10 @@ fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                     let object = crate::acpi::machine_language::reference::Object::#defined_object_name(self);
                     root.add_node(&current, object);
                 },
-                None => quote! {
-                },
+                None => quote! {},
             }
         } else {
-            quote! {
-            }
+            quote! {}
         };
         quote! {
             impl crate::acpi::machine_language::syntax::Lender for #ident {
@@ -1713,8 +1573,7 @@ fn derive_lender(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -1745,8 +1604,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
         string: _,
     } = derive_input.into();
     let push_symbols: proc_macro2::TokenStream = if encoding.is_some() || flags {
-        quote! {
-        }
+        quote! {}
     } else {
         match data {
             Data::Enum(DataEnum {
@@ -1860,14 +1718,13 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                         #(#push_patterns),*
                     }
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
                 semi_token: _,
             }) => match fields {
-                Fields::Unit => quote! {
-                },
+                Fields::Unit => quote! {},
                 Fields::Unnamed(FieldsUnnamed {
                     paren_token: _,
                     unnamed,
@@ -1950,15 +1807,14 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                         let Self(#(#field_names),*) = self;
                         #(#push_fields)*
                     }
-                },
+                }
                 _ => unimplemented!(),
             },
             _ => unimplemented!(),
         }
     };
     let push_mut_symbols: proc_macro2::TokenStream = if encoding.is_some() || flags {
-        quote! {
-        }
+        quote! {}
     } else {
         match data {
             Data::Enum(DataEnum {
@@ -2072,14 +1928,13 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                         #(#push_patterns),*
                     }
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
                 semi_token: _,
             }) => match fields {
-                Fields::Unit => quote! {
-                },
+                Fields::Unit => quote! {},
                 Fields::Unnamed(FieldsUnnamed {
                     paren_token: _,
                     unnamed,
@@ -2162,7 +2017,7 @@ fn derive_reference_to_symbol_iterator(derive_input: &DeriveInput) -> proc_macro
                         let Self(#(#field_names),*) = self;
                         #(#push_fields)*
                     }
-                },
+                }
                 _ => unimplemented!(),
             },
             _ => unimplemented!(),
@@ -2271,7 +2126,7 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         #(#accumulate),*
                     }
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
@@ -2288,7 +2143,10 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         1
                     },
                     None => {
-                        let (unpacks, field_lengths): (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>) = unnamed
+                        let (unpacks, field_lengths): (
+                            Vec<proc_macro2::TokenStream>,
+                            Vec<proc_macro2::TokenStream>,
+                        ) = unnamed
                             .iter()
                             .enumerate()
                             .map(|(index, field)| {
@@ -2312,24 +2170,14 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                             .map(|element| element.length())
                                             .sum::<usize>()
                                     },
-                                    Type::Path(TypePath {
-                                        qself: _,
-                                        path,
-                                    }) => {
+                                    Type::Path(TypePath { qself: _, path }) => {
                                         let Path {
                                             leading_colon: _,
                                             segments,
                                         } = path;
-                                        let PathSegment {
-                                            ident,
-                                            arguments,
-                                        } = segments
-                                            .iter()
-                                            .last()
-                                            .unwrap();
-                                        match ident
-                                            .to_string()
-                                            .as_str() {
+                                        let PathSegment { ident, arguments } =
+                                            segments.iter().last().unwrap();
+                                        match ident.to_string().as_str() {
                                             "Box" => quote! {
                                                 #field_name.length()
                                             },
@@ -2339,12 +2187,14 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                     .map_or(0, |element| element.length())
                                             },
                                             "Vec" => match arguments {
-                                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                    colon2_token: _,
-                                                    lt_token: _,
-                                                    args: _,
-                                                    gt_token: _,
-                                                }) => quote! {
+                                                PathArguments::AngleBracketed(
+                                                    AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args: _,
+                                                        gt_token: _,
+                                                    },
+                                                ) => quote! {
                                                     #field_name
                                                         .iter()
                                                         .map(|element| element.length())
@@ -2356,21 +2206,24 @@ fn derive_with_length(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 #field_name.length()
                                             },
                                         }
-                                    },
+                                    }
                                     _ => unimplemented!(),
                                 };
                                 (unpack, field_length)
                             })
-                            .fold((Vec::new(), Vec::new()), |(mut unpacks, mut field_lengths), (unpack, field_length)| {
-                                unpacks.push(unpack);
-                                field_lengths.push(field_length);
-                                (unpacks, field_lengths)
-                            });
+                            .fold(
+                                (Vec::new(), Vec::new()),
+                                |(mut unpacks, mut field_lengths), (unpack, field_length)| {
+                                    unpacks.push(unpack);
+                                    field_lengths.push(field_length);
+                                    (unpacks, field_lengths)
+                                },
+                            );
                         quote! {
                             let Self(#(#unpacks),*) = self;
                             #(#field_lengths)+*
                         }
-                    },
+                    }
                 },
                 _ => unimplemented!(),
             },
@@ -2449,37 +2302,25 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     ident: _,
                                     colon_token: _,
                                     ty,
-                                } = unnamed
-                                    .first()
-                                    .unwrap();
+                                } = unnamed.first().unwrap();
                                 match ty {
-                                    Type::Path(TypePath {
-                                        qself: _,
-                                        path,
-                                    }) => {
+                                    Type::Path(TypePath { qself: _, path }) => {
                                         let Path {
                                             leading_colon: _,
                                             segments,
                                         } = path;
-                                        let PathSegment {
-                                            ident,
-                                            arguments,
-                                        } = segments
-                                            .iter()
-                                            .last()
-                                            .unwrap();
-                                        match ident
-                                            .to_string()
-                                            .as_str() {
+                                        let PathSegment { ident, arguments } =
+                                            segments.iter().last().unwrap();
+                                        match ident.to_string().as_str() {
                                             "Box" => match arguments {
-                                                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                    colon2_token: _,
-                                                    lt_token: _,
-                                                    args,
-                                                    gt_token: _,
-                                                }) => match args
-                                                    .first()
-                                                    .unwrap() {
+                                                PathArguments::AngleBracketed(
+                                                    AngleBracketedGenericArguments {
+                                                        colon2_token: _,
+                                                        lt_token: _,
+                                                        args,
+                                                        gt_token: _,
+                                                    },
+                                                ) => match args.first().unwrap() {
                                                     GenericArgument::Type(element_type) => quote! {
                                                         #element_type::matches(aml)
                                                     },
@@ -2491,10 +2332,10 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                                 #ty::matches(aml)
                                             },
                                         }
-                                    },
+                                    }
                                     _ => unimplemented!(),
                                 }
-                            },
+                            }
                             _ => unimplemented!(),
                         }
                     })
@@ -2502,7 +2343,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                 quote! {
                     #(#matches) || *
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
@@ -2528,7 +2369,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 quote! {
                                     (#start..=#end).contains(head)
                                 }
-                            },
+                            }
                             Encoding::Value(value) => quote! {
                                 *head == #value
                             },
@@ -2538,7 +2379,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 .first()
                                 .is_some_and(|head| #matches)
                         }
-                    },
+                    }
                     None => {
                         let mut matches: proc_macro2::TokenStream = quote! {
                             true
@@ -2687,7 +2528,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                 };
                             });
                         matches
-                    },
+                    }
                 },
                 _ => unimplemented!(),
             },
@@ -2703,8 +2544,7 @@ fn derive_matcher(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -2739,10 +2579,11 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             match data {
                 Data::Struct(DataStruct {
                     struct_token: _,
-                    fields: Fields::Unnamed(FieldsUnnamed {
-                        paren_token: _,
-                        unnamed,
-                    }),
+                    fields:
+                        Fields::Unnamed(FieldsUnnamed {
+                            paren_token: _,
+                            unnamed,
+                        }),
                     semi_token: _,
                 }) => {
                     let unpack: Vec<proc_macro2::TokenStream> = unnamed
@@ -2763,19 +2604,14 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                     bracket_token: _,
                                     elem,
                                     semi_token: _,
-                                    len: Expr::Lit(ExprLit {
-                                        attrs: _,
-                                        lit: Lit::Int(lit_int),
-                                    }),
-                                })  => match elem
-                                    .to_token_stream()
-                                    .to_string()
-                                    .as_str() {
+                                    len:
+                                        Expr::Lit(ExprLit {
+                                            attrs: _,
+                                            lit: Lit::Int(lit_int),
+                                        }),
+                                }) => match elem.to_token_stream().to_string().as_str() {
                                     "NameString" => {
-                                        let len: usize = lit_int
-                                            .base10_digits()
-                                            .parse()
-                                            .unwrap();
+                                        let len: usize = lit_int.base10_digits().parse().unwrap();
                                         let elements: Vec<Ident> = (0..len)
                                             .map(|index| match index {
                                                 0 => format_ident!("name_string"),
@@ -2785,22 +2621,21 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                                         quote! {
                                             [#(#elements),*]
                                         }
-                                    },
+                                    }
                                     _ => quote! {
                                         #default_field_name
                                     },
                                 },
-                                Type::Path(type_path) => match type_path
-                                    .to_token_stream()
-                                    .to_string()
-                                    .as_str() {
-                                    "NameString" => quote! {
-                                        name_string
-                                    },
-                                    _ => quote! {
-                                        #default_field_name
-                                    },
-                                },
+                                Type::Path(type_path) => {
+                                    match type_path.to_token_stream().to_string().as_str() {
+                                        "NameString" => quote! {
+                                            name_string
+                                        },
+                                        _ => quote! {
+                                            #default_field_name
+                                        },
+                                    }
+                                }
                                 _ => quote! {
                                     #default_field_name
                                 },
@@ -2811,7 +2646,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                         let Self(#(#unpack),*) = self;
                         Some(name_string.into())
                     }
-                },
+                }
                 _ => quote! {
                     None
                 },
@@ -2829,8 +2664,7 @@ fn derive_path_getter(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -3035,7 +2869,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             panic!("aml = {:#x?}", aml)
                         }
                     }
-                },
+                }
                 Data::Struct(DataStruct {
                     struct_token: _,
                     fields,
@@ -3257,7 +3091,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
                             let aml: &[u8] = &aml[symbol.length()..];
                             (symbol, aml)
                         }
-                    },
+                    }
                     _ => unimplemented!(),
                 },
                 _ => unimplemented!(),
@@ -3271,8 +3105,7 @@ fn derive_reader(derive_input: &DeriveInput) -> proc_macro2::TokenStream {
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -3477,7 +3310,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                             panic!("aml = {:#x?}", aml)
                         }
                     }
-                },
+                }
                 Data::Struct(DataStruct {
                     struct_token: _,
                     fields,
@@ -3753,7 +3586,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
                             let aml: &[u8] = &aml[symbol.length()..];
                             (symbol, aml)
                         }
-                    },
+                    }
                     _ => unimplemented!(),
                 },
                 _ => unimplemented!(),
@@ -3768,8 +3601,7 @@ fn derive_reader_inside_method(derive_input: &DeriveInput) -> proc_macro2::Token
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -3812,8 +3644,7 @@ fn derive_reader_outside_method(derive_input: &DeriveInput) -> proc_macro2::Toke
             }
         }
     } else {
-        quote! {
-        }
+        quote! {}
     }
 }
 
@@ -3845,8 +3676,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
     } = derive_input.into();
     let source_type_name: &Ident = ident;
     if !derive_string_from_self {
-        quote! {
-        }
+        quote! {}
     } else if string {
         let convert: proc_macro2::TokenStream = match data {
             Data::Enum(DataEnum {
@@ -3906,7 +3736,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                         #(#convert_patterns),*
                     }
                 }
-            },
+            }
             Data::Struct(DataStruct {
                 struct_token: _,
                 fields,
@@ -4037,7 +3867,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                                 .collect()
                         }
                     }
-                },
+                }
                 _ => unimplemented!(),
             },
             _ => unimplemented!(),
@@ -4059,10 +3889,11 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
         match data {
             Data::Struct(DataStruct {
                 struct_token: _,
-                fields: Fields::Unnamed(FieldsUnnamed {
-                    paren_token: _,
-                    unnamed,
-                }),
+                fields:
+                    Fields::Unnamed(FieldsUnnamed {
+                        paren_token: _,
+                        unnamed,
+                    }),
                 semi_token: _,
             }) => match unnamed.first() {
                 Some(Field {
@@ -4072,10 +3903,7 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                     ident: _,
                     colon_token: _,
                     ty,
-                }) => match ty
-                    .to_token_stream()
-                    .to_string()
-                    .as_str() {
+                }) => match ty.to_token_stream().to_string().as_str() {
                     "char" => quote! {
                         impl From<&#ident> for String {
                             fn from(source: &#ident) -> Self {
@@ -4084,15 +3912,11 @@ fn derive_string_from_self(derive_input: &DeriveInput) -> proc_macro2::TokenStre
                             }
                         }
                     },
-                    _ => quote! {
-                    },
-                }
-                _ => quote! {
+                    _ => quote! {},
                 },
+                _ => quote! {},
             },
-            _ => quote! {
-            },
+            _ => quote! {},
         }
     }
 }
-

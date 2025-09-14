@@ -3,21 +3,9 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 use {
-    alloc::{
-        format,
-        string::String,
-        vec::Vec,
-    },
-    core::{
-        fmt,
-        ops::Range,
-    },
-    super::{
-        name,
-        syntax,
-        syntax::Lender,
-        interpreter,
-    },
+    super::{interpreter, name, syntax, syntax::Lender},
+    alloc::{format, string::String, vec::Vec},
+    core::{fmt, ops::Range},
 };
 
 pub struct Node<'a> {
@@ -31,36 +19,33 @@ impl<'a> Node<'a> {
         let mut path: name::Path = path.clone();
         match path.pop_first_segment() {
             Some(name) => match name {
-                name::Segment::Child {
-                    name: _,
-                } => match self
-                    .children
-                    .iter_mut()
-                    .find(|child| child.name == name) {
-                    Some(child) => {
-                        child.add_node(&path, object);
-                    },
-                    None => {
-                        let objects: Vec<Object<'a>> = Vec::default();
-                        let children: Vec<Self> = Vec::default();
-                        let mut child = Self {
-                            name,
-                            objects,
-                            children,
-                        };
-                        child.add_node(&path, object);
-                        self.children.push(child);
-                    },
-                },
+                name::Segment::Child { name: _ } => {
+                    match self.children.iter_mut().find(|child| child.name == name) {
+                        Some(child) => {
+                            child.add_node(&path, object);
+                        }
+                        None => {
+                            let objects: Vec<Object<'a>> = Vec::default();
+                            let children: Vec<Self> = Vec::default();
+                            let mut child = Self {
+                                name,
+                                objects,
+                                children,
+                            };
+                            child.add_node(&path, object);
+                            self.children.push(child);
+                        }
+                    }
+                }
                 name::Segment::Parent => unreachable!(),
                 name::Segment::Root => {
                     assert_eq!(self.name, name::Segment::Root);
                     self.add_node(&path, object);
-                },
+                }
             },
             None => {
                 self.objects.push(object);
-            },
+            }
         }
     }
 
@@ -74,15 +59,20 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_method_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, &'a syntax::DefMethod)> {
+    pub fn get_method_from_current(
+        &self,
+        method: &name::AbsolutePath,
+    ) -> Option<(name::Path, &'a syntax::DefMethod)> {
         self.get_methods_from_current(method)
-            .and_then(|(method_path, mut methods)| methods
-                .pop()
-                .and_then(|method| if methods.is_empty() {
-                    Some((method_path, method))
-                } else {
-                    None
-                }))
+            .and_then(|(method_path, mut methods)| {
+                methods.pop().and_then(|method| {
+                    if methods.is_empty() {
+                        Some((method_path, method))
+                    } else {
+                        None
+                    }
+                })
+            })
     }
 
     pub fn get_name(&self, name: &name::Path) -> Option<&'a syntax::DefName> {
@@ -95,22 +85,31 @@ impl<'a> Node<'a> {
         }
     }
 
-    pub fn get_name_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, &'a syntax::DefName)> {
+    pub fn get_name_from_current(
+        &self,
+        name: &name::AbsolutePath,
+    ) -> Option<(name::Path, &'a syntax::DefName)> {
         self.get_names_from_current(name)
-            .and_then(|(name_path, mut names)| names
-                .pop()
-                .and_then(|name| if names.is_empty() {
-                    Some((name_path, name))
-                } else {
-                    None
-                }))
+            .and_then(|(name_path, mut names)| {
+                names.pop().and_then(|name| {
+                    if names.is_empty() {
+                        Some((name_path, name))
+                    } else {
+                        None
+                    }
+                })
+            })
     }
 
-    pub fn read_named_field(&self, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
+    pub fn read_named_field(
+        &self,
+        stack_frame: &mut interpreter::StackFrame,
+        root: &Node,
+        name: &name::AbsolutePath,
+    ) -> Option<interpreter::Value> {
         self.get_objects_from_current(name)
-            .and_then(|(named_field_path, objects)| objects
-                .iter()
-                .find_map(|object| match object {
+            .and_then(|(named_field_path, objects)| {
+                objects.iter().find_map(|object| match object {
                     Object::NamedField {
                         access_type,
                         named_field,
@@ -119,23 +118,37 @@ impl<'a> Node<'a> {
                     } => {
                         let size_in_bits: usize = named_field.bits();
                         let op_region = name::AbsolutePath::new(&named_field_path, op_region);
-                        self.get_objects_from_current(&op_region)
-                            .and_then(|(op_region_path, objects)| objects
-                                .iter()
-                                .find_map(|object| match object {
-                                    Object::OpRegion(op_region) => op_region.read_value(stack_frame, root, &op_region_path, *offset_in_bits, size_in_bits, access_type),
+                        self.get_objects_from_current(&op_region).and_then(
+                            |(op_region_path, objects)| {
+                                objects.iter().find_map(|object| match object {
+                                    Object::OpRegion(op_region) => op_region.read_value(
+                                        stack_frame,
+                                        root,
+                                        &op_region_path,
+                                        *offset_in_bits,
+                                        size_in_bits,
+                                        access_type,
+                                    ),
                                     _ => None,
-                                }))
-                    },
+                                })
+                            },
+                        )
+                    }
                     _ => None,
-                }))
+                })
+            })
     }
 
-    pub fn write_named_field(&self, value: interpreter::Value, stack_frame: &mut interpreter::StackFrame, root: &Node, name: &name::AbsolutePath) -> Option<interpreter::Value> {
+    pub fn write_named_field(
+        &self,
+        value: interpreter::Value,
+        stack_frame: &mut interpreter::StackFrame,
+        root: &Node,
+        name: &name::AbsolutePath,
+    ) -> Option<interpreter::Value> {
         self.get_objects_from_current(name)
-            .and_then(|(named_field_path, objects)| objects
-                .iter()
-                .find_map(|object| match object {
+            .and_then(|(named_field_path, objects)| {
+                objects.iter().find_map(|object| match object {
                     Object::NamedField {
                         access_type,
                         named_field,
@@ -147,16 +160,25 @@ impl<'a> Node<'a> {
                         let end_bit: usize = start_bit + size_in_bits;
                         let bit_range: Range<usize> = start_bit..end_bit;
                         let op_region = name::AbsolutePath::new(&named_field_path, op_region);
-                        self.get_objects_from_current(&op_region)
-                            .and_then(|(op_region_path, objects)| objects
-                                .iter()
-                                .find_map(|object| match object {
-                                    Object::OpRegion(op_region) => op_region.write_value(value.clone(), stack_frame, root, &op_region_path, &bit_range, access_type),
+                        self.get_objects_from_current(&op_region).and_then(
+                            |(op_region_path, objects)| {
+                                objects.iter().find_map(|object| match object {
+                                    Object::OpRegion(op_region) => op_region.write_value(
+                                        value.clone(),
+                                        stack_frame,
+                                        root,
+                                        &op_region_path,
+                                        &bit_range,
+                                        access_type,
+                                    ),
                                     _ => None,
-                                }))
-                    },
+                                })
+                            },
+                        )
+                    }
                     _ => None,
-                }))
+                })
+            })
     }
 
     fn get_methods(&self, method: &name::Path) -> Vec<&'a syntax::DefMethod> {
@@ -172,7 +194,10 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_methods_from_current(&self, method: &name::AbsolutePath) -> Option<(name::Path, Vec<&'a syntax::DefMethod>)> {
+    fn get_methods_from_current(
+        &self,
+        method: &name::AbsolutePath,
+    ) -> Option<(name::Path, Vec<&'a syntax::DefMethod>)> {
         self.get_objects_from_current(method)
             .map(|(method_path, objects)| {
                 let methods: Vec<&'a syntax::DefMethod> = objects
@@ -199,7 +224,10 @@ impl<'a> Node<'a> {
         }
     }
 
-    fn get_names_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, Vec<&'a syntax::DefName>)> {
+    fn get_names_from_current(
+        &self,
+        name: &name::AbsolutePath,
+    ) -> Option<(name::Path, Vec<&'a syntax::DefName>)> {
         self.get_objects_from_current(name)
             .map(|(name_path, objects)| {
                 let names: Vec<&'a syntax::DefName> = objects
@@ -217,9 +245,7 @@ impl<'a> Node<'a> {
         let mut object: name::Path = object.clone();
         match object.pop_first_segment() {
             Some(name) => match name {
-                name::Segment::Child {
-                    name: _,
-                } => self
+                name::Segment::Child { name: _ } => self
                     .children
                     .iter()
                     .find(|child| child.name == name)
@@ -228,18 +254,18 @@ impl<'a> Node<'a> {
                 name::Segment::Root => {
                     assert_eq!(self.name, name::Segment::Root);
                     self.get_objects(&object)
-                },
+                }
             },
             None => Some(&self.objects),
         }
     }
 
-    fn get_objects_from_current(&self, name: &name::AbsolutePath) -> Option<(name::Path, &[Object<'a>])> {
+    fn get_objects_from_current(
+        &self,
+        name: &name::AbsolutePath,
+    ) -> Option<(name::Path, &[Object<'a>])> {
         let mut name: name::AbsolutePath = self.original_path(name);
-        name
-            .find_map(|name| self
-                .get_objects(&name)
-                .map(|object| (name, object)))
+        name.find_map(|name| self.get_objects(&name).map(|object| (name, object)))
     }
 
     fn original_path(&self, alias: &name::AbsolutePath) -> name::AbsolutePath {
@@ -251,9 +277,7 @@ impl<'a> Node<'a> {
 
     fn solve_alias(&self, alias: &name::Path) -> Option<name::AbsolutePath> {
         self.get_objects(alias)
-            .and_then(|objects| objects
-                .iter()
-                .find_map(|object| object.solve_alias(alias)))
+            .and_then(|objects| objects.iter().find_map(|object| object.solve_alias(alias)))
     }
 
     fn solve_alias_from_current(&self, alias: &name::AbsolutePath) -> Option<name::AbsolutePath> {
@@ -286,17 +310,12 @@ impl fmt::Debug for Node<'_> {
             children,
         } = self;
         let name: String = name.into();
-        let objects: Vec<&str> = objects
-            .iter()
-            .map(|object| object.type_name())
-            .collect();
+        let objects: Vec<&str> = objects.iter().map(|object| object.type_name()).collect();
         let name: String = format!("{:#x?} {}", name, objects.join(" "));
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
-        children
-            .iter()
-            .for_each(|child| {
-                debug_tuple.field(child);
-            });
+        children.iter().for_each(|child| {
+            debug_tuple.field(child);
+        });
         debug_tuple.finish()
     }
 }
@@ -392,4 +411,3 @@ impl fmt::Debug for Object<'_> {
         }
     }
 }
-

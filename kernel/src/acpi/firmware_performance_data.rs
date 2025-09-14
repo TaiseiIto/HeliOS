@@ -4,13 +4,9 @@ mod record;
 mod s3_performance;
 
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    alloc::vec::Vec,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Firmware Performance Data Table (FPDT)
@@ -28,14 +24,10 @@ impl Table {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: *const Self = unsafe {
-            table.add(1)
-        };
+        let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(table, size)
-        }
+        unsafe { slice::from_raw_parts(table, size) }
     }
 
     fn iter(&self) -> PerformanceRecords<'_> {
@@ -46,9 +38,7 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let performance_records: Vec<PerformanceRecord> = self
-            .iter()
-            .collect();
+        let performance_records: Vec<PerformanceRecord> = self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
@@ -64,9 +54,7 @@ struct PerformanceRecords<'a> {
 impl<'a> From<&'a Table> for PerformanceRecords<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -84,7 +72,9 @@ impl<'a> Iterator for PerformanceRecords<'a> {
 
 #[derive(Debug)]
 enum PerformanceRecord<'a> {
-    FirmwareBasicBootPerformanceTablePointer(&'a firmware_basic_boot_performance::table::pointer::Record<'a>),
+    FirmwareBasicBootPerformanceTablePointer(
+        &'a firmware_basic_boot_performance::table::pointer::Record<'a>,
+    ),
     Other(&'a other::Record),
     S3PerformanceTablePointer(&'a s3_performance::table::pointer::Record<'a>),
 }
@@ -139,4 +129,3 @@ impl<'a> PerformanceRecord<'a> {
         }
     }
 }
-

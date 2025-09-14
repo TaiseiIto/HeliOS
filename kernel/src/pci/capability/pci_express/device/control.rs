@@ -21,4 +21,3 @@ pub struct Register {
     maximum_read_request_size: u8,
     function_level_reset_or_bridge_config_retry_enable: bool,
 }
-

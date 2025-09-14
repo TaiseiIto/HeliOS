@@ -1,14 +1,7 @@
 use {
-    alloc::{
-        string::String,
-        vec::Vec,
-    },
-    core::{
-        fmt,
-        iter,
-        slice,
-    },
     super::null,
+    alloc::{string::String, vec::Vec},
+    core::{fmt, iter, slice},
 };
 
 /// # CHAR16
@@ -66,19 +59,12 @@ impl<'a> From<&'a NullTerminatedString<'a>> for &'a [u16] {
         let length: usize = (0..)
             .take_while(|index| {
                 let index: usize = *index;
-                let string: u16 = unsafe {
-                    string
-                        .add(index)
-                        .read_volatile()
-                };
+                let string: u16 = unsafe { string.add(index).read_volatile() };
                 string != 0
             })
             .max()
             .map(|max_index| max_index + 1)
             .unwrap_or_default();
-        unsafe {
-            slice::from_raw_parts(string, length)
-        }
+        unsafe { slice::from_raw_parts(string, length) }
     }
 }
-

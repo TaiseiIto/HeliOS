@@ -1,21 +1,10 @@
 use {
+    super::{
+        char16, event, memory, null, protocol, time, Event, Guid, Handle, Status, TableHeader, Void,
+    },
+    crate::memory::page,
     alloc::vec::Vec,
     core::ops::Range,
-    crate::memory::page,
-    super::{
-        Event,
-        Guid,
-        Handle,
-        Status,
-        TableHeader,
-        null,
-        Void,
-        char16,
-        event,
-        memory,
-        protocol,
-        time,
-    },
 };
 
 /// # EFI_BOOT_SERVICES
@@ -81,7 +70,11 @@ impl BootServices {
             .map(|_| physical_address)
     }
 
-    pub fn allocate_specific_pages(&self, physical_address: usize, pages: usize) -> Result<Range<memory::PhysicalAddress>, Status> {
+    pub fn allocate_specific_pages(
+        &self,
+        physical_address: usize,
+        pages: usize,
+    ) -> Result<Range<memory::PhysicalAddress>, Status> {
         let allocate_type = memory::AllocateType::AllocateAddress;
         let memory_type = memory::Type::LoaderData;
         let mut physical_address: u64 = physical_address as u64;
@@ -89,7 +82,8 @@ impl BootServices {
             .result()
             .map(|_| {
                 let start: memory::PhysicalAddress = physical_address as memory::PhysicalAddress;
-                let length: memory::PhysicalAddress = (pages * page::SIZE) as memory::PhysicalAddress;
+                let length: memory::PhysicalAddress =
+                    (pages * page::SIZE) as memory::PhysicalAddress;
                 let end: memory::PhysicalAddress = start + length;
                 start..end
             })
@@ -104,15 +98,17 @@ impl BootServices {
     }
 
     pub fn exit_boot_services(&self, image: Handle) -> Result<memory::Map, Status> {
-        let memory_map: memory::Map = self
-            .memory_map()
-            .unwrap();
+        let memory_map: memory::Map = self.memory_map().unwrap();
         (self.exit_boot_services)(image, memory_map.key())
             .result()
             .map(|_| memory_map)
     }
 
-    pub fn free_pages(&self, physical_address: memory::PhysicalAddress, pages: usize) -> Result<(), Status> {
+    pub fn free_pages(
+        &self,
+        physical_address: memory::PhysicalAddress,
+        pages: usize,
+    ) -> Result<(), Status> {
         (self.free_pages)(physical_address, pages).into()
     }
 
@@ -131,9 +127,7 @@ impl BootServices {
         let mut size: usize = 0;
         let descriptor: usize = 0;
         let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
-        let descriptor: &mut memory::Descriptor = unsafe {
-            &mut *descriptor
-        };
+        let descriptor: &mut memory::Descriptor = unsafe { &mut *descriptor };
         let mut key: usize = 0;
         let mut descriptor_size: usize = 0;
         let mut descriptor_version: u32 = 0;
@@ -142,35 +136,39 @@ impl BootServices {
             descriptor,
             &mut key,
             &mut descriptor_size,
-            &mut descriptor_version)
-            .result()
-            .unwrap_err();
+            &mut descriptor_version,
+        )
+        .result()
+        .unwrap_err();
         assert!(status == Status::BUFFER_TOO_SMALL);
         size += 2 * descriptor_size;
-        let mut descriptors: Vec<u8> = (0..size)
-            .map(|_| 0)
-            .collect();
+        let mut descriptors: Vec<u8> = (0..size).map(|_| 0).collect();
         let descriptor: &mut u8 = &mut descriptors[0];
         let descriptor: *mut u8 = descriptor as *mut u8;
         let descriptor: *mut memory::Descriptor = descriptor as *mut memory::Descriptor;
-        let descriptor: &mut memory::Descriptor = unsafe {
-            &mut *descriptor
-        };
+        let descriptor: &mut memory::Descriptor = unsafe { &mut *descriptor };
         (self.get_memory_map)(
             &mut size,
             descriptor,
             &mut key,
             &mut descriptor_size,
-            &mut descriptor_version)
-            .result()
-            .map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
+            &mut descriptor_version,
+        )
+        .result()
+        .map(|_| memory::Map::new(descriptors, descriptor_size, descriptor_version, key))
     }
 }
 
 /// # EFI_CREATE_EVENT
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
-type CreateEvent = extern "efiapi" fn(/* Type */ u32, /* NotifyTpl */ Tpl, /* NotifyFunction */ event::Notify, /* NotifyContext */ &Void, /* Event */ &mut Event) -> Status;
+type CreateEvent = extern "efiapi" fn(
+    /* Type */ u32,
+    /* NotifyTpl */ Tpl,
+    /* NotifyFunction */ event::Notify,
+    /* NotifyContext */ &Void,
+    /* Event */ &mut Event,
+) -> Status;
 
 /// # EFI_TPL
 /// ## References
@@ -180,7 +178,14 @@ type Tpl = usize;
 /// # EFI_CREATE_EVENT_EX
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
-type CreateEventEx = extern "efiapi" fn(/* Type */ u32, /* NotifyTpl */ Tpl, /* NotifyFunction */ event::Notify, /* NotifyContext */ &Void, /* EventGroup */ &Guid, /* Event */ &mut Event) -> Status;
+type CreateEventEx = extern "efiapi" fn(
+    /* Type */ u32,
+    /* NotifyTpl */ Tpl,
+    /* NotifyFunction */ event::Notify,
+    /* NotifyContext */ &Void,
+    /* EventGroup */ &Guid,
+    /* Event */ &mut Event,
+) -> Status;
 
 /// # EFI_CLOSE_EVENT
 /// ## References
@@ -195,7 +200,11 @@ type SignalEvent = extern "efiapi" fn(/* Event */ Event) -> Status;
 /// # EFI_WAIT_FOR_EVENT
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
-type WaitForEvent = extern "efiapi" fn(/* NumberOfEvents */ usize, /* Event */ &Event, /* Index */ &mut usize) -> Status;
+type WaitForEvent = extern "efiapi" fn(
+    /* NumberOfEvents */ usize,
+    /* Event */ &Event,
+    /* Index */ &mut usize,
+) -> Status;
 
 /// # EFI_CHECK_EVENT
 /// ## References
@@ -205,7 +214,11 @@ type CheckEvent = extern "efiapi" fn(/* Event */ Event) -> Status;
 /// # EFI_SET_TIMER
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.1 Event, Timer, and Task Priority Services
-type SetTimer = extern "efiapi" fn(/* Event */ Event, /* Type */ time::Delay, /*TriggerTime*/ u64) -> Status;
+type SetTimer = extern "efiapi" fn(
+    /* Event */ Event,
+    /* Type */ time::Delay,
+    /*TriggerTime*/ u64,
+) -> Status;
 
 /// # EFI_RAISE_TPL
 /// ## References
@@ -220,22 +233,38 @@ type RestoreTpl = extern "efiapi" fn(/* OldTpl */ Tpl);
 /// # EFI_ALLOCATE_PAGES
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type AllocatePages = extern "efiapi" fn(/* Type */ memory::AllocateType, /* MemoryType */ memory::Type, /* Pages */ usize, /* Memory */ &mut memory::PhysicalAddress) -> Status;
+type AllocatePages = extern "efiapi" fn(
+    /* Type */ memory::AllocateType,
+    /* MemoryType */ memory::Type,
+    /* Pages */ usize,
+    /* Memory */ &mut memory::PhysicalAddress,
+) -> Status;
 
 /// # EFI_FREE_PAGES
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type FreePages = extern "efiapi" fn(/* Memory */ memory::PhysicalAddress, /* Pages */ usize) -> Status;
+type FreePages =
+    extern "efiapi" fn(/* Memory */ memory::PhysicalAddress, /* Pages */ usize) -> Status;
 
 /// # EFI_GET_MEMORY_MAP
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type GetMemoryMap = extern "efiapi" fn(/* MemoryMapSize */ &mut usize, /* MemoryMap */ &mut memory::Descriptor, /* MapKey */ &mut usize, /* DescriptorSize */ &mut usize, /* DescriptorVersion */ &mut u32) -> Status;
+type GetMemoryMap = extern "efiapi" fn(
+    /* MemoryMapSize */ &mut usize,
+    /* MemoryMap */ &mut memory::Descriptor,
+    /* MapKey */ &mut usize,
+    /* DescriptorSize */ &mut usize,
+    /* DescriptorVersion */ &mut u32,
+) -> Status;
 
 /// # EFI_ALLOCATE_POOL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
-type AllocatePool = extern "efiapi" fn(/* PoolType */ memory::Type, /* Size */ usize, /* Buffer */ &mut &Void) -> Status;
+type AllocatePool = extern "efiapi" fn(
+    /* PoolType */ memory::Type,
+    /* Size */ usize,
+    /* Buffer */ &mut &Void,
+) -> Status;
 
 /// # EFI_FREE_POOL
 /// ## References
@@ -245,97 +274,182 @@ type FreePool = extern "efiapi" fn(/* Buffer */ &Void) -> Status;
 /// # EFI_INSTALL_PROTOCOL_INTERFACE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type InstallProtocolInterface = extern "efiapi" fn(/* Handle */ &mut Handle, /* Protocol */ &Guid, /* InterfaceType */ protocol::InterfaceType, /* Interface */ &Void) -> Status;
+type InstallProtocolInterface = extern "efiapi" fn(
+    /* Handle */ &mut Handle,
+    /* Protocol */ &Guid,
+    /* InterfaceType */ protocol::InterfaceType,
+    /* Interface */ &Void,
+) -> Status;
 
 /// # EFI_UNINSTALL_PROTOCOL_INTERFACE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type UninstallProtocolInterface = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* Interface */ &Void) -> Status;
+type UninstallProtocolInterface = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* Interface */ &Void,
+) -> Status;
 
 /// # EFI_REINSTALL_PROTOCOL_INTERFACE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type ReinstallProtocolInterface = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* OldInterface*/ &Void, /* NewInterface */ &Void) -> Status;
+type ReinstallProtocolInterface = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* OldInterface*/ &Void,
+    /* NewInterface */ &Void,
+) -> Status;
 
 /// # EFI_REGISTER_PROTOCOL_NOTIFY
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type RegisterProtocolNotify = extern "efiapi" fn(/* Protocol */ &Guid, /* Event */ Event, /* Registration */ &mut &Void) -> Status;
+type RegisterProtocolNotify = extern "efiapi" fn(
+    /* Protocol */ &Guid,
+    /* Event */ Event,
+    /* Registration */ &mut &Void,
+) -> Status;
 
 /// # EFI_LOCATE_HANDLE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type LocateHandle = extern "efiapi" fn(/* SearchType */ protocol::LocateSearchType, /* Protocol */ &Guid, /* SearchKey */ &Void, /* BufferSize */ &mut usize, /* Buffer */ &mut Handle) -> Status;
+type LocateHandle = extern "efiapi" fn(
+    /* SearchType */ protocol::LocateSearchType,
+    /* Protocol */ &Guid,
+    /* SearchKey */ &Void,
+    /* BufferSize */ &mut usize,
+    /* Buffer */ &mut Handle,
+) -> Status;
 
 /// # EFI_HANDLE_HANDLE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type HandleProtocol = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* Interface */ &mut &Void) -> Status;
+type HandleProtocol = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* Interface */ &mut &Void,
+) -> Status;
 
 /// # EFI_LOCATE_DEVICE_PATH
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type LocateDevicePath = extern "efiapi" fn(/* Protocol */ &Guid, /* DevicePath */ &mut &protocol::DevicePath, /* Device */ &mut Handle) -> Status;
+type LocateDevicePath = extern "efiapi" fn(
+    /* Protocol */ &Guid,
+    /* DevicePath */ &mut &protocol::DevicePath,
+    /* Device */ &mut Handle,
+) -> Status;
 
 /// # EFI_OPEN_PROTOCOL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type OpenProtocol = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* Interface */ &mut &Void, /* AgentHandle */ Handle, /* ControllerHandle */ Handle, /* Attributes */ u32) -> Status;
+type OpenProtocol = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* Interface */ &mut &Void,
+    /* AgentHandle */ Handle,
+    /* ControllerHandle */ Handle,
+    /* Attributes */ u32,
+) -> Status;
 
 /// # EFI_CLOSE_PROTOCOL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type CloseProtocol = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* AgentHandle */ Handle, /* ControllerHandle */ Handle) -> Status;
+type CloseProtocol = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* AgentHandle */ Handle,
+    /* ControllerHandle */ Handle,
+) -> Status;
 
 /// # EFI_OPEN_PROTOCOL_INFORMATION
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type OpenProtocolInformation = extern "efiapi" fn(/* Handle */ Handle, /* Protocol */ &Guid, /* EntryBuffer */ &mut &protocol::OpenProtocolInformationEntry, /* EntryCount */ &mut usize) -> Status;
+type OpenProtocolInformation = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* Protocol */ &Guid,
+    /* EntryBuffer */ &mut &protocol::OpenProtocolInformationEntry,
+    /* EntryCount */ &mut usize,
+) -> Status;
 
 /// # EFI_CONNECT_CONTROLLER
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type ConnectController = extern "efiapi" fn(/* ControllerHandle */ Handle, /* DriverImageHandle */ &Handle, /* RemainingDevicePath */ &protocol::DevicePath, /* Recursive */ bool) -> Status;
+type ConnectController = extern "efiapi" fn(
+    /* ControllerHandle */ Handle,
+    /* DriverImageHandle */ &Handle,
+    /* RemainingDevicePath */ &protocol::DevicePath,
+    /* Recursive */ bool,
+) -> Status;
 
 /// # EFI_DISCONNECT_CONTROLLER
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type DisconnectController = extern "efiapi" fn(/* ControllerHandle */ Handle, /* DriverImageHandle */ Handle, /* ChildHandle */ Handle) -> Status;
+type DisconnectController = extern "efiapi" fn(
+    /* ControllerHandle */ Handle,
+    /* DriverImageHandle */ Handle,
+    /* ChildHandle */ Handle,
+) -> Status;
 
 /// # EFI_PROTOCOLS_PER_HANDLE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type ProtocolsPerHandle = extern "efiapi" fn(/* Handle */ Handle, /* ProtocolBuffer */ &mut &&Guid, /* ProtocolBufferCount */ &mut usize) -> Status;
+type ProtocolsPerHandle = extern "efiapi" fn(
+    /* Handle */ Handle,
+    /* ProtocolBuffer */ &mut &&Guid,
+    /* ProtocolBufferCount */ &mut usize,
+) -> Status;
 
 /// # EFI_LOCATE_HANDLE_BUFFER
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type LocateHandleBuffer = extern "efiapi" fn(/* SearchType */ protocol::LocateSearchType, /* Protocol */ &Guid, /* SearchKey */ &Void, /* NoHandles */ &mut usize, /* Buffer */ &mut &Handle) -> Status;
+type LocateHandleBuffer = extern "efiapi" fn(
+    /* SearchType */ protocol::LocateSearchType,
+    /* Protocol */ &Guid,
+    /* SearchKey */ &Void,
+    /* NoHandles */ &mut usize,
+    /* Buffer */ &mut &Handle,
+) -> Status;
 
 /// # EFI_LOCATE_PROTOCOL
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type LocateProtocol = extern "efiapi" fn(/* Protocl */ &Guid, /* Registration */ &Void, /* Interface */&mut &Void) -> Status;
+type LocateProtocol = extern "efiapi" fn(
+    /* Protocl */ &Guid,
+    /* Registration */ &Void,
+    /* Interface */ &mut &Void,
+) -> Status;
 
 /// # EFI_INSTALL_MULTIPLE_PROTOCOL_INTERFACES
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type InstallMultipleProtocolInterfaces = extern "efiapi" fn(/* Handle */ &mut Handle) -> Status;
+type InstallMultipleProtocolInterfaces =
+    extern "efiapi" fn(/* Handle */ &mut Handle) -> Status;
 
 /// # EFI_UNINSTALL_MULTIPLE_PROTOCOL_INTERFACES
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.3 Protocol Handler Services
-type UninstallMultipleProtocolInterfaces = extern "efiapi" fn(/* Handle */ &mut Handle) -> Status;
+type UninstallMultipleProtocolInterfaces =
+    extern "efiapi" fn(/* Handle */ &mut Handle) -> Status;
 
 /// # EFI_IMAGE_LOAD
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
-type ImageLoad = extern "efiapi" fn(/* BootPolicy */ bool, /* ParentImageHandle */ Handle, /* DevicePath */ &protocol::DevicePath, /* SourceBuffer */ &Void, /* SourceSize */ usize, /* ImageHandle */ &mut Handle) -> Status;
+type ImageLoad = extern "efiapi" fn(
+    /* BootPolicy */ bool,
+    /* ParentImageHandle */ Handle,
+    /* DevicePath */ &protocol::DevicePath,
+    /* SourceBuffer */ &Void,
+    /* SourceSize */ usize,
+    /* ImageHandle */ &mut Handle,
+) -> Status;
 
 /// # EFI_IMAGE_START
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
-type ImageStart = extern "efiapi" fn(/* ImageHandle */ Handle, /* ExitDataSize */ &mut usize, /* ExitData */ &mut char16::NullTerminatedString) -> Status;
+type ImageStart = extern "efiapi" fn(
+    /* ImageHandle */ Handle,
+    /* ExitDataSize */ &mut usize,
+    /* ExitData */ &mut char16::NullTerminatedString,
+) -> Status;
 
 /// # EFI_IMAGE_UNLOAD
 /// ## References
@@ -345,32 +459,52 @@ type ImageUnload = extern "efiapi" fn(/* ImageHandle */ Handle) -> Status;
 /// # EFI_EXIT
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
-type Exit = extern "efiapi" fn(/* ImageHandle */ Handle, /* ExitStatus */ Status, /* ExitDataSize */ usize, /* ExitData */ char16::NullTerminatedString) -> Status;
+type Exit = extern "efiapi" fn(
+    /* ImageHandle */ Handle,
+    /* ExitStatus */ Status,
+    /* ExitDataSize */ usize,
+    /* ExitData */ char16::NullTerminatedString,
+) -> Status;
 
 /// # EFI_EXIT_BOOT_SERVICES
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.4 Image Services
-type ExitBootServices = extern "efiapi" fn(/* ImageHandle */ Handle, /* MapKey */ usize) -> Status;
+type ExitBootServices =
+    extern "efiapi" fn(/* ImageHandle */ Handle, /* MapKey */ usize) -> Status;
 
 /// # EFI_SET_WATCHDOG_TIMER
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
-type SetWatchdogTimer = extern "efiapi" fn(/* Timeout */ usize, /* WatchdogCode */ u64, /* DataSize */ usize, /* WatchdogData */ char16::NullTerminatedString) -> Status;
+type SetWatchdogTimer = extern "efiapi" fn(
+    /* Timeout */ usize,
+    /* WatchdogCode */ u64,
+    /* DataSize */ usize,
+    /* WatchdogData */ char16::NullTerminatedString,
+) -> Status;
 
 /// # EFI_COPY_MEM
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
-type CopyMem = extern "efiapi" fn(/* Destination */ &Void, /* Source */ &Void, /* Length */ usize) -> Status;
+type CopyMem = extern "efiapi" fn(
+    /* Destination */ &Void,
+    /* Source */ &Void,
+    /* Length */ usize,
+) -> Status;
 
 /// # EFI_SET_MEM
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
-type SetMem = extern "efiapi" fn(/* Buffer */ &Void, /* Size */ usize, /* Value */ u8) -> Status;
+type SetMem = extern "efiapi" fn(
+    /* Buffer */ &Void,
+    /* Size */ usize,
+    /* Value */ u8,
+) -> Status;
 
 /// # EFI_INSTALL_CONFIGURATION_TABLE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
-type InstallConfigurationTable = extern "efiapi" fn(/* Guid */ &Guid, /* Table */ &Void) -> Status;
+type InstallConfigurationTable =
+    extern "efiapi" fn(/* Guid */ &Guid, /* Table */ &Void) -> Status;
 
 /// # EFI_STALL
 /// ## References
@@ -385,5 +519,8 @@ type GetNextMonotonicCount = extern "efiapi" fn(/* Count */ &mut u64) -> Status;
 /// # EFI_CALCULATE_CRC32
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.5 Miscellaneous Boot Services
-type CalculateCrc32 = extern "efiapi" fn(/* Data */ &Void, /* DataSize */ usize, /* Crc32 */&mut u32) -> Status;
-
+type CalculateCrc32 = extern "efiapi" fn(
+    /* Data */ &Void,
+    /* DataSize */ usize,
+    /* Crc32 */ &mut u32,
+) -> Status;

@@ -5,10 +5,7 @@ pub mod index;
 pub mod redirection;
 pub mod version;
 
-use {
-    alloc::vec::Vec,
-    core::fmt,
-};
+use {alloc::vec::Vec, core::fmt};
 
 /// # Advanced Programmable Interrupt Controller (APIC) Registers
 /// ## References
@@ -69,13 +66,18 @@ impl Registers {
         self.data.get()
     }
 
-    fn set_redirection_table_entry(&mut self, irq: u8, redirection_table_entry: redirection::table::Entry) {
+    fn set_redirection_table_entry(
+        &mut self,
+        irq: u8,
+        redirection_table_entry: redirection::table::Entry,
+    ) {
         assert!((irq as usize) < self.version().redirection_table_length());
         let redirection_table_entry: u64 = redirection_table_entry.into();
         let index: u8 = 0x10 + 2 * irq;
         let low_index: u8 = index;
         let high_index: u8 = index + 1;
-        let low_redirection_table_entry: u32 = (redirection_table_entry & 0x00000000ffffffff) as u32;
+        let low_redirection_table_entry: u32 =
+            (redirection_table_entry & 0x00000000ffffffff) as u32;
         let high_redirection_table_entry: u32 = (redirection_table_entry >> u32::BITS) as u32;
         self.set_u32(low_index, low_redirection_table_entry);
         self.set_u32(high_index, high_redirection_table_entry);
@@ -100,4 +102,3 @@ impl fmt::Debug for Registers {
             .finish()
     }
 }
-

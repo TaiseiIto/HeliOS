@@ -1,10 +1,7 @@
 use {
-    bitfield_struct::bitfield,
-    crate::{
-        memory,
-        x64,
-    },
     super::descriptor,
+    crate::{memory, x64},
+    bitfield_struct::bitfield,
 };
 
 /// # Segment Descriptor
@@ -74,11 +71,7 @@ impl Descriptor {
         let limit1: usize = self.limit1() as usize;
         let limit: usize = limit0 + (limit1 << Self::LIMIT0_BITS);
         let size: usize = limit + 1;
-        size * if self.g() {
-            4 * memory::KIB
-        } else {
-            1
-        }
+        size * if self.g() { 4 * memory::KIB } else { 1 }
     }
 }
 
@@ -124,9 +117,10 @@ impl From<&descriptor::Interface> for Descriptor {
 }
 
 impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Descriptor {
-    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
+    fn from(
+        segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap,
+    ) -> Self {
         let interface: descriptor::Interface = segment_and_io_permission_bit_map.into();
         (&interface).into()
     }
 }
-

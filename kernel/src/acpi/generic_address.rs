@@ -1,7 +1,4 @@
-use {
-    core::mem,
-    crate::x64::port,
-};
+use {crate::x64::port, core::mem};
 
 /// # Generic Address Structure
 /// ## References
@@ -48,9 +45,7 @@ impl Structure {
         assert_eq!(address_space_id, SpaceId::SystemMemorySpace);
         let address: usize = self.address as usize;
         let address: *const T = address as *const T;
-        unsafe {
-            &*address
-        }
+        unsafe { &*address }
     }
 
     pub fn get_mut<T>(&mut self) -> &mut T {
@@ -58,9 +53,7 @@ impl Structure {
         assert_eq!(address_space_id, SpaceId::SystemMemorySpace);
         let address: usize = self.address as usize;
         let address: *mut T = address as *mut T;
-        unsafe {
-            &mut *address
-        }
+        unsafe { &mut *address }
     }
 
     pub fn is_null(&self) -> bool {
@@ -73,14 +66,12 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u8 = address as *const u8;
-                unsafe {
-                    address.read_volatile()
-                }
-            },
+                unsafe { address.read_volatile() }
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::inb(port)
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -91,14 +82,12 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u16 = address as *const u16;
-                unsafe {
-                    address.read_volatile()
-                }
-            },
+                unsafe { address.read_volatile() }
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::inw(port)
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -109,14 +98,12 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u32 = address as *const u32;
-                unsafe {
-                    address.read_volatile()
-                }
-            },
+                unsafe { address.read_volatile() }
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::inl(port)
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -127,17 +114,15 @@ impl Structure {
             SpaceId::SystemMemorySpace => {
                 let address: usize = self.address as usize;
                 let address: *const u64 = address as *const u64;
-                unsafe {
-                    address.read_volatile()
-                }
-            },
+                unsafe { address.read_volatile() }
+            }
             SpaceId::SystemIoSpace => {
                 let low_port: u16 = self.address as u16;
                 let low: u64 = port::inl(low_port) as u64;
                 let high_port: u16 = low_port + (mem::size_of::<u32>() as u16);
                 let high: u64 = port::inl(high_port) as u64;
                 low + (high << u32::BITS)
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -167,11 +152,11 @@ impl Structure {
                 unsafe {
                     address.write_volatile(data);
                 };
-            },
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::outb(port, data);
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -185,11 +170,11 @@ impl Structure {
                 unsafe {
                     address.write_volatile(data);
                 };
-            },
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::outw(port, data);
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -203,11 +188,11 @@ impl Structure {
                 unsafe {
                     address.write_volatile(data);
                 };
-            },
+            }
             SpaceId::SystemIoSpace => {
                 let port: u16 = self.address as u16;
                 port::outl(port, data);
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -221,7 +206,7 @@ impl Structure {
                 unsafe {
                     address.write_volatile(data);
                 };
-            },
+            }
             SpaceId::SystemIoSpace => {
                 let low_port: u16 = self.address as u16;
                 let low: u32 = (data & ((1 << u32::BITS) - 1)) as u32;
@@ -229,7 +214,7 @@ impl Structure {
                 let high_port: u16 = low_port + (mem::size_of::<u32>() as u16);
                 let high: u32 = (data >> u32::BITS) as u32;
                 port::outl(high_port, high);
-            },
+            }
             _ => unimplemented!(),
         }
     }
@@ -300,4 +285,3 @@ impl From<SpaceId> for u8 {
         }
     }
 }
-

@@ -1,8 +1,4 @@
-use core::{
-    fmt,
-    mem::size_of,
-    slice,
-};
+use core::{fmt, mem::size_of, slice};
 
 #[repr(packed)]
 pub struct Structure {
@@ -21,9 +17,7 @@ impl Structure {
         let first_byte: usize = structure + size_of::<Self>();
         let first_byte: *const u8 = first_byte as *const u8;
         let size: usize = (self.length as usize) - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(first_byte, size)
-        }
+        unsafe { slice::from_raw_parts(first_byte, size) }
     }
 }
 
@@ -39,4 +33,3 @@ impl fmt::Debug for Structure {
             .finish()
     }
 }
-

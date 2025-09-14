@@ -7,9 +7,7 @@ mod ecx0x00000001;
 mod ecx0x00000002;
 
 use {
-    super::Eax0x00000000,
-    ecx0x00000000::Ecx0x00000000,
-    ecx0x00000001::Ecx0x00000001,
+    super::Eax0x00000000, ecx0x00000000::Ecx0x00000000, ecx0x00000001::Ecx0x00000001,
     ecx0x00000002::Ecx0x00000002,
 };
 
@@ -45,4 +43,3 @@ impl Eax0x00000007 {
         self.ecx0x00000000.sgx()
     }
 }
-

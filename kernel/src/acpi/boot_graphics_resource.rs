@@ -26,4 +26,3 @@ impl Table {
         self.header.is_correct()
     }
 }
-

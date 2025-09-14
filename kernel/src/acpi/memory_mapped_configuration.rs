@@ -1,10 +1,6 @@
 use {
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Memory Mapped Configuration Table
@@ -21,16 +17,16 @@ impl Table {
         self.header.is_correct()
     }
 
-    fn configuration_space_base_address_allocations(&self) -> &[ConfigurationSpaceBaseAddressAllocation] {
+    fn configuration_space_base_address_allocations(
+        &self,
+    ) -> &[ConfigurationSpaceBaseAddressAllocation] {
         let address: *const Self = self as *const Self;
-        let address: *const Self = unsafe {
-            address.add(1)
-        };
-        let address: *const ConfigurationSpaceBaseAddressAllocation = address as *const ConfigurationSpaceBaseAddressAllocation;
-        let length: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<ConfigurationSpaceBaseAddressAllocation>();
-        unsafe {
-            slice::from_raw_parts(address, length)
-        }
+        let address: *const Self = unsafe { address.add(1) };
+        let address: *const ConfigurationSpaceBaseAddressAllocation =
+            address as *const ConfigurationSpaceBaseAddressAllocation;
+        let length: usize = (self.header.table_size() - size_of::<Self>())
+            / size_of::<ConfigurationSpaceBaseAddressAllocation>();
+        unsafe { slice::from_raw_parts(address, length) }
     }
 }
 
@@ -39,7 +35,10 @@ impl fmt::Debug for Table {
         formatter
             .debug_struct("Table")
             .field("header", &self.header)
-            .field("configuration_space_base_address_allocations", &self.configuration_space_base_address_allocations())
+            .field(
+                "configuration_space_base_address_allocations",
+                &self.configuration_space_base_address_allocations(),
+            )
             .finish()
     }
 }
@@ -60,4 +59,3 @@ struct ConfigurationSpaceBaseAddressAllocation {
     end_pci_bus_number: u8,
     __: u32,
 }
-

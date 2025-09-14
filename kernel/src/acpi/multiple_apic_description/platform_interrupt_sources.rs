@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::interrupt_source_override,
-};
+use {super::interrupt_source_override, bitfield_struct::bitfield};
 
 /// # Platform Interrupt Sources
 /// ## References
@@ -43,4 +40,3 @@ pub struct Flags {
     #[bits(31)]
     __: u32,
 }
-

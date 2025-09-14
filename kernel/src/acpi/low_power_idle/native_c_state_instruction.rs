@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::super::generic_address,
-};
+use {super::super::generic_address, bitfield_struct::bitfield};
 
 /// # Native C-State instruction based LPI structure
 /// ## References
@@ -45,4 +42,3 @@ struct Flags {
     #[bits(30)]
     __: u32,
 }
-

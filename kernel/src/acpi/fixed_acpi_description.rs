@@ -1,29 +1,19 @@
 pub mod pm1;
 
 use {
-    alloc::vec,
-    bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem,
-    },
-    crate::{
-        io,
-        x64,
-    },
     super::{
-        firmware_acpi_control,
-        generic_address,
+        firmware_acpi_control, generic_address,
         machine_language::{
-            interpreter::Evaluator,
             self,
-            syntax::{
-                FirstReader,
-                ReaderOutsideMethod,
-            },
+            interpreter::Evaluator,
+            syntax::{FirstReader, ReaderOutsideMethod},
         },
         system_description,
     },
+    crate::{io, x64},
+    alloc::vec,
+    bitfield_struct::bitfield,
+    core::{fmt, mem},
 };
 
 /// # FADT
@@ -97,9 +87,12 @@ impl Table {
         (self.pm_tmr_len == 4).then(|| {
             let self_address: *const Self = self as *const Self;
             let self_address: usize = self_address as usize;
-            let x_pm_tmr_blk_address: *const generic_address::Structure = (&self.x_pm_tmr_blk) as *const generic_address::Structure;
+            let x_pm_tmr_blk_address: *const generic_address::Structure =
+                (&self.x_pm_tmr_blk) as *const generic_address::Structure;
             let x_pm_tmr_blk_address: usize = x_pm_tmr_blk_address as usize;
-            if x_pm_tmr_blk_address + mem::size_of::<generic_address::Structure>() <= self_address + self.header.table_size() {
+            if x_pm_tmr_blk_address + mem::size_of::<generic_address::Structure>()
+                <= self_address + self.header.table_size()
+            {
                 let x_pm_tmr_blk: generic_address::Structure = self.x_pm_tmr_blk;
                 if x_pm_tmr_blk.is_null() {
                     io::Mapped::port(self.pm_tmr_blk as u16)
@@ -121,24 +114,26 @@ impl Table {
     }
 
     pub fn shutdown(&mut self) {
-        let dsdt: system_description::Table = self
-            .dsdt()
-            .unwrap();
+        let dsdt: system_description::Table = self.dsdt().unwrap();
         let dsdt: &[u8] = dsdt.definition_block();
         let mut semantic_tree = machine_language::name::Node::default();
         let root_path = machine_language::name::Path::root();
-        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) = machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &root_path);
+        let (mut syntax_tree, unread_dsdt): (machine_language::syntax::TermList, &[u8]) =
+            machine_language::syntax::TermList::first_read(dsdt, &mut semantic_tree, &root_path);
         assert!(unread_dsdt.is_empty());
         syntax_tree.read_outside_method(&mut semantic_tree, &root_path);
         let reference_tree: machine_language::reference::Node = (&syntax_tree).into();
-        let stack_frame = machine_language::interpreter::StackFrame::default().set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
+        let stack_frame = machine_language::interpreter::StackFrame::default()
+            .set_arguments(vec![machine_language::interpreter::Value::Byte(0x05)]);
         let tts_path: machine_language::name::Path = "\\_TTS".into();
-        let tts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&tts_path);
+        let tts: Option<&machine_language::syntax::DefMethod> =
+            reference_tree.get_method(&tts_path);
         if let Some(tts) = tts {
             tts.evaluate(&mut stack_frame.clone(), &reference_tree, &tts_path);
         }
         let pts_path: machine_language::name::Path = "\\_PTS".into();
-        let pts: Option<&machine_language::syntax::DefMethod> = reference_tree.get_method(&pts_path);
+        let pts: Option<&machine_language::syntax::DefMethod> =
+            reference_tree.get_method(&pts_path);
         if let Some(pts) = pts {
             pts.evaluate(&mut stack_frame.clone(), &reference_tree, &pts_path);
         }
@@ -146,7 +141,13 @@ impl Table {
         let pm1b_control: Option<pm1::control::Register> = self.read_pm1b_control();
         let s5: machine_language::name::Path = "\\_S5".into();
         let s5: Option<&machine_language::syntax::DefName> = reference_tree.get_name(&s5);
-        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| s5.evaluate(&mut machine_language::interpreter::StackFrame::default(), &reference_tree, &root_path));
+        let s5: Option<machine_language::interpreter::Value> = s5.and_then(|s5| {
+            s5.evaluate(
+                &mut machine_language::interpreter::StackFrame::default(),
+                &reference_tree,
+                &root_path,
+            )
+        });
         let pm1a_cnt_slp_typ: Option<u8> = s5
             .as_ref()
             .and_then(|s5| s5.index(&machine_language::interpreter::Value::QWord(0)))
@@ -173,34 +174,34 @@ impl Table {
 
     fn dsdt(&self) -> Option<system_description::Table> {
         let dsdt: Option<usize> = (44 <= self.header.table_size()).then_some(self.dsdt as usize);
-        let x_dsdt: Option<usize> = (148 <= self.header.table_size()).then_some(self.x_dsdt as usize);
-        dsdt
-            .iter()
+        let x_dsdt: Option<usize> =
+            (148 <= self.header.table_size()).then_some(self.x_dsdt as usize);
+        dsdt.iter()
             .chain(x_dsdt.iter())
             .max()
             .filter(|dsdt| **dsdt != 0)
             .map(|dsdt| {
-                let header: *const system_description::Header = (*dsdt) as *const system_description::Header;
-                let header: &system_description::Header = unsafe {
-                    &*header
-                };
+                let header: *const system_description::Header =
+                    (*dsdt) as *const system_description::Header;
+                let header: &system_description::Header = unsafe { &*header };
                 header.into()
             })
     }
 
     fn firmware_ctrl(&self) -> Option<&firmware_acpi_control::Structure> {
-        let firmware_ctrl: Option<usize> = (40 <= self.header.table_size()).then_some(self.firmware_ctrl as usize);
-        let x_firmware_ctrl: Option<usize> = (140 <= self.header.table_size()).then_some(self.x_firmware_ctrl as usize);
+        let firmware_ctrl: Option<usize> =
+            (40 <= self.header.table_size()).then_some(self.firmware_ctrl as usize);
+        let x_firmware_ctrl: Option<usize> =
+            (140 <= self.header.table_size()).then_some(self.x_firmware_ctrl as usize);
         firmware_ctrl
             .iter()
             .chain(x_firmware_ctrl.iter())
             .max()
             .filter(|firmware_ctrl| **firmware_ctrl != 0)
             .map(|firmware_ctrl| {
-                let firmware_ctrl: *const firmware_acpi_control::Structure = (*firmware_ctrl) as *const firmware_acpi_control::Structure;
-                unsafe {
-                    &*firmware_ctrl
-                }
+                let firmware_ctrl: *const firmware_acpi_control::Structure =
+                    (*firmware_ctrl) as *const firmware_acpi_control::Structure;
+                unsafe { &*firmware_ctrl }
             })
     }
 
@@ -247,69 +248,61 @@ impl Table {
     fn read_pm1a_control(&self) -> Option<pm1::control::Register> {
         self.x_pm1a_cnt_blk()
             .or(self.pm1a_cnt_blk())
-            .map(|pm1a_cnt_blk| pm1a_cnt_blk
-                .read_word()
-                .into())
+            .map(|pm1a_cnt_blk| pm1a_cnt_blk.read_word().into())
     }
 
     fn read_pm1b_control(&self) -> Option<pm1::control::Register> {
         self.x_pm1b_cnt_blk()
             .or(self.pm1b_cnt_blk())
-            .map(|pm1b_cnt_blk| pm1b_cnt_blk
-                .read_word()
-                .into())
+            .map(|pm1b_cnt_blk| pm1b_cnt_blk.read_word().into())
     }
 
     #[allow(dead_code)]
     fn read_pm1a_enable(&self) -> Option<pm1::enable::Register> {
         self.x_pm1a_evt_blk()
             .or(self.pm1a_evt_blk())
-            .map(|pm1a_evt_blk| pm1a_evt_blk
-                .add((self.pm1_evt_len as usize) / 2)
-                .read_word()
-                .into())
+            .map(|pm1a_evt_blk| {
+                pm1a_evt_blk
+                    .add((self.pm1_evt_len as usize) / 2)
+                    .read_word()
+                    .into()
+            })
     }
 
     #[allow(dead_code)]
     fn read_pm1b_enable(&self) -> Option<pm1::enable::Register> {
         self.x_pm1b_evt_blk()
             .or(self.pm1b_evt_blk())
-            .map(|pm1b_evt_blk| pm1b_evt_blk
-                .add((self.pm1_evt_len as usize) / 2)
-                .read_word()
-                .into())
+            .map(|pm1b_evt_blk| {
+                pm1b_evt_blk
+                    .add((self.pm1_evt_len as usize) / 2)
+                    .read_word()
+                    .into()
+            })
     }
 
     #[allow(dead_code)]
     fn read_pm1a_status(&self) -> Option<pm1::status::Register> {
         self.x_pm1a_evt_blk()
             .or(self.pm1a_evt_blk())
-            .map(|pm1a_evt_blk| pm1a_evt_blk
-                .read_word()
-                .into())
+            .map(|pm1a_evt_blk| pm1a_evt_blk.read_word().into())
     }
 
     #[allow(dead_code)]
     fn read_pm1b_status(&self) -> Option<pm1::status::Register> {
         self.x_pm1b_evt_blk()
             .or(self.pm1b_evt_blk())
-            .map(|pm1b_evt_blk| pm1b_evt_blk
-                .read_word()
-                .into())
+            .map(|pm1b_evt_blk| pm1b_evt_blk.read_word().into())
     }
 
     fn write_pm1a_control(&mut self, pm1a_cnt: pm1::control::Register) {
-        if let Some(mut pm1a_cnt_blk) = self
-            .x_pm1a_cnt_blk()
-            .or(self.pm1a_cnt_blk()) {
+        if let Some(mut pm1a_cnt_blk) = self.x_pm1a_cnt_blk().or(self.pm1a_cnt_blk()) {
             pm1a_cnt_blk.write_word(pm1a_cnt.into());
         }
     }
 
     fn write_pm1b_control(&mut self, pm1b_cnt: pm1::control::Register) {
-        if let Some(mut pm1b_cnt_blk) = self
-            .x_pm1b_cnt_blk()
-            .or(self.pm1b_cnt_blk()) {
+        if let Some(mut pm1b_cnt_blk) = self.x_pm1b_cnt_blk().or(self.pm1b_cnt_blk()) {
             pm1b_cnt_blk.write_word(pm1b_cnt.into());
         }
     }
@@ -492,4 +485,3 @@ impl Flags {
         }
     }
 }
-

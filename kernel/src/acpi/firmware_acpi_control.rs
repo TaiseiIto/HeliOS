@@ -1,9 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        str,
-    },
+    core::{fmt, str},
 };
 
 /// # FACS
@@ -68,4 +65,3 @@ struct GlobalLock {
     #[bits(30)]
     __: u32,
 }
-

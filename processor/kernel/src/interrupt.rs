@@ -4,15 +4,8 @@ pub mod descriptor;
 pub use descriptor::Descriptor;
 
 use {
+    crate::{bsp_println, memory, processor, task, x64, Argument},
     alloc::collections::VecDeque,
-    crate::{
-        Argument,
-        bsp_println,
-        memory,
-        processor,
-        task,
-        x64,
-    },
 };
 
 static mut EVENTS: VecDeque<Event> = VecDeque::new();
@@ -38,15 +31,9 @@ impl Event {
     }
 
     pub fn pop() -> Option<Event> {
-        task::Controller::get_current_mut()
-            .unwrap()
-            .cli();
-        let event: Option<Event> = unsafe {
-            EVENTS.pop_back()
-        };
-        task::Controller::get_current_mut()
-            .unwrap()
-            .sti();
+        task::Controller::get_current_mut().unwrap().cli();
+        let event: Option<Event> = unsafe { EVENTS.pop_back() };
+        task::Controller::get_current_mut().unwrap().sti();
         event
     }
 
@@ -62,17 +49,13 @@ impl Event {
             Self::Rtc => bsp_println!("RTC event."),
         }
     }
-    
+
     pub fn push(event: Event) {
-        task::Controller::get_current_mut()
-            .unwrap()
-            .cli();
+        task::Controller::get_current_mut().unwrap().cli();
         unsafe {
             EVENTS.push_front(event);
         }
-        task::Controller::get_current_mut()
-            .unwrap()
-            .sti();
+        task::Controller::get_current_mut().unwrap().sti();
     }
 }
 
@@ -645,15 +628,12 @@ pub fn register_handlers(idt: &mut descriptor::Table) {
         1, // int 0xfe
         1, // int 0xff
     ];
-    idt
-        .iter_mut()
-        .zip(handlers
-            .as_slice()
-            .iter())
-        .zip(interrupt_stack_table
-            .as_slice()
-            .iter())
-        .map(|((descriptor, handler), interrupt_stack_table)| (descriptor, handler, interrupt_stack_table))
+    idt.iter_mut()
+        .zip(handlers.as_slice().iter())
+        .zip(interrupt_stack_table.as_slice().iter())
+        .map(|((descriptor, handler), interrupt_stack_table)| {
+            (descriptor, handler, interrupt_stack_table)
+        })
         .for_each(|(descriptor, handler, interrupt_stack_table)| {
             let interface = descriptor::Interface::new(handler, *interrupt_stack_table);
             *descriptor = (&interface).into();
@@ -798,7 +778,10 @@ extern "x86-interrupt" fn handler_0x08(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Double Fault Exception (#DF)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -830,7 +813,10 @@ extern "x86-interrupt" fn handler_0x0a(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Invalid TSS Exception (#TS)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -846,7 +832,10 @@ extern "x86-interrupt" fn handler_0x0b(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Segment Not Present (#NP)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -862,7 +851,10 @@ extern "x86-interrupt" fn handler_0x0c(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Stack Fault Exception (#SS)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -878,7 +870,10 @@ extern "x86-interrupt" fn handler_0x0d(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("General Protection Exception (#GP)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -894,7 +889,10 @@ extern "x86-interrupt" fn handler_0x0e(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Page-Fault Exception (#PF)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -942,7 +940,10 @@ extern "x86-interrupt" fn handler_0x11(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Alignment Check Exception (#AC)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1006,7 +1007,10 @@ extern "x86-interrupt" fn handler_0x15(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Control Protection Exception (#CP)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1134,7 +1138,10 @@ extern "x86-interrupt" fn handler_0x1d(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("VMM Communication Exception (#VC)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -1150,7 +1157,10 @@ extern "x86-interrupt" fn handler_0x1e(stack_frame_and_error_code: StackFrameAnd
     }
     bsp_println!("Security Exception (#SX)");
     bsp_println!("interrupt_number = {:#x?}", interrupt_number);
-    bsp_println!("stack_frame_and_error_code = {:#x?}", stack_frame_and_error_code);
+    bsp_println!(
+        "stack_frame_and_error_code = {:#x?}",
+        stack_frame_and_error_code
+    );
     if let Some(current_task) = task::Controller::get_current_mut() {
         current_task.end_interrupt();
     }
@@ -3986,4 +3996,3 @@ extern "x86-interrupt" fn handler_0xff(stack_frame: StackFrame) {
         current_task.end_interrupt();
     }
 }
-

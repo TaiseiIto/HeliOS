@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -20,9 +17,7 @@ impl FatRegister {
     fn register_mut(&mut self) -> &mut u32 {
         let address: *mut Self = self as *mut Self;
         let address: *mut u32 = address as *mut u32;
-        unsafe {
-            &mut *address
-        }
+        unsafe { &mut *address }
     }
 }
 
@@ -52,11 +47,7 @@ struct Register {
 
 impl Register {
     fn divide_value(&self) -> u8 {
-        self.divide_value0() + if self.divide_value1() {
-            0b100
-        } else {
-            0b000
-        }
+        self.divide_value0() + if self.divide_value1() { 0b100 } else { 0b000 }
     }
 
     fn divisor(&self) -> u8 {
@@ -77,4 +68,3 @@ impl Register {
         self.set_divide_value(divide_value)
     }
 }
-

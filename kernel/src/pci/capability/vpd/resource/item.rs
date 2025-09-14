@@ -1,13 +1,6 @@
 use {
-    alloc::{
-        string::String,
-        vec,
-        vec::Vec,
-    },
-    core::{
-        str,
-        fmt,
-    },
+    alloc::{string::String, vec, vec::Vec},
+    core::{fmt, str},
 };
 
 /// # VPD Format
@@ -20,27 +13,24 @@ pub struct Format {
 }
 
 impl Format {
-    fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self> where T: Iterator<Item = u8> {
+    fn from_byte_iterator<T>(byte_iterator: &mut T) -> Option<Self>
+    where
+        T: Iterator<Item = u8>,
+    {
         let keyword_low: Option<u8> = byte_iterator.next();
         let keyword_high: Option<u8> = byte_iterator.next();
         let length: Option<u8> = byte_iterator.next();
         match (keyword_low, keyword_high, length) {
             (Some(keyword_low), Some(keyword_high), Some(length)) => {
                 let keyword: Vec<u8> = vec![keyword_low, keyword_high];
-                let keyword: Keyword = str::from_utf8(&keyword)
-                    .unwrap()
-                    .into();
-                let data: Vec<u8> = (0..length)
-                    .map(|_| byte_iterator
-                        .next()
-                        .unwrap())
-                    .collect();
+                let keyword: Keyword = str::from_utf8(&keyword).unwrap().into();
+                let data: Vec<u8> = (0..length).map(|_| byte_iterator.next().unwrap()).collect();
                 Some(Self {
                     keyword,
                     length,
                     data,
                 })
-            },
+            }
             _ => None,
         }
     }
@@ -81,25 +71,30 @@ impl fmt::Debug for Format {
     }
 }
 
-pub struct FormatIterator<T> where T: Iterator<Item = u8> {
+pub struct FormatIterator<T>
+where
+    T: Iterator<Item = u8>,
+{
     byte_iterator: T,
 }
 
-impl<T> FormatIterator<T> where T: Iterator<Item = u8> {
+impl<T> FormatIterator<T>
+where
+    T: Iterator<Item = u8>,
+{
     pub fn new(byte_iterator: T) -> Self {
-        Self {
-            byte_iterator,
-        }
+        Self { byte_iterator }
     }
 }
 
-impl<T> Iterator for FormatIterator<T> where T: Iterator<Item = u8> {
+impl<T> Iterator for FormatIterator<T>
+where
+    T: Iterator<Item = u8>,
+{
     type Item = Format;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self {
-            byte_iterator,
-        } = self;
+        let Self { byte_iterator } = self;
         Self::Item::from_byte_iterator(byte_iterator)
     }
 }
@@ -139,24 +134,19 @@ impl From<&str> for Keyword {
             "SN" => Self::Sn,
             "YA" => Self::Ya,
             keyword => {
-                let keyword: Vec<char> = keyword
-                    .chars()
-                    .collect();
-                match keyword.as_slice()
-                    .chunks(2)
-                    .next()
-                    .unwrap() {
+                let keyword: Vec<char> = keyword.chars().collect();
+                match keyword.as_slice().chunks(2).next().unwrap() {
                     ['V', x] => {
                         assert!(matches!(x, '0'..='9' | 'A'..= 'Z'));
                         Self::V(*x)
-                    },
+                    }
                     ['Y', x] => {
                         assert!(matches!(x, '0'..='9' | 'B'..= 'Z'));
                         Self::Y(*x)
-                    },
+                    }
                     _ => unreachable!(),
                 }
-            },
+            }
         }
     }
 }
@@ -180,4 +170,3 @@ impl fmt::Debug for Keyword {
         }
     }
 }
-

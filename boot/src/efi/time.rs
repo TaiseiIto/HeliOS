@@ -40,4 +40,3 @@ pub enum Delay {
     #[allow(dead_code)]
     Relative,
 }
-

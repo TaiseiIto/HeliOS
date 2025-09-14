@@ -22,4 +22,3 @@ pub struct Registers {
 impl Registers {
     pub const OFFSET: usize = 0x400;
 }
-

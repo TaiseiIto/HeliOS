@@ -14,4 +14,3 @@ pub struct Register {
     #[bits(58)]
     command_ring_pointer: u64,
 }
-

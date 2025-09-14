@@ -4,18 +4,9 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
+    super::super::super::{Addr, Half, UnsignedChar, Word, Xword},
     bitfield_struct::bitfield,
-    core::{
-        mem::size_of,
-        slice,
-    },
-    super::super::super::{
-        Addr,
-        Half,
-        UnsignedChar,
-        Word,
-        Xword,
-    },
+    core::{mem::size_of, slice},
 };
 
 /// # ELF Symbol Table
@@ -37,14 +28,10 @@ impl<'a> IntoIterator for Table<'a> {
 impl<'a> From<&'a [u8]> for Table<'a> {
     fn from(bytes: &'a [u8]) -> Self {
         let len: usize = bytes.len() / size_of::<Entry>();
-        let entry: &u8 = bytes
-            .first()
-            .unwrap();
+        let entry: &u8 = bytes.first().unwrap();
         let entry: *const u8 = entry as *const u8;
         let entry: *const Entry = entry as *const Entry;
-        let entries: &[Entry] = unsafe {
-            slice::from_raw_parts(entry, len)
-        };
+        let entries: &[Entry] = unsafe { slice::from_raw_parts(entry, len) };
         Self(entries)
     }
 }
@@ -80,7 +67,7 @@ struct Info {
 
 #[derive(Debug)]
 #[repr(u8)]
-enum Stt{
+enum Stt {
     Notype = 0,
     Object = 1,
     Func = 2,
@@ -209,4 +196,3 @@ impl Stb {
         }
     }
 }
-

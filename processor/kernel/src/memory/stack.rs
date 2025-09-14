@@ -1,10 +1,6 @@
 use {
+    super::{page, ContinuousPages, Paging},
     core::ops::RangeInclusive,
-    super::{
-        ContinuousPages,
-        Paging,
-        page,
-    },
 };
 
 #[derive(Debug)]
@@ -20,16 +16,10 @@ impl Stack {
         let writable: bool = true;
         let executable: bool = false;
         let pages = ContinuousPages::new(paging, range, writable, executable);
-        Self {
-            pages,
-        }
+        Self { pages }
     }
 
     pub fn wrapping_floor(&self) -> usize {
-        self.pages
-            .range_inclusive()
-            .end()
-            .wrapping_add(1)
+        self.pages.range_inclusive().end().wrapping_add(1)
     }
 }
-

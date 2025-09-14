@@ -9,4 +9,3 @@ pub struct Register {
     #[allow(dead_code)]
     admaid: u16,
 }
-

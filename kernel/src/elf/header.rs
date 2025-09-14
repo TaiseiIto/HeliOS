@@ -4,17 +4,9 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
+    super::{program, section, Addr, Half, Off, UnsignedChar, Word},
     alloc::vec::Vec,
     core::arch::asm,
-    super::{
-        Addr,
-        Half,
-        Off,
-        UnsignedChar,
-        Word,
-        program,
-        section,
-    },
 };
 
 /// # ELF Header
@@ -48,18 +40,14 @@ impl Header {
     pub fn program_headers(&self) -> Vec<&program::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
-        let program_header: *const u8 = unsafe {
-            header.add(self.e_phoff as usize)
-        };
+        let program_header: *const u8 = unsafe { header.add(self.e_phoff as usize) };
         (0..self.e_phnum)
             .map(move |index| {
-                let program_header: *const u8 = unsafe {
-                    program_header.add((index * self.e_phentsize) as usize)
-                };
-                let program_header: *const program::Header = program_header as *const program::Header;
-                unsafe {
-                    &*program_header
-                }
+                let program_header: *const u8 =
+                    unsafe { program_header.add((index * self.e_phentsize) as usize) };
+                let program_header: *const program::Header =
+                    program_header as *const program::Header;
+                unsafe { &*program_header }
             })
             .collect()
     }
@@ -84,18 +72,14 @@ impl Header {
     pub fn section_headers(&self) -> Vec<&section::Header> {
         let header: *const Header = self as *const Header;
         let header: *const u8 = header as *const u8;
-        let section_header: *const u8 = unsafe {
-            header.add(self.e_shoff as usize)
-        };
+        let section_header: *const u8 = unsafe { header.add(self.e_shoff as usize) };
         (0..self.e_shnum)
             .map(move |index| {
-                let section_header: *const u8 = unsafe {
-                    section_header.add((index * self.e_shentsize) as usize)
-                };
-                let section_header: *const section::Header = section_header as *const section::Header;
-                unsafe {
-                    &*section_header
-                }
+                let section_header: *const u8 =
+                    unsafe { section_header.add((index * self.e_shentsize) as usize) };
+                let section_header: *const section::Header =
+                    section_header as *const section::Header;
+                unsafe { &*section_header }
             })
             .collect()
     }
@@ -348,4 +332,3 @@ enum Ev {
     #[allow(dead_code)]
     Current = 1,
 }
-

@@ -17,10 +17,8 @@ pub struct Structure {
     cascade_vector: u16,
 }
 
-
 impl Structure {
     pub fn length(&self) -> usize {
         self.length as usize
     }
 }
-

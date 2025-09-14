@@ -8,4 +8,3 @@ pub struct Register {
     tn_fsb_int_val: u32,
     tn_fsb_int_addr: u32,
 }
-

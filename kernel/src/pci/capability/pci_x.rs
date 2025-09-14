@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 pub mod command;
 pub mod status;
@@ -29,4 +26,3 @@ impl fmt::Debug for Item {
             .finish()
     }
 }
-

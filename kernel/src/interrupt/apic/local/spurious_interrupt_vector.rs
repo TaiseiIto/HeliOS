@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -11,17 +8,26 @@ pub struct FatRegister {
 }
 
 impl FatRegister {
-    pub fn enable(&mut self, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) {
+    pub fn enable(
+        &mut self,
+        focus_processor_checking: bool,
+        eoi_broadcast: bool,
+        spurious_vector: u8,
+    ) {
         let apic_software_enable: bool = true;
-        *self.register_mut() = Register::create(apic_software_enable, focus_processor_checking, eoi_broadcast, spurious_vector).into();
+        *self.register_mut() = Register::create(
+            apic_software_enable,
+            focus_processor_checking,
+            eoi_broadcast,
+            spurious_vector,
+        )
+        .into();
     }
 
     fn register_mut(&mut self) -> &mut u32 {
         let register: *mut Self = self as *mut Self;
         let register: *mut u32 = register as *mut u32;
-        unsafe {
-            &mut *register
-        }
+        unsafe { &mut *register }
     }
 }
 
@@ -36,7 +42,10 @@ impl fmt::Debug for FatRegister {
             .debug_struct("Register")
             .field("spurious_vector", &spurious_vector)
             .field("apic_software_enable", &apic_software_enable)
-            .field("focus_processor_checking_disable", &focus_processor_checking_disable)
+            .field(
+                "focus_processor_checking_disable",
+                &focus_processor_checking_disable,
+            )
             .field("eoi_broadcast_suppression", &eoi_broadcast_suppression)
             .finish()
     }
@@ -58,7 +67,12 @@ struct Register {
 }
 
 impl Register {
-    fn create(apic_software_enable: bool, focus_processor_checking: bool, eoi_broadcast: bool, spurious_vector: u8) -> Self {
+    fn create(
+        apic_software_enable: bool,
+        focus_processor_checking: bool,
+        eoi_broadcast: bool,
+        spurious_vector: u8,
+    ) -> Self {
         let focus_processor_checking_disable: bool = !focus_processor_checking;
         let eoi_broadcast_suppression: bool = !eoi_broadcast;
         Self::new()
@@ -68,4 +82,3 @@ impl Register {
             .with_eoi_broadcast_suppression(eoi_broadcast_suppression)
     }
 }
-

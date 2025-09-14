@@ -58,11 +58,11 @@ impl LengthOfStop {
             Self::OnePointFive => {
                 assert!(word_length == 5);
                 true
-            },
+            }
             Self::Two => {
                 assert!((6..=8).contains(&word_length));
                 true
-            },
+            }
         }
     }
 }
@@ -86,4 +86,3 @@ impl From<ParitySelect> for u8 {
         }
     }
 }
-

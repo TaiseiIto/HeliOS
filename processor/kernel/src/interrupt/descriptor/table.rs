@@ -1,28 +1,13 @@
 pub mod register;
 
 use {
-    alloc::{
-        boxed::Box,
-        vec::Vec,
-    },
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
-    crate::{
-        Argument,
-        bsp_println,
-        memory,
-        x64,
-    },
     super::{
+        super::{register_handlers, Descriptor},
         Interface,
-        super::{
-            Descriptor,
-            register_handlers,
-        },
     },
+    crate::{bsp_println, memory, x64, Argument},
+    alloc::{boxed::Box, vec::Vec},
+    core::{fmt, mem::size_of, slice},
 };
 
 pub use register::Register;
@@ -35,25 +20,36 @@ pub struct Controller {
     #[allow(dead_code)]
     task_register: x64::task::Register,
     #[allow(dead_code)]
-    task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap>,
+    task_state_segment_and_io_permission_bit_map:
+        Box<x64::task::state::segment::AndIoPermissionBitMap>,
 }
 
 impl Controller {
-    pub fn new(gdt: &mut memory::segment::descriptor::table::Controller, paging: &mut memory::Paging) -> Self {
+    pub fn new(
+        gdt: &mut memory::segment::descriptor::table::Controller,
+        paging: &mut memory::Paging,
+    ) -> Self {
         let mut table = Table::new();
         register_handlers(&mut table);
         let tabler: Register = (&table).into();
         tabler.set();
-        let stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
+        let stacks: Vec<memory::Stack> = (0..x64::task::state::Segment::NUMBER_OF_INTERRUPT_STACKS
+            + x64::task::state::Segment::NUMBER_OF_STACK_POINTERS)
             .map(|index| {
                 let pages: usize = 0x10;
-                let floor_inclusive: usize = Argument::get().bsp_heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
+                let floor_inclusive: usize = Argument::get().bsp_heap_start()
+                    - (2 * index + 1) * pages * memory::page::SIZE
+                    - 1;
                 memory::Stack::new(paging, floor_inclusive, pages)
             })
             .collect();
-        let task_state_segment_and_io_permission_bit_map: Box<x64::task::state::segment::AndIoPermissionBitMap> = x64::task::state::segment::AndIoPermissionBitMap::new(&stacks);
-        let task_state_segment_descriptor: memory::segment::long::Descriptor = (task_state_segment_and_io_permission_bit_map.as_ref()).into();
-        let task_state_segment_selector: memory::segment::Selector = gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
+        let task_state_segment_and_io_permission_bit_map: Box<
+            x64::task::state::segment::AndIoPermissionBitMap,
+        > = x64::task::state::segment::AndIoPermissionBitMap::new(&stacks);
+        let task_state_segment_descriptor: memory::segment::long::Descriptor =
+            (task_state_segment_and_io_permission_bit_map.as_ref()).into();
+        let task_state_segment_selector: memory::segment::Selector =
+            gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
         let task_register: x64::task::Register = task_state_segment_selector.into();
         task_register.set();
         let task_register = x64::task::Register::get();
@@ -76,9 +72,7 @@ pub struct Table {
 
 impl Table {
     pub fn base(&self) -> u64 {
-        self.descriptors
-            .as_slice()
-            .as_ptr() as u64
+        self.descriptors.as_slice().as_ptr() as u64
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Descriptor> {
@@ -93,12 +87,9 @@ impl Table {
     }
 
     pub fn new() -> Self {
-        let descriptors: Vec<Descriptor> = (u8::MIN..=u8::MAX)
-            .map(|_| Descriptor::default())
-            .collect();
-        Self {
-            descriptors,
-        }
+        let descriptors: Vec<Descriptor> =
+            (u8::MIN..=u8::MAX).map(|_| Descriptor::default()).collect();
+        Self { descriptors }
     }
 }
 
@@ -106,30 +97,27 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self.descriptors
-                .iter()
-                .enumerate()
-                .filter_map(|(interrupt_number, descriptor)| {
+            .entries(self.descriptors.iter().enumerate().filter_map(
+                |(interrupt_number, descriptor)| {
                     let descriptor: Option<Interface> = descriptor.into();
                     descriptor.map(|descriptor| (interrupt_number, descriptor))
-                }))
+                },
+            ))
             .finish()
     }
 }
 
 impl From<Register> for Table {
     fn from(register: Register) -> Self {
-        let descriptors: &[Descriptor] = unsafe {
-            slice::from_raw_parts(register.base(), register.length())
-        };
+        let descriptors: &[Descriptor] =
+            unsafe { slice::from_raw_parts(register.base(), register.length()) };
         let descriptors: Vec<Descriptor> = (u8::MIN..=u8::MAX)
-            .map(|interrupt_number| *descriptors
-                .get(interrupt_number as usize)
-                .unwrap_or(&Descriptor::default()))
+            .map(|interrupt_number| {
+                *descriptors
+                    .get(interrupt_number as usize)
+                    .unwrap_or(&Descriptor::default())
+            })
             .collect();
-        Self {
-            descriptors,
-        }
+        Self { descriptors }
     }
 }
-

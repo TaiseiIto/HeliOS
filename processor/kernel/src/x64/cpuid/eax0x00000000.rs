@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
-use {
-    alloc::string::String,
-    super::Return,
-};
+use {super::Return, alloc::string::String};
 
 #[derive(Debug)]
 pub struct Eax0x00000000 {
@@ -26,19 +23,13 @@ impl Eax0x00000000 {
         let max_eax: u32 = eax;
         let vendor: String = [ebx, edx, ecx]
             .into_iter()
-            .flat_map(|dword| dword
-                .to_le_bytes()
-                .into_iter())
+            .flat_map(|dword| dword.to_le_bytes().into_iter())
             .filter_map(|byte| char::from_u32(byte as u32))
             .collect();
-        Self {
-            max_eax,
-            vendor,
-        }
+        Self { max_eax, vendor }
     }
 
     pub fn max_eax(&self) -> u32 {
         self.max_eax
     }
 }
-

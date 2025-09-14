@@ -42,4 +42,3 @@ struct Flags {
     #[bits(29)]
     __: u32,
 }
-

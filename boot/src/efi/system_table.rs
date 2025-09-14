@@ -1,26 +1,14 @@
 use {
+    super::{
+        char16, configuration, memory, simple_text, BootServices, Guid, Handle, RuntimeServices,
+        Status, TableHeader, Void,
+    },
     alloc::vec::Vec,
     core::{
         cell::OnceCell,
-        fmt::{
-            self,
-            Write,
-        },
+        fmt::{self, Write},
         iter,
         ops::Range,
-    },
-    super::{
-        BootServices,
-        Guid,
-        Handle,
-        RuntimeServices,
-        Status,
-        TableHeader,
-        Void,
-        char16,
-        configuration,
-        memory,
-        simple_text,
     },
 };
 
@@ -64,7 +52,11 @@ impl SystemTable<'_> {
             .map(|physical_address| physical_address.into())
     }
 
-    pub fn allocate_specific_pages(&self, physical_address: usize, pages: usize) -> Result<Range<memory::PhysicalAddress>, Status> {
+    pub fn allocate_specific_pages(
+        &self,
+        physical_address: usize,
+        pages: usize,
+    ) -> Result<Range<memory::PhysicalAddress>, Status> {
         self.boot_services
             .allocate_specific_pages(physical_address, pages)
     }
@@ -101,23 +93,15 @@ impl SystemTable<'_> {
 
 impl SystemTable<'static> {
     pub fn get() -> &'static mut Self {
-        unsafe {
-            SYSTEM_TABLE
-                .get_mut()
-                .unwrap()
-        }
+        unsafe { SYSTEM_TABLE.get_mut().unwrap() }
     }
 
     pub fn print(args: fmt::Arguments) {
-        Self::get()
-            .write_fmt(args)
-            .unwrap()
+        Self::get().write_fmt(args).unwrap()
     }
 
     pub fn set(&'static mut self) {
-        unsafe {
-            SYSTEM_TABLE.set(self)
-        }.unwrap()
+        unsafe { SYSTEM_TABLE.set(self) }.unwrap()
     }
 }
 
@@ -130,9 +114,6 @@ impl fmt::Write for SystemTable<'_> {
             .chain(iter::once(0))
             .collect();
         let string: char16::NullTerminatedString = (&string).into();
-        self.con_out
-            .output_string(string)
-            .map_err(|_| fmt::Error)
+        self.con_out.output_string(string).map_err(|_| fmt::Error)
     }
 }
-

@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::page,
-};
+use {super::page, core::fmt};
 
 #[repr(align(4096))]
 pub struct Frame {
@@ -28,9 +25,6 @@ impl fmt::Debug for Frame {
 impl Default for Frame {
     fn default() -> Self {
         let bytes: [u8; page::SIZE] = [u8::default(); page::SIZE];
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
-

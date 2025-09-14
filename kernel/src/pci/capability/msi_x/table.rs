@@ -1,8 +1,4 @@
-use {
-    alloc::vec::Vec,
-    bitfield_struct::bitfield,
-    super::super::super::base,
-};
+use {super::super::super::base, alloc::vec::Vec, bitfield_struct::bitfield};
 
 /// # Table Offset/Table BIR for MSI-X
 /// ## References
@@ -51,4 +47,3 @@ pub struct VectorControl {
     #[bits(31)]
     __: u32,
 }
-

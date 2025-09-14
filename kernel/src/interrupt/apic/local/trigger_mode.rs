@@ -1,8 +1,4 @@
-use {
-    alloc::vec::Vec,
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {alloc::vec::Vec, bitfield_struct::bitfield, core::fmt};
 
 /// # IRR, ISR and TMR Registers
 /// ## References
@@ -20,18 +16,13 @@ impl FatRegisters {
             .into_iter()
             .map(|register| register.register())
             .collect();
-        registers
-            .try_into()
-            .unwrap()
+        registers.try_into().unwrap()
     }
 }
 
 impl fmt::Debug for FatRegisters {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_list()
-            .entries(self.registers())
-            .finish()
+        formatter.debug_list().entries(self.registers()).finish()
     }
 }
 
@@ -53,4 +44,3 @@ impl FatRegister {
 struct Register {
     register: u32,
 }
-

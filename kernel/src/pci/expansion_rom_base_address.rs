@@ -15,4 +15,3 @@ pub struct Register {
     #[bits(21)]
     base_address: u32,
 }
-

@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 pub mod command;
 pub mod revision;
@@ -33,4 +30,3 @@ impl fmt::Debug for Space {
             .finish()
     }
 }
-

@@ -31,4 +31,3 @@ impl FatRegister {
 struct Register {
     register: u32,
 }
-

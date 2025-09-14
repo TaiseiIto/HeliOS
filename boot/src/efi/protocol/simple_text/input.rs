@@ -1,8 +1,4 @@
-use super::super::super::{
-    Char16,
-    Event,
-    Status,
-};
+use super::super::super::{Char16, Event, Status};
 
 /// # EFI_SIMPLE_TEXT_INPUT_PROTOCOL
 /// ## References
@@ -18,12 +14,14 @@ pub struct Protocol<'a> {
 /// # EFI_INPUT_RESET
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.3 Simple Text Input Protocol
-type InputReset = extern "efiapi" fn(/* This */ &Protocol, /* ExtendedVerification */ bool) -> Status;
+type InputReset =
+    extern "efiapi" fn(/* This */ &Protocol, /* ExtendedVerification */ bool) -> Status;
 
 /// # EFI_INPUT_READ_KEY
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.3 Simple Text Input Protocol
-type InputReadKey = extern "efiapi" fn(/* This */ &Protocol, /* Key */ &InputKey) -> Status;
+type InputReadKey =
+    extern "efiapi" fn(/* This */ &Protocol, /* Key */ &InputKey) -> Status;
 
 #[repr(C)]
 #[repr(C)]
@@ -31,4 +29,3 @@ struct InputKey {
     scan_code: u16,
     unicode_char: Char16,
 }
-

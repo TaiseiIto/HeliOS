@@ -7,11 +7,8 @@ mod ecx0x00000001;
 mod ecxn;
 
 use {
-    alloc::collections::BTreeMap,
-    ecx0x00000000::Ecx0x00000000,
-    ecx0x00000001::Ecx0x00000001,
-    ecxn::EcxN,
-    super::Eax0x00000000,
+    super::Eax0x00000000, alloc::collections::BTreeMap, ecx0x00000000::Ecx0x00000000,
+    ecx0x00000001::Ecx0x00000001, ecxn::EcxN,
 };
 
 #[derive(Debug)]
@@ -31,7 +28,9 @@ impl Eax0x0000000d {
             let ecx0x00000000 = Ecx0x00000000::get(eax);
             let ecx0x00000001 = Ecx0x00000001::get(eax);
             let ecx2ecxn = (0..2 * u32::BITS)
-                .filter(|n| ecx0x00000000.xcr0_n_is_valid(*n) || ecx0x00000001.ia32_xss_n_is_valid(*n))
+                .filter(|n| {
+                    ecx0x00000000.xcr0_n_is_valid(*n) || ecx0x00000001.ia32_xss_n_is_valid(*n)
+                })
                 .map(|n| n + 2)
                 .map(|ecx| (ecx, EcxN::get(eax, ecx)))
                 .collect();
@@ -43,4 +42,3 @@ impl Eax0x0000000d {
         })
     }
 }
-

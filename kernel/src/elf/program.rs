@@ -4,22 +4,11 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
-    bitfield_struct::bitfield,
-    core::{
-        cmp,
-        ops::Range,
-        slice,
-    },
+    super::{Addr, Off, Xword},
     crate::memory,
-    super::{
-        Addr,
-        Off,
-        Xword,
-    },
+    alloc::{collections::BTreeMap, vec::Vec},
+    bitfield_struct::bitfield,
+    core::{cmp, ops::Range, slice},
 };
 
 /// # ELF Program Header
@@ -50,26 +39,28 @@ impl Header {
             .step_by(memory::page::SIZE)
             .for_each(|start| {
                 let page_range: Range<usize> = start..start + memory::page::SIZE;
-                let vaddr_range: Range<usize> = cmp::max(page_range.start, vaddr_range_in_bytes.start)..cmp::min(page_range.end, vaddr_range_in_bytes.end);
+                let vaddr_range: Range<usize> =
+                    cmp::max(page_range.start, vaddr_range_in_bytes.start)
+                        ..cmp::min(page_range.end, vaddr_range_in_bytes.end);
                 let page: &mut memory::Page = pages
                     .iter_mut()
-                    .find(|page| page
-                        .vaddr_range()
-                        .contains(&vaddr_range.start))
+                    .find(|page| page.vaddr_range().contains(&vaddr_range.start))
                     .unwrap();
-                let paddr_range: Range<usize> = page.vaddr2paddr(vaddr_range.start)..if page.vaddr_range().contains(&vaddr_range.end) {
-                    page.vaddr2paddr(vaddr_range.end)
-                } else {
-                    page.paddr_range().end
-                };
-                let source_range_start: usize = source_range.start + vaddr_range.start - vaddr_range_in_bytes.start;
-                let source_range_end: usize = cmp::min(source_range_start + vaddr_range.len(), source_range.end);
+                let paddr_range: Range<usize> = page.vaddr2paddr(vaddr_range.start)
+                    ..if page.vaddr_range().contains(&vaddr_range.end) {
+                        page.vaddr2paddr(vaddr_range.end)
+                    } else {
+                        page.paddr_range().end
+                    };
+                let source_range_start: usize =
+                    source_range.start + vaddr_range.start - vaddr_range_in_bytes.start;
+                let source_range_end: usize =
+                    cmp::min(source_range_start + vaddr_range.len(), source_range.end);
                 let source_range: Range<usize> = source_range_start..source_range_end;
                 let source: &[u8] = &elf[source_range];
                 let destination: *mut u8 = paddr_range.start as *mut u8;
-                let destination: &mut [u8] = unsafe {
-                    slice::from_raw_parts_mut(destination, paddr_range.len())
-                };
+                let destination: &mut [u8] =
+                    unsafe { slice::from_raw_parts_mut(destination, paddr_range.len()) };
                 destination[0..source.len()].copy_from_slice(source);
             });
     }
@@ -92,14 +83,10 @@ impl Header {
         let present: bool = true;
         let writable: bool = self.p_flags.w();
         let executable: bool = self.p_flags.x();
-        self.pages()
-            .into_iter()
-            .for_each(|vaddr| {
-                let paddr: usize = *vaddr2paddr
-                    .get(&vaddr)
-                    .unwrap();
-                paging.set_page(vaddr, paddr, present, writable, executable);
-            });
+        self.pages().into_iter().for_each(|vaddr| {
+            let paddr: usize = *vaddr2paddr.get(&vaddr).unwrap();
+            paging.set_page(vaddr, paddr, present, writable, executable);
+        });
     }
 
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
@@ -109,10 +96,7 @@ impl Header {
     }
 
     fn vaddr_range_in_pages(&self) -> Range<usize> {
-        let Range::<usize> {
-            start,
-            end,
-        } = self.vaddr_range_in_bytes();
+        let Range::<usize> { start, end } = self.vaddr_range_in_bytes();
         let start = (start / memory::page::SIZE) * memory::page::SIZE;
         let end = ((end + memory::page::SIZE - 1) / memory::page::SIZE) * memory::page::SIZE;
         start..end
@@ -156,4 +140,3 @@ struct Pf {
     maskos: u8,
     mascproc: u8,
 }
-

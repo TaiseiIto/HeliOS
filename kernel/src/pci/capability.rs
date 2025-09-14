@@ -1,12 +1,6 @@
 use {
-    core::{
-        fmt,
-        mem,
-    },
-    super::{
-        Function,
-        FunctionWithAddress,
-    },
+    super::{Function, FunctionWithAddress},
+    core::{fmt, mem},
 };
 
 pub mod agp;
@@ -76,18 +70,15 @@ impl Headers<'_> {
     }
 
     fn next_header(&self) -> Option<&Header> {
-        self.next_pointer()
-            .map(|next_pointer| {
-                let function: &Function = self.function_with_address.function();
-                let function: *const Function = function as *const Function;
-                let function: usize = function as usize;
-                let next_pointer: usize = next_pointer as usize;
-                let next_header: usize = function + next_pointer;
-                let next_header: *const Header = next_header as *const Header;
-                unsafe {
-                    &*next_header
-                }
-            })
+        self.next_pointer().map(|next_pointer| {
+            let function: &Function = self.function_with_address.function();
+            let function: *const Function = function as *const Function;
+            let function: usize = function as usize;
+            let next_pointer: usize = next_pointer as usize;
+            let next_header: usize = function + next_pointer;
+            let next_header: *const Header = next_header as *const Header;
+            unsafe { &*next_header }
+        })
     }
 }
 
@@ -96,9 +87,10 @@ impl fmt::Debug for Headers<'_> {
         let function_with_address: &FunctionWithAddress = self.function_with_address;
         formatter
             .debug_list()
-            .entries(self
-                .clone()
-                .map(|next_pointer| Structure::new(function_with_address, next_pointer)))
+            .entries(
+                self.clone()
+                    .map(|next_pointer| Structure::new(function_with_address, next_pointer)),
+            )
             .finish()
     }
 }
@@ -121,9 +113,7 @@ impl<'a> Iterator for Headers<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_pointer()
-            .zip(self
-                .next_header()
-                .cloned())
+            .zip(self.next_header().cloned())
             .map(|(next_pointer, next_header)| {
                 self.next_pointer = next_header.next_pointer;
                 next_pointer
@@ -205,65 +195,58 @@ impl<'a> Structure<'a> {
         let structure: usize = function_address + next_pointer_usize;
         let header: usize = structure;
         let header: *const Header = header as *const Header;
-        let header: &Header = unsafe {
-            &*header
-        };
+        let header: &Header = unsafe { &*header };
         match header.capability_id().into() {
             Id::Agp => {
                 let space: *const agp::Space = structure as *const agp::Space;
-                let space: &agp::Space = unsafe {
-                    &*space
-                };
+                let space: &agp::Space = unsafe { &*space };
                 Self::Agp(space)
-            },
+            }
             Id::Msi => {
                 let structure: *const msi::Structure = structure as *const msi::Structure;
-                let structure: &msi::Structure = unsafe {
-                    &*structure
-                };
+                let structure: &msi::Structure = unsafe { &*structure };
                 Self::Msi(structure)
-            },
+            }
             Id::MsiX => Self::MsiX(msi_x::StructureInFunction::new(function, next_pointer)),
             Id::PciBridgeSubsystemVendor => {
-                let structure: *const pci_bridge_subsystem::Structure = structure as *const pci_bridge_subsystem::Structure;
-                let structure: &pci_bridge_subsystem::Structure = unsafe {
-                    &*structure
-                };
+                let structure: *const pci_bridge_subsystem::Structure =
+                    structure as *const pci_bridge_subsystem::Structure;
+                let structure: &pci_bridge_subsystem::Structure = unsafe { &*structure };
                 Self::PciBridgeSubsystemVendor(structure)
-            },
+            }
             Id::PciExpress => {
-                let structure: *const pci_express::Structure = structure as *const pci_express::Structure;
-                let structure: &pci_express::Structure = unsafe {
-                    &*structure
-                };
+                let structure: *const pci_express::Structure =
+                    structure as *const pci_express::Structure;
+                let structure: &pci_express::Structure = unsafe { &*structure };
                 Self::PciExpress(structure)
-            },
+            }
             Id::PciPowerManagementInterface => {
-                let register: *const pci_power_management::Registers = structure as *const pci_power_management::Registers;
-                let register: &pci_power_management::Registers = unsafe {
-                    &*register
-                };
+                let register: *const pci_power_management::Registers =
+                    structure as *const pci_power_management::Registers;
+                let register: &pci_power_management::Registers = unsafe { &*register };
                 Self::PciPowerManagementInterface(register)
-            },
+            }
             Id::PciX => {
                 let item: *const pci_x::Item = structure as *const pci_x::Item;
-                let item: &pci_x::Item = unsafe {
-                    &*item
-                };
+                let item: &pci_x::Item = unsafe { &*item };
                 Self::PciX(item)
-            },
+            }
             Id::Reserved(id) => Self::Reserved(id),
             Id::SlotIdentification => {
-                let register: *const slot_identification::Register = structure as *const slot_identification::Register;
-                let register: &slot_identification::Register = unsafe {
-                    &*register
-                };
+                let register: *const slot_identification::Register =
+                    structure as *const slot_identification::Register;
+                let register: &slot_identification::Register = unsafe { &*register };
                 Self::SlotIdentification(register)
-            },
-            Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(function, next_pointer)),
-            Id::Vpd => Self::Vpd(vpd::StructureWithFunctionWithAddress::new(function_with_address, next_pointer)),
+            }
+            Id::VendorSpecific => Self::VendorSpecific(vendor_specific::StructureInFunction::new(
+                function,
+                next_pointer,
+            )),
+            Id::Vpd => Self::Vpd(vpd::StructureWithFunctionWithAddress::new(
+                function_with_address,
+                next_pointer,
+            )),
             id => unimplemented!("id = {:#x?}", id),
         }
     }
 }
-

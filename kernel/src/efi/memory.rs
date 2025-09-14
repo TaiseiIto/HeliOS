@@ -1,9 +1,4 @@
-use {
-    alloc::vec::Vec,
-    core::ops::Range,
-    crate::memory,
-    super::Void,
-};
+use {super::Void, crate::memory, alloc::vec::Vec, core::ops::Range};
 
 /// # EFI_ALLOCATE_TYPE
 /// ## References
@@ -127,22 +122,22 @@ impl Map {
             descriptor_version: _,
             key: _,
         } = self;
-        (0..)
-            .map_while(|index| {
-                let offset: usize = index * (*descriptor_size);
-                descriptors
-                    .get(offset)
-                    .map(|descriptor| {
-                        let descriptor: *const u8 = descriptor as *const u8;
-                        let descriptor: *const Descriptor = descriptor as *const Descriptor;
-                        unsafe {
-                            &*descriptor
-                        }
-                    })
+        (0..).map_while(|index| {
+            let offset: usize = index * (*descriptor_size);
+            descriptors.get(offset).map(|descriptor| {
+                let descriptor: *const u8 = descriptor as *const u8;
+                let descriptor: *const Descriptor = descriptor as *const Descriptor;
+                unsafe { &*descriptor }
             })
+        })
     }
 
-    pub fn new(descriptors: Vec<u8>, descriptor_size: usize, descriptor_version: u32, key: usize) -> Self {
+    pub fn new(
+        descriptors: Vec<u8>,
+        descriptor_size: usize,
+        descriptor_version: u32,
+        key: usize,
+    ) -> Self {
         Self {
             descriptors,
             descriptor_size,
@@ -160,4 +155,3 @@ impl Map {
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 7.2 Memory Allocation Services
 pub type VirtualAddress = u64;
-

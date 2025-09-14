@@ -1,7 +1,4 @@
-use {
-    core::mem,
-    crate::x64,
-};
+use {crate::x64, core::mem};
 
 pub mod config;
 pub mod crcr;
@@ -39,11 +36,10 @@ impl Registers {
         assert!(1 <= port);
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
-        let port: usize = address + port::Registers::OFFSET + (port - 1) * mem::size_of::<port::Registers>();
+        let port: usize =
+            address + port::Registers::OFFSET + (port - 1) * mem::size_of::<port::Registers>();
         let port: *const port::Registers = port as *const port::Registers;
-        unsafe {
-            &*port
-        }
+        unsafe { &*port }
     }
 
     pub fn reset(&mut self) {
@@ -67,4 +63,3 @@ impl Registers {
         self.usbcmd
     }
 }
-

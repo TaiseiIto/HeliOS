@@ -1,13 +1,9 @@
 use {
-    core::mem,
     super::{
-        operational,
-        runtime,
-        super::{
-            doorbell,
-            vtio,
-        },
+        super::{doorbell, vtio},
+        operational, runtime,
     },
+    core::mem,
 };
 
 pub mod dboff;
@@ -50,11 +46,11 @@ impl Registers {
         let doorbell_array_offset: usize = dboff.get();
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
-        let doorbell_register: usize = address + doorbell_array_offset + (slot - 1) * mem::size_of::<doorbell::Register>();
-        let doorbell_register: *const doorbell::Register = doorbell_register as *const doorbell::Register;
-        unsafe {
-            &*doorbell_register
-        }
+        let doorbell_register: usize =
+            address + doorbell_array_offset + (slot - 1) * mem::size_of::<doorbell::Register>();
+        let doorbell_register: *const doorbell::Register =
+            doorbell_register as *const doorbell::Register;
+        unsafe { &*doorbell_register }
     }
 
     pub fn number_of_ports(&self) -> usize {
@@ -73,10 +69,9 @@ impl Registers {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
         let operational_registers: usize = address + caplength;
-        let operational_registers: *const operational::Registers = operational_registers as *const operational::Registers;
-        unsafe {
-            &*operational_registers
-        }
+        let operational_registers: *const operational::Registers =
+            operational_registers as *const operational::Registers;
+        unsafe { &*operational_registers }
     }
 
     pub fn operational_registers_mut(&mut self) -> &mut operational::Registers {
@@ -85,15 +80,13 @@ impl Registers {
         let address: *mut Self = self as *mut Self;
         let address: usize = address as usize;
         let operational_registers: usize = address + caplength;
-        let operational_registers: *mut operational::Registers = operational_registers as *mut operational::Registers;
-        unsafe {
-            &mut *operational_registers
-        }
+        let operational_registers: *mut operational::Registers =
+            operational_registers as *mut operational::Registers;
+        unsafe { &mut *operational_registers }
     }
 
     pub fn reset(&mut self) {
-        self.operational_registers_mut()
-            .reset();
+        self.operational_registers_mut().reset();
     }
 
     pub fn runtime_registers(&self) -> &runtime::Registers {
@@ -102,10 +95,9 @@ impl Registers {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
         let runtime_registers: usize = address + runtime_register_space_offset;
-        let runtime_registers: *const runtime::Registers = runtime_registers as *const runtime::Registers;
-        unsafe {
-            &*runtime_registers
-        }
+        let runtime_registers: *const runtime::Registers =
+            runtime_registers as *const runtime::Registers;
+        unsafe { &*runtime_registers }
     }
 
     pub fn vtio_registers(&self) -> &vtio::Registers {
@@ -115,9 +107,6 @@ impl Registers {
         let address: usize = address as usize;
         let vtio_registers: usize = address + vtio_register_space_offset;
         let vtio_registers: *const vtio::Registers = vtio_registers as *const vtio::Registers;
-        unsafe {
-            &*vtio_registers
-        }
+        unsafe { &*vtio_registers }
     }
 }
-

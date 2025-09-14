@@ -2,10 +2,7 @@
 //! ## References
 //! * [ACPI Timer](https://wiki.osdev.org/ACPI_Timer)
 
-use crate::{
-    Argument,
-    x64,
-};
+use crate::{x64, Argument};
 
 #[allow(dead_code)]
 const FREQUENCY: usize = 3579545; // Hz
@@ -63,4 +60,3 @@ pub fn wait_milliseconds(milliseconds: usize) {
 pub fn wait_seconds(seconds: usize) {
     wait_milliseconds(1000 * seconds)
 }
-

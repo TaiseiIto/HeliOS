@@ -2,14 +2,7 @@
 //! ## References
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9 Graphics Output Protocol
 
-use super::super::{
-    Guid,
-    Status,
-    SystemTable,
-    Void,
-    memory,
-    null,
-};
+use super::super::{memory, null, Guid, Status, SystemTable, Void};
 
 /// # EFI_GRAPHICS_OUTPUT_PROTOCOL
 /// ## References
@@ -26,16 +19,17 @@ pub struct Protocol<'a> {
 impl Protocol<'static> {
     #[allow(dead_code)]
     pub fn get<'a>(system_table: &'a SystemTable<'a>) -> &'a Self {
-        let guid = Guid::new(0x9042a9de, 0x23dc, 0x4a38, [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a]);
+        let guid = Guid::new(
+            0x9042a9de,
+            0x23dc,
+            0x4a38,
+            [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a],
+        );
         let registration: &Void = null();
-        let protocol: &Void = system_table
-            .locate_protocol(registration, guid)
-            .unwrap();
+        let protocol: &Void = system_table.locate_protocol(registration, guid).unwrap();
         let protocol: *const Void = protocol as *const Void;
         let protocol: *const Protocol = protocol as *const Protocol;
-        unsafe {
-            &*protocol
-        }
+        unsafe { &*protocol }
     }
 }
 
@@ -100,7 +94,12 @@ pub struct Mode<'a> {
 /// # EFI_GRAPHICS_OUTPUT_PROTOCOL_QUERY_MODE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-type QueryMode = extern "efiapi" fn(/* This */ &Protocol, /* ModeNumber */ u32, /* SizeOfInfo */ &mut usize, /* Info */ &mut &ModeInformation) -> Status;
+type QueryMode = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* ModeNumber */ u32,
+    /* SizeOfInfo */ &mut usize,
+    /* Info */ &mut &ModeInformation,
+) -> Status;
 
 /// # EFI_GRAPHICS_OUTPUT_PROTOCOL_SET_MODE
 /// ## References
@@ -140,7 +139,18 @@ pub enum BltOperation {
 /// # EFI_GRAPHICS_OUTPUT_PROTOCOL_BLT
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 12.9.1 Blt Buffer
-type Blt = extern "efiapi" fn(/* This */ &Protocol, /* BltBuffer */ &mut BltPixel, /* BltOperation */ BltOperation, /* SourceX */ usize, /* SourceY */ usize, /* DestinationX */ usize, /* DestinationY */ usize, /* Width */ usize, /* Height */ usize, /* Delta */ usize) -> Status;
+type Blt = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* BltBuffer */ &mut BltPixel,
+    /* BltOperation */ BltOperation,
+    /* SourceX */ usize,
+    /* SourceY */ usize,
+    /* DestinationX */ usize,
+    /* DestinationY */ usize,
+    /* Width */ usize,
+    /* Height */ usize,
+    /* Delta */ usize,
+) -> Status;
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Coordinates {
@@ -151,10 +161,7 @@ pub struct Coordinates {
 impl Coordinates {
     #[allow(dead_code)]
     pub fn new(x: usize, y: usize) -> Self {
-        Self {
-            x,
-            y,
-        }
+        Self { x, y }
     }
 
     #[allow(dead_code)]
@@ -167,4 +174,3 @@ impl Coordinates {
         self.y
     }
 }
-

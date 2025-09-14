@@ -30,4 +30,3 @@ impl From<Register> for Type {
         }
     }
 }
-

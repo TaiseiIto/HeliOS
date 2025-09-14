@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::system_description,
-};
+use {super::system_description, bitfield_struct::bitfield};
 
 /// # WAET
 /// ## References
@@ -30,4 +27,3 @@ struct Flags {
     #[bits(30)]
     __: u32,
 }
-

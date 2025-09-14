@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::arch::asm,
-};
+use {bitfield_struct::bitfield, core::arch::asm};
 
 /// # RFLAGS
 /// ## References
@@ -82,4 +79,3 @@ impl Rflags {
         }
     }
 }
-

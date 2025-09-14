@@ -1,9 +1,6 @@
 use {
+    super::{Guid, Void},
     core::fmt,
-    super::{
-        Guid,
-        Void,
-    },
 };
 
 #[derive(Clone)]
@@ -15,23 +12,17 @@ pub struct Tables<'a> {
 
 impl Tables<'_> {
     pub fn iter(&self) -> impl Iterator<Item = &Table> {
-        (0..self.number_of_table_entries)
-            .map(|index| {
-                let table: &Table = self.configuration_table;
-                let table: *const Table = table as *const Table;
-                unsafe {
-                    &*table.add(index)
-                }
-            })
+        (0..self.number_of_table_entries).map(|index| {
+            let table: &Table = self.configuration_table;
+            let table: *const Table = table as *const Table;
+            unsafe { &*table.add(index) }
+        })
     }
 }
 
 impl fmt::Debug for Tables<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_list()
-            .entries(self.iter())
-            .finish()
+        formatter.debug_list().entries(self.iter()).finish()
     }
 }
 
@@ -44,4 +35,3 @@ pub struct Table {
     vendor_guid: Guid,
     vendor_table: *const Void,
 }
-

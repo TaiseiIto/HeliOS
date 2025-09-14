@@ -2,10 +2,7 @@ pub mod descriptor;
 pub mod long;
 pub mod short;
 
-use {
-    bitfield_struct::bitfield,
-    core::arch::asm,
-};
+use {bitfield_struct::bitfield, core::arch::asm};
 
 /// # Segment Selector
 /// ## References
@@ -22,10 +19,7 @@ pub struct Selector {
 
 impl Selector {
     pub fn create(index: u16, ti: bool, rpl: u8) -> Self {
-        Self::default()
-            .with_index(index)
-            .with_ti(ti)
-            .with_rpl(rpl)
+        Self::default().with_index(index).with_ti(ti).with_rpl(rpl)
     }
 
     #[inline(never)]
@@ -108,4 +102,3 @@ impl Selector {
         ss.into()
     }
 }
-

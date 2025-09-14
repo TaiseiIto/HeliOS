@@ -18,8 +18,7 @@ pub struct Register {
 
 impl Register {
     pub fn disable_all_interrupts(self) -> Self {
-        self
-            .with_enable_received_data_available_interrupt(false)
+        self.with_enable_received_data_available_interrupt(false)
             .with_enable_transmitter_holding_register_empty_interrupt(false)
             .with_enable_register_line_status_interrupt(false)
             .with_enable_modem_status_interrupt(false)
@@ -27,4 +26,3 @@ impl Register {
             .with_enable_low_power_mode(false)
     }
 }
-

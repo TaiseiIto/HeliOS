@@ -34,4 +34,3 @@ pub struct Register {
     dr: bool,
     wpr: bool,
 }
-

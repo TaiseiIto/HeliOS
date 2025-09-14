@@ -17,4 +17,3 @@ pub struct Register {
     #[bits(5)]
     pme_support: u8,
 }
-

@@ -13,4 +13,3 @@ pub struct Registers {
     #[allow(dead_code)]
     interrupter_register_sets: [interrupter::RegisterSet; 1024],
 }
-

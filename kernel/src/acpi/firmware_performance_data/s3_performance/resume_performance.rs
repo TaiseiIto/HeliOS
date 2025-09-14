@@ -22,4 +22,3 @@ impl Record {
         self.length as usize
     }
 }
-

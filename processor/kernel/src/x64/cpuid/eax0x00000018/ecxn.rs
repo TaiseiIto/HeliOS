@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
-use {
-    bitfield_struct::bitfield,
-    super::super::Return,
-};
+use {super::super::Return, bitfield_struct::bitfield};
 
 #[derive(Debug)]
 pub struct EcxN {
@@ -25,13 +22,7 @@ impl EcxN {
         let edx: Edx = ecxn.edx().into();
         match edx.translation_cache_type_field() {
             0 => None,
-            _ => {
-                Some(Self {
-                    ebx,
-                    ecx,
-                    edx,
-                })
-            },
+            _ => Some(Self { ebx, ecx, edx }),
         }
     }
 }
@@ -70,4 +61,3 @@ struct Edx {
     #[bits(6)]
     __: u8,
 }
-

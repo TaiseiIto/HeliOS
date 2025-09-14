@@ -11,4 +11,3 @@ pub struct Register {
     major: u8,
     __: u8,
 }
-

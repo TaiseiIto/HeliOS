@@ -2,10 +2,7 @@
 //! ## References
 //! * [CMOS Registers](http://www.walshcomptech.com/ohlandl/config/cmos_registers.html)
 
-use {
-    bitfield_struct::bitfield,
-    crate::x64,
-};
+use {crate::x64, bitfield_struct::bitfield};
 
 #[bitfield(u8)]
 pub struct A {
@@ -74,11 +71,7 @@ impl B {
             let hour: u8 = hour & !PM;
             let hour: u8 = self.binarize(hour);
             let hour: u8 = hour % 12;
-            hour + if pm {
-                12
-            } else {
-                0
-            }
+            hour + if pm { 12 } else { 0 }
         }
     }
 
@@ -131,4 +124,3 @@ impl D {
         x64::cmos::read_u8(Self::ADDRESS).into()
     }
 }
-
