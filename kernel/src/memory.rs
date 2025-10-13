@@ -167,7 +167,7 @@ impl Default for NodeList {
 struct Node {
     state: State,
     range: Range<usize>,
-    available_range: Range<usize>,
+    unavailable_tail_size: usize,
     max_size: usize,
 }
 
@@ -238,6 +238,15 @@ impl Node {
         allocated
     }
 
+    fn available_range(&self) -> Range<usize> {
+        let Range::<usize> {
+            start,
+            end,
+        } = self.range;
+        let available_end: usize = end - self.unavailable_tail_size;
+        start..available_end
+    }
+
     fn dealloc(&mut self, address: *mut u8) {
         match self.state {
             State::Allocated => {
@@ -248,7 +257,7 @@ impl Node {
                 if let Some(higher_half_node) =
                     self.get_mut_higher_half_node().filter(|higher_half_node| {
                         higher_half_node
-                            .available_range
+                            .available_range()
                             .contains(&(address as usize))
                     })
                 {
@@ -256,7 +265,7 @@ impl Node {
                 } else if let Some(lower_half_node) =
                     self.get_mut_lower_half_node().filter(|lower_half_node| {
                         lower_half_node
-                            .available_range
+                            .available_range()
                             .contains(&(address as usize))
                     })
                 {
@@ -285,7 +294,7 @@ impl Node {
         Self {
             state: State::Invalid,
             range: 0..0,
-            available_range: 0..0,
+            unavailable_tail_size: 0,
             max_size: 0,
         }
     }
@@ -402,7 +411,7 @@ impl Node {
     }
 
     fn get_mut(&mut self) -> Option<*mut u8> {
-        matches!(self.state, State::Allocated).then(|| self.available_range.start as *mut u8)
+        matches!(self.state, State::Allocated).then(|| self.available_range().start as *mut u8)
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
@@ -411,8 +420,9 @@ impl Node {
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let start: usize = cmp::max(self.available_range.start, self.divide_point());
-        let end: usize = self.available_range.end
+        let available_range: Range<usize> = self.available_range();
+        let start: usize = cmp::max(available_range.start, self.divide_point());
+        let end: usize = available_range.end
             - self
                 .higher_half_node_index_in_list()
                 .map_or(page::SIZE, |_| 0);
@@ -435,17 +445,18 @@ impl Node {
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
         assert!(!range.is_empty());
         assert!(!available_range.is_empty());
-        assert!(range.start <= available_range.start);
+        assert!(range.start == available_range.start);
         assert!(available_range.end <= range.end);
         assert!(range.len().is_power_of_two());
         assert_eq!((range.start / range.len()) * range.len(), range.start);
         assert_eq!((range.end / range.len()) * range.len(), range.end);
         let state = State::Free;
+        let unavailable_tail_size: usize = range.end - available_range.end;
         let max_size: usize = available_range.len();
         *self = Self {
             state,
             range,
-            available_range,
+            unavailable_tail_size,
             max_size,
         };
     }
@@ -456,8 +467,9 @@ impl Node {
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
-        let start: usize = self.available_range.start;
-        let end: usize = cmp::min(self.divide_point(), self.available_range.end)
+        let available_range: Range<usize> = self.available_range();
+        let start: usize = available_range.start;
+        let end: usize = cmp::min(self.divide_point(), available_range.end)
             - self
                 .lower_half_node_index_in_list()
                 .map_or(page::SIZE, |_| 0);
@@ -473,7 +485,7 @@ impl Node {
     fn merge(&mut self) {
         if matches!(self.state, State::Divided) {
             self.state = State::Free;
-            self.max_size = self.available_range.len();
+            self.max_size = self.available_range().len();
         }
     }
 
@@ -522,7 +534,8 @@ impl fmt::Debug for Node {
             .debug_struct("Node")
             .field("state", &self.state)
             .field("range", &self.range)
-            .field("available_range", &self.available_range)
+            .field("unavailable_tail_size", &self.unavailable_tail_size)
+            .field("available_range", &self.available_range())
             .field("max_size", &self.max_size)
             .field("lower_half", &self.get_lower_half_node())
             .field("higher_half", &self.get_higher_half_node())
