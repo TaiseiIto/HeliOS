@@ -1,7 +1,5 @@
 include $(shell git rev-parse --show-toplevel)/.make/header.mk
 
-SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n "$$(which sudo)" ]; then echo sudo; fi)
-
 # block size in the OS image
 BLOCK_SIZE=4K
 
@@ -11,7 +9,7 @@ BLOCK_COUNT=16K
 MEDIA_SIZE=$(shell numfmt --to=iec $$(($$(numfmt --from=iec $(BLOCK_COUNT)) * $$(numfmt --from=iec $(BLOCK_SIZE)))))
 
 # Target directory where the OS will be built.
-TARGET=$(PRODUCT).mnt
+TARGET=$(PRODUCT)
 
 # Operating system directory
 OS_DIRECTORY=$(TARGET)/$(PRODUCT)
@@ -68,32 +66,32 @@ $(TARGET): $(call SOURCE_FILES, .)
 	make $(APPLICATION_DESTINATIONS)
 
 $(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
-	$(SUDO) cp $(call SUB_TARGET, $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@))) $@
+	cp $(call SUB_TARGET, $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@))) $@
 
 $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(PROCESSOR_BOOT_LOADER_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
 	make -C $(PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(PROCESSOR_KERNEL_DESTINATION): $(PROCESSOR_KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(PROCESSOR_KERNEL_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_KERNEL_DIRECTORY))
 	make -C $(PROCESSOR_KERNEL_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(call SOURCE_FILES, $(BOOTLOADER_DIRECTORY))
 	make -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) KERNEL=$(KERNEL)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(KERNEL_SOURCE): $(call SOURCE_FILES, $(KERNEL_DIRECTORY))
 	make -C $(KERNEL_DIRECTORY)
