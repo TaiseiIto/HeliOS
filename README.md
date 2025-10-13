@@ -79,13 +79,13 @@ When you finish debugging QEMU, move to right screen and `make stop`.
 
 ## Run HeliOS on a physical machine
 
-`exit` the development environment and `make` on the host to generate `helios.mnt`, the HeliOS directory tree.
+`exit` the development environment and `make` on the host to generate `Helios`, the HeliOS directory tree.
 And copy the generated directory to your storage device.
 
 ```
 ~/HeliOS # exit
 /somewhere/in/the/host/HeliOS $ make
-/somewhere/in/the/host/HeliOS $ cp -r helios.mnt /your/storage/device/
+/somewhere/in/the/host/HeliOS $ cp -r Helios /your/storage/device/
 ```
 
 Then, eject the storage device and connect it to a physical machine.
