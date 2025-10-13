@@ -11,15 +11,17 @@ pub use {
 
 use {
     crate::{efi, task},
-    alloc::alloc::Layout,
-    core::{alloc::GlobalAlloc, cell::UnsafeCell, cmp, fmt, mem::size_of, ops::Range},
+    alloc::{alloc::Layout, boxed::Box},
+    core::{
+        alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem::size_of, ops::Range,
+    },
 };
 
 pub const KIB: usize = 1 << 10;
 
 #[global_allocator]
-static mut ALLOCATOR: Allocator = Allocator {
-    root_node_list: UnsafeCell::new(0 as *mut NodeList),
+static ALLOCATOR: Allocator = Allocator {
+    root_node_list: RefCell::new(None),
 };
 
 pub fn initialize(paging: &mut Paging, memory_map: &efi::memory::Map, heap_start: usize) -> usize {
@@ -38,25 +40,16 @@ pub fn initialize(paging: &mut Paging, memory_map: &efi::memory::Map, heap_start
         })
         .max()
         .unwrap();
-    unsafe {
-        ALLOCATOR.initialize(heap_start..heap_end);
-    }
+    ALLOCATOR.initialize(heap_start..heap_end);
     heap_end - heap_start
 }
 
 struct Allocator {
-    root_node_list: UnsafeCell<*mut NodeList>,
+    root_node_list: RefCell<Option<Box<NodeList>>>,
 }
 
 impl Allocator {
-    pub fn get_root_node_list(&self) -> &NodeList {
-        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
-        let root_node_list: *mut NodeList = unsafe { *root_node_list };
-        let root_node_list: *const NodeList = root_node_list as *const NodeList;
-        unsafe { &*root_node_list }
-    }
-
-    pub fn initialize(&mut self, available_range: Range<usize>) {
+    pub fn initialize(&self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
         let available_end: usize = available_range.end - page::SIZE;
         let available_range: Range<usize> = available_start..available_end;
@@ -65,18 +58,17 @@ impl Allocator {
         let start: usize = available_start;
         let end: usize = start + size;
         let range: Range<usize> = start..end;
-        let node_list: &mut NodeList = NodeList::new(range, available_range);
-        let node_list: *mut NodeList = node_list as *mut NodeList;
-        *unsafe { &mut *self.root_node_list.get() } = node_list;
+        *self.root_node_list.borrow_mut() = Some(NodeList::root(range, available_range));
     }
 }
 
 impl fmt::Debug for Allocator {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Allocator")
-            .field("root_node_list", self.get_root_node_list())
-            .finish()
+        let mut debug_struct: fmt::DebugStruct = formatter.debug_struct("Allocator");
+        if let Some(root_node_list) = self.root_node_list.borrow().as_deref() {
+            debug_struct.field("root_node_list", root_node_list);
+        }
+        debug_struct.finish()
     }
 }
 
@@ -85,10 +77,13 @@ unsafe impl GlobalAlloc for Allocator {
         if let Some(current_task) = task::Controller::get_current_mut() {
             current_task.cli();
         }
-        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
-        let root_node_list: *mut NodeList = *root_node_list;
-        let root_node_list: &mut NodeList = &mut *root_node_list;
-        let allocated: *mut u8 = root_node_list.alloc(layout).unwrap();
+        let allocated: *mut u8 = self
+            .root_node_list
+            .borrow_mut()
+            .as_deref_mut()
+            .unwrap()
+            .alloc(layout)
+            .unwrap();
         if let Some(current_task) = task::Controller::get_current_mut() {
             current_task.sti()
         };
@@ -99,15 +94,18 @@ unsafe impl GlobalAlloc for Allocator {
         if let Some(current_task) = task::Controller::get_current_mut() {
             current_task.cli();
         }
-        let root_node_list: *mut *mut NodeList = self.root_node_list.get();
-        let root_node_list: *mut NodeList = *root_node_list;
-        let root_node_list: &mut NodeList = &mut *root_node_list;
-        root_node_list.dealloc(address);
+        self.root_node_list
+            .borrow_mut()
+            .as_deref_mut()
+            .unwrap()
+            .dealloc(address);
         if let Some(current_task) = task::Controller::get_current_mut() {
             current_task.sti();
         }
     }
 }
+
+unsafe impl Sync for Allocator {}
 
 #[repr(align(4096))]
 struct NodeList {
@@ -125,11 +123,7 @@ impl NodeList {
         self.nodes[0].alloc(size)
     }
 
-    fn dealloc(&mut self, address: *mut u8) {
-        self.nodes[0].dealloc(address);
-    }
-
-    fn new<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
+    fn child<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe { &mut *node_list };
@@ -138,12 +132,26 @@ impl NodeList {
         node_list
     }
 
+    fn dealloc(&mut self, address: *mut u8) {
+        self.nodes[0].dealloc(address);
+    }
+
     fn mut_node(&mut self, index: usize) -> &mut Node {
         &mut self.nodes[index]
     }
 
     fn node(&self, index: usize) -> &Node {
         &self.nodes[index]
+    }
+
+    fn root(range: Range<usize>, available_range: Range<usize>) -> Box<Self> {
+        let node_list: usize = available_range.end;
+        let node_list: *mut Self = node_list as *mut Self;
+        let mut node_list: Box<Self> = unsafe { Box::from_raw(node_list) };
+        let node_list_mut: &mut Self = node_list.borrow_mut();
+        *node_list_mut = Self::default();
+        node_list_mut.nodes[0].initialize(range, available_range);
+        node_list
     }
 }
 
@@ -182,7 +190,7 @@ impl Node {
         } else if let (Some(higher_half_range), Some(higher_half_available_range)) =
             (self.higher_half_range(), self.higher_half_available_range())
         {
-            Some(NodeList::new(higher_half_range, higher_half_available_range).mut_node(0))
+            Some(NodeList::child(higher_half_range, higher_half_available_range).mut_node(0))
         } else {
             None
         }
@@ -194,7 +202,7 @@ impl Node {
         } else if let (Some(lower_half_range), Some(lower_half_available_range)) =
             (self.lower_half_range(), self.lower_half_available_range())
         {
-            Some(NodeList::new(lower_half_range, lower_half_available_range).mut_node(0))
+            Some(NodeList::child(lower_half_range, lower_half_available_range).mut_node(0))
         } else {
             None
         }
