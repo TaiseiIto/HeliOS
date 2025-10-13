@@ -26,5 +26,5 @@
 *.log
 
 # OS directory tree
-*.mnt
+HeliOS
 
