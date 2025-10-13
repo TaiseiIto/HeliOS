@@ -26,8 +26,6 @@ impl fmt::Debug for Signature {
                     .filter_map(|byte| char::from_u32(byte as u32)),
             )
             .chain(iter::once('"'))
-            .fold(Ok(()), |result, character| {
-                result.and(write!(formatter, "{}", character))
-            })
+            .try_fold((), |_, character| write!(formatter, "{}", character))
     }
 }

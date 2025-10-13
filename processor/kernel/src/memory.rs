@@ -220,10 +220,7 @@ impl Node {
     }
 
     fn available_range(&self) -> Range<usize> {
-        let Range::<usize> {
-            start,
-            end,
-        } = self.range();
+        let Range::<usize> { start, end } = self.range();
         let available_end: usize = end - self.unavailable_tail_size;
         start..available_end
     }
@@ -310,10 +307,7 @@ impl Node {
     }
 
     fn divide_point(&self) -> usize {
-        let Range::<usize> {
-            start,
-            end,
-        } = self.range();
+        let Range::<usize> { start, end } = self.range();
         ((end as u128 + start as u128) / 2) as usize
     }
 
