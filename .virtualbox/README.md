@@ -99,4 +99,12 @@ Then, disable the KVM modules.
 ```
 
 Now, you can restart HeliOS on the virtual machine.
+After HeliOS stopped, restart KVM.
+
+```
+* $ sudo modprobe kvm_intel
+* $ sudo modprobe kvm
+```
+
+Then, start Docker Desktop.
 
