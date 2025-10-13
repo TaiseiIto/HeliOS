@@ -166,7 +166,8 @@ impl Default for NodeList {
 
 struct Node {
     state: State,
-    range: Range<usize>,
+    start: usize,
+    log_size: u8,
     unavailable_tail_size: usize,
     max_size: usize,
 }
@@ -242,7 +243,7 @@ impl Node {
         let Range::<usize> {
             start,
             end,
-        } = self.range;
+        } = self.range();
         let available_end: usize = end - self.unavailable_tail_size;
         start..available_end
     }
@@ -293,7 +294,8 @@ impl Node {
     const fn default() -> Self {
         Self {
             state: State::Invalid,
-            range: 0..0,
+            start: 0,
+            log_size: 0,
             unavailable_tail_size: 0,
             max_size: 0,
         }
@@ -328,7 +330,11 @@ impl Node {
     }
 
     fn divide_point(&self) -> usize {
-        ((self.range.end as u128 + self.range.start as u128) / 2) as usize
+        let Range::<usize> {
+            start,
+            end,
+        } = self.range();
+        ((end as u128 + start as u128) / 2) as usize
     }
 
     fn get_higher_half_node(&self) -> Option<&Self> {
@@ -431,7 +437,7 @@ impl Node {
 
     fn higher_half_range(&self) -> Option<Range<usize>> {
         let start: usize = self.divide_point();
-        let end: usize = self.range.end;
+        let end: usize = self.range().end;
         Some(start..end).filter(|range| !range.is_empty())
     }
 
@@ -443,19 +449,23 @@ impl Node {
     }
 
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
+        let size: usize = range.len();
         assert!(!range.is_empty());
         assert!(!available_range.is_empty());
         assert!(range.start == available_range.start);
         assert!(available_range.end <= range.end);
-        assert!(range.len().is_power_of_two());
-        assert_eq!((range.start / range.len()) * range.len(), range.start);
-        assert_eq!((range.end / range.len()) * range.len(), range.end);
+        assert!(size.is_power_of_two());
+        assert_eq!((range.start / size) * size, range.start);
+        assert_eq!((range.end / size) * size, range.end);
         let state = State::Free;
+        let start: usize = range.start;
+        let log_size: u8 = size.ilog2() as u8;
         let unavailable_tail_size: usize = range.end - available_range.end;
         let max_size: usize = available_range.len();
         *self = Self {
             state,
-            range,
+            start,
+            log_size,
             unavailable_tail_size,
             max_size,
         };
@@ -477,7 +487,7 @@ impl Node {
     }
 
     fn lower_half_range(&self) -> Option<Range<usize>> {
-        let start: usize = self.range.start;
+        let start: usize = self.range().start;
         let end: usize = self.divide_point();
         Some(start..end).filter(|range| !range.is_empty())
     }
@@ -503,6 +513,13 @@ impl Node {
         let address: usize = (address / page::SIZE) * page::SIZE;
         let address: *const NodeList = address as *const NodeList;
         unsafe { &*address }
+    }
+
+    fn range(&self) -> Range<usize> {
+        let start: usize = self.start;
+        let size: usize = 1 << self.log_size;
+        let end: usize = start + size;
+        start..end
     }
 
     fn update_max_size(&mut self) {
@@ -533,8 +550,7 @@ impl fmt::Debug for Node {
         formatter
             .debug_struct("Node")
             .field("state", &self.state)
-            .field("range", &self.range)
-            .field("unavailable_tail_size", &self.unavailable_tail_size)
+            .field("range", &self.range())
             .field("available_range", &self.available_range())
             .field("max_size", &self.max_size)
             .field("lower_half", &self.get_lower_half_node())
