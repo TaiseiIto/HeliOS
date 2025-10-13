@@ -66,7 +66,7 @@
 ## Build HeliOS.
 
 ```
-/somewhere/HeliOS$ make tree
+/somewhere/HeliOS$ make
 ```
 
 ## Write HeliOS to the virtual hard disk.

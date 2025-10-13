@@ -37,10 +37,10 @@ case $action in
 		;;
 	"build_on_github")
 		working_directory=$(docker inspect $container --format {{.Config.WorkingDir}})
-		docker exec -w $working_directory $container bash -l -c "make tree"
-		mount_directory=$(docker exec $container make mount_directory -C $working_directory -s)
+		docker exec -w $working_directory $container bash -l -c make
+		os_path=$(docker exec $container make os_path -C $working_directory -s)
 		docker stop $container
-		docker cp $container:$mount_directory $(dirname $0)/..
+		docker cp $container:$os_path $(dirname $0)/..
 		docker rm $container
 		docker rmi $image
 		;;

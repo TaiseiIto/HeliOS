@@ -63,12 +63,12 @@ When you finish debugging HeliOS, move to right screen, `quit` GDB and `make sto
 
 ## Run HeliOS on a physical machine
 
-`exit` the development environment and `make tree` on the host to generate `helios.mnt`, the HeliOS directory tree.
+`exit` the development environment and `make` on the host to generate `helios.mnt`, the HeliOS directory tree.
 And copy the generated directory to your storage device.
 
 ```
 ~/HeliOS # exit
-/somewhere/in/the/host/HeliOS $ make tree
+/somewhere/in/the/host/HeliOS $ make
 /somewhere/in/the/host/HeliOS $ cp -r helios.mnt /your/storage/device/
 ```
 

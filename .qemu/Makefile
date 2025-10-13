@@ -12,7 +12,7 @@ LOG_PATH=../qemu.log
 MEMORY_SIZE=-m 1G
 MONITOR=-monitor telnet::$(TELNET_PORT),server,nowait
 NO_REBOOT=--no-reboot
-OS=-drive file=$(OS_PATH),format=raw,id=$(OS_NAME),if=none -device ide-hd,drive=$(OS_NAME),bootindex=1
+OS=-drive file=fat:rw:$(OS_PATH),format=raw,id=$(OS_NAME),if=none -device ide-hd,drive=$(OS_NAME),bootindex=1
 OVMF_CODE=-drive file=$(OVMF_CODE_PATH),format=raw,if=pflash,readonly=on
 OVMF_CODE_PATH=../../qemu/roms/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_CODE.fd
 OVMF_VARS=-drive file=$(OVMF_VARS_PATH),format=raw,if=pflash,readonly=on
@@ -23,19 +23,19 @@ XHCI=-device qemu-xhci
 COMMAND=$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_REBOOT) $(OS) $(OVMF_CODE) $(OVMF_VARS) $(VNC) $(XHCI)
 
 # Run the OS on QEMU.
-# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
+# Usage: $ make run OS_PATH=<os directory path> OS_NAME=<os name>
 .PHONY: run
 run:
 	-$(COMMAND) | tee $(COM2_LOG)
 
 # Debug the OS on QEMU by GDB.
-# Usage: $ make debug OS_PATH=<os image file path> OS_NAME=<os name> DEBUG_PORT=<debug port>
+# Usage: $ make debug OS_PATH=<os directory path> OS_NAME=<os name> DEBUG_PORT=<debug port>
 .PHONY: debug
 debug:
 	-$(COMMAND) $(DEBUG) | tee $(COM2_LOG)
 
 # Debug QEMU by GDB.
-# Usage: $ make run OS_PATH=<os image file path> OS_NAME=<os name>
+# Usage: $ make run OS_PATH=<os directory path> OS_NAME=<os name>
 .PHONY: debug_qemu
 debug_qemu:
 	gdb --args $(COMMAND)
