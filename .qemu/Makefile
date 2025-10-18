@@ -4,7 +4,7 @@
 QEMU=qemu-system-x86_64
 COM1=-serial file:$(COM1_LOG)
 COM1_LOG=../com1.log
-COM2=-serial stdio
+COM2=-chardev stdio,id=com2,mux=on,logfile=$(COM2_LOG) -serial chardev:com2
 COM2_LOG=../com2.log
 CPUS = -smp 2
 LOG=-d int,cpu_reset -D $(LOG_PATH)
@@ -26,13 +26,13 @@ COMMAND=$(QEMU) $(COM1) $(COM2) $(CPUS) $(LOG) $(MEMORY_SIZE) $(MONITOR) $(NO_RE
 # Usage: $ make run OS_PATH=<os directory path> OS_NAME=<os name>
 .PHONY: run
 run:
-	-$(COMMAND) | tee $(COM2_LOG)
+	-$(COMMAND)
 
 # Debug the OS on QEMU by GDB.
 # Usage: $ make debug OS_PATH=<os directory path> OS_NAME=<os name> DEBUG_PORT=<debug port>
 .PHONY: debug
 debug:
-	-$(COMMAND) $(DEBUG) | tee $(COM2_LOG)
+	-$(COMMAND) $(DEBUG)
 
 # Debug QEMU by GDB.
 # Usage: $ make run OS_PATH=<os directory path> OS_NAME=<os name>
