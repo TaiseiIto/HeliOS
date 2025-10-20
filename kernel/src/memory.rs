@@ -137,15 +137,19 @@ impl NodeList {
     }
 
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
-        self.mut_nodes().iter_mut().for_each(|node| {
-            *node = Node {
-                state: State::Invalid,
-                start: 0,
-                log_size: 0,
-                unavailable_tail_size: 0,
-                max_size: 0,
-            }
-        });
+        self.mut_nodes()
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, node)| {
+                *node = Node {
+                    index: index as u8,
+                    state: State::Invalid,
+                    start: 0,
+                    log_size: 0,
+                    unavailable_tail_size: 0,
+                    max_size: 0,
+                }
+            });
         self.mut_node(0).initialize(range, available_range);
     }
 
@@ -201,6 +205,7 @@ impl fmt::Debug for NodeList {
 }
 
 struct Node {
+    index: u8,
     state: State,
     start: usize,
     log_size: u8,
@@ -478,12 +483,14 @@ impl Node {
         assert!(size.is_power_of_two());
         assert_eq!((range.start / size) * size, range.start);
         assert_eq!((range.end / size) * size, range.end);
+        let index: u8 = self.index;
         let state = State::Free;
         let start: usize = range.start;
         let log_size: u8 = size.ilog2() as u8;
         let unavailable_tail_size: usize = range.end - available_range.end;
         let max_size: usize = available_range.len();
         *self = Self {
+            index,
             state,
             start,
             log_size,
