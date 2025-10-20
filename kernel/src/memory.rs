@@ -121,23 +121,22 @@ impl NodeList {
         let size: usize = layout.size();
         let size: usize = size.next_power_of_two();
         let size: usize = cmp::max(align, size);
-        self.mut_nodes()[0].alloc(size)
+        self.mut_node(0).alloc(size)
     }
 
     fn child<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe { &mut *node_list };
-        node_list.initialize();
-        node_list.mut_nodes()[0].initialize(range, available_range);
+        node_list.initialize(range, available_range);
         node_list
     }
 
     fn dealloc(&mut self, address: *mut u8) {
-        self.mut_nodes()[0].dealloc(address);
+        self.mut_node(0).dealloc(address);
     }
 
-    fn initialize(&mut self) {
+    fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
         self.mut_nodes().iter_mut().for_each(|node| {
             *node = Node {
                 state: State::Invalid,
@@ -147,6 +146,7 @@ impl NodeList {
                 max_size: 0,
             }
         });
+        self.mut_node(0).initialize(range, available_range);
     }
 
     fn length(&self) -> usize {
@@ -180,8 +180,7 @@ impl NodeList {
         let node_list: *mut Self = node_list as *mut Self;
         let mut node_list: Box<Self> = unsafe { Box::from_raw(node_list) };
         let node_list_mut: &mut Self = node_list.borrow_mut();
-        node_list_mut.initialize();
-        node_list_mut.mut_nodes()[0].initialize(range, available_range);
+        node_list_mut.initialize(range, available_range);
         node_list
     }
 
@@ -196,7 +195,7 @@ impl fmt::Debug for NodeList {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("NodeList")
-            .field("root", &self.nodes()[0])
+            .field("root", self.node(0))
             .finish()
     }
 }
