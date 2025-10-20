@@ -113,6 +113,9 @@ struct NodeList();
 const NODE_LIST_LENGTH: usize = page::SIZE / size_of::<Node>();
 
 impl NodeList {
+    const MAX_SIZE: usize = page::SIZE;
+    const MIN_SIZE: usize = size_of::<Node>();
+
     fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
         let align: usize = layout.align();
         let size: usize = layout.size();
@@ -146,6 +149,10 @@ impl NodeList {
         });
     }
 
+    fn length(&self) -> usize {
+        self.size() / size_of::<Node>()
+    }
+
     fn mut_node(&mut self, index: usize) -> &mut Node {
         &mut self.mut_nodes()[index]
     }
@@ -153,7 +160,8 @@ impl NodeList {
     fn mut_nodes(&mut self) -> &mut [Node] {
         let nodes: *mut Self = self as *mut Self;
         let nodes: *mut Node = nodes as *mut Node;
-        unsafe { slice::from_raw_parts_mut(nodes, NODE_LIST_LENGTH) }
+        let length: usize = self.length();
+        unsafe { slice::from_raw_parts_mut(nodes, length) }
     }
 
     fn node(&self, index: usize) -> &Node {
@@ -163,7 +171,8 @@ impl NodeList {
     fn nodes(&self) -> &[Node] {
         let nodes: *const Self = self as *const Self;
         let nodes: *const Node = nodes as *const Node;
-        unsafe { slice::from_raw_parts(nodes, NODE_LIST_LENGTH) }
+        let length: usize = self.length();
+        unsafe { slice::from_raw_parts(nodes, length) }
     }
 
     fn root(range: Range<usize>, available_range: Range<usize>) -> Box<Self> {
@@ -174,6 +183,12 @@ impl NodeList {
         node_list_mut.initialize();
         node_list_mut.mut_nodes()[0].initialize(range, available_range);
         node_list
+    }
+
+    fn size(&self) -> usize {
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        cmp::min(1 << address.trailing_zeros(), Self::MAX_SIZE)
     }
 }
 
