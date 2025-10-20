@@ -52,7 +52,7 @@ struct Allocator {
 impl Allocator {
     pub fn initialize(&self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
-        let available_end: usize = available_range.end - page::SIZE;
+        let available_end: usize = available_range.end - NodeList::MAX_SIZE;
         let available_range: Range<usize> = available_start..available_end;
         let available_size: usize = available_range.len();
         let size: usize = available_size.next_power_of_two();
@@ -110,7 +110,7 @@ unsafe impl Sync for Allocator {}
 
 struct NodeList();
 
-const NODE_LIST_LENGTH: usize = page::SIZE / size_of::<Node>();
+const NODE_LIST_LENGTH: usize = NodeList::MAX_SIZE / size_of::<Node>();
 
 impl NodeList {
     const MAX_SIZE: usize = page::SIZE;
@@ -449,9 +449,10 @@ impl Node {
         let available_range: Range<usize> = self.available_range();
         let start: usize = cmp::max(available_range.start, self.divide_point());
         let end: usize = available_range.end
-            - self
-                .higher_half_node_index_in_list()
-                .map_or(page::SIZE, |_| 0);
+            - match self.higher_half_node_index_in_list() {
+                Some(_) => 0,
+                None => NodeList::MAX_SIZE,
+            };
         Some(start..end).filter(|range| !range.is_empty())
     }
 
@@ -464,7 +465,7 @@ impl Node {
     fn index_in_list(&self) -> usize {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
-        let offset: usize = address % page::SIZE;
+        let offset: usize = address % NodeList::MAX_SIZE;
         offset / size_of::<Self>()
     }
 
@@ -500,9 +501,10 @@ impl Node {
         let available_range: Range<usize> = self.available_range();
         let start: usize = available_range.start;
         let end: usize = cmp::min(self.divide_point(), available_range.end)
-            - self
-                .lower_half_node_index_in_list()
-                .map_or(page::SIZE, |_| 0);
+            - match self.lower_half_node_index_in_list() {
+                Some(_) => 0,
+                None => NodeList::MAX_SIZE,
+            };
         Some(start..end).filter(|range| !range.is_empty())
     }
 
@@ -522,7 +524,7 @@ impl Node {
     fn mut_node_list(&mut self) -> &mut NodeList {
         let address: *mut Self = self as *mut Self;
         let address: usize = address as usize;
-        let address: usize = (address / page::SIZE) * page::SIZE;
+        let address: usize = (address / NodeList::MAX_SIZE) * NodeList::MAX_SIZE;
         let address: *mut NodeList = address as *mut NodeList;
         unsafe { &mut *address }
     }
@@ -530,7 +532,7 @@ impl Node {
     fn node_list(&self) -> &NodeList {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
-        let address: usize = (address / page::SIZE) * page::SIZE;
+        let address: usize = (address / NodeList::MAX_SIZE) * NodeList::MAX_SIZE;
         let address: *const NodeList = address as *const NodeList;
         unsafe { &*address }
     }
