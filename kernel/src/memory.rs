@@ -14,6 +14,7 @@ use {
     alloc::{alloc::Layout, boxed::Box},
     core::{
         alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem::size_of, ops::Range,
+        slice,
     },
 };
 
@@ -107,10 +108,7 @@ unsafe impl GlobalAlloc for Allocator {
 
 unsafe impl Sync for Allocator {}
 
-#[repr(align(4096))]
-struct NodeList {
-    nodes: [Node; NODE_LIST_LENGTH],
-}
+struct NodeList();
 
 const NODE_LIST_LENGTH: usize = page::SIZE / size_of::<Node>();
 
@@ -120,28 +118,52 @@ impl NodeList {
         let size: usize = layout.size();
         let size: usize = size.next_power_of_two();
         let size: usize = cmp::max(align, size);
-        self.nodes[0].alloc(size)
+        self.mut_nodes()[0].alloc(size)
     }
 
     fn child<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe { &mut *node_list };
-        *node_list = Self::default();
-        node_list.nodes[0].initialize(range, available_range);
+        node_list.initialize();
+        node_list.mut_nodes()[0].initialize(range, available_range);
         node_list
     }
 
     fn dealloc(&mut self, address: *mut u8) {
-        self.nodes[0].dealloc(address);
+        self.mut_nodes()[0].dealloc(address);
+    }
+
+    fn initialize(&mut self) {
+        self.mut_nodes().iter_mut().for_each(|node| {
+            *node = Node {
+                state: State::Invalid,
+                start: 0,
+                log_size: 0,
+                unavailable_tail_size: 0,
+                max_size: 0,
+            }
+        });
     }
 
     fn mut_node(&mut self, index: usize) -> &mut Node {
-        &mut self.nodes[index]
+        &mut self.mut_nodes()[index]
+    }
+
+    fn mut_nodes(&mut self) -> &mut [Node] {
+        let nodes: *mut Self = self as *mut Self;
+        let nodes: *mut Node = nodes as *mut Node;
+        unsafe { slice::from_raw_parts_mut(nodes, NODE_LIST_LENGTH) }
     }
 
     fn node(&self, index: usize) -> &Node {
-        &self.nodes[index]
+        &self.nodes()[index]
+    }
+
+    fn nodes(&self) -> &[Node] {
+        let nodes: *const Self = self as *const Self;
+        let nodes: *const Node = nodes as *const Node;
+        unsafe { slice::from_raw_parts(nodes, NODE_LIST_LENGTH) }
     }
 
     fn root(range: Range<usize>, available_range: Range<usize>) -> Box<Self> {
@@ -149,8 +171,8 @@ impl NodeList {
         let node_list: *mut Self = node_list as *mut Self;
         let mut node_list: Box<Self> = unsafe { Box::from_raw(node_list) };
         let node_list_mut: &mut Self = node_list.borrow_mut();
-        *node_list_mut = Self::default();
-        node_list_mut.nodes[0].initialize(range, available_range);
+        node_list_mut.initialize();
+        node_list_mut.mut_nodes()[0].initialize(range, available_range);
         node_list
     }
 }
@@ -159,16 +181,8 @@ impl fmt::Debug for NodeList {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("NodeList")
-            .field("root", &self.nodes[0])
+            .field("root", &self.nodes()[0])
             .finish()
-    }
-}
-
-impl Default for NodeList {
-    fn default() -> Self {
-        const NODE: Node = Node::default();
-        let nodes = [NODE; NODE_LIST_LENGTH];
-        Self { nodes }
     }
 }
 
@@ -296,16 +310,6 @@ impl Node {
         self.update_max_size();
     }
 
-    const fn default() -> Self {
-        Self {
-            state: State::Invalid,
-            start: 0,
-            log_size: 0,
-            unavailable_tail_size: 0,
-            max_size: 0,
-        }
-    }
-
     fn divide(&mut self) {
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
@@ -348,7 +352,7 @@ impl Node {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
                 let node_list: &NodeList = unsafe { &*node_list };
-                let higher_half_node: &Self = &node_list.nodes[0];
+                let higher_half_node: &Self = node_list.node(0);
                 (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
@@ -369,7 +373,7 @@ impl Node {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
                 let node_list: &mut NodeList = unsafe { &mut *node_list };
-                let higher_half_node: &mut Self = &mut node_list.nodes[0];
+                let higher_half_node: &mut Self = node_list.mut_node(0);
                 (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
@@ -388,7 +392,7 @@ impl Node {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
                 let node_list: &NodeList = unsafe { &*node_list };
-                let lower_half_node: &Self = &node_list.nodes[0];
+                let lower_half_node: &Self = node_list.node(0);
                 (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
@@ -408,7 +412,7 @@ impl Node {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
                 let node_list: &mut NodeList = unsafe { &mut *node_list };
-                let lower_half_node: &mut Self = &mut node_list.nodes[0];
+                let lower_half_node: &mut Self = node_list.mut_node(0);
                 (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
