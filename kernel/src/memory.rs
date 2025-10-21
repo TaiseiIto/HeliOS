@@ -444,7 +444,7 @@ impl Node {
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * self.index_in_list() + 2;
+        let index: usize = 2 * (self.index as usize) + 2;
         Some(index).filter(|index| *index < self.node_list().length())
     }
 
@@ -465,13 +465,6 @@ impl Node {
         Some(start..end).filter(|range| !range.is_empty())
     }
 
-    fn index_in_list(&self) -> usize {
-        let address: *const Self = self as *const Self;
-        let address: usize = address as usize;
-        let offset: usize = address % NodeList::MAX_SIZE;
-        offset / size_of::<Self>()
-    }
-
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
         let size: usize = range.len();
         assert!(!range.is_empty());
@@ -489,7 +482,7 @@ impl Node {
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * self.index_in_list() + 1;
+        let index: usize = 2 * (self.index as usize) + 1;
         Some(index).filter(|index| *index < self.node_list().length())
     }
 
