@@ -444,7 +444,7 @@ impl Node {
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * (self.index as usize) + 2;
+        let index: usize = 2 * self.index() + 2;
         Some(index).filter(|index| *index < self.node_list().length())
     }
 
@@ -465,6 +465,10 @@ impl Node {
         Some(start..end).filter(|range| !range.is_empty())
     }
 
+    fn index(&self) -> usize {
+        self.index as usize
+    }
+
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
         let size: usize = range.len();
         assert!(!range.is_empty());
@@ -482,7 +486,7 @@ impl Node {
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * (self.index as usize) + 1;
+        let index: usize = 2 * self.index() + 1;
         Some(index).filter(|index| *index < self.node_list().length())
     }
 
@@ -511,17 +515,17 @@ impl Node {
     }
 
     fn mut_node_list(&mut self) -> &mut NodeList {
+        let index: usize = self.index();
         let address: *mut Self = self as *mut Self;
-        let address: usize = address as usize;
-        let address: usize = (address / NodeList::MAX_SIZE) * NodeList::MAX_SIZE;
+        let address: *mut Self = unsafe { address.sub(index) };
         let address: *mut NodeList = address as *mut NodeList;
         unsafe { &mut *address }
     }
 
     fn node_list(&self) -> &NodeList {
+        let index: usize = self.index();
         let address: *const Self = self as *const Self;
-        let address: usize = address as usize;
-        let address: usize = (address / NodeList::MAX_SIZE) * NodeList::MAX_SIZE;
+        let address: *const Self = unsafe { address.sub(index) };
         let address: *const NodeList = address as *const NodeList;
         unsafe { &*address }
     }
