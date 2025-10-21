@@ -471,6 +471,7 @@ impl Node {
                     assert!(NodeList::MIN_SIZE <= node_list_size);
                     assert!(node_list_size <= NodeList::MAX_SIZE);
                     if node_list_size < range_size {
+                        let end: usize = end - node_list_size;
                         Some(start..end)
                     } else {
                         None
