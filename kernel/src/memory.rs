@@ -483,20 +483,11 @@ impl Node {
         assert!(size.is_power_of_two());
         assert_eq!((range.start / size) * size, range.start);
         assert_eq!((range.end / size) * size, range.end);
-        let index: u8 = self.index;
-        let state = State::Free;
-        let start: usize = range.start;
-        let log_size: u8 = size.ilog2() as u8;
-        let unavailable_tail_size: usize = range.end - available_range.end;
-        let max_size: usize = available_range.len();
-        *self = Self {
-            index,
-            state,
-            start,
-            log_size,
-            unavailable_tail_size,
-            max_size,
-        };
+        self.state = State::Free;
+        self.start = range.start;
+        self.log_size = size.ilog2() as u8;
+        self.unavailable_tail_size = range.end - available_range.end;
+        self.max_size = available_range.len();
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
