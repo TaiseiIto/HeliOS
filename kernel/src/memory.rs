@@ -449,14 +449,35 @@ impl Node {
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let available_range: Range<usize> = self.available_range();
-        let start: usize = cmp::max(available_range.start, self.divide_point());
-        let end: usize = available_range.end
-            - match self.higher_half_node_index_in_list() {
-                Some(_) => 0,
-                None => NodeList::MAX_SIZE,
-            };
-        Some(start..end).filter(|range| !range.is_empty())
+        let start: usize = self.divide_point();
+        let end: usize = self.available_range().end;
+        Some(start..end)
+            .filter(|range| !range.is_empty())
+            .and_then(|range| {
+                if self.higher_half_node_index_in_list().is_some() {
+                    Some(range)
+                } else {
+                    let Range::<usize> { start, end } = range;
+                    let range_size: usize = end - start;
+                    assert!(
+                        (NodeList::MAX_SIZE < range_size && range_size % NodeList::MAX_SIZE == 0)
+                            || range_size.is_power_of_two()
+                    );
+                    let node_list_size: usize = cmp::min(
+                        cmp::max(range_size / 2, NodeList::MIN_SIZE),
+                        NodeList::MAX_SIZE,
+                    );
+                    assert!(node_list_size.is_power_of_two());
+                    assert!(NodeList::MIN_SIZE <= node_list_size);
+                    assert!(node_list_size <= NodeList::MAX_SIZE);
+                    if node_list_size < range_size {
+                        Some(start..end)
+                    } else {
+                        None
+                    }
+                }
+            })
+            .filter(|range| !range.is_empty())
     }
 
     fn higher_half_range(&self) -> Option<Range<usize>> {
@@ -491,14 +512,36 @@ impl Node {
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
-        let available_range: Range<usize> = self.available_range();
-        let start: usize = available_range.start;
-        let end: usize = cmp::min(self.divide_point(), available_range.end)
-            - match self.lower_half_node_index_in_list() {
-                Some(_) => 0,
-                None => NodeList::MAX_SIZE,
-            };
-        Some(start..end).filter(|range| !range.is_empty())
+        let Range::<usize> { start, end } = self.available_range();
+        let end: usize = cmp::min(self.divide_point(), end);
+        Some(start..end)
+            .filter(|range| !range.is_empty())
+            .and_then(|range| {
+                if self.lower_half_node_index_in_list().is_some() {
+                    Some(range)
+                } else {
+                    let Range::<usize> { start, end } = range;
+                    let range_size: usize = end - start;
+                    assert!(
+                        (NodeList::MAX_SIZE < range_size && range_size % NodeList::MAX_SIZE == 0)
+                            || range_size.is_power_of_two()
+                    );
+                    let node_list_size: usize = cmp::min(
+                        cmp::max(range_size / 2, NodeList::MIN_SIZE),
+                        NodeList::MAX_SIZE,
+                    );
+                    assert!(node_list_size.is_power_of_two());
+                    assert!(NodeList::MIN_SIZE <= node_list_size);
+                    assert!(node_list_size <= NodeList::MAX_SIZE);
+                    if node_list_size < range_size {
+                        let end: usize = end - node_list_size;
+                        Some(start..end)
+                    } else {
+                        None
+                    }
+                }
+            })
+            .filter(|range| !range.is_empty())
     }
 
     fn lower_half_range(&self) -> Option<Range<usize>> {
