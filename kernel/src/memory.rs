@@ -110,8 +110,6 @@ unsafe impl Sync for Allocator {}
 
 struct NodeList();
 
-const NODE_LIST_LENGTH: usize = NodeList::MAX_SIZE / size_of::<Node>();
-
 impl NodeList {
     const MAX_SIZE: usize = page::SIZE;
     const MIN_SIZE: usize = size_of::<Node>();
@@ -447,7 +445,7 @@ impl Node {
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
         let index: usize = 2 * self.index_in_list() + 2;
-        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
+        Some(index).filter(|index| *index < self.node_list().length())
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
@@ -492,7 +490,7 @@ impl Node {
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
         let index: usize = 2 * self.index_in_list() + 1;
-        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
+        Some(index).filter(|index| *index < self.node_list().length())
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
