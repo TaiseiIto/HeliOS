@@ -86,13 +86,19 @@ If the following error occured,
 VirtualBox can't operate in VMX root mode. Please disable the KVM kernel extension, recompile your kernel and reboot.
 ```
 
-First, close the docker desktop and wait for stopping QEMU.
+First, close the docker desktop or docker daemon.
+
+```
+* $ sudo systemctl stop docker
+```
+
+Then, wait for stopping QEMU.
 
 ```
 * $ while pgrep -a qemu; do sleep 1; done
 ```
 
-Then, disable the KVM modules.
+Next, disable the KVM modules.
 
 ```
 * $ for module in $(lsmod | awk '{print $1}' | grep kvm); do sudo rmmod $module; done
