@@ -142,6 +142,7 @@ And `make permission` like below.
 
 ```
 ~/HeliOS # exit
+/somewhere/HeliOS $ git config user.email someone@some.domain
 /somewhere/Helios $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
 ```
 

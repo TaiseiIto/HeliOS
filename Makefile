@@ -165,7 +165,9 @@ delete_environment:
 # Get development permission.
 # Only developers can execute it.
 # Users don:t have to do it.
-# Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
+# Usage
+# $ git config user.email someone@some.domain
+# $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
 .PHONY: permission
 permission:
 	make permission -C .docker SSHKEY=$(abspath $(SSHKEY)) GPGKEY=$(abspath $(GPGKEY))

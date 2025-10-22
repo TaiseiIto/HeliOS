@@ -13,7 +13,7 @@ developer=$3
 product=$4
 ssh_key_source=$5
 gpg_key_source=$6
-email=$(git config --global user.email)
+email=$(git config user.email)
 docker start $container
 home=$(docker exec $container printenv HOME)
 ssh_key_destination=$home/.github/key
