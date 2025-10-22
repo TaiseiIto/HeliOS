@@ -10,6 +10,7 @@ use {
     alloc::{alloc::Layout, boxed::Box},
     core::{
         alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem::size_of, ops::Range,
+        slice,
     },
 };
 
@@ -31,7 +32,7 @@ struct Allocator {
 impl Allocator {
     pub fn initialize(&self, available_range: Range<usize>) {
         let available_start: usize = available_range.start;
-        let available_end: usize = available_range.end - page::SIZE;
+        let available_end: usize = available_range.end - NodeList::MAX_SIZE;
         let available_range: Range<usize> = available_start..available_end;
         let available_size: usize = available_range.len();
         let size: usize = available_size.next_power_of_two();
@@ -87,41 +88,73 @@ unsafe impl GlobalAlloc for Allocator {
 
 unsafe impl Sync for Allocator {}
 
-#[repr(align(4096))]
-struct NodeList {
-    nodes: [Node; NODE_LIST_LENGTH],
-}
-
-const NODE_LIST_LENGTH: usize = page::SIZE / size_of::<Node>();
+struct NodeList();
 
 impl NodeList {
+    const MAX_SIZE: usize = page::SIZE;
+    const MIN_SIZE: usize = size_of::<Node>();
+
     fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
         let align: usize = layout.align();
         let size: usize = layout.size();
         let size: usize = size.next_power_of_two();
         let size: usize = cmp::max(align, size);
-        self.nodes[0].alloc(size)
+        self.mut_node(0).alloc(size)
     }
 
     fn child<'a>(range: Range<usize>, available_range: Range<usize>) -> &'a mut Self {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
         let node_list: &mut Self = unsafe { &mut *node_list };
-        *node_list = Self::default();
-        node_list.nodes[0].initialize(range, available_range);
+        node_list.initialize(range, available_range);
         node_list
     }
 
     fn dealloc(&mut self, address: *mut u8) {
-        self.nodes[0].dealloc(address);
+        self.mut_node(0).dealloc(address);
+    }
+
+    fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
+        self.mut_nodes()
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, node)| {
+                *node = Node {
+                    index: index as u8,
+                    state: State::Invalid,
+                    start: 0,
+                    log_size: 0,
+                    unavailable_tail_size: 0,
+                    max_size: 0,
+                }
+            });
+        self.mut_node(0).initialize(range, available_range);
+    }
+
+    fn length(&self) -> usize {
+        self.size() / size_of::<Node>()
     }
 
     fn mut_node(&mut self, index: usize) -> &mut Node {
-        &mut self.nodes[index]
+        &mut self.mut_nodes()[index]
+    }
+
+    fn mut_nodes(&mut self) -> &mut [Node] {
+        let nodes: *mut Self = self as *mut Self;
+        let nodes: *mut Node = nodes as *mut Node;
+        let length: usize = self.length();
+        unsafe { slice::from_raw_parts_mut(nodes, length) }
     }
 
     fn node(&self, index: usize) -> &Node {
-        &self.nodes[index]
+        &self.nodes()[index]
+    }
+
+    fn nodes(&self) -> &[Node] {
+        let nodes: *const Self = self as *const Self;
+        let nodes: *const Node = nodes as *const Node;
+        let length: usize = self.length();
+        unsafe { slice::from_raw_parts(nodes, length) }
     }
 
     fn root(range: Range<usize>, available_range: Range<usize>) -> Box<Self> {
@@ -129,9 +162,14 @@ impl NodeList {
         let node_list: *mut Self = node_list as *mut Self;
         let mut node_list: Box<Self> = unsafe { Box::from_raw(node_list) };
         let node_list_mut: &mut Self = node_list.borrow_mut();
-        *node_list_mut = Self::default();
-        node_list_mut.nodes[0].initialize(range, available_range);
+        node_list_mut.initialize(range, available_range);
         node_list
+    }
+
+    fn size(&self) -> usize {
+        let address: *const Self = self as *const Self;
+        let address: usize = address as usize;
+        cmp::min(1 << address.trailing_zeros(), Self::MAX_SIZE)
     }
 }
 
@@ -139,20 +177,13 @@ impl fmt::Debug for NodeList {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("NodeList")
-            .field("root", &self.nodes[0])
+            .field("root", self.node(0))
             .finish()
     }
 }
 
-impl Default for NodeList {
-    fn default() -> Self {
-        const NODE: Node = Node::default();
-        let nodes = [NODE; NODE_LIST_LENGTH];
-        Self { nodes }
-    }
-}
-
 struct Node {
+    index: u8,
     state: State,
     start: usize,
     log_size: u8,
@@ -276,16 +307,6 @@ impl Node {
         self.update_max_size();
     }
 
-    const fn default() -> Self {
-        Self {
-            state: State::Invalid,
-            start: 0,
-            log_size: 0,
-            unavailable_tail_size: 0,
-            max_size: 0,
-        }
-    }
-
     fn divide(&mut self) {
         let lower_half_range: Option<Range<usize>> = self.lower_half_range();
         let lower_half_available_range: Option<Range<usize>> = self.lower_half_available_range();
@@ -328,7 +349,7 @@ impl Node {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
                 let node_list: &NodeList = unsafe { &*node_list };
-                let higher_half_node: &Self = &node_list.nodes[0];
+                let higher_half_node: &Self = node_list.node(0);
                 (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
@@ -349,7 +370,7 @@ impl Node {
                 let node_list: usize = higher_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
                 let node_list: &mut NodeList = unsafe { &mut *node_list };
-                let higher_half_node: &mut Self = &mut node_list.nodes[0];
+                let higher_half_node: &mut Self = node_list.mut_node(0);
                 (higher_half_node.state != State::Invalid).then_some(higher_half_node)
             } else {
                 None
@@ -368,7 +389,7 @@ impl Node {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *const NodeList = node_list as *const NodeList;
                 let node_list: &NodeList = unsafe { &*node_list };
-                let lower_half_node: &Self = &node_list.nodes[0];
+                let lower_half_node: &Self = node_list.node(0);
                 (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
@@ -388,7 +409,7 @@ impl Node {
                 let node_list: usize = lower_half_available_range.end;
                 let node_list: *mut NodeList = node_list as *mut NodeList;
                 let node_list: &mut NodeList = unsafe { &mut *node_list };
-                let lower_half_node: &mut Self = &mut node_list.nodes[0];
+                let lower_half_node: &mut Self = node_list.mut_node(0);
                 (lower_half_node.state != State::Invalid).then_some(lower_half_node)
             } else {
                 None
@@ -403,18 +424,41 @@ impl Node {
     }
 
     fn higher_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * self.index_in_list() + 2;
-        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
+        let index: usize = 2 * self.index() + 2;
+        Some(index).filter(|index| *index < self.node_list().length())
     }
 
     fn higher_half_available_range(&self) -> Option<Range<usize>> {
-        let available_range: Range<usize> = self.available_range();
-        let start: usize = cmp::max(available_range.start, self.divide_point());
-        let end: usize = available_range.end
-            - self
-                .higher_half_node_index_in_list()
-                .map_or(page::SIZE, |_| 0);
-        Some(start..end).filter(|range| !range.is_empty())
+        let start: usize = self.divide_point();
+        let end: usize = self.available_range().end;
+        Some(start..end)
+            .filter(|range| !range.is_empty())
+            .and_then(|range| {
+                if self.higher_half_node_index_in_list().is_some() {
+                    Some(range)
+                } else {
+                    let Range::<usize> { start, end } = range;
+                    let range_size: usize = end - start;
+                    assert!(
+                        (NodeList::MAX_SIZE < range_size && range_size % NodeList::MAX_SIZE == 0)
+                            || range_size.is_power_of_two()
+                    );
+                    let node_list_size: usize = cmp::min(
+                        cmp::max(range_size / 2, NodeList::MIN_SIZE),
+                        NodeList::MAX_SIZE,
+                    );
+                    assert!(node_list_size.is_power_of_two());
+                    assert!(NodeList::MIN_SIZE <= node_list_size);
+                    assert!(node_list_size <= NodeList::MAX_SIZE);
+                    if node_list_size < range_size {
+                        let end: usize = end - node_list_size;
+                        Some(start..end)
+                    } else {
+                        None
+                    }
+                }
+            })
+            .filter(|range| !range.is_empty())
     }
 
     fn higher_half_range(&self) -> Option<Range<usize>> {
@@ -423,11 +467,8 @@ impl Node {
         Some(start..end).filter(|range| !range.is_empty())
     }
 
-    fn index_in_list(&self) -> usize {
-        let address: *const Self = self as *const Self;
-        let address: usize = address as usize;
-        let offset: usize = address % page::SIZE;
-        offset / size_of::<Self>()
+    fn index(&self) -> usize {
+        self.index as usize
     }
 
     fn initialize(&mut self, range: Range<usize>, available_range: Range<usize>) {
@@ -439,33 +480,49 @@ impl Node {
         assert!(size.is_power_of_two());
         assert_eq!((range.start / size) * size, range.start);
         assert_eq!((range.end / size) * size, range.end);
-        let state = State::Free;
-        let start: usize = range.start;
-        let log_size: u8 = size.ilog2() as u8;
-        let unavailable_tail_size: usize = range.end - available_range.end;
-        let max_size: usize = available_range.len();
-        *self = Self {
-            state,
-            start,
-            log_size,
-            unavailable_tail_size,
-            max_size,
-        };
+        self.state = State::Free;
+        self.start = range.start;
+        self.log_size = size.ilog2() as u8;
+        self.unavailable_tail_size = range.end - available_range.end;
+        self.max_size = available_range.len();
     }
 
     fn lower_half_node_index_in_list(&self) -> Option<usize> {
-        let index: usize = 2 * self.index_in_list() + 1;
-        Some(index).filter(|index| *index < NODE_LIST_LENGTH)
+        let index: usize = 2 * self.index() + 1;
+        Some(index).filter(|index| *index < self.node_list().length())
     }
 
     fn lower_half_available_range(&self) -> Option<Range<usize>> {
-        let available_range: Range<usize> = self.available_range();
-        let start: usize = available_range.start;
-        let end: usize = cmp::min(self.divide_point(), available_range.end)
-            - self
-                .lower_half_node_index_in_list()
-                .map_or(page::SIZE, |_| 0);
-        Some(start..end).filter(|range| !range.is_empty())
+        let Range::<usize> { start, end } = self.available_range();
+        let end: usize = cmp::min(self.divide_point(), end);
+        Some(start..end)
+            .filter(|range| !range.is_empty())
+            .and_then(|range| {
+                if self.lower_half_node_index_in_list().is_some() {
+                    Some(range)
+                } else {
+                    let Range::<usize> { start, end } = range;
+                    let range_size: usize = end - start;
+                    assert!(
+                        (NodeList::MAX_SIZE < range_size && range_size % NodeList::MAX_SIZE == 0)
+                            || range_size.is_power_of_two()
+                    );
+                    let node_list_size: usize = cmp::min(
+                        cmp::max(range_size / 2, NodeList::MIN_SIZE),
+                        NodeList::MAX_SIZE,
+                    );
+                    assert!(node_list_size.is_power_of_two());
+                    assert!(NodeList::MIN_SIZE <= node_list_size);
+                    assert!(node_list_size <= NodeList::MAX_SIZE);
+                    if node_list_size < range_size {
+                        let end: usize = end - node_list_size;
+                        Some(start..end)
+                    } else {
+                        None
+                    }
+                }
+            })
+            .filter(|range| !range.is_empty())
     }
 
     fn lower_half_range(&self) -> Option<Range<usize>> {
@@ -482,17 +539,17 @@ impl Node {
     }
 
     fn mut_node_list(&mut self) -> &mut NodeList {
+        let index: usize = self.index();
         let address: *mut Self = self as *mut Self;
-        let address: usize = address as usize;
-        let address: usize = (address / page::SIZE) * page::SIZE;
+        let address: *mut Self = unsafe { address.sub(index) };
         let address: *mut NodeList = address as *mut NodeList;
         unsafe { &mut *address }
     }
 
     fn node_list(&self) -> &NodeList {
+        let index: usize = self.index();
         let address: *const Self = self as *const Self;
-        let address: usize = address as usize;
-        let address: usize = (address / page::SIZE) * page::SIZE;
+        let address: *const Self = unsafe { address.sub(index) };
         let address: *const NodeList = address as *const NodeList;
         unsafe { &*address }
     }
