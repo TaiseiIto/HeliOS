@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 pub mod pmc;
 pub mod pmcsr;
@@ -39,4 +36,3 @@ impl fmt::Debug for Registers {
             .finish()
     }
 }
-

@@ -15,4 +15,3 @@ pub struct Control {
     #[bits(7)]
     __: u8,
 }
-

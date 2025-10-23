@@ -1,32 +1,9 @@
 use {
-    alloc::{
-        collections::BTreeMap,
-        format,
-        string::String,
-        vec::Vec,
-    },
+    super::{name, reference, syntax},
+    alloc::{collections::BTreeMap, format, string::String, vec::Vec},
     core::{
-        cmp,
-        iter,
-        mem,
-        ops::{
-            Add,
-            BitAnd,
-            BitOr,
-            BitXor,
-            Div,
-            Mul,
-            Not,
-            Rem,
-            Shl,
-            Shr,
-            Sub,
-        },
-    },
-    super::{
-        name,
-        reference,
-        syntax,
+        cmp, iter, mem,
+        ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub},
     },
 };
 
@@ -74,17 +51,13 @@ impl From<u8> for AccessType {
 
 impl From<&syntax::AccessType> for AccessType {
     fn from(access_type: &syntax::AccessType) -> Self {
-        access_type
-            .get_access_type()
-            .into()
+        access_type.get_access_type().into()
     }
 }
 
 impl From<&syntax::FieldFlags> for AccessType {
     fn from(field_flags: &syntax::FieldFlags) -> Self {
-        field_flags
-            .get_access_type()
-            .into()
+        field_flags.get_access_type().into()
     }
 }
 
@@ -96,10 +69,7 @@ pub struct BitIterator<'a> {
 impl<'a> From<&'a Value> for BitIterator<'a> {
     fn from(value: &'a Value) -> Self {
         let index: usize = 0;
-        Self {
-            index,
-            value,
-        }
+        Self { index, value }
     }
 }
 
@@ -107,15 +77,10 @@ impl<'a> Iterator for BitIterator<'a> {
     type Item = bool;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self {
-            index,
-            value,
-        } = self;
+        let Self { index, value } = self;
         let bit_index: usize = *index;
         *index += 1;
-        value
-            .get_bit(bit_index)
-            .ok()
+        value.get_bit(bit_index).ok()
     }
 }
 
@@ -205,9 +170,7 @@ impl From<u8> for RegionSpace {
 
 impl From<&syntax::RegionSpace> for RegionSpace {
     fn from(region_space: &syntax::RegionSpace) -> Self {
-        region_space
-            .get()
-            .into()
+        region_space.get().into()
     }
 }
 
@@ -231,20 +194,24 @@ pub enum Value {
 impl Value {
     pub fn concatenate(&self, other: &Self) -> Self {
         match (self, other) {
-            (Self::Byte(low), Self::Byte(high)) => Self::Word((*low as u16) + ((*high as u16) << u8::BITS)),
-            (Self::Word(low), Self::Word(high)) => Self::DWord((*low as u32) + ((*high as u32) << u16::BITS)),
-            (Self::DWord(low), Self::DWord(high)) => Self::QWord((*low as u64) + ((*high as u64) << u32::BITS)),
-            (Self::Buffer(first), Self::Buffer(second)) => Self::Buffer(first
-                .iter()
-                .chain(second.iter())
-                .cloned()
-                .collect()),
-            (Self::Package(first), Self::Package(second)) => Self::Package(first
-                .iter()
-                .chain(second.iter())
-                .cloned()
-                .collect()),
-            (Self::String(first), Self::String(second)) => Self::String(String::from(first) + second),
+            (Self::Byte(low), Self::Byte(high)) => {
+                Self::Word((*low as u16) + ((*high as u16) << u8::BITS))
+            }
+            (Self::Word(low), Self::Word(high)) => {
+                Self::DWord((*low as u32) + ((*high as u32) << u16::BITS))
+            }
+            (Self::DWord(low), Self::DWord(high)) => {
+                Self::QWord((*low as u64) + ((*high as u64) << u32::BITS))
+            }
+            (Self::Buffer(first), Self::Buffer(second)) => {
+                Self::Buffer(first.iter().chain(second.iter()).cloned().collect())
+            }
+            (Self::Package(first), Self::Package(second)) => {
+                Self::Package(first.iter().chain(second.iter()).cloned().collect())
+            }
+            (Self::String(first), Self::String(second)) => {
+                Self::String(String::from(first) + second)
+            }
             (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
@@ -259,18 +226,16 @@ impl Value {
                 let byte: u8 = bits
                     .as_slice()
                     .chunks(4)
-                    .map(|digit| digit
-                        .iter()
-                        .rev()
-                        .fold(0, |digit, bit| (digit << 1) + if *bit {
-                            1
-                        } else {
-                            0
-                        }))
+                    .map(|digit| {
+                        digit
+                            .iter()
+                            .rev()
+                            .fold(0, |digit, bit| (digit << 1) + if *bit { 1 } else { 0 })
+                    })
                     .rev()
                     .fold(0, |byte, digit| 10 * byte + digit);
                 Self::Byte(byte)
-            },
+            }
             Self::Word(word) => {
                 let bits: Vec<bool> = (0..u16::BITS)
                     .map(|shift| word & (1 << shift) != 0)
@@ -278,18 +243,16 @@ impl Value {
                 let word: u16 = bits
                     .as_slice()
                     .chunks(4)
-                    .map(|digit| digit
-                        .iter()
-                        .rev()
-                        .fold(0, |digit, bit| (digit << 1) + if *bit {
-                            1
-                        } else {
-                            0
-                        }))
+                    .map(|digit| {
+                        digit
+                            .iter()
+                            .rev()
+                            .fold(0, |digit, bit| (digit << 1) + if *bit { 1 } else { 0 })
+                    })
                     .rev()
                     .fold(0, |word, digit| 10 * word + digit);
                 Self::Word(word)
-            },
+            }
             Self::DWord(dword) => {
                 let bits: Vec<bool> = (0..u32::BITS)
                     .map(|shift| dword & (1 << shift) != 0)
@@ -297,18 +260,16 @@ impl Value {
                 let dword: u32 = bits
                     .as_slice()
                     .chunks(4)
-                    .map(|digit| digit
-                        .iter()
-                        .rev()
-                        .fold(0, |digit, bit| (digit << 1) + if *bit {
-                            1
-                        } else {
-                            0
-                        }))
+                    .map(|digit| {
+                        digit
+                            .iter()
+                            .rev()
+                            .fold(0, |digit, bit| (digit << 1) + if *bit { 1 } else { 0 })
+                    })
                     .rev()
                     .fold(0, |dword, digit| 10 * dword + digit);
                 Self::DWord(dword)
-            },
+            }
             Self::QWord(qword) => {
                 let bits: Vec<bool> = (0..u64::BITS)
                     .map(|shift| qword & (1 << shift) != 0)
@@ -316,18 +277,16 @@ impl Value {
                 let qword: u64 = bits
                     .as_slice()
                     .chunks(4)
-                    .map(|digit| digit
-                        .iter()
-                        .rev()
-                        .fold(0, |digit, bit| (digit << 1) + if *bit {
-                            1
-                        } else {
-                            0
-                        }))
+                    .map(|digit| {
+                        digit
+                            .iter()
+                            .rev()
+                            .fold(0, |digit, bit| (digit << 1) + if *bit { 1 } else { 0 })
+                    })
                     .rev()
                     .fold(0, |qword, digit| 10 * qword + digit);
                 Self::QWord(qword)
-            },
+            }
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -335,9 +294,7 @@ impl Value {
     pub fn get_bit(&self, index: usize) -> Result<bool, Option<usize>> {
         let u8_bits: usize = u8::BITS as usize;
         match self {
-            Self::Bool(value) => (index == 0)
-                .then_some(*value)
-                .ok_or(Some(1)),
+            Self::Bool(value) => (index == 0).then_some(*value).ok_or(Some(1)),
             Self::Buffer(buffer) => {
                 let byte_index: usize = index / u8_bits;
                 let bit_index: usize = index % u8_bits;
@@ -345,7 +302,7 @@ impl Value {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(buffer.len() * u8_bits))
-            },
+            }
             Self::Byte(byte) => (index < 8)
                 .then(|| (byte >> index) & 1 != 0)
                 .ok_or(Some(u8_bits)),
@@ -361,7 +318,7 @@ impl Value {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(bytes.len() * u8_bits))
-            },
+            }
             Self::DWord(dword) => {
                 let bytes: Vec<u8> = (0..mem::size_of::<u32>())
                     .map(|byte_index| (dword >> (byte_index * u8_bits)) as u8)
@@ -372,7 +329,7 @@ impl Value {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(bytes.len() * u8_bits))
-            },
+            }
             Self::One => Ok(index == 0),
             Self::Ones => Ok(true),
             Self::Package(package) => {
@@ -385,7 +342,7 @@ impl Value {
                     };
                 }
                 bit_or_remaining_index
-            },
+            }
             Self::QWord(qword) => {
                 let bytes: Vec<u8> = (0..mem::size_of::<u64>())
                     .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
@@ -396,19 +353,17 @@ impl Value {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(bytes.len() * u8_bits))
-            },
+            }
             Self::Revision => unimplemented!(),
             Self::String(string) => {
-                let bytes: Vec<u8> = string
-                    .as_bytes()
-                    .to_vec();
+                let bytes: Vec<u8> = string.as_bytes().to_vec();
                 let byte_index: usize = index / u8_bits;
                 let bit_index: usize = index % u8_bits;
                 bytes
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(bytes.len() * u8_bits))
-            },
+            }
             Self::Word(word) => {
                 let bytes: Vec<u8> = (0..mem::size_of::<u16>())
                     .map(|byte_index| (word >> (byte_index * u8_bits)) as u8)
@@ -419,7 +374,7 @@ impl Value {
                     .get(byte_index)
                     .map(|byte| (*byte >> bit_index) & 1 != 0)
                     .ok_or(Some(bytes.len() * u8_bits))
-            },
+            }
             Self::Zero => Ok(false),
         }
     }
@@ -438,17 +393,9 @@ impl Value {
     pub fn index(&self, index: &Self) -> Option<Self> {
         let index: usize = index.into();
         match self {
-            Self::Buffer(bytes) => bytes
-                .get(index)
-                .cloned()
-                .map(Self::Byte),
-            Self::Package(elements) => elements
-                .get(index)
-                .cloned(),
-            Self::String(characters) => characters
-                .chars()
-                .nth(index)
-                .map(Self::Char),
+            Self::Buffer(bytes) => bytes.get(index).cloned().map(Self::Byte),
+            Self::Package(elements) => elements.get(index).cloned(),
+            Self::String(characters) => characters.chars().nth(index).map(Self::Char),
             _ => None,
         }
     }
@@ -456,22 +403,30 @@ impl Value {
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.48 FindSetLeftBit (Find First Set Left Bit)
     pub fn leftest_one_bit_shift(&self) -> Self {
         match self {
-            Self::Byte(byte) => Self::Byte((0..u8::BITS)
-                .filter(|shift| byte >> shift != 0)
-                .max()
-                .map_or(0, |shift| (shift as u8) + 1)),
-            Self::Word(word) => Self::Byte((0..u16::BITS)
-                .filter(|shift| word >> shift != 0)
-                .max()
-                .map_or(0, |shift| (shift as u8) + 1)),
-            Self::DWord(dword) => Self::Byte((0..u32::BITS)
-                .filter(|shift| dword >> shift != 0)
-                .max()
-                .map_or(0, |shift| (shift as u8) + 1)),
-            Self::QWord(qword) => Self::Byte((0..u32::BITS)
-                .filter(|shift| qword >> shift != 0)
-                .max()
-                .map_or(0, |shift| (shift as u8) + 1)),
+            Self::Byte(byte) => Self::Byte(
+                (0..u8::BITS)
+                    .filter(|shift| byte >> shift != 0)
+                    .max()
+                    .map_or(0, |shift| (shift as u8) + 1),
+            ),
+            Self::Word(word) => Self::Byte(
+                (0..u16::BITS)
+                    .filter(|shift| word >> shift != 0)
+                    .max()
+                    .map_or(0, |shift| (shift as u8) + 1),
+            ),
+            Self::DWord(dword) => Self::Byte(
+                (0..u32::BITS)
+                    .filter(|shift| dword >> shift != 0)
+                    .max()
+                    .map_or(0, |shift| (shift as u8) + 1),
+            ),
+            Self::QWord(qword) => Self::Byte(
+                (0..u32::BITS)
+                    .filter(|shift| qword >> shift != 0)
+                    .max()
+                    .map_or(0, |shift| (shift as u8) + 1),
+            ),
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -487,34 +442,24 @@ impl Value {
                 let buffer_length: usize = buffer.len();
                 let start: usize = cmp::min(start, buffer_length);
                 let end: usize = cmp::min(end, buffer_length);
-                let buffer: Vec<u8> = buffer
-                    .get(start..end)
-                    .map_or(Vec::new(), Vec::from);
+                let buffer: Vec<u8> = buffer.get(start..end).map_or(Vec::new(), Vec::from);
                 Some(Self::Buffer(buffer))
-            },
+            }
             Self::Package(package) => {
                 let package_length: usize = package.len();
                 let start: usize = cmp::min(start, package_length);
                 let end: usize = cmp::min(end, package_length);
-                let package: Vec<Self> = package
-                    .get(start..end)
-                    .map_or(Vec::new(), Vec::from);
+                let package: Vec<Self> = package.get(start..end).map_or(Vec::new(), Vec::from);
                 Some(Self::Package(package))
-            },
+            }
             Self::String(string) => {
-                let string_length: usize = string
-                    .chars()
-                    .count();
+                let string_length: usize = string.chars().count();
                 let start: usize = cmp::min(start, string_length);
                 let end: usize = cmp::min(end, string_length);
                 let length: usize = end - start;
-                let string: String = string
-                    .chars()
-                    .skip(start)
-                    .take(length)
-                    .collect();
+                let string: String = string.chars().skip(start).take(length).collect();
                 Some(Self::String(string))
-            },
+            }
             _ => None,
         }
     }
@@ -539,22 +484,30 @@ impl Value {
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.49 FindSetRightBit (Find First Set Right Bit)
     pub fn rightest_one_bit_shift(&self) -> Self {
         match self {
-            Self::Byte(byte) => Self::Byte((0..u8::BITS)
-                .filter(|shift| byte << shift != 0)
-                .max()
-                .map_or(0, |shift| 8 - (shift as u8))),
-            Self::Word(word) => Self::Byte((0..u16::BITS)
-                .filter(|shift| word << shift != 0)
-                .max()
-                .map_or(0, |shift| 8 - (shift as u8))),
-            Self::DWord(dword) => Self::Byte((0..u32::BITS)
-                .filter(|shift| dword << shift != 0)
-                .max()
-                .map_or(0, |shift| 8 - (shift as u8))),
-            Self::QWord(qword) => Self::Byte((0..u32::BITS)
-                .filter(|shift| qword << shift != 0)
-                .max()
-                .map_or(0, |shift| 8 - (shift as u8))),
+            Self::Byte(byte) => Self::Byte(
+                (0..u8::BITS)
+                    .filter(|shift| byte << shift != 0)
+                    .max()
+                    .map_or(0, |shift| 8 - (shift as u8)),
+            ),
+            Self::Word(word) => Self::Byte(
+                (0..u16::BITS)
+                    .filter(|shift| word << shift != 0)
+                    .max()
+                    .map_or(0, |shift| 8 - (shift as u8)),
+            ),
+            Self::DWord(dword) => Self::Byte(
+                (0..u32::BITS)
+                    .filter(|shift| dword << shift != 0)
+                    .max()
+                    .map_or(0, |shift| 8 - (shift as u8)),
+            ),
+            Self::QWord(qword) => Self::Byte(
+                (0..u32::BITS)
+                    .filter(|shift| qword << shift != 0)
+                    .max()
+                    .map_or(0, |shift| 8 - (shift as u8)),
+            ),
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -582,7 +535,7 @@ impl Value {
                     .rev()
                     .fold(0, |word, digit| (word << 4) + (digit as u16));
                 Self::Word(word)
-            },
+            }
             Self::Word(word) => {
                 let decimal_digit_iterator: DecimalDigitIterator = (*word).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
@@ -591,7 +544,7 @@ impl Value {
                     .rev()
                     .fold(0, |dword, digit| (dword << 4) + (digit as u32));
                 Self::DWord(dword)
-            },
+            }
             Self::DWord(dword) => {
                 let decimal_digit_iterator: DecimalDigitIterator = (*dword).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
@@ -600,7 +553,7 @@ impl Value {
                     .rev()
                     .fold(0, |qword, digit| (qword << 4) + (digit as u64));
                 Self::QWord(qword)
-            },
+            }
             Self::QWord(qword) => {
                 let decimal_digit_iterator: DecimalDigitIterator = (*qword).into();
                 let decimal_digit: Vec<u8> = decimal_digit_iterator.collect();
@@ -609,7 +562,7 @@ impl Value {
                     .rev()
                     .fold(0, |qword, digit| (qword << 4) + (digit as u64));
                 Self::QWord(qword)
-            },
+            }
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -620,37 +573,34 @@ impl Value {
             Self::Byte(byte) => {
                 let buffer: Vec<u8> = iter::once(*byte).collect();
                 Self::Buffer(buffer)
-            },
+            }
             Self::Word(word) => {
                 let buffer: Vec<u8> = (0..mem::size_of::<u16>())
                     .map(|offset| (word >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
-            },
+            }
             Self::DWord(dword) => {
                 let buffer: Vec<u8> = (0..mem::size_of::<u32>())
                     .map(|offset| (dword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
-            },
+            }
             Self::QWord(qword) => {
                 let buffer: Vec<u8> = (0..mem::size_of::<u64>())
                     .map(|offset| (qword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
-            },
+            }
             Self::Buffer(buffer) => Self::Buffer(buffer.to_vec()),
             Self::String(string) => {
                 let buffer: Vec<u8> = if string.is_empty() {
                     Vec::new()
                 } else {
-                    string
-                        .bytes()
-                        .chain(iter::once(0))
-                        .collect()
+                    string.bytes().chain(iter::once(0)).collect()
                 };
                 Self::Buffer(buffer)
-            },
+            }
             value => unimplemented!("value = {:#x?}", value),
         }
     }
@@ -663,13 +613,10 @@ impl Value {
             Self::DWord(dword) => Self::String(format!("{}", dword)),
             Self::QWord(qword) => Self::String(format!("{}", qword)),
             Self::Buffer(buffer) => {
-                let bytes: Vec<String> = buffer
-                    .iter()
-                    .map(|byte| format!("{}", byte))
-                    .collect();
+                let bytes: Vec<String> = buffer.iter().map(|byte| format!("{}", byte)).collect();
                 let string: String = bytes.join(",");
                 Self::String(string)
-            },
+            }
             Self::String(string) => Self::String(String::from(string)),
             value => unimplemented!("value = {:#x?}", value),
         }
@@ -683,13 +630,11 @@ impl Value {
             Self::DWord(dword) => Self::String(format!("{:#010x}", dword)),
             Self::QWord(qword) => Self::String(format!("{:#018x}", qword)),
             Self::Buffer(buffer) => {
-                let bytes: Vec<String> = buffer
-                    .iter()
-                    .map(|byte| format!("{:#04x}", byte))
-                    .collect();
+                let bytes: Vec<String> =
+                    buffer.iter().map(|byte| format!("{:#04x}", byte)).collect();
                 let string: String = bytes.join(",");
                 Self::String(string)
-            },
+            }
             Self::String(string) => Self::String(String::from(string)),
             value => unimplemented!("value = {:#x?}", value),
         }
@@ -709,7 +654,7 @@ impl Value {
                     .rev()
                     .fold(0, |qword, byte| (qword << u8::BITS) + (*byte as u64));
                 Self::QWord(qword)
-            },
+            }
             Self::String(string) => {
                 let radix: u64 = if string.starts_with("0x") || string.starts_with("0X") {
                     0x10
@@ -718,30 +663,32 @@ impl Value {
                 };
                 let qword: u64 = string
                     .chars()
-                    .filter_map(|character| character
-                        .to_digit(radix as u32)
-                        .map(|digit| digit as u64))
+                    .filter_map(|character| {
+                        character.to_digit(radix as u32).map(|digit| digit as u64)
+                    })
                     .fold(0, |qword, digit| qword * radix + digit);
                 Self::QWord(qword)
-            },
+            }
             value => unimplemented!("Value = {:#x?}", value),
         }
     }
 
     /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 19.6.141 ToString (Convert Buffer to String)
     pub fn to_string(&self, length: &Option<Self>) -> Option<Self> {
-        let length: Option<usize> = length
-            .as_ref()
-            .map(|length| length.into());
+        let length: Option<usize> = length.as_ref().map(|length| length.into());
         match self {
-            Self::Buffer(buffer) => String::from_utf8(buffer
+            Self::Buffer(buffer) => String::from_utf8(
+                buffer
                     .iter()
                     .enumerate()
-                    .take_while(|(index, byte)| **byte != 0 && length.map_or(true, |length| *index < length))
+                    .take_while(|(index, byte)| {
+                        **byte != 0 && length.map_or(true, |length| *index < length)
+                    })
                     .map(|(_index, byte)| *byte)
-                    .collect())
-                .ok()
-                .map(Self::String),
+                    .collect(),
+            )
+            .ok()
+            .map(Self::String),
             value => unimplemented!("Value = {:#x?}", value),
         }
     }
@@ -749,7 +696,9 @@ impl Value {
     fn match_type(&self, other: &Self) -> (Self, Self) {
         match (self, other) {
             (Self::Bool(left), Self::Bool(right)) => (Self::Bool(*left), Self::Bool(*right)),
-            (Self::Buffer(left), Self::Buffer(right)) => (Self::Buffer(left.clone()), Self::Buffer(right.clone())),
+            (Self::Buffer(left), Self::Buffer(right)) => {
+                (Self::Buffer(left.clone()), Self::Buffer(right.clone()))
+            }
             (Self::Buffer(left), Self::String(right)) => {
                 let right: Vec<u8> = right
                     .bytes()
@@ -757,61 +706,95 @@ impl Value {
                     .take(left.len())
                     .collect();
                 (Self::Buffer(left.clone()), Self::Buffer(right))
-            },
+            }
             (Self::Byte(left), Self::Byte(right)) => (Self::Byte(*left), Self::Byte(*right)),
-            (Self::Byte(left), Self::DWord(right)) => (Self::DWord(*left as u32), Self::DWord(*right)),
+            (Self::Byte(left), Self::DWord(right)) => {
+                (Self::DWord(*left as u32), Self::DWord(*right))
+            }
             (Self::Byte(left), Self::One) => (Self::Byte(*left), Self::Byte(0x01)),
             (Self::Byte(left), Self::Ones) => (Self::Byte(*left), Self::Byte(0xff)),
-            (Self::Byte(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
+            (Self::Byte(left), Self::QWord(right)) => {
+                (Self::QWord(*left as u64), Self::QWord(*right))
+            }
             (Self::Byte(left), Self::Word(right)) => (Self::Word(*left as u16), Self::Word(*right)),
             (Self::Byte(left), Self::Zero) => (Self::Byte(*left), Self::Byte(0x00)),
             (Self::Char(left), Self::Char(right)) => (Self::Char(*left), Self::Char(*right)),
-            (Self::DWord(left), Self::Byte(right)) => (Self::DWord(*left), Self::DWord(*right as u32)),
+            (Self::DWord(left), Self::Byte(right)) => {
+                (Self::DWord(*left), Self::DWord(*right as u32))
+            }
             (Self::DWord(left), Self::DWord(right)) => (Self::DWord(*left), Self::DWord(*right)),
             (Self::DWord(left), Self::One) => (Self::DWord(*left), Self::DWord(0x00000001)),
             (Self::DWord(left), Self::Ones) => (Self::DWord(*left), Self::DWord(0xffffffff)),
-            (Self::DWord(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
-            (Self::DWord(left), Self::Word(right)) => (Self::DWord(*left), Self::DWord(*right as u32)),
+            (Self::DWord(left), Self::QWord(right)) => {
+                (Self::QWord(*left as u64), Self::QWord(*right))
+            }
+            (Self::DWord(left), Self::Word(right)) => {
+                (Self::DWord(*left), Self::DWord(*right as u32))
+            }
             (Self::DWord(left), Self::Zero) => (Self::DWord(*left), Self::DWord(0x00000000)),
             (Self::One, Self::Byte(right)) => (Self::Byte(0x01), Self::Byte(*right)),
             (Self::One, Self::DWord(right)) => (Self::DWord(0x00000001), Self::DWord(*right)),
             (Self::One, Self::One) => (Self::One, Self::One),
             (Self::One, Self::Ones) => (Self::One, Self::Ones),
-            (Self::One, Self::QWord(right)) => (Self::QWord(0x0000000000000001), Self::QWord(*right)),
+            (Self::One, Self::QWord(right)) => {
+                (Self::QWord(0x0000000000000001), Self::QWord(*right))
+            }
             (Self::One, Self::Word(right)) => (Self::Word(0x0001), Self::Word(*right)),
             (Self::One, Self::Zero) => (Self::One, Self::Zero),
             (Self::Ones, Self::Byte(right)) => (Self::Byte(0xff), Self::Byte(*right)),
             (Self::Ones, Self::DWord(right)) => (Self::DWord(0xffffffff), Self::DWord(*right)),
             (Self::Ones, Self::One) => (Self::Ones, Self::One),
             (Self::Ones, Self::Ones) => (Self::Ones, Self::Ones),
-            (Self::Ones, Self::QWord(right)) => (Self::QWord(0xffffffffffffffff), Self::QWord(*right)),
+            (Self::Ones, Self::QWord(right)) => {
+                (Self::QWord(0xffffffffffffffff), Self::QWord(*right))
+            }
             (Self::Ones, Self::Word(right)) => (Self::Word(0xffff), Self::Word(*right)),
             (Self::Ones, Self::Zero) => (Self::Ones, Self::Zero),
-            (Self::Package(left), Self::Package(right)) => (Self::Package(left.clone()), Self::Package(right.clone())),
-            (Self::QWord(left), Self::Byte(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
-            (Self::QWord(left), Self::DWord(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
+            (Self::Package(left), Self::Package(right)) => {
+                (Self::Package(left.clone()), Self::Package(right.clone()))
+            }
+            (Self::QWord(left), Self::Byte(right)) => {
+                (Self::QWord(*left), Self::QWord(*right as u64))
+            }
+            (Self::QWord(left), Self::DWord(right)) => {
+                (Self::QWord(*left), Self::QWord(*right as u64))
+            }
             (Self::QWord(left), Self::One) => (Self::QWord(*left), Self::QWord(0x0000000000000001)),
-            (Self::QWord(left), Self::Ones) => (Self::QWord(*left), Self::QWord(0xffffffffffffffff)),
+            (Self::QWord(left), Self::Ones) => {
+                (Self::QWord(*left), Self::QWord(0xffffffffffffffff))
+            }
             (Self::QWord(left), Self::QWord(right)) => (Self::QWord(*left), Self::QWord(*right)),
-            (Self::QWord(left), Self::Word(right)) => (Self::QWord(*left), Self::QWord(*right as u64)),
-            (Self::QWord(left), Self::Zero) => (Self::QWord(*left), Self::QWord(0x0000000000000000)),
+            (Self::QWord(left), Self::Word(right)) => {
+                (Self::QWord(*left), Self::QWord(*right as u64))
+            }
+            (Self::QWord(left), Self::Zero) => {
+                (Self::QWord(*left), Self::QWord(0x0000000000000000))
+            }
             (Self::Revision, Self::Revision) => (Self::Revision, Self::Revision),
-            (Self::String(left), Self::String(right)) => (Self::String(left.clone()), Self::String(right.clone())),
+            (Self::String(left), Self::String(right)) => {
+                (Self::String(left.clone()), Self::String(right.clone()))
+            }
             (Self::Word(left), Self::Byte(right)) => (Self::Word(*left), Self::Word(*right as u16)),
-            (Self::Word(left), Self::DWord(right)) => (Self::DWord(*left as u32), Self::DWord(*right)),
+            (Self::Word(left), Self::DWord(right)) => {
+                (Self::DWord(*left as u32), Self::DWord(*right))
+            }
             (Self::Word(left), Self::One) => (Self::Word(*left), Self::Word(0x0001)),
             (Self::Word(left), Self::Ones) => (Self::Word(*left), Self::Word(0xffff)),
-            (Self::Word(left), Self::QWord(right)) => (Self::QWord(*left as u64), Self::QWord(*right)),
+            (Self::Word(left), Self::QWord(right)) => {
+                (Self::QWord(*left as u64), Self::QWord(*right))
+            }
             (Self::Word(left), Self::Word(right)) => (Self::Word(*left), Self::Word(*right)),
             (Self::Word(left), Self::Zero) => (Self::Word(*left), Self::Word(0x0000)),
             (Self::Zero, Self::Byte(right)) => (Self::Byte(0x00), Self::Byte(*right)),
             (Self::Zero, Self::DWord(right)) => (Self::DWord(0x00000000), Self::DWord(*right)),
             (Self::Zero, Self::One) => (Self::Zero, Self::One),
             (Self::Zero, Self::Ones) => (Self::Zero, Self::Ones),
-            (Self::Zero, Self::QWord(right)) => (Self::QWord(0x0000000000000000), Self::QWord(*right)),
+            (Self::Zero, Self::QWord(right)) => {
+                (Self::QWord(0x0000000000000000), Self::QWord(*right))
+            }
             (Self::Zero, Self::Word(right)) => (Self::Word(0x0000), Self::Word(*right)),
             (Self::Zero, Self::Zero) => (Self::Zero, Self::Zero),
-            (left, right)  => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
+            (left, right) => unimplemented!("left = {:#x?}, right = {:#x?}", left, right),
         }
     }
 }
@@ -998,17 +981,13 @@ impl From<&Value> for bool {
     fn from(value: &Value) -> Self {
         match value {
             Value::Bool(value) => *value,
-            Value::Buffer(buffer) => buffer
-                .iter()
-                .any(|byte| *byte != 0),
+            Value::Buffer(buffer) => buffer.iter().any(|byte| *byte != 0),
             Value::Byte(byte) => *byte != 0,
             Value::Char(character) => (*character as u32) != 0,
             Value::DWord(dword) => *dword != 0,
             Value::One => true,
             Value::Ones => true,
-            Value::Package(package) => package
-                .iter()
-                .any(|value| value.into()),
+            Value::Package(package) => package.iter().any(|value| value.into()),
             Value::QWord(qword) => *qword != 0,
             Value::Revision => unimplemented!(),
             Value::String(string) => !string.is_empty(),
@@ -1103,16 +1082,14 @@ impl Not for Value {
     fn not(self) -> Self::Output {
         match self {
             Self::Bool(value) => Self::Output::Bool(!value),
-            Self::Buffer(buffer) => Self::Output::Buffer(buffer
-                .into_iter()
-                .map(|byte| !byte)
-                .collect()),
+            Self::Buffer(buffer) => {
+                Self::Output::Buffer(buffer.into_iter().map(|byte| !byte).collect())
+            }
             Self::Byte(byte) => Self::Output::Byte(!byte),
             Self::DWord(dword) => Self::Output::DWord(!dword),
-            Self::Package(package) => Self::Output::Package(package
-                .into_iter()
-                .map(|element| !element)
-                .collect()),
+            Self::Package(package) => {
+                Self::Output::Package(package.into_iter().map(|element| !element).collect())
+            }
             Self::QWord(qword) => Self::Output::QWord(!qword),
             Self::Word(word) => Self::Output::Word(!word),
             Self::Zero => Self::Output::Ones,
@@ -1225,17 +1202,11 @@ impl StackFrame {
     }
 
     pub fn is_broken(&self) -> bool {
-        self.broken
-            .last()
-            .cloned()
-            .unwrap_or_default()
+        self.broken.last().cloned().unwrap_or_default()
     }
 
     pub fn is_continued(&self) -> bool {
-        self.continued
-            .last()
-            .cloned()
-            .unwrap_or_default()
+        self.continued.last().cloned().unwrap_or_default()
     }
 
     pub fn read_argument(&self, index: usize) -> Option<Value> {
@@ -1247,14 +1218,11 @@ impl StackFrame {
     }
 
     pub fn read_named_local(&self, name: &name::Path) -> Option<Value> {
-        self.named_locals
-            .get(name)
-            .cloned()
+        self.named_locals.get(name).cloned()
     }
 
     pub fn read_return(&self) -> Option<&Value> {
-        self.return_value
-            .as_ref()
+        self.return_value.as_ref()
     }
 
     pub fn set_arguments(self, new_arguments: Vec<Value>) -> Self {
@@ -1266,18 +1234,14 @@ impl StackFrame {
             named_locals,
             return_value,
         } = self;
-        let num_of_arguments: usize = arguments
-            .as_slice()
-            .len();
+        let num_of_arguments: usize = arguments.as_slice().len();
         let arguments: Vec<Option<Value>> = new_arguments
             .into_iter()
             .map(Some)
             .chain(iter::repeat(None))
             .take(num_of_arguments)
             .collect();
-        let arguments = arguments
-            .try_into()
-            .unwrap();
+        let arguments = arguments.try_into().unwrap();
         Self {
             arguments,
             broken,
@@ -1335,14 +1299,11 @@ impl StackFrame {
     }
 
     pub fn write_named_local(&mut self, name: &name::Path, value: Value) -> Option<Value> {
-        self.named_locals
-            .get_mut(name)
-            .map(|named_local| {
-                let (_named_local, value): (Value, Value) = named_local
-                    .match_type(&value);
-                *named_local = value.clone();
-                value
-            })
+        self.named_locals.get_mut(name).map(|named_local| {
+            let (_named_local, value): (Value, Value) = named_local.match_type(&value);
+            *named_local = value.clone();
+            value
+        })
     }
 
     pub fn write_return(&mut self, value: Value) -> Value {
@@ -1352,11 +1313,22 @@ impl StackFrame {
 }
 
 pub trait Evaluator {
-    fn evaluate(&self, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Option<Value>;
+    fn evaluate(
+        &self,
+        stack_frame: &mut StackFrame,
+        root: &reference::Node,
+        current: &name::Path,
+    ) -> Option<Value>;
 }
 
 pub trait Holder {
-    fn hold(&self, value: Value, stack_frame: &mut StackFrame, root: &reference::Node, current: &name::Path) -> Value;
+    fn hold(
+        &self,
+        value: Value,
+        stack_frame: &mut StackFrame,
+        root: &reference::Node,
+        current: &name::Path,
+    ) -> Value;
 }
 
 struct DecimalDigitIterator(u64);
@@ -1397,4 +1369,3 @@ impl Iterator for DecimalDigitIterator {
         })
     }
 }
-

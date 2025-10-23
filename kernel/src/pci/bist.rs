@@ -12,4 +12,3 @@ pub struct Register {
     start_bist: bool,
     bist_capable: bool,
 }
-

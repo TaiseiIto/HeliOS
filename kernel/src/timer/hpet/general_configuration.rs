@@ -28,4 +28,3 @@ impl Register {
         self.with_enable_cnf(false)
     }
 }
-

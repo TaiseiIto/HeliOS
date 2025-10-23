@@ -4,10 +4,7 @@
 
 pub mod state;
 
-use {
-    core::arch::asm,
-    crate::memory,
-};
+use {crate::memory, core::arch::asm};
 
 /// Task Register
 /// ## References
@@ -29,9 +26,7 @@ impl Register {
             );
         }
         let segment_selector: memory::segment::Selector = segment_selector.into();
-        Self {
-            segment_selector,
-        }
+        Self { segment_selector }
     }
 
     #[inline(never)]
@@ -48,9 +43,6 @@ impl Register {
 
 impl From<memory::segment::Selector> for Register {
     fn from(segment_selector: memory::segment::Selector) -> Self {
-        Self {
-            segment_selector,
-        }
+        Self { segment_selector }
     }
 }
-

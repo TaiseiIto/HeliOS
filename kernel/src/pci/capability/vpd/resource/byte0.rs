@@ -47,4 +47,3 @@ impl Large {
         self.tag()
     }
 }
-

@@ -26,20 +26,11 @@ pub use {
     event::Event,
     guid::Guid,
     handle::Handle,
+    protocol::{font::Font, graphics_output, simple_text},
     runtime_services::RuntimeServices,
     status::Status,
     system_table::SystemTable,
     table_header::TableHeader,
     time::Time,
-    void::{
-        VOID,
-        Void,
-        null,
-    },
-    protocol::{
-        font::Font,
-        graphics_output,
-        simple_text,
-    },
+    void::{null, Void, VOID},
 };
-

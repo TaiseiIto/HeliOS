@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -27,7 +24,10 @@ impl fmt::Debug for FatRegister {
             .field("vector", &vector)
             .field("delivery_mode", &delivery_mode)
             .field("delivery_status", &delivery_status)
-            .field("interrupt_input_pin_polarity", &interrupt_input_pin_polarity)
+            .field(
+                "interrupt_input_pin_polarity",
+                &interrupt_input_pin_polarity,
+            )
             .field("remote_irr", &remote_irr)
             .field("trigger_mode", &trigger_mode)
             .field("mask", &mask)
@@ -55,4 +55,3 @@ struct Register {
     #[bits(13)]
     __: u16,
 }
-

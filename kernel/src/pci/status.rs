@@ -22,4 +22,3 @@ pub struct Register {
     signaled_system_error: bool,
     detected_parity_error: bool,
 }
-

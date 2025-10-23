@@ -1,15 +1,7 @@
 use {
+    super::{generic_address, system_description},
     alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-        str,
-    },
-    super::{
-        generic_address,
-        system_description,
-    },
+    core::{fmt, mem::size_of, slice, str},
 };
 
 /// # Debug Port Table
@@ -49,14 +41,10 @@ impl Table2 {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: *const Self = unsafe {
-            table.add(1)
-        };
+        let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(table, size)
-        }
+        unsafe { slice::from_raw_parts(table, size) }
     }
 
     fn iter(&self) -> DeviceInformations<'_> {
@@ -69,9 +57,7 @@ impl fmt::Debug for Table2 {
         let header: system_description::Header = self.header;
         let offset_dbg_device_info: u32 = self.offset_dbg_device_info;
         let number_dbg_device_info: u32 = self.number_dbg_device_info;
-        let device_informations: Vec<&DeviceInformation> = self
-            .iter()
-            .collect();
+        let device_informations: Vec<&DeviceInformation> = self.iter().collect();
         formatter
             .debug_struct("Table2")
             .field("header", &header)
@@ -89,9 +75,7 @@ struct DeviceInformations<'a> {
 impl<'a> From<&'a Table2> for DeviceInformations<'a> {
     fn from(table: &'a Table2) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -133,15 +117,14 @@ impl DeviceInformation {
         let address_sizes: *const u8 = address_sizes as *const u8;
         let length: usize = self.number_of_generic_address_registers as usize;
         let size: usize = size_of::<u32>() * length;
-        let address_sizes: &[u8] = unsafe {
-            slice::from_raw_parts(address_sizes, size)
-        };
+        let address_sizes: &[u8] = unsafe { slice::from_raw_parts(address_sizes, size) };
         address_sizes
             .chunks(size_of::<u32>())
-            .map(|chunk| chunk
-                .iter()
-                .rev()
-                .fold(0, |address_size, byte| (address_size << u8::BITS) + (*byte as u32)))
+            .map(|chunk| {
+                chunk.iter().rev().fold(0, |address_size, byte| {
+                    (address_size << u8::BITS) + (*byte as u32)
+                })
+            })
             .collect()
     }
 
@@ -149,20 +132,17 @@ impl DeviceInformation {
         let offset: usize = self.base_address_register_offset as usize;
         let base_address_registers: &u8 = &self.bytes()[offset];
         let base_address_registers: *const u8 = base_address_registers as *const u8;
-        let base_address_registers: *const generic_address::Structure = base_address_registers as *const generic_address::Structure;
+        let base_address_registers: *const generic_address::Structure =
+            base_address_registers as *const generic_address::Structure;
         let length: usize = self.number_of_generic_address_registers as usize;
-        unsafe {
-            slice::from_raw_parts(base_address_registers, length)
-        }
+        unsafe { slice::from_raw_parts(base_address_registers, length) }
     }
 
     fn bytes(&self) -> &[u8] {
         let bytes: *const Self = self as *const Self;
         let bytes: *const u8 = bytes as *const u8;
         let length: usize = self.length();
-        unsafe {
-            slice::from_raw_parts(bytes, length)
-        }
+        unsafe { slice::from_raw_parts(bytes, length) }
     }
 
     fn length(&self) -> usize {
@@ -171,37 +151,29 @@ impl DeviceInformation {
 
     fn namespace_string(&self) -> &str {
         let offset: usize = self.namespace_string_offset as usize;
-        let namespace_string: &u8= &self.bytes()[offset];
+        let namespace_string: &u8 = &self.bytes()[offset];
         let namespace_string: *const u8 = namespace_string as *const u8;
         let length: usize = self.namespace_string_length as usize;
-        let namespace_string: &[u8] = unsafe {
-            slice::from_raw_parts(namespace_string, length)
-        };
+        let namespace_string: &[u8] = unsafe { slice::from_raw_parts(namespace_string, length) };
         str::from_utf8(namespace_string).unwrap()
     }
 
     fn oem_data(&self) -> &[u8] {
         let offset: usize = self.oem_data_offset as usize;
-        let oem_data: &u8= &self.bytes()[offset];
+        let oem_data: &u8 = &self.bytes()[offset];
         let oem_data: *const u8 = oem_data as *const u8;
         let length: usize = self.oem_data_length as usize;
-        unsafe {
-            slice::from_raw_parts(oem_data, length)
-        }
+        unsafe { slice::from_raw_parts(oem_data, length) }
     }
 
     fn scan(bytes: &[u8]) -> Option<(&Self, &[u8])> {
-        bytes
-            .first()
-            .map(|device_information| {
-                let device_information: *const u8 = device_information as *const u8;
-                let device_information: *const Self = device_information as *const Self;
-                let device_information: &Self = unsafe {
-                    &*device_information
-                };
-                let remaining_bytes: &[u8] = &bytes[device_information.length()..];
-                (device_information, remaining_bytes)
-            })
+        bytes.first().map(|device_information| {
+            let device_information: *const u8 = device_information as *const u8;
+            let device_information: *const Self = device_information as *const Self;
+            let device_information: &Self = unsafe { &*device_information };
+            let remaining_bytes: &[u8] = &bytes[device_information.length()..];
+            (device_information, remaining_bytes)
+        })
     }
 }
 
@@ -224,4 +196,3 @@ impl fmt::Debug for DeviceInformation {
             .finish()
     }
 }
-

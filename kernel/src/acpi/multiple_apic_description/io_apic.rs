@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    crate::interrupt,
-};
+use {crate::interrupt, core::fmt};
 
 /// # I/O APIC Structure
 /// ## References
@@ -24,19 +21,17 @@ impl Structure {
     pub fn registers(&self) -> &interrupt::apic::io::Registers {
         let registers: u32 = self.io_apic_address;
         let registers: usize = registers as usize;
-        let registers: *const interrupt::apic::io::Registers = registers as *const interrupt::apic::io::Registers;
-        unsafe {
-            &*registers
-        }
+        let registers: *const interrupt::apic::io::Registers =
+            registers as *const interrupt::apic::io::Registers;
+        unsafe { &*registers }
     }
 
     pub fn registers_mut(&mut self) -> &mut interrupt::apic::io::Registers {
         let registers: u32 = self.io_apic_address;
         let registers: usize = registers as usize;
-        let registers: *mut interrupt::apic::io::Registers = registers as *mut interrupt::apic::io::Registers;
-        unsafe {
-            &mut *registers
-        }
+        let registers: *mut interrupt::apic::io::Registers =
+            registers as *mut interrupt::apic::io::Registers;
+        unsafe { &mut *registers }
     }
 }
 
@@ -53,8 +48,10 @@ impl fmt::Debug for Structure {
             .field("length", &length)
             .field("io_apic_id", &io_apic_id)
             .field("registers", registers)
-            .field("global_system_interrupt_base", &global_system_interrupt_base)
+            .field(
+                "global_system_interrupt_base",
+                &global_system_interrupt_base,
+            )
             .finish()
     }
 }
-

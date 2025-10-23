@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -35,4 +32,3 @@ struct Register {
     #[bits(24)]
     __: u32,
 }
-

@@ -17,4 +17,3 @@ pub struct Register {
     #[bits(5)]
     max_scratchpad_bufs_lo: u8,
 }
-

@@ -4,21 +4,11 @@
 //! * [Wikipedia Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
-    bitfield_struct::bitfield,
-    core::{
-        ops::Range,
-        slice,
-    },
+    super::{Addr, Off, Xword},
     crate::memory,
-    super::{
-        Addr,
-        Off,
-        Xword,
-    },
+    alloc::{collections::BTreeMap, vec::Vec},
+    bitfield_struct::bitfield,
+    core::{ops::Range, slice},
 };
 
 /// # ELF Program Header
@@ -43,9 +33,7 @@ impl Header {
         let start: usize = self.p_vaddr as usize;
         let start: *mut u8 = start as *mut u8;
         let length: usize = self.p_memsz as usize;
-        let bytes_in_memory: &mut [u8] = unsafe {
-            slice::from_raw_parts_mut(start, length)
-        };
+        let bytes_in_memory: &mut [u8] = unsafe { slice::from_raw_parts_mut(start, length) };
         let start: usize = self.p_offset as usize;
         let end: usize = start + self.p_filesz as usize;
         let bytes_in_file: &[u8] = &elf[start..end];
@@ -66,14 +54,10 @@ impl Header {
         let present: bool = true;
         let writable: bool = self.p_flags.w();
         let executable: bool = self.p_flags.x();
-        self.pages()
-            .into_iter()
-            .for_each(|vaddr| {
-                let paddr: usize = *vaddr2paddr
-                    .get(&vaddr)
-                    .unwrap();
-                paging.set_page(vaddr, paddr, present, writable, executable);
-            });
+        self.pages().into_iter().for_each(|vaddr| {
+            let paddr: usize = *vaddr2paddr.get(&vaddr).unwrap();
+            paging.set_page(vaddr, paddr, present, writable, executable);
+        });
     }
 
     fn vaddr_range_in_bytes(&self) -> Range<usize> {
@@ -83,10 +67,7 @@ impl Header {
     }
 
     fn vaddr_range_in_pages(&self) -> Range<usize> {
-        let Range::<usize> {
-            start,
-            end,
-        } = self.vaddr_range_in_bytes();
+        let Range::<usize> { start, end } = self.vaddr_range_in_bytes();
         let start = (start / memory::page::SIZE) * memory::page::SIZE;
         let end = ((end + memory::page::SIZE - 1) / memory::page::SIZE) * memory::page::SIZE;
         start..end
@@ -130,4 +111,3 @@ struct Pf {
     maskos: u8,
     mascproc: u8,
 }
-

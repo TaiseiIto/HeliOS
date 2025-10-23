@@ -3,18 +3,9 @@
 //! * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 20 ACPI MACHINE LANGUAGE (AML) SPECIFICATION
 
 use {
-    alloc::{
-        collections::vec_deque::VecDeque,
-        format,
-        string::String,
-        vec::Vec,
-    },
-    core::{
-        fmt,
-        iter,
-        ops::Add,
-    },
     super::syntax,
+    alloc::{collections::vec_deque::VecDeque, format, string::String, vec::Vec},
+    core::{fmt, iter, ops::Add},
 };
 
 pub struct Node {
@@ -28,31 +19,30 @@ impl Node {
         let mut path: Path = path.clone();
         if let Some(name) = path.pop_first_segment() {
             match name {
-                Segment::Child {
-                    name: _,
-                } => match self
-                    .children
-                    .iter_mut()
-                    .find(|child| child.name == name) {
-                    Some(child) => {
-                        child.add_node(&path, object);
-                    },
-                    None => if path.is_empty() {
-                        self.children.push(Self::new(name, object));
-                    } else {
-                        self.children.push(Self::new(name.clone(), Object::Scope));
-                        self.children
-                            .iter_mut()
-                            .find(|child| child.name == name)
-                            .unwrap()
-                            .add_node(&path, object);
-                    },
-                },
+                Segment::Child { name: _ } => {
+                    match self.children.iter_mut().find(|child| child.name == name) {
+                        Some(child) => {
+                            child.add_node(&path, object);
+                        }
+                        None => {
+                            if path.is_empty() {
+                                self.children.push(Self::new(name, object));
+                            } else {
+                                self.children.push(Self::new(name.clone(), Object::Scope));
+                                self.children
+                                    .iter_mut()
+                                    .find(|child| child.name == name)
+                                    .unwrap()
+                                    .add_node(&path, object);
+                            }
+                        }
+                    }
+                }
                 Segment::Parent => unreachable!(),
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
                     self.add_node(&path, object);
-                },
+                }
             }
         }
     }
@@ -70,9 +60,7 @@ impl Node {
         let mut method: Path = method.clone();
         match method.pop_first_segment() {
             Some(segment) => match segment {
-                method_segment @ Segment::Child {
-                    name: _,
-                } => self
+                method_segment @ Segment::Child { name: _ } => self
                     .children
                     .iter()
                     .find(|child| child.name == method_segment)
@@ -81,7 +69,7 @@ impl Node {
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
                     self.find_number_of_arguments(&method)
-                },
+                }
             },
             None => Some(self.object.number_of_arguments()),
         }
@@ -103,9 +91,7 @@ impl Node {
         let mut alias: Path = alias.clone();
         match alias.pop_first_segment() {
             Some(segment) => match segment {
-                segment @ Segment::Child {
-                    name: _,
-                } => self
+                segment @ Segment::Child { name: _ } => self
                     .children
                     .iter()
                     .find(|child| child.name == segment)
@@ -114,7 +100,7 @@ impl Node {
                 Segment::Root => {
                     assert_eq!(self.name, Segment::Root);
                     self.solve_alias(&alias)
-                },
+                }
             },
             None => self.object.solve_alias(),
         }
@@ -149,25 +135,24 @@ impl fmt::Debug for Node {
         let name: String = name.into();
         let name: String = match object {
             Object::Method {
-                number_of_arguments
-            } => format!("Method {:#x?} number_of_arguments = {:#x?}", name, number_of_arguments),
+                number_of_arguments,
+            } => format!(
+                "Method {:#x?} number_of_arguments = {:#x?}",
+                name, number_of_arguments
+            ),
             object => format!("{:#x?} {:#x?}", object, name),
         };
         let mut debug_tuple: fmt::DebugTuple = formatter.debug_tuple(name.as_str());
-        children
-            .iter()
-            .for_each(|child| {
-                debug_tuple.field(child);
-            });
+        children.iter().for_each(|child| {
+            debug_tuple.field(child);
+        });
         debug_tuple.finish()
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum Object {
-    Alias {
-        original_path: AbsolutePath,
-    },
+    Alias { original_path: AbsolutePath },
     CreateBitField,
     CreateByteField,
     CreateDWordField,
@@ -177,13 +162,9 @@ pub enum Object {
     DataRegion,
     Device,
     Event,
-    External {
-        number_of_arguments: usize,
-    },
+    External { number_of_arguments: usize },
     Load,
-    Method {
-        number_of_arguments: usize,
-    },
+    Method { number_of_arguments: usize },
     Mutex,
     Name,
     NamedField,
@@ -197,9 +178,7 @@ pub enum Object {
 impl Object {
     pub fn alias(current: &Path, original_path: &Path) -> Self {
         let original_path = AbsolutePath::new(current, original_path);
-        Self::Alias {
-            original_path,
-        }
+        Self::Alias { original_path }
     }
 
     pub fn external(number_of_arguments: usize) -> Self {
@@ -228,9 +207,7 @@ impl Object {
 
     pub fn solve_alias(&self) -> Option<AbsolutePath> {
         match self {
-            Self::Alias {
-                original_path,
-            } => Some(original_path.clone()),
+            Self::Alias { original_path } => Some(original_path.clone()),
             _ => None,
         }
     }
@@ -253,9 +230,7 @@ impl Path {
     }
 
     pub fn last_segment(&self) -> Option<Segment> {
-        self.segments
-            .back()
-            .cloned()
+        self.segments.back().cloned()
     }
 
     pub fn pop_first_segment(&mut self) -> Option<Segment> {
@@ -267,31 +242,27 @@ impl Path {
     }
 
     pub fn push_segment(&mut self, segment: Segment) {
-        let Self {
-            segments,
-        } = self;
+        let Self { segments } = self;
         match segment {
-            Segment::Child {
-                name: _,
-            } => {
+            Segment::Child { name: _ } => {
                 segments.push_back(segment);
-            },
-            Segment::Parent => if segments.is_empty() {
-                segments.push_back(segment);
-            } else {
-                segments.pop_back();
-            },
+            }
+            Segment::Parent => {
+                if segments.is_empty() {
+                    segments.push_back(segment);
+                } else {
+                    segments.pop_back();
+                }
+            }
             Segment::Root => {
                 *segments = iter::once(segment).collect();
-            },
+            }
         }
     }
 
     pub fn root() -> Self {
         let segments: VecDeque<Segment> = iter::once(Segment::Root).collect();
-        Self {
-            segments,
-        }
+        Self { segments }
     }
 }
 
@@ -312,38 +283,34 @@ impl From<&str> for Path {
     fn from(path_str: &str) -> Self {
         let mut path: Self = Self::root();
         let mut segment: String = String::new();
-        path_str
-            .chars()
-            .for_each(|character| match character {
-                '\\' => {
-                    if !segment.is_empty() {
-                        let segment: Segment = segment
-                            .as_str()
-                            .into();
-                        path.push_segment(segment);
-                    }
-                    path.push_segment(Segment::Root);
-                    segment = String::new();
-                },
-                '^' => {
-                    if !segment.is_empty() {
-                        let segment: Segment = segment
-                            .as_str()
-                            .into();
-                        path.push_segment(segment);
-                    }
-                    path.push_segment(Segment::Parent);
-                    segment = String::new();
-                },
-                character => {
-                    assert!(character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_');
-                    segment.push(character);
-                },
-            });
+        path_str.chars().for_each(|character| match character {
+            '\\' => {
+                if !segment.is_empty() {
+                    let segment: Segment = segment.as_str().into();
+                    path.push_segment(segment);
+                }
+                path.push_segment(Segment::Root);
+                segment = String::new();
+            }
+            '^' => {
+                if !segment.is_empty() {
+                    let segment: Segment = segment.as_str().into();
+                    path.push_segment(segment);
+                }
+                path.push_segment(Segment::Parent);
+                segment = String::new();
+            }
+            character => {
+                assert!(
+                    character.is_ascii_digit()
+                        || character.is_ascii_uppercase()
+                        || character == '_'
+                );
+                segment.push(character);
+            }
+        });
         if !segment.is_empty() {
-            let segment: Segment = segment
-                .as_str()
-                .into();
+            let segment: Segment = segment.as_str().into();
             path.push_segment(segment);
         }
         path
@@ -354,18 +321,14 @@ impl From<&syntax::NameSeg> for Path {
     fn from(name_seg: &syntax::NameSeg) -> Self {
         let segment: Segment = name_seg.into();
         let segments: VecDeque<Segment> = iter::once(segment).collect();
-        Self {
-            segments,
-        }
+        Self { segments }
     }
 }
 
 impl From<&syntax::NameString> for Path {
     fn from(name_string: &syntax::NameString) -> Self {
         let segments: VecDeque<Segment> = name_string.into();
-        Self {
-            segments,
-        }
+        Self { segments }
     }
 }
 
@@ -382,41 +345,33 @@ impl From<&Node> for Path {
 
 impl From<&Segment> for Path {
     fn from(segment: &Segment) -> Self {
-        let segments: VecDeque<Segment> = iter::once(segment)
-            .cloned()
-            .collect();
-        Self {
-            segments,
-        }
+        let segments: VecDeque<Segment> = iter::once(segment).cloned().collect();
+        Self { segments }
     }
 }
 
 impl fmt::Debug for Path {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            segments,
-        } = self;
+        let Self { segments } = self;
         let mut print_dot: bool = false;
         segments
             .iter()
             .map(|segment| match segment {
-                Segment::Child {
-                    name,
-                } => {
+                Segment::Child { name } => {
                     if print_dot {
                         formatter.write_str(".")?;
                     }
                     print_dot = true;
                     formatter.write_str(name)
-                },
+                }
                 Segment::Parent => {
                     print_dot = false;
                     formatter.write_str("^")
-                },
+                }
                 Segment::Root => {
                     print_dot = false;
                     formatter.write_str("\\")
-                },
+                }
             })
             .try_fold((), |_, result| result)
     }
@@ -430,10 +385,7 @@ pub struct AbsolutePath {
 
 impl AbsolutePath {
     pub fn last_segment(&self) -> Option<Segment> {
-        let Self {
-            current,
-            relative,
-        } = self;
+        let Self { current, relative } = self;
         let absolute_path: Path = current.clone() + relative.clone();
         absolute_path.last_segment()
     }
@@ -441,19 +393,13 @@ impl AbsolutePath {
     pub fn new(current: &Path, relative: &Path) -> Self {
         let current: Path = current.clone();
         let relative: Path = relative.clone();
-        Self {
-            current,
-            relative,
-        }
+        Self { current, relative }
     }
 }
 
 impl fmt::Debug for AbsolutePath {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            current,
-            relative,
-        } = self;
+        let Self { current, relative } = self;
         write!(formatter, "{:#x?}:{:#x?}", current, relative)
     }
 }
@@ -462,28 +408,22 @@ impl Iterator for AbsolutePath {
     type Item = Path;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self {
-            current,
-            relative,
-        } = self;
+        let Self { current, relative } = self;
         let absolute_path: Path = current.clone() + relative.clone();
-        current
-            .pop_last_segment()
-            .map(|_| absolute_path)
+        current.pop_last_segment().map(|_| absolute_path)
     }
 }
 
 impl PartialEq for AbsolutePath {
     fn eq(&self, other: &Self) -> bool {
-        self.current.clone() + self.relative.clone() == other.current.clone() + other.relative.clone()
+        self.current.clone() + self.relative.clone()
+            == other.current.clone() + other.relative.clone()
     }
 }
 
 #[derive(Clone, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Segment {
-    Child {
-        name: String,
-    },
+    Child { name: String },
     Parent,
     Root,
 }
@@ -491,9 +431,7 @@ pub enum Segment {
 impl fmt::Debug for Segment {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Child {
-                name,
-            } => formatter.write_str(name),
+            Self::Child { name } => formatter.write_str(name),
             Self::Parent => formatter.write_str("^"),
             Self::Root => formatter.write_str("\\"),
         }
@@ -506,19 +444,22 @@ impl From<&str> for Segment {
             "\\" => Self::Root,
             "^" => Self::Parent,
             name => {
-                let valid: bool = name.chars()
+                let valid: bool = name
+                    .chars()
                     .enumerate()
                     .all(|(index, character)| match index {
                         0 => character.is_ascii_uppercase() || character == '_',
-                        1..=3 => character.is_ascii_digit() || character.is_ascii_uppercase() || character == '_',
+                        1..=3 => {
+                            character.is_ascii_digit()
+                                || character.is_ascii_uppercase()
+                                || character == '_'
+                        }
                         _ => false,
                     });
                 assert!(valid);
                 let name: String = String::from(name);
-                Self::Child {
-                    name,
-                }
-            },
+                Self::Child { name }
+            }
         }
     }
 }
@@ -526,9 +467,7 @@ impl From<&str> for Segment {
 impl From<&syntax::NameSeg> for Segment {
     fn from(name_seg: &syntax::NameSeg) -> Self {
         let name: String = name_seg.into();
-        Self::Child {
-            name,
-        }
+        Self::Child { name }
     }
 }
 
@@ -547,12 +486,9 @@ impl From<&syntax::RootChar> for Segment {
 impl From<&Segment> for String {
     fn from(segment: &Segment) -> Self {
         match segment {
-            Segment::Child {
-                name,
-            } => name.clone(),
+            Segment::Child { name } => name.clone(),
             Segment::Parent => Self::from("^"),
             Segment::Root => Self::from("\\"),
         }
     }
 }
-

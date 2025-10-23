@@ -20,4 +20,3 @@ pub struct Register {
     #[bits(13)]
     physical_slot_number: u16,
 }
-

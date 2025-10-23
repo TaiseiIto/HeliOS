@@ -22,12 +22,9 @@
 # Memory map files
 *.map
 
-# An OS image file
-*.img
-
 # log files
 *.log
 
 # OS directory tree
-*.mnt
+HeliOS
 

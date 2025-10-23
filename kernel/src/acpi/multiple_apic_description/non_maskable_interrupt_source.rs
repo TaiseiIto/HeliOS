@@ -20,5 +20,3 @@ impl Structure {
         self.length as usize
     }
 }
-
-

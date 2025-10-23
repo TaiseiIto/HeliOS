@@ -1,11 +1,6 @@
 use {
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-        str,
-    },
     super::processor_local_apic,
+    core::{fmt, mem::size_of, slice, str},
 };
 
 /// # I/O SAPIC Structure
@@ -37,7 +32,8 @@ impl Structure {
         let acpi_processor_uid_string: &[u8] = unsafe {
             slice::from_raw_parts(acpi_processor_uid_string, acpi_processor_uid_string_length)
         };
-        let acpi_processor_uid_string: &[u8] = &acpi_processor_uid_string[..acpi_processor_uid_string.len() - 1];
+        let acpi_processor_uid_string: &[u8] =
+            &acpi_processor_uid_string[..acpi_processor_uid_string.len() - 1];
         str::from_utf8(acpi_processor_uid_string).unwrap()
     }
 }
@@ -55,8 +51,10 @@ impl fmt::Debug for Structure {
             .field("local_sapic_eid", &self.local_sapic_eid)
             .field("flags", &flags)
             .field("acpi_processor_uid_value", &acpi_processor_uid_value)
-            .field("acpi_processor_uid_string", &self.acpi_processor_uid_string())
+            .field(
+                "acpi_processor_uid_string",
+                &self.acpi_processor_uid_string(),
+            )
             .finish()
     }
 }
-

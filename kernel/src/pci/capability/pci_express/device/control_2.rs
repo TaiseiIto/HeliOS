@@ -15,10 +15,9 @@ pub struct Register {
     ido_request_enable: bool,
     ido_completion_enable: bool,
     ltr_mechanism_enable: bool,
-	#[bits(2)]
+    #[bits(2)]
     rsvd: u8,
-	#[bits(2)]
+    #[bits(2)]
     obff_enable: u8,
     end_end_tlp_prefix_blocking: bool,
 }
-

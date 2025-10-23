@@ -1,18 +1,7 @@
 use {
-    alloc::{
-        boxed::Box,
-        collections::BTreeMap,
-        vec::Vec,
-    },
+    crate::{efi, elf, memory, processor, rs232c, x64},
+    alloc::{boxed::Box, collections::BTreeMap, vec::Vec},
     core::ops::Range,
-    crate::{
-        processor,
-        efi,
-        elf,
-        memory,
-        rs232c,
-        x64,
-    },
 };
 
 #[derive(Debug)]
@@ -80,25 +69,28 @@ pub struct Loader {
 }
 
 impl Loader {
-    pub fn new(path: &str, directory_tree: &efi::file::system::Tree, paging: &mut memory::Paging) -> Self {
-        let elf: elf::File = directory_tree
-            .get(path)
-            .unwrap()
-            .read()
-            .into();
+    pub fn new(
+        path: &str,
+        directory_tree: &efi::file::system::Tree,
+        paging: &mut memory::Paging,
+    ) -> Self {
+        let elf: elf::File = directory_tree.get(path).unwrap().read().into();
         let elf_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = elf.deploy(paging);
         let stack_pages: usize = 0x200;
         let stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..stack_pages)
-            .map(|stack_page_index| (usize::MAX - (stack_page_index + 1) * memory::page::SIZE + 1, Box::default()))
+            .map(|stack_page_index| {
+                (
+                    usize::MAX - (stack_page_index + 1) * memory::page::SIZE + 1,
+                    Box::default(),
+                )
+            })
             .collect();
-        stack_vaddr2frame
-            .iter()
-            .for_each(|(vaddr, frame)| {
-                let present: bool = true;
-                let writable: bool = true;
-                let executable: bool = false;
-                paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
-            });
+        stack_vaddr2frame.iter().for_each(|(vaddr, frame)| {
+            let present: bool = true;
+            let writable: bool = true;
+            let executable: bool = false;
+            paging.set_page(*vaddr, frame.paddr(), present, writable, executable);
+        });
         let stack_floor: usize = 0;
         let higher_half_range: Range<u128> = paging.higher_half_range();
         let heap_start: u128 = (higher_half_range.start + higher_half_range.end) / 2;
@@ -110,15 +102,14 @@ impl Loader {
             .filter(|memory_descriptor| memory_descriptor.is_available())
             .map(|memory_descriptor| memory_descriptor.number_of_pages())
             .sum();
-        (0..heap_pages)
-            .for_each(|heap_page_index| {
-                let vaddr: usize = heap_start + heap_page_index * memory::page::SIZE;
-                let paddr: usize = 0;
-                let present: bool = false;
-                let writable: bool = false;
-                let executable: bool = false;
-                paging.set_page(vaddr, paddr, present, writable, executable);
-            });
+        (0..heap_pages).for_each(|heap_page_index| {
+            let vaddr: usize = heap_start + heap_page_index * memory::page::SIZE;
+            let paddr: usize = 0;
+            let present: bool = false;
+            let writable: bool = false;
+            let executable: bool = false;
+            paging.set_page(vaddr, paddr, present, writable, executable);
+        });
         Self {
             elf,
             elf_vaddr2frame,
@@ -136,4 +127,3 @@ impl Loader {
         self.heap_start
     }
 }
-

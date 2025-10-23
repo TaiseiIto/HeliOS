@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    crate::com2_println,
-};
+use {crate::com2_println, bitfield_struct::bitfield};
 
 /// # Timer N Comparator Register
 /// ## References
@@ -17,4 +14,3 @@ impl Register {
         Self::default().with_tn_comparator_value(tn_comparator_value)
     }
 }
-

@@ -8,11 +8,8 @@ mod ecx0x00000002;
 mod ecx0x00000003;
 
 use {
-    ecx0x00000000::Ecx0x00000000,
-    ecx0x00000001::Ecx0x00000001,
-    ecx0x00000002::Ecx0x00000002,
-    ecx0x00000003::Ecx0x00000003,
-    super::Eax0x00000000,
+    super::Eax0x00000000, ecx0x00000000::Ecx0x00000000, ecx0x00000001::Ecx0x00000001,
+    ecx0x00000002::Ecx0x00000002, ecx0x00000003::Ecx0x00000003,
 };
 
 #[derive(Debug)]
@@ -44,4 +41,3 @@ impl Eax0x00000010 {
         })
     }
 }
-

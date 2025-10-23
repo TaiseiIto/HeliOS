@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::system_description,
-};
+use {super::system_description, bitfield_struct::bitfield};
 
 /// # Windows SMM Security Mitigations Table
 /// ## References
@@ -32,4 +29,3 @@ struct Flags {
     #[bits(29)]
     __: u32,
 }
-

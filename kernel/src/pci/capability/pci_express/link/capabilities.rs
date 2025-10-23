@@ -24,4 +24,3 @@ pub struct Register {
     __: bool,
     port_number: u8,
 }
-

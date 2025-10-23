@@ -1,26 +1,11 @@
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        iter,
-    },
-    crate::{
-        acpi,
-        x64,
-    },
     super::{
-        BootServices,
-        Guid,
-        Handle,
-        RuntimeServices,
-        Status,
-        TableHeader,
-        Void,
-        char16,
-        configuration,
-        memory,
-        simple_text,
+        char16, configuration, memory, simple_text, BootServices, Guid, Handle, RuntimeServices,
+        Status, TableHeader, Void,
     },
+    crate::{acpi, x64},
+    alloc::vec::Vec,
+    core::{fmt, iter},
 };
 
 #[macro_export]
@@ -118,9 +103,6 @@ impl fmt::Write for SystemTable<'_> {
             .chain(iter::once(0))
             .collect();
         let string: char16::NullTerminatedString = (&string).into();
-        self.con_out
-            .output_string(string)
-            .map_err(|_| fmt::Error)
+        self.con_out.output_string(string).map_err(|_| fmt::Error)
     }
 }
-

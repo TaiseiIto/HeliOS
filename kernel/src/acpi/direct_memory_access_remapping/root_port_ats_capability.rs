@@ -1,12 +1,8 @@
 use {
+    super::hardware_unit_definition,
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
-    super::hardware_unit_definition,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Root Port ATS Capability Reporting Structure
@@ -24,14 +20,10 @@ pub struct Structure {
 impl Structure {
     pub fn bytes(&self) -> &[u8] {
         let structure: *const Self = self as *const Self;
-        let first_byte: *const Self = unsafe {
-            structure.add(1)
-        };
+        let first_byte: *const Self = unsafe { structure.add(1) };
         let first_byte: *const u8 = first_byte as *const u8;
         let size: usize = self.length() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(first_byte, size)
-        }
+        unsafe { slice::from_raw_parts(first_byte, size) }
     }
 
     pub fn length(&self) -> usize {
@@ -49,9 +41,7 @@ impl fmt::Debug for Structure {
         let length: u16 = self.length;
         let flags: Flags = self.flags;
         let segment_number: u16 = self.segment_number;
-        let scopes: Vec<&hardware_unit_definition::scope::Structure> = self
-            .iter()
-            .collect();
+        let scopes: Vec<&hardware_unit_definition::scope::Structure> = self.iter().collect();
         formatter
             .debug_struct("Structure")
             .field("structure_type", &structure_type)
@@ -69,4 +59,3 @@ struct Flags {
     #[bits(7)]
     __: u8,
 }
-

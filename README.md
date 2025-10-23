@@ -61,20 +61,75 @@ When you finish debugging HeliOS, move to right screen, `quit` GDB and `make sto
 ~/HeliOS # make stop
 ```
 
+## Debug QEMU running HeliOS by GDB
+
+On the development environment, `make debug_qemu` to debug QEMU running HeliOS by GDB.
+
+```
+~/HeliOS # make debug_qemu
+```
+
+This command divides terminal screen left and right by tmux.
+The left screen is a GDB terminal debugging QEMU.
+The right screen is a general purpose screen.
+Press `Ctrl+t` and press `h` to move from the right screen to the left screen.
+Also, press `Ctrl+t` and press `l` to move from the left screen to the right screen.
+And Connect from a VNC client on the host to `localhost:5900` according to [RFB protocol](https://datatracker.ietf.org/doc/html/rfc6143) to operate HeliOS.
+When you finish debugging QEMU, move to right screen and `make stop`.
+
 ## Run HeliOS on a physical machine
 
-`exit` the development environment and `make tree` on the host to generate `helios.mnt`, the HeliOS directory tree.
+`exit` the development environment and `make` on the host to generate `Helios`, the HeliOS directory tree.
 And copy the generated directory to your storage device.
 
 ```
 ~/HeliOS # exit
-/somewhere/in/the/host/HeliOS $ make tree
-/somewhere/in/the/host/HeliOS $ cp -r helios.mnt /your/storage/device/
+/somewhere/in/the/host/HeliOS $ make
+/somewhere/in/the/host/HeliOS $ cp -r Helios /your/storage/device/
 ```
 
 Then, eject the storage device and connect it to a physical machine.
 Next, configure BIOS settings of the physical machine to boot up from the storage device according to UEFI.
 Finally, reboot the physical machine.
+
+### In the case of GPD MicroPC 2021ver
+
+Plug in a USB memory including the HeliOS directory tree to GPD MicroPC.
+And power on GPD MicroPC and push ESC key repeatedly.
+Then, set as in the example below.
+
+* Security
+	* Secure Boot
+		* Secure Boot: [Disable]
+* Boot
+	* Quiet Boot: [Disable]
+	* Fast Boot: [Disable]
+	* FIXED BOOT ORDER Priorities
+		* Boot Option #1: [USB Key:UEFI: USB DISK 2.0 PMAP]
+	* UEFI Hard Disk Drive BBS Priorities
+		* Boot Option #1: [UEFI OS (P0: BIWIN SSD)]
+
+Save and exit.
+Then, GPD MicroPC restarts and HeliOS starts.
+
+#### Power off and reset BIOS
+
+Power on GPD MicroPC and push ESC key repeatedly.
+Set as in the example below.
+
+* Security
+	* Secure Boot
+		* Secure Boot: [Disable]
+* Boot
+	* Quiet Boot: [Enable]
+	* Fast Boot: [Enable]
+	* FIXED BOOT ORDER Priorities
+		* Boot Option #1: [Hard Disk:Windows Boot Manager (P0: BIWIN SSD)]
+	* UEFI Hard Disk Drive BBS Priorities
+		* Boot Option #1: [Windows Boot Manager (P0: BIWIN SSD)]
+
+Save and exit.
+Then, GPD MicroPC restarts and Windows starts.
 
 ## Get development permission (for only developers, not users)
 
@@ -87,6 +142,7 @@ And `make permission` like below.
 
 ```
 ~/HeliOS # exit
+/somewhere/HeliOS $ git config user.email someone@some.domain
 /somewhere/Helios $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
 ```
 

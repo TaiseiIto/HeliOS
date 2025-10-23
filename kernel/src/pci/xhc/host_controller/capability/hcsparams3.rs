@@ -10,4 +10,3 @@ pub struct Register {
     u2_device_exit_latency: u8,
     __: u16,
 }
-

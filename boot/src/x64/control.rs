@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 2.5 Control Registers
 
-use {
-    bitfield_struct::bitfield,
-    core::arch::asm,
-};
+use {bitfield_struct::bitfield, core::arch::asm};
 
 #[bitfield(u64)]
 pub struct Register0 {
@@ -91,11 +88,10 @@ impl Register3 {
     }
 
     pub fn get_paging_structure<T>(&self) -> &T {
-        let page_directory_base: u64 = self.page_directory_base() << Self::PAGE_DIRECTORY_BASE_OFFSET;
+        let page_directory_base: u64 =
+            self.page_directory_base() << Self::PAGE_DIRECTORY_BASE_OFFSET;
         let page_directory_base: *const T = page_directory_base as *const T;
-        unsafe {
-            &*page_directory_base
-        }
+        unsafe { &*page_directory_base }
     }
 
     #[inline(never)]
@@ -170,4 +166,3 @@ impl Register4 {
         !self.la57()
     }
 }
-

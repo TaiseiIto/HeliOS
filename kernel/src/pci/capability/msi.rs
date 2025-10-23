@@ -1,9 +1,6 @@
 pub mod message;
 
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 /// # MSI Capability Structure
 /// ## References
@@ -41,4 +38,3 @@ impl fmt::Debug for Structure {
             .finish()
     }
 }
-

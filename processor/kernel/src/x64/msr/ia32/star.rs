@@ -1,11 +1,7 @@
 use {
-    bitfield_struct::bitfield,
+    super::super::{super::Cpuid, rdmsr, wrmsr},
     crate::memory,
-    super::super::{
-        rdmsr,
-        super::Cpuid,
-        wrmsr,
-    },
+    bitfield_struct::bitfield,
 };
 
 /// # IA32_STAR
@@ -42,10 +38,16 @@ impl Star {
     ) {
         let kernel_code_segment_selector: u16 = (*kernel_code_segment_selector).into();
         let kernel_data_segment_selector: u16 = (*kernel_data_segment_selector).into();
-        assert_eq!(kernel_code_segment_selector + 8, kernel_data_segment_selector);
+        assert_eq!(
+            kernel_code_segment_selector + 8,
+            kernel_data_segment_selector
+        );
         let application_code_segment_selector: u16 = (*application_code_segment_selector).into();
         let application_data_segment_selector: u16 = (*application_data_segment_selector).into();
-        assert_eq!(application_data_segment_selector + 8, application_code_segment_selector);
+        assert_eq!(
+            application_data_segment_selector + 8,
+            application_code_segment_selector
+        );
         let syscall_cs_and_ss: u16 = kernel_code_segment_selector;
         let sysret_cs_and_ss: u16 = application_data_segment_selector - 8;
         if let Some(star) = Self::get(cpuid) {
@@ -55,4 +57,3 @@ impl Star {
         }
     }
 }
-

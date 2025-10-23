@@ -3,16 +3,9 @@
 //! * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4 MP Services Protocol
 
 use {
+    super::super::{null, Event, Guid, Status, SystemTable, Void},
     alloc::collections::BTreeMap,
     core::fmt,
-    super::super::{
-        Event,
-        Guid,
-        Status,
-        SystemTable,
-        Void,
-        null,
-    },
 };
 
 /// # EFI_MP_SERVICES_PROTOCOL
@@ -33,36 +26,38 @@ pub struct Protocol {
 impl Protocol {
     #[allow(dead_code)]
     pub fn get() -> &'static Self {
-        let guid = Guid::new(0x3fdda605, 0xa76e, 0x4f46, [0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08]);
+        let guid = Guid::new(
+            0x3fdda605,
+            0xa76e,
+            0x4f46,
+            [0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08],
+        );
         let registration: &Void = null();
         let protocol: &Void = SystemTable::get()
             .locate_protocol(registration, guid)
             .unwrap();
         let protocol: *const Void = protocol as *const Void;
         let protocol: *const Protocol = protocol as *const Protocol;
-        unsafe {
-            &*protocol
-        }
+        unsafe { &*protocol }
     }
 
     #[allow(dead_code)]
     pub fn get_all_processor_informations(&self) -> BTreeMap<usize, ProcessorInformation> {
-        let number_of_processors: usize = self
-            .number_of_processors()
-            .unwrap()
-            .all;
+        let number_of_processors: usize = self.number_of_processors().unwrap().all;
         (0..number_of_processors)
             .map(|processor_number| {
-                let processor_information: ProcessorInformation = self
-                    .get_processor_information(processor_number)
-                    .unwrap();
+                let processor_information: ProcessorInformation =
+                    self.get_processor_information(processor_number).unwrap();
                 (processor_number, processor_information)
             })
             .collect()
     }
 
     #[allow(dead_code)]
-    pub fn get_processor_information(&self, processor_number: usize) -> Result<ProcessorInformation, Status> {
+    pub fn get_processor_information(
+        &self,
+        processor_number: usize,
+    ) -> Result<ProcessorInformation, Status> {
         let mut processor_information = ProcessorInformation::default();
         (self.get_processor_info)(self, processor_number, &mut processor_information)
             .result()
@@ -83,17 +78,18 @@ impl Protocol {
         let mut enabled: usize = 0;
         (self.get_number_of_processors)(self, &mut all, &mut enabled)
             .result()
-            .map(|_| NumberOfProcessors {
-                all,
-                enabled,
-            })
+            .map(|_| NumberOfProcessors { all, enabled })
     }
 }
 
 /// # EFI_MP_SERVICES_GET_NUMBER_OF_PROCESSORS
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.2 EFI_MP_SERVICES_PROTOCOL.GetNumberOfProcessors()
-type GetNumberOfProcessors = extern "efiapi" fn(/* This */ &Protocol, /* NumberOfProcessors */ &mut usize, /* NumberOfEnabledProcessors */ &mut usize) -> Status;
+type GetNumberOfProcessors = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* NumberOfProcessors */ &mut usize,
+    /* NumberOfEnabledProcessors */ &mut usize,
+) -> Status;
 
 #[derive(Debug)]
 pub struct NumberOfProcessors {
@@ -106,7 +102,11 @@ pub struct NumberOfProcessors {
 /// # EFI_MP_SERVICES_GET_PROCESSOR_INFO
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.3 EFI_MP_SERVICES_PROTOCOL.GetProcessorInfo()
-type GetProcessorInfo = extern "efiapi" fn(/* This */ &Protocol, /* ProcessroNumber */ usize, /* ProcessorInfoBuffer */ &mut ProcessorInformation) -> Status;
+type GetProcessorInfo = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* ProcessroNumber */ usize,
+    /* ProcessorInfoBuffer */ &mut ProcessorInformation,
+) -> Status;
 
 /// # EFI_PROCESSOR_INFORMATION
 /// ## References
@@ -141,9 +141,7 @@ pub union ExtendedProcessorInformation {
 
 impl ExtendedProcessorInformation {
     fn location2(&self) -> &CpuPhysicalLocation2 {
-        unsafe {
-            &self.location2
-        }
+        unsafe { &self.location2 }
     }
 }
 
@@ -159,9 +157,7 @@ impl fmt::Debug for ExtendedProcessorInformation {
 impl Default for ExtendedProcessorInformation {
     fn default() -> Self {
         let location2 = CpuPhysicalLocation2::default();
-        Self {
-            location2
-        }
+        Self { location2 }
     }
 }
 
@@ -182,7 +178,15 @@ pub struct CpuPhysicalLocation2 {
 /// # EFI_MP_SERVICES_STARTUP_ALL_APS
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.4 EFI_MP_SERVICES_PROTOCOL.StartupAllAPs()
-type StartupAllAps = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* SingleThread */ bool, /* WaitEvent */ Event, /* TimeoutInMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* FailedCpuList */ &mut &usize) -> Status;
+type StartupAllAps = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* Procedure */ ApProcedure,
+    /* SingleThread */ bool,
+    /* WaitEvent */ Event,
+    /* TimeoutInMicroSeconds */ usize,
+    /* ProcedureArgument */ &Void,
+    /* FailedCpuList */ &mut &usize,
+) -> Status;
 
 /// # EFI_AP_PROCEDURE
 /// ## References
@@ -192,20 +196,37 @@ type ApProcedure = extern "efiapi" fn(/* ProcedureArgument */ &Void);
 /// # EFI_MP_SERVICES_STARTUP_THIS_AP
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.5 EFI_MP_SERVICES_PROTOCOL.StartupThisAP()
-type StartupThisAp = extern "efiapi" fn(/* This */ &Protocol, /* Procedure */ ApProcedure, /* ProcessorNumber */ usize, /* WaitEvent */ Event, /* TimeoutInMicroSeconds */ usize, /* ProcedureArgument */ &Void, /* Finished */ &mut bool) -> Status;
+type StartupThisAp = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* Procedure */ ApProcedure,
+    /* ProcessorNumber */ usize,
+    /* WaitEvent */ Event,
+    /* TimeoutInMicroSeconds */ usize,
+    /* ProcedureArgument */ &Void,
+    /* Finished */ &mut bool,
+) -> Status;
 
 /// # EFI_MP_SERVICES_SWITCH_BSP
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.6 EFI_MP_SERVICES_PROTOCOL.SwitchBSP()
-type SwitchBsp = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ usize, /* EnableOldBSP */ bool) -> Status;
+type SwitchBsp = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* ProcessorNumber */ usize,
+    /* EnableOldBSP */ bool,
+) -> Status;
 
 /// # EFI_MP_SERVICES_ENABLEDISABLEAP
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.7 EFI_MP_SERVICES_PROTOCOL.EnableDisableAp()
-type EnableDisableAp = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ usize, /* EnableAP */ bool, /* HealthFlag */ &u32) -> Status;
+type EnableDisableAp = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* ProcessorNumber */ usize,
+    /* EnableAP */ bool,
+    /* HealthFlag */ &u32,
+) -> Status;
 
 /// # EFI_MP_SERVICES_WHOAMI
 /// ## References
 /// * [UEFI Platform Initialization Specification](https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf) II-13.4.8 EFI_MP_SERVICES_PROTOCOL.WhoAmI()
-type WhoAmI = extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ &mut usize) -> Status;
-
+type WhoAmI =
+    extern "efiapi" fn(/* This */ &Protocol, /* ProcessorNumber */ &mut usize) -> Status;

@@ -1,10 +1,6 @@
 use {
+    super::super::{super::Cpuid, rdmsr, wrmsr},
     bitfield_struct::bitfield,
-    super::super::{
-        rdmsr,
-        super::Cpuid,
-        wrmsr,
-    },
 };
 
 /// # IA32_LSTAR
@@ -40,4 +36,3 @@ impl Lstar {
         }
     }
 }
-

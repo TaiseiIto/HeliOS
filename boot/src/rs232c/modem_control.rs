@@ -34,4 +34,3 @@ impl Register {
             .with_autoflow_control_enabled(autoflow_control_enabled)
     }
 }
-

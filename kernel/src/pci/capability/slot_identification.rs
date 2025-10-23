@@ -1,10 +1,7 @@
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
-pub mod expansion_slot;
 pub mod chassis_number;
+pub mod expansion_slot;
 
 /// # Slot Numbering Capabilities Register
 /// ## References
@@ -32,4 +29,3 @@ impl fmt::Debug for Register {
             .finish()
     }
 }
-

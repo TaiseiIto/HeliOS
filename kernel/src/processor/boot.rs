@@ -1,26 +1,12 @@
 use {
-    alloc::{
-        vec::Vec,
-        string::String,
-    },
+    super::{message, Controller},
+    crate::{com2_println, memory, sync},
+    alloc::{string::String, vec::Vec},
     core::{
         fmt,
-        mem::{
-            size_of,
-            MaybeUninit,
-        },
+        mem::{size_of, MaybeUninit},
         ops::Range,
-        ptr,
-        slice,
-    },
-    crate::{
-        com2_println,
-        memory,
-        sync,
-    },
-    super::{
-        Controller,
-        message,
+        ptr, slice,
     },
 };
 
@@ -36,14 +22,20 @@ impl Loader {
         self.program_address_range.start
     }
 
-    pub fn initialize(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
+    pub fn initialize(
+        &mut self,
+        controller: &Controller,
+        bsp_heap_start: usize,
+        bsp_local_apic_id: u8,
+    ) {
         self.initialize_stack();
         self.set_arguments(controller, bsp_heap_start, bsp_local_apic_id);
         self.set_temporary_pml4_table(controller);
     }
 
     pub fn log(&self) -> String {
-        let log: Vec<u8> = self.stack()
+        let log: Vec<u8> = self
+            .stack()
             .iter()
             .copied()
             .take_while(|byte| *byte != 0)
@@ -55,9 +47,7 @@ impl Loader {
         self.program_address_range
             .clone()
             .map(|program_address| program_address as *const u8)
-            .map(|program_address| unsafe {
-                ptr::read_volatile(program_address)
-            })
+            .map(|program_address| unsafe { ptr::read_volatile(program_address) })
             .collect()
     }
 
@@ -65,27 +55,26 @@ impl Loader {
         self.stack_address_range
             .clone()
             .map(|stack_address| stack_address as *const u8)
-            .map(|stack_address| unsafe {
-                ptr::read_volatile(stack_address)
-            })
+            .map(|stack_address| unsafe { ptr::read_volatile(stack_address) })
             .collect()
     }
 
     fn arguments_mut(&mut self) -> &mut Arguments {
         let arguments: usize = self.program_address_range.end - size_of::<Arguments>();
         let arguments: *mut Arguments = arguments as *mut Arguments;
-        unsafe {
-            &mut *arguments
-        }
+        unsafe { &mut *arguments }
     }
 
     fn initialize_stack(&mut self) {
-        self.stack_mut()
-            .iter_mut()
-            .for_each(|byte| *byte = 0)
+        self.stack_mut().iter_mut().for_each(|byte| *byte = 0)
     }
 
-    fn set_arguments(&mut self, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) {
+    fn set_arguments(
+        &mut self,
+        controller: &Controller,
+        bsp_heap_start: usize,
+        bsp_local_apic_id: u8,
+    ) {
         *self.arguments_mut() = Arguments::new(self, controller, bsp_heap_start, bsp_local_apic_id);
     }
 
@@ -97,9 +86,7 @@ impl Loader {
     fn stack_mut(&mut self) -> &mut [u8] {
         let start: *mut u8 = self.stack_address_range.start as *mut u8;
         let length: usize = self.stack_address_range.end - self.stack_address_range.start;
-        unsafe {
-            slice::from_raw_parts_mut(start, length)
-        }
+        unsafe { slice::from_raw_parts_mut(start, length) }
     }
 
     fn ss(&self) -> u16 {
@@ -110,13 +97,12 @@ impl Loader {
     }
 
     fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
-        let temporary_pml4_table: usize = self.program_address_range.end - size_of::<Arguments>() - memory::page::SIZE;
+        let temporary_pml4_table: usize =
+            self.program_address_range.end - size_of::<Arguments>() - memory::page::SIZE;
         com2_println!("temporary_pml4_table = {:#x?}", temporary_pml4_table);
         let temporary_pml4_table: *mut u8 = temporary_pml4_table as *mut u8;
         let length: usize = memory::page::SIZE;
-        unsafe {
-            slice::from_raw_parts_mut(temporary_pml4_table, length)
-        }
+        unsafe { slice::from_raw_parts_mut(temporary_pml4_table, length) }
     }
 }
 
@@ -155,7 +141,12 @@ struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(loader: &Loader, controller: &Controller, bsp_heap_start: usize, bsp_local_apic_id: u8) -> Self {
+    pub fn new(
+        loader: &Loader,
+        controller: &Controller,
+        bsp_heap_start: usize,
+        bsp_local_apic_id: u8,
+    ) -> Self {
         let paging: &memory::Paging = controller.paging();
         let cr3: u64 = paging.cr3().into();
         let kernel_entry: usize = controller.kernel_entry();
@@ -164,10 +155,12 @@ impl Arguments {
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
         let receiver: &sync::spin::Lock<Option<message::Content>> = controller.receiver();
-        let receiver: *const sync::spin::Lock<Option<message::Content>> = receiver as *const sync::spin::Lock<Option<message::Content>>;
+        let receiver: *const sync::spin::Lock<Option<message::Content>> =
+            receiver as *const sync::spin::Lock<Option<message::Content>>;
         let receiver: usize = receiver as usize;
         let sender: &sync::spin::Lock<Option<message::Content>> = controller.sender();
-        let sender: *const sync::spin::Lock<Option<message::Content>> = sender as *const sync::spin::Lock<Option<message::Content>>;
+        let sender: *const sync::spin::Lock<Option<message::Content>> =
+            sender as *const sync::spin::Lock<Option<message::Content>>;
         let sender: usize = sender as usize;
         let ss: u16 = loader.ss();
         Self {
@@ -184,4 +177,3 @@ impl Arguments {
         }
     }
 }
-

@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    super::system_description,
-};
+use {super::system_description, bitfield_struct::bitfield};
 
 /// # Trusted Platform Module 2.0 Table
 /// ## References
@@ -73,4 +70,3 @@ struct Attributes {
     #[bits(6)]
     __: u8,
 }
-

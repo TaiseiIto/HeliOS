@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -29,4 +26,3 @@ impl fmt::Debug for FatRegister {
 struct Register {
     current_count: u32,
 }
-

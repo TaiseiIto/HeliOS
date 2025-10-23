@@ -19,4 +19,3 @@ pub struct Register {
     received_system_error: bool,
     detected_parity_error: bool,
 }
-

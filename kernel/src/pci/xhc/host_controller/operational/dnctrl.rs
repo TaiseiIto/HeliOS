@@ -24,4 +24,3 @@ impl fmt::Debug for Register {
             .finish()
     }
 }
-

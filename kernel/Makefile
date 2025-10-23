@@ -13,6 +13,11 @@ $(TARGET): $(call SOURCE_FILES, .)
 clippy:
 	cargo clippy
 
+# Format rust codes.
+.PHONY: fmt
+fmt:
+	cargo fmt
+
 # Generate documents.
 # Usage: $make doc
 .PHONY: doc

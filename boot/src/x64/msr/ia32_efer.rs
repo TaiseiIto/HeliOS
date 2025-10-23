@@ -3,12 +3,8 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.4 2-63
 
 use {
+    super::{super::Cpuid, rdmsr, wrmsr},
     bitfield_struct::bitfield,
-    super::{
-        rdmsr,
-        wrmsr,
-        super::Cpuid,
-    },
 };
 
 /// # IA32_EFER
@@ -33,23 +29,20 @@ impl Ia32Efer {
     pub fn enable_execute_disable_bit(cpuid: &Cpuid) -> bool {
         cpuid
             .supports_execute_disable_bit()
-            .then(|| Self::get(cpuid)
-                .map_or(false, |ia32_efer| {
-                    ia32_efer
-                        .with_nxe(true)
-                        .set();
+            .then(|| {
+                Self::get(cpuid).map_or(false, |ia32_efer| {
+                    ia32_efer.with_nxe(true).set();
                     true
-                }))
+                })
+            })
             .unwrap_or(false)
     }
 
     pub fn get(cpuid: &Cpuid) -> Option<Self> {
-        cpuid
-            .supports_ia32_efer()
-            .then(|| {
-                let ia32_efer: u64 = rdmsr(Self::ECX);
-                ia32_efer.into()
-            })
+        cpuid.supports_ia32_efer().then(|| {
+            let ia32_efer: u64 = rdmsr(Self::ECX);
+            ia32_efer.into()
+        })
     }
 
     pub fn pae_paging_is_used(&self) -> bool {
@@ -61,4 +54,3 @@ impl Ia32Efer {
         wrmsr(Self::ECX, ia32_efer);
     }
 }
-

@@ -21,4 +21,3 @@ pub struct Register {
     pciexp_wake_sts: bool,
     wak_sts: bool,
 }
-

@@ -20,4 +20,3 @@ pub struct Register {
     __: u8,
     rq: u8,
 }
-

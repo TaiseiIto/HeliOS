@@ -6,10 +6,7 @@ mod ecx0x00000000;
 mod ecxn;
 
 use {
-    alloc::collections::BTreeMap,
-    ecx0x00000000::Ecx0x00000000,
-    ecxn::EcxN,
-    super::Eax0x00000000,
+    super::Eax0x00000000, alloc::collections::BTreeMap, ecx0x00000000::Ecx0x00000000, ecxn::EcxN,
 };
 
 #[derive(Debug)]
@@ -35,4 +32,3 @@ impl Eax0x00000018 {
         })
     }
 }
-

@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -20,9 +17,7 @@ impl FatRegister {
     fn register_mut(&mut self) -> &mut u32 {
         let address: *mut Self = self as *mut Self;
         let address: *mut u32 = address as *mut u32;
-        unsafe {
-            &mut *address
-        }
+        unsafe { &mut *address }
     }
 }
 
@@ -44,4 +39,3 @@ impl fmt::Debug for FatRegister {
 struct Register {
     initial_count: u32,
 }
-

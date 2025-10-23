@@ -2,10 +2,7 @@
 //! ## References
 //! * [TSC](https://wiki.osdev.org/TSC)
 
-use crate::{
-    Argument,
-    x64,
-};
+use crate::{x64, Argument};
 
 #[allow(dead_code)]
 pub fn counter_value() -> u64 {
@@ -14,15 +11,10 @@ pub fn counter_value() -> u64 {
 
 #[allow(dead_code)]
 pub fn frequency() -> Option<u64> {
-    Argument::get()
-        .cpuid()
-        .tsc_frequency()
+    Argument::get().cpuid().tsc_frequency()
 }
 
 #[allow(dead_code)]
 pub fn is_invariant() -> bool {
-    Argument::get()
-        .cpuid()
-        .tsc_is_invariant()
+    Argument::get().cpuid().tsc_is_invariant()
 }
-

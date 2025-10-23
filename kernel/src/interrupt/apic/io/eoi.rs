@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -12,7 +9,9 @@ pub struct FatRegister {
 
 impl FatRegister {
     pub fn ends_interruption(&mut self, interrupt_number: u8) {
-        self.register = self.register.with_redirection_entry_clear(interrupt_number as u32);
+        self.register = self
+            .register
+            .with_redirection_entry_clear(interrupt_number as u32);
     }
 }
 
@@ -34,4 +33,3 @@ impl fmt::Debug for FatRegister {
 struct Register {
     redirection_entry_clear: u32,
 }
-

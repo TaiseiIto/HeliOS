@@ -1,14 +1,7 @@
 use {
+    super::{extended_system_description, system_description},
     alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        str,
-    },
-    super::{
-        extended_system_description,
-        system_description,
-    },
+    core::{fmt, mem::size_of, str},
 };
 
 /// # RSDP
@@ -29,7 +22,10 @@ pub struct Pointer {
 
 impl Pointer {
     pub fn is_correct(&self) -> bool {
-        self.checksum() && self.extended_checksum() && self.rsdt().is_correct() && self.xsdt().is_correct()
+        self.checksum()
+            && self.extended_checksum()
+            && self.rsdt().is_correct()
+            && self.xsdt().is_correct()
     }
 
     pub fn oemid(&self) -> &str {
@@ -38,38 +34,34 @@ impl Pointer {
 
     pub fn xsdt(&self) -> &extended_system_description::Table {
         let xsdt: usize = self.xsdt as usize;
-        let xsdt: *const extended_system_description::Table = xsdt as *const extended_system_description::Table;
-        unsafe {
-            &*xsdt
-        }
+        let xsdt: *const extended_system_description::Table =
+            xsdt as *const extended_system_description::Table;
+        unsafe { &*xsdt }
     }
 
     pub fn xsdt_mut(&mut self) -> &mut extended_system_description::Table {
         let xsdt: usize = self.xsdt as usize;
-        let xsdt: *mut extended_system_description::Table = xsdt as *mut extended_system_description::Table;
-        unsafe {
-            &mut *xsdt
-        }
+        let xsdt: *mut extended_system_description::Table =
+            xsdt as *mut extended_system_description::Table;
+        unsafe { &mut *xsdt }
     }
 
     fn checksum(&self) -> bool {
         let rsdp: *const Self = self as *const Self;
         let rsdp: *const [u8; 20] = rsdp as *const [u8; 20];
-        let rsdp: &[u8; 20] = unsafe {
-            &*rsdp
-        };
+        let rsdp: &[u8; 20] = unsafe { &*rsdp };
         rsdp.iter()
-            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
+            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte))
+            == 0
     }
 
     fn extended_checksum(&self) -> bool {
         let rsdp: *const Self = self as *const Self;
         let rsdp: *const [u8; size_of::<Self>()] = rsdp as *const [u8; size_of::<Self>()];
-        let rsdp: &[u8; size_of::<Self>()]  = unsafe {
-            &*rsdp
-        };
+        let rsdp: &[u8; size_of::<Self>()] = unsafe { &*rsdp };
         rsdp.iter()
-            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte)) == 0
+            .fold(0x00u8, |sum, byte| sum.wrapping_add(*byte))
+            == 0
     }
 
     fn signature(&self) -> &str {
@@ -78,10 +70,9 @@ impl Pointer {
 
     fn rsdt(&self) -> system_description::Table {
         let rsdt_header: usize = self.rsdt as usize;
-        let rsdt_header: *const system_description::Header = rsdt_header as *const system_description::Header;
-        let rsdt_header: &system_description::Header = unsafe {
-            &*rsdt_header
-        };
+        let rsdt_header: *const system_description::Header =
+            rsdt_header as *const system_description::Header;
+        let rsdt_header: &system_description::Header = unsafe { &*rsdt_header };
         rsdt_header.into()
     }
 }
@@ -127,26 +118,18 @@ impl Table {
         let entries: usize = (self.header.table_size() - size_of::<Self>()) / size_of::<u32>();
         (0..entries)
             .map(|index| {
-                let entry: u32 = unsafe {
-                    first_entry
-                        .add(index)
-                        .read_volatile()
-                };
+                let entry: u32 = unsafe { first_entry.add(index).read_volatile() };
                 let entry: usize = entry as usize;
-                let header: *const system_description::Header = entry as *const system_description::Header;
-                let header: &system_description::Header = unsafe {
-                    &*header
-                };
+                let header: *const system_description::Header =
+                    entry as *const system_description::Header;
+                let header: &system_description::Header = unsafe { &*header };
                 header.into()
             })
             .collect()
     }
 
     pub fn is_correct(&self) -> bool {
-        self.header.is_correct() && self
-            .entries()
-            .iter()
-            .all(|entry| entry.is_correct())
+        self.header.is_correct() && self.entries().iter().all(|entry| entry.is_correct())
     }
 }
 
@@ -161,4 +144,3 @@ impl fmt::Debug for Table {
             .finish()
     }
 }
-

@@ -7,23 +7,17 @@
 
 extern crate alloc;
 
-mod processor;
 mod efi;
 mod elf;
 mod kernel;
 mod memory;
+mod processor;
 mod rs232c;
 mod x64;
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
-    core::{
-        panic::PanicInfo,
-        ops::Range,
-    },
+    alloc::{collections::BTreeMap, vec::Vec},
+    core::{ops::Range, panic::PanicInfo},
 };
 
 include!(concat!(env!("OUT_DIR"), "/constants.rs"));
@@ -32,23 +26,34 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 4.1 UEFI Image Entry Point
 #[no_mangle]
-fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTable<'static>) -> efi::Status {
+fn efi_main(
+    image_handle: efi::Handle,
+    system_table: &'static mut efi::SystemTable<'static>,
+) -> efi::Status {
     system_table.set();
     // Allocate pages requested to be allocated at specific physical address preferentially.
-    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> = processor::boot::Loader::allocate_pages();
+    let processor_boot_loader_pages: Range<efi::memory::PhysicalAddress> =
+        processor::boot::Loader::allocate_pages();
     efi_println!("Hello, World!");
     com2_println!("Hello from /EFI/BOOT/BOOTX64.EFI");
     let font_protocol = efi::font::Protocol::get();
     let fonts: BTreeMap<usize, efi::Font> = font_protocol.fonts();
     let graphics_output_protocol = efi::graphics_output::Protocol::get();
     let cpuid: x64::Cpuid = x64::Cpuid::get().unwrap();
-    let execute_disable_bit_available: bool = x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
+    let execute_disable_bit_available: bool =
+        x64::msr::Ia32Efer::enable_execute_disable_bit(&cpuid);
     assert!(execute_disable_bit_available);
     let mut paging = memory::Paging::get(&cpuid);
     paging.set();
     let directory_tree: efi::file::system::Tree = efi::file::system::Protocol::get().tree();
     let kernel = kernel::Loader::new(KERNEL, &directory_tree, &mut paging);
-    let (processor_boot_loader, processor_kernel): (processor::boot::Loader, Vec<u8>) = processor::prepare(&directory_tree, PROCESSOR_BOOT_LOADER, PROCESSOR_KERNEL, processor_boot_loader_pages);
+    let (processor_boot_loader, processor_kernel): (processor::boot::Loader, Vec<u8>) =
+        processor::prepare(
+            &directory_tree,
+            PROCESSOR_BOOT_LOADER,
+            PROCESSOR_KERNEL,
+            processor_boot_loader_pages,
+        );
     let memory_map: efi::memory::Map = efi::SystemTable::get()
         .exit_boot_services(image_handle)
         .unwrap();
@@ -62,7 +67,8 @@ fn efi_main(image_handle: efi::Handle, system_table: &'static mut efi::SystemTab
         graphics_output_protocol,
         &kernel,
         memory_map,
-        paging);
+        paging,
+    );
     kernel.run(&kernel_argument);
     unreachable!("Failure to start the kernel.")
 }
@@ -77,4 +83,3 @@ fn panic(panic: &PanicInfo) -> ! {
         x64::hlt();
     }
 }
-

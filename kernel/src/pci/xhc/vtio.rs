@@ -23,4 +23,3 @@ pub struct Registers {
     #[allow(dead_code)]
     endpoint_assignment_registers: [u32; 255],
 }
-

@@ -17,4 +17,3 @@ impl Register {
         self.counter_value()
     }
 }
-

@@ -28,4 +28,3 @@ pub struct Register {
     #[bits(22)]
     __: u32,
 }
-

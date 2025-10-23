@@ -14,4 +14,3 @@ pub struct Register {
     #[bits(4)]
     __: u8,
 }
-

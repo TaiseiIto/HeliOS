@@ -7,14 +7,10 @@ mod root_port_ats_capability;
 mod soc_integrated;
 
 use {
+    super::system_description,
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
-    super::system_description,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # DMA Remapping Table
@@ -35,14 +31,10 @@ impl Table {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: *const Self = unsafe {
-            table.add(1)
-        };
+        let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(table, size)
-        }
+        unsafe { slice::from_raw_parts(table, size) }
     }
 
     fn iter(&self) -> Structures<'_> {
@@ -55,9 +47,7 @@ impl fmt::Debug for Table {
         let header: system_description::Header = self.header;
         let host_address_width: u8 = self.host_address_width;
         let flags: Flags = self.flags;
-        let structures: Vec<Structure> = self
-            .iter()
-            .collect();
+        let structures: Vec<Structure> = self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
@@ -84,9 +74,7 @@ struct Structures<'a> {
 impl<'a> From<&'a Table> for Structures<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -219,4 +207,3 @@ impl<'a> Structure<'a> {
         }
     }
 }
-

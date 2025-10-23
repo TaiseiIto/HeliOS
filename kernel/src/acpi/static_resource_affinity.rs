@@ -1,20 +1,16 @@
 mod generic_initiator;
 mod generic_port;
-mod gicc;
 mod gic_interrupt_translation_service;
+mod gicc;
 mod memory;
 mod other;
 mod processor_local_apic_sapic;
 mod processor_local_x2apic;
 
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    alloc::vec::Vec,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # System Resource  Table (SRAT)
@@ -37,9 +33,7 @@ impl Table {
         let first_byte: usize = table + size_of::<Self>();
         let first_byte: *const u8 = first_byte as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(first_byte, size)
-        }
+        unsafe { slice::from_raw_parts(first_byte, size) }
     }
 
     fn iter(&self) -> Structures<'_> {
@@ -50,9 +44,7 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let structures: Vec<Structure> = self
-            .iter()
-            .collect();
+        let structures: Vec<Structure> = self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
@@ -69,9 +61,7 @@ struct Structures<'a> {
 impl<'a> From<&'a Table> for Structures<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -101,90 +91,78 @@ enum Structure<'a> {
 
 impl<'a> Structure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
-        bytes
-            .first()
-            .map(|structure_type| match structure_type {
-                0x00 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const processor_local_apic_sapic::Structure = structure as *const processor_local_apic_sapic::Structure;
-                    let structure: &processor_local_apic_sapic::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::ProcessorLocalApicSapic(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x01 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const memory::Structure = structure as *const memory::Structure;
-                    let structure: &memory::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::Memory(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x02 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const processor_local_x2apic::Structure = structure as *const processor_local_x2apic::Structure;
-                    let structure: &processor_local_x2apic::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::ProcessorLocalX2apic(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x03 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const gicc::Structure = structure as *const gicc::Structure;
-                    let structure: &gicc::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::Gicc(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x04 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const gic_interrupt_translation_service::Structure = structure as *const gic_interrupt_translation_service::Structure;
-                    let structure: &gic_interrupt_translation_service::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::GicInterruptTranslationService(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x05 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const generic_initiator::Structure = structure as *const generic_initiator::Structure;
-                    let structure: &generic_initiator::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::GenericInitiator(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                0x06 => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const generic_port::Structure = structure as *const generic_port::Structure;
-                    let structure: &generic_port::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::GenericPort(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-                _ => {
-                    let structure: *const u8 = structure_type as *const u8;
-                    let structure: *const other::Structure = structure as *const other::Structure;
-                    let structure: &other::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::Other(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                }
-            })
+        bytes.first().map(|structure_type| match structure_type {
+            0x00 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const processor_local_apic_sapic::Structure =
+                    structure as *const processor_local_apic_sapic::Structure;
+                let structure: &processor_local_apic_sapic::Structure = unsafe { &*structure };
+                let structure = Self::ProcessorLocalApicSapic(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x01 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const memory::Structure = structure as *const memory::Structure;
+                let structure: &memory::Structure = unsafe { &*structure };
+                let structure = Self::Memory(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x02 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const processor_local_x2apic::Structure =
+                    structure as *const processor_local_x2apic::Structure;
+                let structure: &processor_local_x2apic::Structure = unsafe { &*structure };
+                let structure = Self::ProcessorLocalX2apic(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x03 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const gicc::Structure = structure as *const gicc::Structure;
+                let structure: &gicc::Structure = unsafe { &*structure };
+                let structure = Self::Gicc(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x04 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const gic_interrupt_translation_service::Structure =
+                    structure as *const gic_interrupt_translation_service::Structure;
+                let structure: &gic_interrupt_translation_service::Structure =
+                    unsafe { &*structure };
+                let structure = Self::GicInterruptTranslationService(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x05 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const generic_initiator::Structure =
+                    structure as *const generic_initiator::Structure;
+                let structure: &generic_initiator::Structure = unsafe { &*structure };
+                let structure = Self::GenericInitiator(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            0x06 => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const generic_port::Structure =
+                    structure as *const generic_port::Structure;
+                let structure: &generic_port::Structure = unsafe { &*structure };
+                let structure = Self::GenericPort(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            _ => {
+                let structure: *const u8 = structure_type as *const u8;
+                let structure: *const other::Structure = structure as *const other::Structure;
+                let structure: &other::Structure = unsafe { &*structure };
+                let structure = Self::Other(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+        })
     }
 
     fn size(&self) -> usize {
@@ -200,4 +178,3 @@ impl<'a> Structure<'a> {
         }
     }
 }
-

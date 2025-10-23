@@ -8,11 +8,4 @@ mod fmask;
 mod lstar;
 mod star;
 
-pub use {
-    apic_base::ApicBase,
-    efer::Efer,
-    fmask::Fmask,
-    lstar::Lstar,
-    star::Star,
-};
-
+pub use {apic_base::ApicBase, efer::Efer, fmask::Fmask, lstar::Lstar, star::Star};

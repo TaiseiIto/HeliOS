@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
-use {
-    bitfield_struct::bitfield,
-    super::super::Return,
-};
+use {super::super::Return, bitfield_struct::bitfield};
 
 #[derive(Debug)]
 pub struct Ecx0x00000003 {
@@ -24,11 +21,7 @@ impl Ecx0x00000003 {
         let eax: Eax = ecx0x00000003.eax().into();
         let ecx: Ecx = ecx0x00000003.ecx().into();
         let edx: Edx = ecx0x00000003.edx().into();
-        Self {
-            eax,
-            ecx,
-            edx,
-        }
+        Self { eax, ecx, edx }
     }
 }
 
@@ -54,4 +47,3 @@ struct Edx {
     highest_cos_number_supported_for_this_resid: u16,
     __: u16,
 }
-

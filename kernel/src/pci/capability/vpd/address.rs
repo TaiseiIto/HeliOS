@@ -12,13 +12,10 @@ pub struct Register {
 
 impl Register {
     pub fn read_address(address: u16) -> Self {
-        Self::default()
-            .with_address(address)
-            .with_f(false)
+        Self::default().with_address(address).with_f(false)
     }
 
     pub fn can_read_data(&self) -> bool {
         self.f()
     }
 }
-

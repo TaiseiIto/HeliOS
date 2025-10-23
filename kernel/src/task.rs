@@ -1,8 +1,4 @@
-use {
-    alloc::vec::Vec,
-    core::cell::UnsafeCell,
-    crate::x64,
-};
+use {crate::x64, alloc::vec::Vec, core::cell::UnsafeCell};
 
 static mut ALL: UnsafeCell<Vec<Controller>> = UnsafeCell::new(Vec::new());
 
@@ -24,11 +20,10 @@ impl Controller {
     pub fn end_interrupt(&mut self) {
         self.interrupt_disable_level -= 1;
     }
-    
+
     pub fn get_current_mut() -> Option<&'static mut Self> {
         unsafe {
-            ALL
-                .get_mut()
+            ALL.get_mut()
                 .iter_mut()
                 .find(|controller| controller.current)
         }
@@ -63,4 +58,3 @@ impl Controller {
         }
     }
 }
-

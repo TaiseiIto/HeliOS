@@ -1,11 +1,8 @@
 mod level4;
 
 use {
+    crate::{bsp_println, x64},
     core::ops::Range,
-    crate::{
-        bsp_println,
-        x64,
-    },
 };
 
 /// # Paging
@@ -16,9 +13,7 @@ pub enum Paging {
     Disable,
     Bit32,
     Pae,
-    Level4 {
-        controller: level4::Controller,
-    },
+    Level4 { controller: level4::Controller },
     Level5,
 }
 
@@ -28,9 +23,7 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.cr3(),
+            Self::Level4 { controller } => controller.cr3(),
             Self::Level5 => unimplemented!(),
         }
     }
@@ -41,9 +34,7 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.debug(vaddr),
+            Self::Level4 { controller } => controller.debug(vaddr),
             Self::Level5 => unimplemented!(),
         }
         bsp_println!("End paging information vaddr {:#x?}", vaddr);
@@ -58,15 +49,11 @@ impl Paging {
             Self::Disable
         } else if cr4.bit32_paging_is_used() {
             Self::Bit32
-        } else if ia32_efer
-            .unwrap()
-            .pae_paging_is_used() {
+        } else if ia32_efer.unwrap().pae_paging_is_used() {
             Self::Pae
         } else if cr4.level4_paging_is_used() {
             let controller = level4::Controller::get(cr3);
-            Self::Level4 {
-                controller,
-            }
+            Self::Level4 { controller }
         } else {
             Self::Level5
         }
@@ -77,9 +64,7 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.higher_half_range(),
+            Self::Level4 { controller } => controller.higher_half_range(),
             Self::Level5 => unimplemented!(),
         }
     }
@@ -89,21 +74,26 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.set(),
+            Self::Level4 { controller } => controller.set(),
             Self::Level5 => unimplemented!(),
         }
     }
 
-    pub fn set_page(&mut self, vaddr: usize, paddr: usize, present: bool, writable: bool, executable: bool) {
+    pub fn set_page(
+        &mut self,
+        vaddr: usize,
+        paddr: usize,
+        present: bool,
+        writable: bool,
+        executable: bool,
+    ) {
         match self {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.set_page(vaddr, paddr, present, writable, executable),
+            Self::Level4 { controller } => {
+                controller.set_page(vaddr, paddr, present, writable, executable)
+            }
             Self::Level5 => unimplemented!(),
         }
     }
@@ -113,9 +103,7 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.pml4t(),
+            Self::Level4 { controller } => controller.pml4t(),
             Self::Level5 => unimplemented!(),
         }
     }
@@ -127,11 +115,8 @@ impl Paging {
             Self::Disable => unimplemented!(),
             Self::Bit32 => unimplemented!(),
             Self::Pae => unimplemented!(),
-            Self::Level4 {
-                controller
-            } => controller.vaddr2paddr(vaddr),
+            Self::Level4 { controller } => controller.vaddr2paddr(vaddr),
             Self::Level5 => unimplemented!(),
         }
     }
 }
-

@@ -1,18 +1,10 @@
 pub mod scope;
 
 use {
+    super::{reserved_memory_region, root_port_ats_capability, soc_integrated},
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
-    super::{
-        reserved_memory_region,
-        root_port_ats_capability,
-        soc_integrated,
-    },
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # DMA Remapping Hardware Unit Definition Structure
@@ -35,14 +27,10 @@ impl Structure {
 
     fn bytes(&self) -> &[u8] {
         let structure: *const Self = self as *const Self;
-        let first_byte: *const Self = unsafe {
-            structure.add(1)
-        };
+        let first_byte: *const Self = unsafe { structure.add(1) };
         let first_byte: *const u8 = first_byte as *const u8;
         let size: usize = self.length() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(first_byte, size)
-        }
+        unsafe { slice::from_raw_parts(first_byte, size) }
     }
 
     fn iter(&self) -> Scopes<'_> {
@@ -58,9 +46,7 @@ impl fmt::Debug for Structure {
         let size: u8 = self.size;
         let segment_number: u16 = self.segment_number;
         let register_base_address: u64 = self.register_base_address;
-        let scopes: Vec<&scope::Structure> = self
-            .iter()
-            .collect();
+        let scopes: Vec<&scope::Structure> = self.iter().collect();
         formatter
             .debug_struct("Structure")
             .field("structure_type", &structure_type)
@@ -88,45 +74,35 @@ pub struct Scopes<'a> {
 impl<'a> From<&'a Structure> for Scopes<'a> {
     fn from(structure: &'a Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
 impl<'a> From<&'a reserved_memory_region::Structure> for Scopes<'a> {
     fn from(structure: &'a reserved_memory_region::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
 impl<'a> From<&'a root_port_ats_capability::Structure> for Scopes<'a> {
     fn from(structure: &'a root_port_ats_capability::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
 impl<'a> From<&'a soc_integrated::address_translation_cache::Structure> for Scopes<'a> {
     fn from(structure: &'a soc_integrated::address_translation_cache::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
 impl<'a> From<&'a soc_integrated::device_property::Structure> for Scopes<'a> {
     fn from(structure: &'a soc_integrated::device_property::Structure) -> Self {
         let bytes: &[u8] = structure.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -141,4 +117,3 @@ impl<'a> Iterator for Scopes<'a> {
         })
     }
 }
-

@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -16,12 +13,16 @@ impl fmt::Debug for FatRegister {
         let register: Register = self.register;
         let version: u8 = register.version();
         let max_lvt_entry: u8 = register.max_lvt_entry();
-        let support_for_eoi_broadcast_suppression: bool = register.support_for_eoi_broadcast_suppression();
+        let support_for_eoi_broadcast_suppression: bool =
+            register.support_for_eoi_broadcast_suppression();
         formatter
             .debug_struct("Register")
             .field("version", &version)
             .field("max_lvt_entry", &max_lvt_entry)
-            .field("support_for_eoi_broatcast_suppression", &support_for_eoi_broadcast_suppression)
+            .field(
+                "support_for_eoi_broatcast_suppression",
+                &support_for_eoi_broadcast_suppression,
+            )
             .finish()
     }
 }
@@ -38,4 +39,3 @@ struct Register {
     #[bits(7)]
     __: u8,
 }
-

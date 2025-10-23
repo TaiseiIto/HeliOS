@@ -1,8 +1,4 @@
-use crate::{
-    bsp_println,
-    memory,
-    x64,
-};
+use crate::{bsp_println, memory, x64};
 
 #[naked_function::naked]
 pub unsafe extern "C" fn handler() {
@@ -22,7 +18,15 @@ pub unsafe extern "C" fn handler() {
 }
 
 #[no_mangle]
-pub extern "C" fn syscall_handler(rdi: usize, rsi: usize, rdx: usize, r10: usize, r8: usize, r9: usize, rax: usize) {
+pub extern "C" fn syscall_handler(
+    rdi: usize,
+    rsi: usize,
+    rdx: usize,
+    r10: usize,
+    r8: usize,
+    r9: usize,
+    rax: usize,
+) {
     bsp_println!("Syscall");
     bsp_println!("rax = {:#x?}", rax);
     bsp_println!("rdi = {:#x?}", rdi);
@@ -41,7 +45,13 @@ pub fn initialize(
     application_code_segment_selector: &memory::segment::Selector,
     application_data_segment_selector: &memory::segment::Selector,
 ) {
-    x64::msr::ia32::Star::set_segment_selectors(cpuid, kernel_code_segment_selector, kernel_data_segment_selector, application_code_segment_selector, application_data_segment_selector);
+    x64::msr::ia32::Star::set_segment_selectors(
+        cpuid,
+        kernel_code_segment_selector,
+        kernel_data_segment_selector,
+        application_code_segment_selector,
+        application_data_segment_selector,
+    );
     let ia32_star = x64::msr::ia32::Star::get(cpuid);
     bsp_println!("ia32_star = {:#x?}", ia32_star);
     x64::msr::ia32::Lstar::set_handler(cpuid, handler);
@@ -53,4 +63,3 @@ pub fn initialize(
     let system_call_enable: bool = x64::msr::ia32::Efer::enable_system_call_enable_bit(cpuid);
     assert!(system_call_enable);
 }
-

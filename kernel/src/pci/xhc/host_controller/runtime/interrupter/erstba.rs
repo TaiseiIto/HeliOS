@@ -10,4 +10,3 @@ pub struct Register {
     #[bits(58)]
     event_ring_segment_table_base_address_register: u64,
 }
-

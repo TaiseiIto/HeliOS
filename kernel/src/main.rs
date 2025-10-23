@@ -34,31 +34,33 @@ fn main(argument: &'static mut Argument<'static>) {
     argument.set();
     // Check memory map.
     com2_println!("The kernel checks memory map.");
-    Argument::get()
-        .memory_map()
-        .iter()
-        .for_each(|descriptor| {
-            com2_println!("descriptor = {:#x?}", descriptor);
-        });
+    Argument::get().memory_map().iter().for_each(|descriptor| {
+        com2_println!("descriptor = {:#x?}", descriptor);
+    });
     // Initialize heap memory.
-    let heap_size: usize = memory::initialize(Argument::get().paging_mut(), Argument::get().memory_map(), Argument::get().heap_start());
+    let heap_size: usize = memory::initialize(
+        Argument::get().paging_mut(),
+        Argument::get().memory_map(),
+        Argument::get().heap_start(),
+    );
     // Initialize GDT.
     let mut gdt = memory::segment::descriptor::table::Controller::new();
     // Initialize IDT.
     let _idt = interrupt::descriptor::table::Controller::new(&mut gdt);
     // Initialize syscall.
-    syscall::initialize(Argument::get().cpuid(), gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
+    syscall::initialize(
+        Argument::get().cpuid(),
+        gdt.kernel_code_segment_selector(),
+        gdt.kernel_data_segment_selector(),
+        gdt.application_code_segment_selector(),
+        gdt.application_data_segment_selector(),
+    );
     // Initialize a current task.
     task::Controller::set_current();
     // Allow interruptions.
-    task::Controller::get_current_mut()
-        .unwrap()
-        .sti();
+    task::Controller::get_current_mut().unwrap().sti();
     // Check RSDP.
-    assert!(Argument::get()
-        .efi_system_table()
-        .rsdp()
-        .is_correct());
+    assert!(Argument::get().efi_system_table().rsdp().is_correct());
     // Set APIC.
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get().unwrap();
     let local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
@@ -85,11 +87,12 @@ fn main(argument: &'static mut Argument<'static>) {
             Some(event) => event.process(),
             None => x64::hlt(),
         }
-        loop_counter += if processor::Controller::get_all().all(|processor| processor.is_initialized()) {
-            1
-        } else {
-            0
-        };
+        loop_counter +=
+            if processor::Controller::get_all().all(|processor| processor.is_initialized()) {
+                1
+            } else {
+                0
+            };
         shutdown = 0x100 <= loop_counter;
     }
     // Stop RTC interruptions.
@@ -99,9 +102,7 @@ fn main(argument: &'static mut Argument<'static>) {
     // Stop APIC interruptions.
     local_apic_registers.disable_periodic_interrupt();
     // Disable all interruptions.
-    task::Controller::get_current_mut()
-        .unwrap()
-        .cli();
+    task::Controller::get_current_mut().unwrap().cli();
     // Print AP log.
     processor::Manager::finalize();
     // Shutdown.
@@ -120,8 +121,5 @@ fn main(argument: &'static mut Argument<'static>) {
 fn panic(panic: &PanicInfo) -> ! {
     com2_println!("KERNEL PANIC!!!");
     com2_println!("{}", panic);
-    Argument::get()
-        .efi_system_table()
-        .shutdown()
+    Argument::get().efi_system_table().shutdown()
 }
-

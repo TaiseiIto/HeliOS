@@ -10,10 +10,7 @@ pub mod msr;
 pub mod port;
 pub mod rflags;
 
-pub use {
-    cpuid::Cpuid,
-    rflags::Rflags,
-};
+pub use {cpuid::Cpuid, rflags::Rflags};
 
 /// # Halt
 /// ## References
@@ -34,4 +31,3 @@ pub fn pause() {
         asm!("pause");
     }
 }
-

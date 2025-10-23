@@ -3,11 +3,8 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
 use {
+    super::{Eax0x00000000, Return},
     alloc::collections::BTreeSet,
-    super::{
-        Eax0x00000000,
-        Return,
-    },
 };
 
 #[derive(Debug)]
@@ -29,10 +26,7 @@ impl Eax0x00000002 {
             let cache_and_tlb_information: BTreeSet<u8> = [eax, ebx, ecx, edx]
                 .into_iter()
                 .filter(|dword| dword & 0x80000000 == 0)
-                .flat_map(|dword| dword
-                    .to_le_bytes()
-                    .into_iter()
-                    .filter(|byte| *byte != 0))
+                .flat_map(|dword| dword.to_le_bytes().into_iter().filter(|byte| *byte != 0))
                 .collect();
             Self {
                 cache_and_tlb_information,
@@ -40,4 +34,3 @@ impl Eax0x00000002 {
         })
     }
 }
-

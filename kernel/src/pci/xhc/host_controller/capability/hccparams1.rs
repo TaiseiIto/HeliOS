@@ -21,4 +21,3 @@ pub struct Register {
     max_psa_size: u8,
     xecp: u16,
 }
-

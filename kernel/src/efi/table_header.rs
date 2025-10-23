@@ -1,7 +1,4 @@
-use core::{
-    fmt,
-    iter,
-};
+use core::{fmt, iter};
 
 /// # EFI_TABLE_HEADER
 /// ## References
@@ -22,12 +19,13 @@ struct Signature(u64);
 impl fmt::Debug for Signature {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         iter::once('"')
-            .chain(self.0
-                .to_le_bytes()
-                .into_iter()
-                .filter_map(|byte| char::from_u32(byte as u32)))
+            .chain(
+                self.0
+                    .to_le_bytes()
+                    .into_iter()
+                    .filter_map(|byte| char::from_u32(byte as u32)),
+            )
             .chain(iter::once('"'))
-            .fold(Ok(()), |result, character| result.and(write!(formatter, "{}", character)))
+            .try_fold((), |_, character| write!(formatter, "{}", character))
     }
 }
-

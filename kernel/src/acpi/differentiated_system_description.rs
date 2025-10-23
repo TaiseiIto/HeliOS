@@ -1,10 +1,6 @@
 use {
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # DSDT
@@ -22,9 +18,7 @@ impl Table {
         let definition_block: usize = table + size_of::<Self>();
         let definition_block: *const u8 = definition_block as *const u8;
         let definition_block_size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(definition_block, definition_block_size)
-        }
+        unsafe { slice::from_raw_parts(definition_block, definition_block_size) }
     }
 
     pub fn is_correct(&self) -> bool {
@@ -47,4 +41,3 @@ impl<'a> From<&'a Table> for &'a [u8] {
         (&table.header).into()
     }
 }
-

@@ -2,10 +2,7 @@
 //! ## References
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
-use {
-    bitfield_struct::bitfield,
-    super::super::Return,
-};
+use {super::super::Return, bitfield_struct::bitfield};
 
 #[derive(Debug)]
 pub struct EcxN {
@@ -29,13 +26,8 @@ impl EcxN {
                 let ebx: Ebx = ecxn.ebx().into();
                 let ecx: Ecx = ecxn.ecx().into();
                 let edx: Edx = ecxn.edx().into();
-                Some(Self {
-                    eax,
-                    ebx,
-                    ecx,
-                    edx,
-                })
-            },
+                Some(Self { eax, ebx, ecx, edx })
+            }
         }
     }
 }
@@ -63,14 +55,15 @@ struct Ecx {
     epc_section_property_encoding: u8,
     __: u8,
     #[bits(20)]
-    bits_31_12_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory: u32,
+    bits_31_12_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory:
+        u32,
 }
 
 #[bitfield(u32)]
 struct Edx {
     #[bits(20)]
-    bits_51_32_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory: u32,
+    bits_51_32_of_the_size_of_the_corresponding_epc_section_within_the_processor_reserved_memory:
+        u32,
     #[bits(12)]
     __: u16,
 }
-

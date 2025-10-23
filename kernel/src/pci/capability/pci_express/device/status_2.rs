@@ -7,4 +7,3 @@ use bitfield_struct::bitfield;
 pub struct Register {
     __: u16,
 }
-

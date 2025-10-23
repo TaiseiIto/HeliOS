@@ -10,4 +10,3 @@ pub struct Register {
     b2_b3: bool,
     bpcc_en: bool,
 }
-

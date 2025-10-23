@@ -7,47 +7,31 @@
 pub mod status_register;
 
 use {
+    crate::{com2_println, interrupt, task, x64, Argument},
     core::fmt,
-    crate::{
-        Argument,
-        com2_println,
-        interrupt,
-        task,
-        x64,
-    },
 };
 
 pub fn disable_periodic_interrupt() {
-    task::Controller::get_current_mut()
-        .unwrap()
-        .cli();
+    task::Controller::get_current_mut().unwrap().cli();
     interrupt::non_maskable::disable();
     status_register::B::read()
         .disable_periodic_interrupt()
         .write();
     interrupt::non_maskable::enable();
-    task::Controller::get_current_mut()
-        .unwrap()
-        .sti();
+    task::Controller::get_current_mut().unwrap().sti();
 }
 
 pub fn enable_periodic_interrupt(hz: usize) -> u8 {
     let irq: u8 = 8;
-    task::Controller::get_current_mut()
-        .unwrap()
-        .cli();
+    task::Controller::get_current_mut().unwrap().cli();
     interrupt::non_maskable::disable();
-    status_register::A::read()
-        .set_frequency(hz)
-        .write();
+    status_register::A::read().set_frequency(hz).write();
     status_register::B::read()
         .enable_periodic_interrupt()
         .write();
     end_interruption();
     interrupt::non_maskable::enable();
-    task::Controller::get_current_mut()
-        .unwrap()
-        .sti();
+    task::Controller::get_current_mut().unwrap().sti();
     irq
 }
 
@@ -102,7 +86,8 @@ impl Time {
             .xsdt()
             .fadt()
             .century();
-        let century: Option<u8> = (century != 0).then(|| status_register_b.binarize(x64::cmos::read_u8(century)));
+        let century: Option<u8> =
+            (century != 0).then(|| status_register_b.binarize(x64::cmos::read_u8(century)));
         let year: usize = (year as usize) + 100 * (century.unwrap_or(0) as usize);
         Self {
             second,
@@ -113,13 +98,16 @@ impl Time {
             year,
         }
     }
-
 }
 
 impl fmt::Debug for Time {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let day_of_week: DayOfWeek = self.into();
-        write!(formatter, "{:#?}/{:#?}/{:#?} {:#?} {:#?}:{:#?}:{:#?}", self.year, self.month, self.day, day_of_week, self.hour, self.minute, self.second)
+        write!(
+            formatter,
+            "{:#?}/{:#?}/{:#?} {:#?} {:#?}:{:#?}:{:#?}",
+            self.year, self.month, self.day, day_of_week, self.hour, self.minute, self.second
+        )
     }
 }
 
@@ -165,4 +153,3 @@ impl From<&Time> for DayOfWeek {
         }
     }
 }
-

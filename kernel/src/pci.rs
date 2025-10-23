@@ -15,20 +15,13 @@ pub mod status;
 pub mod xhc;
 
 use {
+    crate::x64,
     alloc::{
-        collections::{
-            btree_map::BTreeMap,
-            btree_set::BTreeSet,
-        },
+        collections::{btree_map::BTreeMap, btree_set::BTreeSet},
         vec::Vec,
     },
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem,
-        ops,
-    },
-    crate::x64,
+    core::{fmt, mem, ops},
 };
 
 /// # CFGADR - Configuration Address Register
@@ -103,9 +96,7 @@ pub struct Configuration {
 impl Configuration {
     pub fn read() -> Self {
         let buses: BTreeMap<u8, Bus> = BTreeMap::new();
-        let mut pci = Self {
-            buses,
-        };
+        let mut pci = Self { buses };
         let bus_number: u8 = 0;
         let device_number: u8 = 0;
         let function_number: u8 = 0;
@@ -114,9 +105,7 @@ impl Configuration {
     }
 
     pub fn reset(&mut self) {
-        self.buses
-            .values_mut()
-            .for_each(|bus| bus.reset())
+        self.buses.values_mut().for_each(|bus| bus.reset())
     }
 
     fn add(&mut self, bus_number: u8, device_number: u8, function_number: u8, function: Function) {
@@ -140,28 +129,38 @@ impl Configuration {
                     class::Code::HostBridge => {
                         let bus_number: u8 = function_number;
                         let function_number: u8 = 0;
-                        next_addresses
-                            .extend(Address::device_range()
-                                .map(|device_number| (bus_number, device_number, function_number)));
-                    },
-                    class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => if let Header::Type1(type1) = function.header() {
-                        let bus_number: u8 = type1.secondary_bus_number;
-                        let function_number: u8 = 0;
-                        next_addresses
-                            .extend(Address::device_range()
-                                .map(|device_number| (bus_number, device_number, function_number)));
-                    },
-                    _ => {},
+                        next_addresses.extend(
+                            Address::device_range()
+                                .map(|device_number| (bus_number, device_number, function_number)),
+                        );
+                    }
+                    class::Code::Pci2PciBridge | class::Code::SubtractiveDecodePci2PciBridge => {
+                        if let Header::Type1(type1) = function.header() {
+                            let bus_number: u8 = type1.secondary_bus_number;
+                            let function_number: u8 = 0;
+                            next_addresses.extend(
+                                Address::device_range().map(|device_number| {
+                                    (bus_number, device_number, function_number)
+                                }),
+                            );
+                        }
+                    }
+                    _ => {}
                 }
-                if function_number == 0 && function.header().header_type().is_multi_function_device() {
-                    next_addresses
-                        .extend(Address::function_range()
-                            .map(|function_number| (bus_number, device_number, function_number)));
+                if function_number == 0
+                    && function.header().header_type().is_multi_function_device()
+                {
+                    next_addresses.extend(
+                        Address::function_range()
+                            .map(|function_number| (bus_number, device_number, function_number)),
+                    );
                 }
                 self.add(bus_number, device_number, function_number, function);
-                next_addresses
-                    .into_iter()
-                    .for_each(|(bus_number, device_number, function_number)| self.scan(bus_number, device_number, function_number));
+                next_addresses.into_iter().for_each(
+                    |(bus_number, device_number, function_number)| {
+                        self.scan(bus_number, device_number, function_number)
+                    },
+                );
             }
         }
     }
@@ -171,10 +170,11 @@ impl fmt::Debug for Configuration {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_map()
-            .entries(self
-                .buses
-                .iter()
-                .map(|(bus_number, bus)| (*bus_number, BusWithAddress::new(*bus_number, bus))))
+            .entries(
+                self.buses
+                    .iter()
+                    .map(|(bus_number, bus)| (*bus_number, BusWithAddress::new(*bus_number, bus))),
+            )
             .finish()
     }
 }
@@ -202,9 +202,7 @@ impl Bus {
     }
 
     fn reset(&mut self) {
-        self.devices
-            .values_mut()
-            .for_each(|device| device.reset());
+        self.devices.values_mut().for_each(|device| device.reset());
     }
 }
 
@@ -215,10 +213,7 @@ pub struct BusWithAddress<'a> {
 
 impl<'a> BusWithAddress<'a> {
     fn new(bus_number: u8, bus: &'a Bus) -> Self {
-        Self {
-            bus_number,
-            bus,
-        }
+        Self { bus_number, bus }
     }
 }
 
@@ -229,13 +224,14 @@ impl fmt::Debug for BusWithAddress<'_> {
             .entries({
                 let Self {
                     bus_number,
-                    bus: Bus {
-                        devices,
-                    },
+                    bus: Bus { devices },
                 } = self;
-                devices
-                    .iter()
-                    .map(|(device_number, device)| (*device_number, DeviceWithAddress::new(*bus_number, *device_number, device)))
+                devices.iter().map(|(device_number, device)| {
+                    (
+                        *device_number,
+                        DeviceWithAddress::new(*bus_number, *device_number, device),
+                    )
+                })
             })
             .finish()
     }
@@ -251,14 +247,11 @@ pub struct Device {
 
 impl Device {
     fn add(&mut self, function_number: u8, function: Function) {
-        self.functions
-            .insert(function_number, function);
+        self.functions.insert(function_number, function);
     }
 
     fn has(&self, function_number: u8) -> bool {
-        self.functions
-            .get(&function_number)
-            .is_some()
+        self.functions.get(&function_number).is_some()
     }
 
     fn reset(&mut self) {
@@ -292,13 +285,19 @@ impl fmt::Debug for DeviceWithAddress<'_> {
                 let Self {
                     bus_number,
                     device_number,
-                    device: Device {
-                        functions,
-                    },
+                    device: Device { functions },
                 } = self;
-                functions
-                    .iter()
-                    .map(|(function_number, function)| (*function_number, FunctionWithAddress::new(*bus_number, *device_number, *function_number, function)))
+                functions.iter().map(|(function_number, function)| {
+                    (
+                        *function_number,
+                        FunctionWithAddress::new(
+                            *bus_number,
+                            *device_number,
+                            *function_number,
+                            function,
+                        ),
+                    )
+                })
             })
             .finish()
     }
@@ -324,14 +323,9 @@ impl Function {
             .filter(|register| register % 4 == 0)
             .map(|register| Address::create(bus, device, function, register).read())
             .collect();
-        let space: [u32; Self::LENGTH] = space
-            .try_into()
-            .unwrap();
+        let space: [u32; Self::LENGTH] = space.try_into().unwrap();
         let vendor_id: u16 = (space[0] & 0x0000ffff) as u16;
-        (vendor_id != 0xffff)
-            .then_some(Self {
-                space
-            })
+        (vendor_id != 0xffff).then_some(Self { space })
     }
 
     pub fn reset(&self) {
@@ -402,7 +396,8 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                 let cardbus_cis_pointer: u32 = type0.cardbus_cis_pointer;
                 let subsystem_vendor_id: u16 = type0.subsystem_vendor_id;
                 let subsystem_id: u16 = type0.subsystem_id;
-                let expansion_rom_base_address: expansion_rom_base_address::Register = type0.expansion_rom_base_address;
+                let expansion_rom_base_address: expansion_rom_base_address::Register =
+                    type0.expansion_rom_base_address;
                 let interrupt_line: u8 = type0.interrupt_line;
                 let interrupt_pin: u8 = type0.interrupt_pin;
                 let min_gnt: u8 = type0.min_gnt;
@@ -429,7 +424,7 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                     .field("interrupt_pin", &interrupt_pin)
                     .field("min_gnt", &min_gnt)
                     .field("min_lat", &min_lat)
-            },
+            }
             Header::Type1(type1) => {
                 let vendor_id: u16 = type1.vendor_id;
                 let device_id: u16 = type1.device_id;
@@ -453,11 +448,14 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                 let memory_limit: u16 = type1.memory_limit;
                 let prefetchable_memory_base: u16 = type1.prefetchable_memory_base;
                 let prefetchable_memory_limit: u16 = type1.prefetchable_memory_limit;
-                let prefetchable_memory_base_upper_32bits: u32 = type1.prefetchable_memory_base_upper_32bits;
-                let prefetchable_memory_limit_upper_32bits: u32 = type1.prefetchable_memory_limit_upper_32bits;
+                let prefetchable_memory_base_upper_32bits: u32 =
+                    type1.prefetchable_memory_base_upper_32bits;
+                let prefetchable_memory_limit_upper_32bits: u32 =
+                    type1.prefetchable_memory_limit_upper_32bits;
                 let io_base_upper_16bits: u16 = type1.io_base_upper_16bits;
                 let io_limit_upper_16bits: u16 = type1.io_limit_upper_16bits;
-                let expantion_rom_base_address: expansion_rom_base_address::Register = type1.expantion_rom_base_address;
+                let expantion_rom_base_address: expansion_rom_base_address::Register =
+                    type1.expantion_rom_base_address;
                 let interrupt_line: u8 = type1.interrupt_line;
                 let interrupt_pin: u8 = type1.interrupt_pin;
                 let bridge_control: bridge_control::Register = type1.bridge_control;
@@ -485,8 +483,14 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                     .field("memory_limit", &memory_limit)
                     .field("prefetchable_memory_base", &prefetchable_memory_base)
                     .field("prefetchable_memory_limit", &prefetchable_memory_limit)
-                    .field("prefetchable_memory_base_upper_32bits", &prefetchable_memory_base_upper_32bits)
-                    .field("prefetchable_memory_limit_upper_32bits", &prefetchable_memory_limit_upper_32bits)
+                    .field(
+                        "prefetchable_memory_base_upper_32bits",
+                        &prefetchable_memory_base_upper_32bits,
+                    )
+                    .field(
+                        "prefetchable_memory_limit_upper_32bits",
+                        &prefetchable_memory_limit_upper_32bits,
+                    )
                     .field("io_base_upper_16bits", &io_base_upper_16bits)
                     .field("io_limit_upper_16bits", &io_limit_upper_16bits)
                     .field("capabilities", &capabilities)
@@ -494,7 +498,7 @@ impl fmt::Debug for FunctionWithAddress<'_> {
                     .field("interrupt_line", &interrupt_line)
                     .field("interrupt_pin", &interrupt_pin)
                     .field("bridge_control", &bridge_control)
-            },
+            }
         };
         if self.function.header().class_code() == class::Code::UsbXhc {
             let xhc: Result<xhc::Registers, ()> = self.function.try_into();
@@ -532,7 +536,8 @@ impl Header<'_> {
         match self {
             Self::Type0(type0) => type0.class_code.clone(),
             Self::Type1(type1) => type1.class_code.clone(),
-        }.into()
+        }
+        .into()
     }
 
     pub fn header_type(&self) -> header_type::Register {
@@ -591,9 +596,7 @@ pub struct Type0 {
 impl Type0 {
     fn index2address(&self) -> base::Index2Address {
         let base_address_registers: [u32; 6] = self.base_address_registers;
-        base_address_registers
-            .as_slice()
-            .into()
+        base_address_registers.as_slice().into()
     }
 }
 
@@ -603,9 +606,7 @@ impl<'a> TryFrom<&'a Function> for &'a Type0 {
     fn try_from(function: &'a Function) -> Result<Self, Self::Error> {
         let function: *const Function = function as *const Function;
         let type0: *const Type0 = function as *const Type0;
-        let type0: &Type0 = unsafe {
-            &*type0
-        };
+        let type0: &Type0 = unsafe { &*type0 };
         let header_type: header_type::Register = type0.header_type;
         match header_type.into() {
             header_type::Type::Zero => Ok(type0),
@@ -656,9 +657,7 @@ pub struct Type1 {
 impl Type1 {
     fn index2address(&self) -> base::Index2Address {
         let base_address_registers: [u32; 2] = self.base_address_registers;
-        base_address_registers
-            .as_slice()
-            .into()
+        base_address_registers.as_slice().into()
     }
 }
 
@@ -668,9 +667,7 @@ impl<'a> TryFrom<&'a Function> for &'a Type1 {
     fn try_from(function: &'a Function) -> Result<Self, Self::Error> {
         let function: *const Function = function as *const Function;
         let type1: *const Type1 = function as *const Type1;
-        let type1: &Type1 = unsafe {
-            &*type1
-        };
+        let type1: &Type1 = unsafe { &*type1 };
         let header_type: header_type::Register = type1.header_type;
         match header_type.into() {
             header_type::Type::Zero => Err(()),
@@ -678,4 +675,3 @@ impl<'a> TryFrom<&'a Function> for &'a Type1 {
         }
     }
 }
-

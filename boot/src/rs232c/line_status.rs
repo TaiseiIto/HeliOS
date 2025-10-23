@@ -21,4 +21,3 @@ impl Register {
         self.empty_transmitter_holding()
     }
 }
-

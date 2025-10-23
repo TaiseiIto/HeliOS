@@ -1,10 +1,5 @@
 include $(shell git rev-parse --show-toplevel)/.make/header.mk
 
-SUDO=$(shell if [ $$(id -u) -eq 0 ] && [ -n "$$(which sudo)" ]; then echo sudo; fi)
-
-# An OS image file name
-TARGET=$(PRODUCT).img
-
 # block size in the OS image
 BLOCK_SIZE=4K
 
@@ -13,11 +8,11 @@ BLOCK_COUNT=16K
 
 MEDIA_SIZE=$(shell numfmt --to=iec $$(($$(numfmt --from=iec $(BLOCK_COUNT)) * $$(numfmt --from=iec $(BLOCK_SIZE)))))
 
-# A mount directory to build the OS image
-MOUNT_DIRECTORY=$(PRODUCT).mnt
+# Target directory where the OS will be built.
+TARGET=$(PRODUCT)
 
 # Operating system directory
-OS_DIRECTORY=$(MOUNT_DIRECTORY)/$(PRODUCT)
+OS_DIRECTORY=$(TARGET)/$(PRODUCT)
 
 # Application processor boot loader
 PROCESSOR_DIRECTORY=processor
@@ -34,7 +29,7 @@ PROCESSOR_KERNEL=$(shell echo $(PROCESSOR_KERNEL_DESTINATION) | cut -d '/' -f 2-
 
 # Applications
 APPLICATION_SOURCE_DIRECTORY=applications
-APPLICATION_DESTINATION_DIRECTORY=$(MOUNT_DIRECTORY)/applications
+APPLICATION_DESTINATION_DIRECTORY=$(TARGET)/applications
 APPLICATIONS=$(wildcard $(APPLICATION_SOURCE_DIRECTORY)/*)
 APPLICATION_DESTINATIONS=$(addprefix $(APPLICATION_DESTINATION_DIRECTORY)/, $(addsuffix .elf, $(notdir $(APPLICATIONS))))
 
@@ -42,7 +37,7 @@ APPLICATION_DESTINATIONS=$(addprefix $(APPLICATION_DESTINATION_DIRECTORY)/, $(ad
 BOOTLOADER=EFI/BOOT/BOOTX64.EFI
 BOOTLOADER_DIRECTORY=boot
 BOOTLOADER_SOURCE=$(call SUB_TARGET, $(BOOTLOADER_DIRECTORY))
-BOOTLOADER_DESTINATION=$(MOUNT_DIRECTORY)/$(BOOTLOADER)
+BOOTLOADER_DESTINATION=$(TARGET)/$(BOOTLOADER)
 
 # A kernel file path
 KERNEL_DIRECTORY=kernel
@@ -59,28 +54,7 @@ DEBUG_PORT=2159
 # Telnet port to stop QEMU.
 TELNET_PORT=23
 
-# Build an OS image runs on QEMU.
-# Usage: $ make
 $(TARGET): $(call SOURCE_FILES, .)
-	rm -f $@
-	if mountpoint -q $(MOUNT_DIRECTORY); then umount -l $(MOUNT_DIRECTORY); fi
-	rm -rf $(MOUNT_DIRECTORY)
-	dd if=/dev/zero of=$@ ibs=$(BLOCK_SIZE) count=$(BLOCK_COUNT)
-	mkfs.fat $@
-	mkdir $(MOUNT_DIRECTORY)
-	$(SUDO) mount -o loop $@ $(MOUNT_DIRECTORY)
-	$(SUDO) make $(PROCESSOR_BOOT_LOADER_DESTINATION)
-	$(SUDO) make $(PROCESSOR_KERNEL_DESTINATION)
-	$(SUDO) make $(BOOTLOADER_DESTINATION) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
-	$(SUDO) make $(KERNEL_DESTINATION)
-	for application in $(APPLICATIONS); do make -C $$application; done
-	$(SUDO) mkdir -p $(APPLICATION_DESTINATION_DIRECTORY)
-	$(SUDO) make $(APPLICATION_DESTINATIONS)
-	$(SUDO) umount $(MOUNT_DIRECTORY)
-	rm -rf $(MOUNT_DIRECTORY)
-
-$(MOUNT_DIRECTORY): $(call SOURCE_FILES, .)
-	if mountpoint -q $@; then umount -l $@; fi
 	rm -rf $@
 	mkdir $@
 	make $(PROCESSOR_BOOT_LOADER_DESTINATION)
@@ -92,32 +66,32 @@ $(MOUNT_DIRECTORY): $(call SOURCE_FILES, .)
 	make $(APPLICATION_DESTINATIONS)
 
 $(APPLICATION_DESTINATION_DIRECTORY)/%.elf:
-	$(SUDO) cp $(call SUB_TARGET, $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@))) $@
+	cp $(call SUB_TARGET, $(APPLICATION_SOURCE_DIRECTORY)/$(basename $(notdir $@))) $@
 
 $(PROCESSOR_BOOT_LOADER_DESTINATION): $(PROCESSOR_BOOT_LOADER_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(PROCESSOR_BOOT_LOADER_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_BOOT_LOADER_DIRECTORY))
 	make -C $(PROCESSOR_BOOT_LOADER_DIRECTORY)
 
 $(PROCESSOR_KERNEL_DESTINATION): $(PROCESSOR_KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(PROCESSOR_KERNEL_SOURCE): $(call SOURCE_FILES, $(PROCESSOR_KERNEL_DIRECTORY))
 	make -C $(PROCESSOR_KERNEL_DIRECTORY)
 
 $(BOOTLOADER_DESTINATION): $(BOOTLOADER_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(BOOTLOADER_SOURCE): $(call SOURCE_FILES, $(BOOTLOADER_DIRECTORY))
 	make -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) KERNEL=$(KERNEL)
 
 $(KERNEL_DESTINATION): $(KERNEL_SOURCE)
-	$(SUDO) mkdir -p $(dir $@)
-	$(SUDO) cp $^ $@
+	mkdir -p $(dir $@)
+	cp $^ $@
 
 $(KERNEL_SOURCE): $(call SOURCE_FILES, $(KERNEL_DIRECTORY))
 	make -C $(KERNEL_DIRECTORY)
@@ -142,6 +116,14 @@ clippy:
 	make clippy -C $(KERNEL_DIRECTORY)
 	make clippy -C $(PROCESSOR_KERNEL_DIRECTORY)
 	for application in $(APPLICATIONS); do make clippy -C $$application; done
+
+# Format rust codes.
+.PHONY: fmt
+fmt:
+	make fmt -C $(BOOTLOADER_DIRECTORY) PROCESSOR_BOOT_LOADER=$(PROCESSOR_BOOT_LOADER) PROCESSOR_KERNEL=$(PROCESSOR_KERNEL) KERNEL=$(KERNEL)
+	make fmt -C $(KERNEL_DIRECTORY)
+	make fmt -C $(PROCESSOR_KERNEL_DIRECTORY)
+	for application in $(APPLICATIONS); do make fmt -C $$application; done
 
 # Debug the OS on QEMU by GDB.
 # Usage: make debug
@@ -183,7 +165,9 @@ delete_environment:
 # Get development permission.
 # Only developers can execute it.
 # Users don:t have to do it.
-# Usage: $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
+# Usage
+# $ git config user.email someone@some.domain
+# $ make permission SSHKEY=/path/to/ssh/key GPGKEY=/path/to/.gnupg
 .PHONY: permission
 permission:
 	make permission -C .docker SSHKEY=$(abspath $(SSHKEY)) GPGKEY=$(abspath $(GPGKEY))
@@ -221,21 +205,16 @@ stop_on_tmux:
 	-make stop -C .qemu TELNET_PORT=$(TELNET_PORT)
 
 # Get an OS directory path.
-# Usage: $ make mount_directory
-.PHONY: mount_directory
-mount_directory:
-	@echo $(abspath $(MOUNT_DIRECTORY))
+# Usage: $ make os_path
+.PHONY: os_path
+os_path:
+	@echo $(abspath $(TARGET))
 
 # Get an OS media size.
 # Usage: $ make media_size
 .PHONY: media_size
 media_size:
 	@echo $(MEDIA_SIZE)
-
-# Build an OS directory to run on VirtualBox or VMware.
-# Usage: $ make tree
-.PHONY: tree
-tree: $(MOUNT_DIRECTORY)
 
 # Touch the all source files.
 .PHONY: touch

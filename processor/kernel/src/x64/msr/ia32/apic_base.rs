@@ -1,11 +1,7 @@
 use {
-    bitfield_struct::bitfield,
+    super::super::{super::Cpuid, rdmsr, wrmsr},
     crate::interrupt,
-    super::super::{
-        rdmsr,
-        super::Cpuid,
-        wrmsr,
-    },
+    bitfield_struct::bitfield,
 };
 
 /// # IA32_APIC_BASE
@@ -31,26 +27,20 @@ impl ApicBase {
     }
 
     pub fn get(cpuid: &Cpuid) -> Option<Self> {
-        cpuid
-            .supports_apic()
-            .then(|| rdmsr(Self::ECX)
-                .into())
+        cpuid.supports_apic().then(|| rdmsr(Self::ECX).into())
     }
 
     pub fn registers(&self) -> &interrupt::apic::local::Registers {
         let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
-        let registers: *const interrupt::apic::local::Registers = registers as *const interrupt::apic::local::Registers;
-        unsafe {
-            &*registers
-        }
+        let registers: *const interrupt::apic::local::Registers =
+            registers as *const interrupt::apic::local::Registers;
+        unsafe { &*registers }
     }
 
     pub fn registers_mut(&mut self) -> &mut interrupt::apic::local::Registers {
         let registers: usize = (self.apic_base() as usize) << Self::APIC_BASE_OFFSET;
-        let registers: *mut interrupt::apic::local::Registers = registers as *mut interrupt::apic::local::Registers;
-        unsafe {
-            &mut *registers
-        }
+        let registers: *mut interrupt::apic::local::Registers =
+            registers as *mut interrupt::apic::local::Registers;
+        unsafe { &mut *registers }
     }
 }
-

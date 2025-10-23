@@ -24,4 +24,3 @@ impl Register {
         (self.num_tim_cap() as usize) + 1
     }
 }
-

@@ -1,10 +1,7 @@
 use {
+    super::super::{DeliveryMode, TriggerMode},
     bitfield_struct::bitfield,
     core::fmt,
-    super::super::{
-        DeliveryMode,
-        TriggerMode,
-    },
 };
 
 #[derive(Clone, Copy)]
@@ -20,18 +17,31 @@ impl FatRegister {
         *self.register_mut() = register.into();
     }
 
-    pub fn set(&mut self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) {
+    pub fn set(
+        &mut self,
+        vector: u8,
+        delivery_mode: DeliveryMode,
+        interrupt_input_pin_polarity: InterruptInputPinPolarity,
+        trigger_mode: TriggerMode,
+        mask: Mask,
+        timer_mode: TimerMode,
+    ) {
         let register: Register = self.register;
-        let register: Register = register.overwrite(vector, delivery_mode, interrupt_input_pin_polarity, trigger_mode, mask, timer_mode);
+        let register: Register = register.overwrite(
+            vector,
+            delivery_mode,
+            interrupt_input_pin_polarity,
+            trigger_mode,
+            mask,
+            timer_mode,
+        );
         *self.register_mut() = register.into();
     }
 
     fn register_mut(&mut self) -> &mut u32 {
         let address: *mut Self = self as *mut Self;
         let address: *mut u32 = address as *mut u32;
-        unsafe {
-            &mut *address
-        }
+        unsafe { &mut *address }
     }
 }
 
@@ -51,7 +61,10 @@ impl fmt::Debug for FatRegister {
             .field("vector", &vector)
             .field("delivery_mode", &delivery_mode)
             .field("delivery_status", &delivery_status)
-            .field("interrupt_input_pin_polarity", &interrupt_input_pin_polarity)
+            .field(
+                "interrupt_input_pin_polarity",
+                &interrupt_input_pin_polarity,
+            )
             .field("remote_irr", &remote_irr)
             .field("trigger_mode", &trigger_mode)
             .field("mask", &mask)
@@ -81,7 +94,15 @@ struct Register {
 }
 
 impl Register {
-    fn overwrite(self, vector: u8, delivery_mode: DeliveryMode, interrupt_input_pin_polarity: InterruptInputPinPolarity, trigger_mode: TriggerMode, mask: Mask, timer_mode: TimerMode) -> Self {
+    fn overwrite(
+        self,
+        vector: u8,
+        delivery_mode: DeliveryMode,
+        interrupt_input_pin_polarity: InterruptInputPinPolarity,
+        trigger_mode: TriggerMode,
+        mask: Mask,
+        timer_mode: TimerMode,
+    ) -> Self {
         self.with_vector(vector)
             .with_delivery_mode(delivery_mode.into())
             .with_interrupt_input_pin_polarity(interrupt_input_pin_polarity.into())
@@ -165,4 +186,3 @@ impl From<TimerMode> for u8 {
         }
     }
 }
-

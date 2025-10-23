@@ -106,5 +106,3 @@ impl From<TriggerMode> for bool {
         }
     }
 }
-
-

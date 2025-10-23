@@ -4,10 +4,7 @@ pub mod link;
 pub mod root;
 pub mod slot;
 
-use {
-    core::fmt,
-    super::Header,
-};
+use {super::Header, core::fmt};
 
 /// # PCI Express Capability Structure
 /// ## Referneces
@@ -86,4 +83,3 @@ impl fmt::Debug for Structure {
             .finish()
     }
 }
-

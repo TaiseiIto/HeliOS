@@ -1,11 +1,7 @@
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::hardware_unit_definition,
+    alloc::vec::Vec,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Reserved Memory Region Reporting Structure
@@ -24,14 +20,10 @@ pub struct Structure {
 impl Structure {
     pub fn bytes(&self) -> &[u8] {
         let structure: *const Self = self as *const Self;
-        let first_byte: *const Self = unsafe {
-            structure.add(1)
-        };
+        let first_byte: *const Self = unsafe { structure.add(1) };
         let first_byte: *const u8 = first_byte as *const u8;
         let size: usize = self.length() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(first_byte, size)
-        }
+        unsafe { slice::from_raw_parts(first_byte, size) }
     }
 
     pub fn length(&self) -> usize {
@@ -50,9 +42,7 @@ impl fmt::Debug for Structure {
         let segment_number: u16 = self.segment_number;
         let base_address: u64 = self.base_address;
         let limit_address: u64 = self.limit_address;
-        let scopes: Vec<&hardware_unit_definition::scope::Structure> = self
-            .iter()
-            .collect();
+        let scopes: Vec<&hardware_unit_definition::scope::Structure> = self.iter().collect();
         formatter
             .debug_struct("Structure")
             .field("structure_type", &structure_type)
@@ -64,4 +54,3 @@ impl fmt::Debug for Structure {
             .finish()
     }
 }
-

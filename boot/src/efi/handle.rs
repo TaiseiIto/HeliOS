@@ -1,7 +1,4 @@
-use {
-    core::fmt,
-    super::Void,
-};
+use {super::Void, core::fmt};
 
 /// # EFI_HANDLE
 /// ## References
@@ -15,4 +12,3 @@ impl fmt::Debug for Handle<'_> {
         void.fmt(formatter)
     }
 }
-

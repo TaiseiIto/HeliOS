@@ -8,6 +8,5 @@ pub struct Register {
     #[bits(14)]
     microframe_index: u16,
     #[bits(18)]
-    __: u32
+    __: u32,
 }
-

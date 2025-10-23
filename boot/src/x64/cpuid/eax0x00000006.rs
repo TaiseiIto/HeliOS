@@ -3,11 +3,8 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol. 2A 3-217
 
 use {
+    super::{Eax0x00000000, Return},
     bitfield_struct::bitfield,
-    super::{
-        Eax0x00000000,
-        Return,
-    },
 };
 
 #[derive(Debug)]
@@ -32,12 +29,7 @@ impl Eax0x00000006 {
             let ebx: Ebx = eax0x00000006.ebx().into();
             let ecx: Ecx = eax0x00000006.ecx().into();
             let edx: Edx = eax0x00000006.edx().into();
-            Self {
-                eax,
-                ebx,
-                ecx,
-                edx,
-            }
+            Self { eax, ebx, ecx, edx }
         })
     }
 }
@@ -94,7 +86,7 @@ struct Ecx {
 }
 
 #[bitfield(u32)]
-struct Edx  {
+struct Edx {
     bitmap_of_supported_hardware_feedback_interface_capabilities: u8,
     #[bits(4)]
     enumerates_the_size_of_the_hardware_feedback_interface_structure_in_number_of_4_kb_pages: u8,
@@ -102,4 +94,3 @@ struct Edx  {
     __: u8,
     index_of_this_logical_processors_row_in_the_hardware_feedback_interface_structure: u16,
 }
-

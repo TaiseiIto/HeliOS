@@ -10,4 +10,3 @@ pub struct Register {
     #[bits(58)]
     dcbaap: u64,
 }
-

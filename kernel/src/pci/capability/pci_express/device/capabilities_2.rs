@@ -16,16 +16,15 @@ pub struct Register {
     cas_completer_supported_128bit: bool,
     no_ro_enabled_prpr_passing: bool,
     ltr_mechanism_supported: bool,
-	#[bits(2)]
+    #[bits(2)]
     tph_completer_supported: u8,
-	#[bits(4)]
-	__: u8,
-	#[bits(2)]
+    #[bits(4)]
+    __: u8,
+    #[bits(2)]
     obff_supported: u8,
     extended_fmt_field_suported: bool,
     end_end_tlp_prefix_supported: bool,
-	#[bits(2)]
+    #[bits(2)]
     max_end_end_tlp_prefixes: u8,
     __: u8,
 }
-

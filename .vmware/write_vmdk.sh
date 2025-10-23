@@ -6,7 +6,7 @@ vmdk=$virtual_machine_directory/$(sed -n "s/^.*\s*=\s*\"\(.*\.vmdk\)\"$/\1/p" $v
 vhd=$(echo $vmdk | sed "s/vmdk$/vhd/")
 nbd=/dev/nbd0
 destination_path=destination
-source_path=$(make mount_directory -C .. -s)
+source_path=$(make os_path -C .. -s)
 media_size=$(make media_size -C .. -s)
 
 sudo modprobe nbd max_part=16

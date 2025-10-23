@@ -18,4 +18,3 @@ pub struct Register {
     data_scale: u8,
     pme_status: bool,
 }
-

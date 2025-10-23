@@ -18,4 +18,3 @@ pub struct Register {
     #[bits(4)]
     compliance_preset_deemphasis: u8,
 }
-

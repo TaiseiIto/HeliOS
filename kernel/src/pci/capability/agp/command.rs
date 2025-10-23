@@ -21,4 +21,3 @@ pub struct Register {
     __: u8,
     prq: u8,
 }
-

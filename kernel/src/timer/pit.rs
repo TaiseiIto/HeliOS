@@ -3,12 +3,7 @@
 //! * [Programmable Interval Timer](https://wiki.osdev.org/Programmable_Interval_Timer)
 //! * [8254 PROGRAMMABLE INTERVAL TIMER](https://www.scs.stanford.edu/10wi-cs140/pintos/specs/8254.pdf)
 
-use crate::{
-    Argument,
-    com2_println,
-    interrupt,
-    x64,
-};
+use crate::{com2_println, interrupt, x64, Argument};
 
 pub mod control;
 
@@ -23,7 +18,13 @@ pub fn enable_periodic_interrupt(hz: usize) -> u8 {
     let low: u8 = divisor as u8;
     let high: u8 = (divisor >> u8::BITS) as u8;
     let bcd: bool = false;
-    control::Register::create(bcd, control::Mode::RateGenerator, control::Access::LowAndHigh, control::Selector::Counter(counter)).set();
+    control::Register::create(
+        bcd,
+        control::Mode::RateGenerator,
+        control::Access::LowAndHigh,
+        control::Selector::Counter(counter),
+    )
+    .set();
     x64::port::outb(counter_port(counter), low);
     x64::port::outb(counter_port(counter), high);
     irq
@@ -46,4 +47,3 @@ pub fn initialize(local_apic_id: u8) {
 fn counter_port(index: u8) -> u16 {
     (index as u16) + 0x40
 }
-

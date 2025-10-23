@@ -3,21 +3,15 @@
 //! * [Rust atomic and locks](https://www.oreilly.co.jp/books/9784814400515/) Chapter 4
 
 use {
+    crate::x64,
     core::{
         cell::UnsafeCell,
-        ops::{
-            Deref,
-            DerefMut,
-        },
+        ops::{Deref, DerefMut},
         sync::atomic::{
             AtomicBool,
-            Ordering::{
-                Acquire,
-                Release,
-            },
+            Ordering::{Acquire, Release},
         },
     },
-    crate::x64,
 };
 
 #[derive(Debug)]
@@ -29,17 +23,13 @@ impl<T> Deref for Guard<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        unsafe {
-            &*self.lock.value.get()
-        }
+        unsafe { &*self.lock.value.get() }
     }
 }
 
 impl<T> DerefMut for Guard<'_, T> {
     fn deref_mut(&mut self) -> &mut T {
-        unsafe {
-            &mut *self.lock.value.get()
-        }
+        unsafe { &mut *self.lock.value.get() }
     }
 }
 
@@ -49,11 +39,9 @@ impl<T> Drop for Guard<'_, T> {
     }
 }
 
-unsafe impl<T> Send for Guard<'_, T> where T: Send {
-}
+unsafe impl<T> Send for Guard<'_, T> where T: Send {}
 
-unsafe impl<T> Sync for Guard<'_, T> where T: Sync {
-}
+unsafe impl<T> Sync for Guard<'_, T> where T: Sync {}
 
 #[derive(Debug)]
 pub struct Lock<T> {
@@ -66,10 +54,7 @@ impl<T> Lock<T> {
     pub const fn new(value: T) -> Self {
         let locked = AtomicBool::new(false);
         let value = UnsafeCell::new(value);
-        Self {
-            locked,
-            value,
-        }
+        Self { locked, value }
     }
 
     pub fn lock(&self) -> Guard<T> {
@@ -77,9 +62,7 @@ impl<T> Lock<T> {
             x64::pause();
         }
         let lock = self;
-        Guard {
-            lock,
-        }
+        Guard { lock }
     }
 
     pub fn unlock(&self) {
@@ -87,6 +70,4 @@ impl<T> Lock<T> {
     }
 }
 
-unsafe impl<T> Sync for Lock<T> where T: Send {
-}
-
+unsafe impl<T> Sync for Lock<T> where T: Send {}

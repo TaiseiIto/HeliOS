@@ -11,15 +11,9 @@ pub mod port;
 pub mod rflags;
 pub mod task;
 
-pub use {
-    cpuid::Cpuid,
-    rflags::Rflags,
-};
+pub use {cpuid::Cpuid, rflags::Rflags};
 
-use {
-    core::arch::asm,
-    crate::memory,
-};
+use {crate::memory, core::arch::asm};
 
 /// # Clear Interrupt Flag
 /// ## References
@@ -81,7 +75,10 @@ pub fn sti() {
     assert!(Rflags::get().interrupt_is_enabled());
 }
 
-pub fn set_segment_registers(code_segment_selector: &memory::segment::Selector, data_segment_selector: &memory::segment::Selector) {
+pub fn set_segment_registers(
+    code_segment_selector: &memory::segment::Selector,
+    data_segment_selector: &memory::segment::Selector,
+) {
     let code_segment_selector: u16 = (*code_segment_selector).into();
     let data_segment_selector: u16 = (*data_segment_selector).into();
     unsafe {
@@ -104,4 +101,3 @@ pub fn set_segment_registers(code_segment_selector: &memory::segment::Selector, 
         );
     }
 }
-

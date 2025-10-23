@@ -1,9 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        iter,
-    },
+    core::{fmt, iter},
 };
 
 /// # Processor Local APIC/SAPIC Affinity Structure
@@ -32,7 +29,9 @@ impl Structure {
             .iter()
             .rev()
             .chain(iter::once(&self.proximity_domain0))
-            .fold(0, |proximity_domain, byte| (proximity_domain << u8::BITS) + (*byte as u32))
+            .fold(0, |proximity_domain, byte| {
+                (proximity_domain << u8::BITS) + (*byte as u32)
+            })
     }
 }
 
@@ -67,4 +66,3 @@ pub struct Flags {
     #[bits(31)]
     __: u32,
 }
-

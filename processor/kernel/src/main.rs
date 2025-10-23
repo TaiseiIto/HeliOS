@@ -42,13 +42,17 @@ fn main(argument: &'static Argument<'static>) {
     // Initialize IDT.
     let _idt = interrupt::descriptor::table::Controller::new(&mut gdt, &mut paging);
     // Initialize syscall.
-    syscall::initialize(cpuid, gdt.kernel_code_segment_selector(), gdt.kernel_data_segment_selector(), gdt.application_code_segment_selector(), gdt.application_data_segment_selector());
+    syscall::initialize(
+        cpuid,
+        gdt.kernel_code_segment_selector(),
+        gdt.kernel_data_segment_selector(),
+        gdt.application_code_segment_selector(),
+        gdt.application_data_segment_selector(),
+    );
     // Initialize a current task.
     task::Controller::set_current();
     // Allow interruptions.
-    task::Controller::get_current_mut()
-        .unwrap()
-        .sti();
+    task::Controller::get_current_mut().unwrap().sti();
     // Set APIC.
     let mut ia32_apic_base = x64::msr::ia32::ApicBase::get(cpuid).unwrap();
     let _local_apic_registers = interrupt::apic::local::Registers::initialize(&mut ia32_apic_base);
@@ -71,4 +75,3 @@ fn panic(panic: &PanicInfo) -> ! {
         x64::hlt();
     }
 }
-

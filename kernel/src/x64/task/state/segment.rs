@@ -1,13 +1,7 @@
 use {
-    alloc::{
-        boxed::Box,
-        vec::Vec,
-    },
-    core::{
-        iter,
-        mem::size_of,
-    },
     crate::memory,
+    alloc::{boxed::Box, vec::Vec},
+    core::{iter, mem::size_of},
 };
 
 #[derive(Debug)]
@@ -55,7 +49,10 @@ impl Segment {
     pub const NUMBER_OF_INTERRUPT_STACKS: usize = 7;
 
     pub fn new(interrupt_stacks: &[memory::Stack], io_map_base_address: usize) -> Self {
-        assert_eq!(interrupt_stacks.len(), Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS);
+        assert_eq!(
+            interrupt_stacks.len(),
+            Self::NUMBER_OF_STACK_POINTERS + Self::NUMBER_OF_INTERRUPT_STACKS
+        );
         let reserved0: u32 = 0;
         let reserved1: u64 = 0;
         let reserved2: u16 = 0;
@@ -64,20 +61,15 @@ impl Segment {
             .iter()
             .map(|interrupt_stack| interrupt_stack.wrapping_floor())
             .collect();
-        let rsp: [usize; Self::NUMBER_OF_STACK_POINTERS] = rsp
-            .as_slice()
-            .try_into()
-            .unwrap();
+        let rsp: [usize; Self::NUMBER_OF_STACK_POINTERS] = rsp.as_slice().try_into().unwrap();
         let ist: &[memory::Stack] = &interrupt_stacks[Self::NUMBER_OF_STACK_POINTERS..];
         let ist: Vec<usize> = iter::once(0)
-            .chain(ist
-                .iter()
-                .map(|interrupt_stack| interrupt_stack.wrapping_floor()))
+            .chain(
+                ist.iter()
+                    .map(|interrupt_stack| interrupt_stack.wrapping_floor()),
+            )
             .collect();
-        let ist: [usize; Self::NUMBER_OF_INTERRUPT_STACKS + 1] = ist
-            .as_slice()
-            .try_into()
-            .unwrap();
+        let ist: [usize; Self::NUMBER_OF_INTERRUPT_STACKS + 1] = ist.as_slice().try_into().unwrap();
         let io_map_base_address: u16 = io_map_base_address as u16;
         Self {
             reserved0,
@@ -111,10 +103,6 @@ impl Default for IoPermissionBitMap {
     fn default() -> Self {
         let bit_map: [u8; Self::LENGTH] = [u8::MAX; Self::LENGTH];
         let last_byte: u8 = u8::MAX;
-        Self {
-            bit_map,
-            last_byte,
-        }
+        Self { bit_map, last_byte }
     }
 }
-

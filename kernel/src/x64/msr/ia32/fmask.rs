@@ -1,10 +1,6 @@
 use {
+    super::super::{super::Cpuid, rdmsr, wrmsr},
     bitfield_struct::bitfield,
-    super::super::{
-        rdmsr,
-        super::Cpuid,
-        wrmsr,
-    },
 };
 
 /// # IA32_FMASK
@@ -28,9 +24,7 @@ impl Fmask {
 
     pub fn set_all_flags(cpuid: &Cpuid) {
         if let Some(fmask) = Self::get(cpuid) {
-            fmask
-                .with_syscall_eflags_mask(u32::MAX)
-                .set();
+            fmask.with_syscall_eflags_mask(u32::MAX).set();
         }
     }
 
@@ -39,4 +33,3 @@ impl Fmask {
         wrmsr(Self::ECX, fmask);
     }
 }
-

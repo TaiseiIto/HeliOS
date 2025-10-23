@@ -3,27 +3,12 @@
 //! * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        string::String,
-    },
-    bitfield_struct::bitfield,
-    core::{
-        fmt,
-        slice,
-    },
     super::super::{
-        Char16,
-        Char8,
-        Guid,
-        Status,
-        SystemTable,
-        Void,
-        char16,
-        graphics_output,
-        hii,
-        null,
+        char16, graphics_output, hii, null, Char16, Char8, Guid, Status, SystemTable, Void,
     },
+    alloc::{collections::BTreeMap, string::String},
+    bitfield_struct::bitfield,
+    core::{fmt, slice},
 };
 
 /// # EFI_HII_FONT_STYLE
@@ -64,16 +49,17 @@ pub struct Protocol {
 impl Protocol {
     #[allow(dead_code)]
     pub fn get<'a>(system_table: &'a SystemTable<'a>) -> &'a Self {
-        let guid = Guid::new(0xe9ca4775, 0x8657, 0x47fc, [0x97, 0xe7, 0x7e, 0xd6, 0x5a, 0x8, 0x43, 0x24]);
+        let guid = Guid::new(
+            0xe9ca4775,
+            0x8657,
+            0x47fc,
+            [0x97, 0xe7, 0x7e, 0xd6, 0x5a, 0x8, 0x43, 0x24],
+        );
         let registration: &Void = null();
-        let protocol: &Void = system_table
-            .locate_protocol(registration, guid)
-            .unwrap();
+        let protocol: &Void = system_table.locate_protocol(registration, guid).unwrap();
         let protocol: *const Void = protocol as *const Void;
         let protocol: *const Protocol = protocol as *const Protocol;
-        unsafe {
-            &*protocol
-        }
+        unsafe { &*protocol }
     }
 
     #[allow(dead_code)]
@@ -81,21 +67,50 @@ impl Protocol {
         let font_iterator: FontIterator = self.into();
         font_iterator
             .enumerate()
-            .map(|(font_number, display_info)| (font_number, Font::new(display_info, ('!'..='~')
-                .filter_map(|character| {
-                    let mut blt: &ImageOutput = null();
-                    let mut base_line: usize = 0;
-                    (self.get_glyph)(self, character as Char16, display_info, &mut blt, &mut base_line)
-                        .result()
-                        .ok()
-                        .map(|_| (character, (0..blt.width)
-                            .flat_map(|x| (0..blt.height)
-                                .map(move |y| graphics_output::Coordinates::new(x as usize, y as usize)))
-                            .map(|coordinates| (coordinates, blt.pixel(coordinates.x(), coordinates.y()) == display_info.foreground_color))
-                            .collect()))
-                })
-                .collect())
-            ))
+            .map(|(font_number, display_info)| {
+                (
+                    font_number,
+                    Font::new(
+                        display_info,
+                        ('!'..='~')
+                            .filter_map(|character| {
+                                let mut blt: &ImageOutput = null();
+                                let mut base_line: usize = 0;
+                                (self.get_glyph)(
+                                    self,
+                                    character as Char16,
+                                    display_info,
+                                    &mut blt,
+                                    &mut base_line,
+                                )
+                                .result()
+                                .ok()
+                                .map(|_| {
+                                    (
+                                        character,
+                                        (0..blt.width)
+                                            .flat_map(|x| {
+                                                (0..blt.height).map(move |y| {
+                                                    graphics_output::Coordinates::new(
+                                                        x as usize, y as usize,
+                                                    )
+                                                })
+                                            })
+                                            .map(|coordinates| {
+                                                (
+                                                    coordinates,
+                                                    blt.pixel(coordinates.x(), coordinates.y())
+                                                        == display_info.foreground_color,
+                                                )
+                                            })
+                                            .collect(),
+                                    )
+                                })
+                            })
+                            .collect(),
+                    ),
+                )
+            })
             .collect()
     }
 }
@@ -103,7 +118,18 @@ impl Protocol {
 /// # EFI_HII_STRING_TO_IMAGE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type StringToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* String */ EfiString<'_>, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize */ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
+type StringToImage = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* Flags */ OutFlags,
+    /* String */ EfiString<'_>,
+    /* StringInfo */ &DisplayInfo<'_>,
+    /* Blt */ &mut &ImageOutput<'_>,
+    /* BltX */ usize,
+    /* BltY */ usize,
+    /* RowInfoArray */ &mut &RowInfo,
+    /* RowInfoArraySize */ &mut usize,
+    /* ColumnInfoArray */ &mut usize,
+) -> Status;
 
 /// # EFI_HII_OUT_FLAGS
 /// ## References
@@ -143,17 +169,42 @@ pub struct RowInfo {
 /// # EFI_HII_STRING_ID_TO_IMAGE
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type StringIdToImage = extern "efiapi" fn(/* This */ &Protocol, /* Flags */ OutFlags, /* PackageList */ hii::Handle, /* StringId */ StringId, /* Language */ &Char8, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BltX */ usize, /* BltY */ usize, /* RowInfoArray */ &mut &RowInfo, /* RowInfoArraySize*/ &mut usize, /* ColumnInfoArray */ &mut usize) -> Status;
+type StringIdToImage = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* Flags */ OutFlags,
+    /* PackageList */ hii::Handle,
+    /* StringId */ StringId,
+    /* Language */ &Char8,
+    /* StringInfo */ &DisplayInfo<'_>,
+    /* Blt */ &mut &ImageOutput<'_>,
+    /* BltX */ usize,
+    /* BltY */ usize,
+    /* RowInfoArray */ &mut &RowInfo,
+    /* RowInfoArraySize*/ &mut usize,
+    /* ColumnInfoArray */ &mut usize,
+) -> Status;
 
 /// # EFI_HII_GET_GLYPH
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type GetGlyph = extern "efiapi" fn(/* This */ &Protocol, /* Char */ Char16, /* StringInfo */ &DisplayInfo<'_>, /* Blt */ &mut &ImageOutput<'_>, /* BaseLine */ &mut usize) -> Status;
+type GetGlyph = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* Char */ Char16,
+    /* StringInfo */ &DisplayInfo<'_>,
+    /* Blt */ &mut &ImageOutput<'_>,
+    /* BaseLine */ &mut usize,
+) -> Status;
 
 /// # EFI_HII_GET_FONT_INFO
 /// ## References
 /// * [UEFI Specification Version 2.9](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf) 34.1 Font Protocol
-type GetFontInfo = extern "efiapi" fn(/* This */ &Protocol, /* FontHandle */ &mut Handle<'_>, /* StringInfoIn */ &DisplayInfo, /* StringInfoOut */ &mut &DisplayInfo, /* String */ EfiString<'_>) -> Status;
+type GetFontInfo = extern "efiapi" fn(
+    /* This */ &Protocol,
+    /* FontHandle */ &mut Handle<'_>,
+    /* StringInfoIn */ &DisplayInfo,
+    /* StringInfoOut */ &mut &DisplayInfo,
+    /* String */ EfiString<'_>,
+) -> Status;
 
 /// # EFI_FONT_HANDLE
 /// ## References
@@ -173,10 +224,7 @@ pub struct DisplayInfo<'a> {
 
 impl DisplayInfo<'_> {
     fn name(&self) -> Option<String> {
-        (!self.info_mask.sys_font()).then(|| {
-            (&self.info.name)
-                .into()
-        })
+        (!self.info_mask.sys_font()).then(|| (&self.info.name).into())
     }
 }
 
@@ -231,13 +279,10 @@ pub struct ImageOutput<'a> {
 impl ImageOutput<'_> {
     #[allow(dead_code)]
     fn bitmap(&self) -> &[graphics_output::BltPixel] {
-        let bitmap: *const graphics_output::BltPixel = unsafe {
-            self.image.bitmap
-        } as *const graphics_output::BltPixel;
+        let bitmap: *const graphics_output::BltPixel =
+            unsafe { self.image.bitmap } as *const graphics_output::BltPixel;
         let length: usize = self.width as usize * self.height as usize;
-        unsafe {
-            slice::from_raw_parts(bitmap, length)
-        }
+        unsafe { slice::from_raw_parts(bitmap, length) }
     }
 
     #[allow(dead_code)]
@@ -267,12 +312,19 @@ pub struct Font<'a> {
     #[allow(dead_code)]
     display_info: &'a DisplayInfo<'a>,
     #[allow(dead_code)]
-    character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>,
+    character2coordinates2is_foreground:
+        BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>,
 }
 
 impl<'a> Font<'a> {
     #[allow(dead_code)]
-    pub fn new(display_info: &'a DisplayInfo<'a>, character2coordinates2is_foreground: BTreeMap<char, BTreeMap<graphics_output::Coordinates, bool>>) -> Self {
+    pub fn new(
+        display_info: &'a DisplayInfo<'a>,
+        character2coordinates2is_foreground: BTreeMap<
+            char,
+            BTreeMap<graphics_output::Coordinates, bool>,
+        >,
+    ) -> Self {
         Self {
             display_info,
             character2coordinates2is_foreground,
@@ -288,10 +340,7 @@ pub struct FontIterator<'a> {
 impl<'a> From<&'a Protocol> for FontIterator<'a> {
     fn from(protocol: &'a Protocol) -> Self {
         let handle: Handle<'a> = null();
-        Self {
-            protocol,
-            handle,
-        }
+        Self { protocol, handle }
     }
 }
 
@@ -302,10 +351,15 @@ impl<'a> Iterator for FontIterator<'a> {
         let string_info_in: Self::Item = null();
         let mut string_info_out: Self::Item = null();
         let string = EfiString::null();
-        (self.protocol.get_font_info)(self.protocol, &mut self.handle, string_info_in, &mut string_info_out, string)
-            .result()
-            .ok()
-            .and_then(|_| (!self.handle .is_null()).then_some(string_info_out))
+        (self.protocol.get_font_info)(
+            self.protocol,
+            &mut self.handle,
+            string_info_in,
+            &mut string_info_out,
+            string,
+        )
+        .result()
+        .ok()
+        .and_then(|_| (!self.handle.is_null()).then_some(string_info_out))
     }
 }
-

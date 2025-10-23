@@ -1,14 +1,11 @@
 use {
+    super::{
+        super::{base, Function},
+        Header,
+    },
     alloc::vec::Vec,
     bitfield_struct::bitfield,
     core::fmt,
-    super::{
-        Header,
-        super::{
-            Function,
-            base,
-        },
-    },
 };
 
 pub mod pba;
@@ -28,18 +25,14 @@ pub struct Structure {
 impl Structure {
     pub fn read_pba(&self, function: &Function) -> Vec<pba::PendingBits> {
         let pba: pba::Register = self.pba;
-        let index2address: base::Index2Address = function
-            .header()
-            .index2address();
+        let index2address: base::Index2Address = function.header().index2address();
         let table_length: usize = self.table_length();
         pba.read(&index2address, table_length)
     }
 
     pub fn read_table(&self, function: &Function) -> Vec<table::Entry> {
         let table: table::Register = self.table;
-        let index2address: base::Index2Address = function
-            .header()
-            .index2address();
+        let index2address: base::Index2Address = function.header().index2address();
         let table_length: usize = self.table_length();
         table.read(&index2address, table_length)
     }
@@ -92,9 +85,7 @@ impl<'a> StructureInFunction<'a> {
         let structure_offset: usize = structure_offset as usize;
         let structure: usize = function + structure_offset;
         let structure: *const Structure = structure as *const Structure;
-        unsafe {
-            &*structure
-        }
+        unsafe { &*structure }
     }
 }
 
@@ -131,4 +122,3 @@ pub struct MessageControl {
     function_mask: bool,
     msi_x_enable: bool,
 }
-

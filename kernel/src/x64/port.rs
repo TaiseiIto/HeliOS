@@ -93,4 +93,3 @@ pub fn outl(port: u16, data: u32) {
         );
     }
 }
-

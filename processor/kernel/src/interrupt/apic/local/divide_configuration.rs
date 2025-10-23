@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    core::fmt,
-};
+use {bitfield_struct::bitfield, core::fmt};
 
 #[derive(Clone, Copy)]
 #[repr(packed)]
@@ -37,11 +34,6 @@ struct Register {
 
 impl Register {
     fn divide_value(&self) -> u8 {
-        self.divide_value0() + if self.divide_value1() {
-            4
-        } else {
-            0
-        }
+        self.divide_value0() + if self.divide_value1() { 4 } else { 0 }
     }
 }
-

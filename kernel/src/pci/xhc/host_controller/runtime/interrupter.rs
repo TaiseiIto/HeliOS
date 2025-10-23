@@ -1,8 +1,8 @@
+pub mod erdp;
+pub mod erstba;
+pub mod erstsz;
 pub mod iman;
 pub mod imod;
-pub mod erstsz;
-pub mod erstba;
-pub mod erdp;
 
 /// # Interrupter Register Set
 /// ## References
@@ -22,4 +22,3 @@ pub struct RegisterSet {
     #[allow(dead_code)]
     erdp: erdp::Register,
 }
-

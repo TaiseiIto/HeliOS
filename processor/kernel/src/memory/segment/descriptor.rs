@@ -3,12 +3,9 @@ pub mod table;
 pub use table::Table;
 
 use {
-    core::mem::size_of,
+    super::{long, short},
     crate::x64,
-    super::{
-        long,
-        short,
-    },
+    core::mem::size_of,
 };
 
 #[derive(Debug)]
@@ -66,7 +63,7 @@ impl Interface {
             size,
             dpl,
             avl,
-            segment_type
+            segment_type,
         }
     }
 }
@@ -91,8 +88,12 @@ impl From<&short::Descriptor> for Option<Interface> {
 }
 
 impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
-    fn from(segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap) -> Self {
-        let base: *const x64::task::state::segment::AndIoPermissionBitMap = segment_and_io_permission_bit_map as *const x64::task::state::segment::AndIoPermissionBitMap;
+    fn from(
+        segment_and_io_permission_bit_map: &x64::task::state::segment::AndIoPermissionBitMap,
+    ) -> Self {
+        let base: *const x64::task::state::segment::AndIoPermissionBitMap =
+            segment_and_io_permission_bit_map
+                as *const x64::task::state::segment::AndIoPermissionBitMap;
         let base: usize = base as usize;
         let size: usize = size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
         let dpl: u8 = 0;
@@ -112,21 +113,23 @@ impl From<&long::Descriptor> for Option<Interface> {
     fn from(descriptor: &long::Descriptor) -> Self {
         let lower_descriptor: Self = (&descriptor.lower_descriptor()).into();
         let base: Option<usize> = descriptor.base_address();
-        lower_descriptor
-            .zip(base)
-            .map(|(Interface {
-                base: _,
-                size,
-                dpl,
-                avl,
-                segment_type,
-            }, base)| Interface {
+        lower_descriptor.zip(base).map(
+            |(
+                Interface {
+                    base: _,
+                    size,
+                    dpl,
+                    avl,
+                    segment_type,
+                },
+                base,
+            )| Interface {
                 base,
                 size,
                 dpl,
                 avl,
                 segment_type,
-            })
+            },
+        )
     }
 }
-

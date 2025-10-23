@@ -1,7 +1,4 @@
-use {
-    bitfield_struct::bitfield,
-    crate::x64,
-};
+use {crate::x64, bitfield_struct::bitfield};
 
 /// # Control Register
 /// ## References
@@ -121,9 +118,8 @@ impl From<Selector> for u8 {
             Selector::Counter(counter) => {
                 assert!((0..=2).contains(&counter));
                 counter
-            },
+            }
             Selector::ReadBack => 3,
         }
     }
 }
-

@@ -8,4 +8,3 @@ use bitfield_struct::bitfield;
 pub struct Register {
     chassis_number: u8,
 }
-

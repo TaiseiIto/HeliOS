@@ -1,10 +1,6 @@
 use {
+    super::super::{super::Cpuid, rdmsr, wrmsr},
     bitfield_struct::bitfield,
-    super::super::{
-        rdmsr,
-        super::Cpuid,
-        wrmsr,
-    },
 };
 
 /// # IA32_EFER
@@ -29,31 +25,24 @@ impl Efer {
     pub fn enable_execute_disable_bit(cpuid: &Cpuid) -> bool {
         cpuid
             .supports_execute_disable_bit()
-            .then(|| Self::get(cpuid)
-                .map_or(false, |efer| {
-                    efer
-                        .with_nxe(true)
-                        .set();
+            .then(|| {
+                Self::get(cpuid).map_or(false, |efer| {
+                    efer.with_nxe(true).set();
                     true
-                }))
+                })
+            })
             .unwrap_or(false)
     }
 
     pub fn enable_system_call_enable_bit(cpuid: &Cpuid) -> bool {
-        Self::get(cpuid)
-            .map_or(false, |efer| {
-                efer
-                    .with_sce(true)
-                    .with_lma(true)
-                    .set();
-                true
-            })
+        Self::get(cpuid).map_or(false, |efer| {
+            efer.with_sce(true).with_lma(true).set();
+            true
+        })
     }
 
     pub fn get(cpuid: &Cpuid) -> Option<Self> {
-        cpuid
-            .supports_ia32_efer()
-            .then(|| rdmsr(Self::ECX).into())
+        cpuid.supports_ia32_efer().then(|| rdmsr(Self::ECX).into())
     }
 
     pub fn pae_paging_is_used(&self) -> bool {
@@ -65,4 +54,3 @@ impl Efer {
         wrmsr(Self::ECX, efer);
     }
 }
-

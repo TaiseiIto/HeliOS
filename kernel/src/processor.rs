@@ -2,29 +2,12 @@ pub mod boot;
 pub mod message;
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        string::String,
-        vec::Vec,
-    },
+    crate::{acpi, com2_println, elf, interrupt, memory, sync, timer, x64, Argument},
+    alloc::{collections::BTreeMap, string::String, vec::Vec},
     core::{
         cell::OnceCell,
         mem::MaybeUninit,
-        sync::atomic::{
-            AtomicBool,
-            Ordering,
-        },
-    },
-    crate::{
-        Argument,
-        acpi,
-        com2_println,
-        elf,
-        interrupt,
-        memory,
-        sync,
-        timer,
-        x64,
+        sync::atomic::{AtomicBool, Ordering},
     },
 };
 
@@ -49,7 +32,14 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn boot(&self, boot_loader: &mut boot::Loader, local_apic_registers: &mut interrupt::apic::local::Registers, hpet: &timer::hpet::Registers, bsp_local_apic_id: u8, bsp_heap_start: usize) {
+    pub fn boot(
+        &self,
+        boot_loader: &mut boot::Loader,
+        local_apic_registers: &mut interrupt::apic::local::Registers,
+        hpet: &timer::hpet::Registers,
+        bsp_local_apic_id: u8,
+        bsp_heap_start: usize,
+    ) {
         boot_loader.initialize(self, bsp_heap_start, bsp_local_apic_id);
         let local_apic_id: u8 = self.local_apic_structure.apic_id();
         com2_println!("Boot processor {:#x?}", local_apic_id);
@@ -68,26 +58,17 @@ impl Controller {
     }
 
     pub fn delete_received_messages() {
-        Self::get_mut_all()
-            .for_each(|controller| {
-                *controller.receiver.lock() = None;
-            });
+        Self::get_mut_all().for_each(|controller| {
+            *controller.receiver.lock() = None;
+        });
     }
 
     pub fn get_all() -> impl Iterator<Item = &'static Self> {
-        unsafe {
-            MANAGER.get()
-        }   .unwrap()
-			.controllers
-            .iter()
+        unsafe { MANAGER.get() }.unwrap().controllers.iter()
     }
 
     pub fn get_mut_all() -> impl Iterator<Item = &'static mut Self> {
-        unsafe {
-            MANAGER.get_mut()
-        }   .unwrap()
-			.controllers
-            .iter_mut()
+        unsafe { MANAGER.get_mut() }.unwrap().controllers.iter_mut()
     }
 
     pub fn heap(&self) -> &[MaybeUninit<u8>] {
@@ -118,13 +99,22 @@ impl Controller {
         &self.log
     }
 
-    pub fn new(local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure, mut paging: memory::Paging, kernel: &elf::File, heap: Vec<MaybeUninit<u8>>) -> Self {
+    pub fn new(
+        local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
+        mut paging: memory::Paging,
+        kernel: &elf::File,
+        heap: Vec<MaybeUninit<u8>>,
+    ) -> Self {
         let boot_completed: AtomicBool = AtomicBool::new(false);
         let initialized: bool = false;
         let kernel_writable_pages: Vec<memory::Page> = kernel.deploy_writable_segments(&mut paging);
         let kernel_stack_pages: usize = 0x10;
         let kernel_stack_floor_inclusive: usize = !0;
-        let kernel_stack: memory::Stack = memory::Stack::new(&mut paging, kernel_stack_floor_inclusive, kernel_stack_pages);
+        let kernel_stack: memory::Stack = memory::Stack::new(
+            &mut paging,
+            kernel_stack_floor_inclusive,
+            kernel_stack_pages,
+        );
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
@@ -151,16 +141,17 @@ impl Controller {
     }
 
     pub fn save_received_messages() {
-        Self::get_mut_all()
-            .for_each(|processor| {
-                let message: Option<message::Content> = processor.receiver.lock().clone();
-                if let Some(message) = message {
-                    match message {
-                        message::Content::BootCompleted => processor.boot_complete(),
-                        message => interrupt::Event::push(interrupt::Event::interprocessor(processor, message)),
+        Self::get_mut_all().for_each(|processor| {
+            let message: Option<message::Content> = processor.receiver.lock().clone();
+            if let Some(message) = message {
+                match message {
+                    message::Content::BootCompleted => processor.boot_complete(),
+                    message => {
+                        interrupt::Event::push(interrupt::Event::interprocessor(processor, message))
                     }
                 }
-            });
+            }
+        });
     }
 
     pub fn receiver(&self) -> &sync::spin::Lock<Option<message::Content>> {
@@ -196,32 +187,35 @@ pub struct Manager {
 }
 
 impl Manager {
-    pub fn initialize(local_apic_id: u8, local_apic_registers: &mut interrupt::apic::local::Registers, heap_size: usize, hpet: &timer::hpet::Registers) {
-        let mut paging: memory::Paging = Argument::get()
-            .paging()
-            .clone();
-        let kernel: elf::File = Argument::get()
-            .processor_kernel()
-            .to_vec()
-            .into();
-        let kernel_read_only_pages: Vec<memory::Page> = kernel.deploy_unwritable_segments(&mut paging);
-        let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> = Argument::get()
-            .efi_system_table()
-            .rsdp()
-            .xsdt()
-            .madt()
-            .processor_local_apic_structures()
-            .into_iter()
-            .filter(|local_apic| local_apic.is_enabled())
-            .collect();
+    pub fn initialize(
+        local_apic_id: u8,
+        local_apic_registers: &mut interrupt::apic::local::Registers,
+        heap_size: usize,
+        hpet: &timer::hpet::Registers,
+    ) {
+        let mut paging: memory::Paging = Argument::get().paging().clone();
+        let kernel: elf::File = Argument::get().processor_kernel().to_vec().into();
+        let kernel_read_only_pages: Vec<memory::Page> =
+            kernel.deploy_unwritable_segments(&mut paging);
+        let processors: Vec<acpi::multiple_apic_description::processor_local_apic::Structure> =
+            Argument::get()
+                .efi_system_table()
+                .rsdp()
+                .xsdt()
+                .madt()
+                .processor_local_apic_structures()
+                .into_iter()
+                .filter(|local_apic| local_apic.is_enabled())
+                .collect();
         let number_of_processors: usize = processors.len();
         com2_println!("number_of_processors = {:#x?}", number_of_processors);
         let heap_size: usize = (heap_size / number_of_processors + 1).next_power_of_two();
-        let heap_size: usize = heap_size / if heap_size / 2 + (number_of_processors - 1) * heap_size < heap_size {
-            1
-        } else {
-            2
-        };
+        let heap_size: usize = heap_size
+            / if heap_size / 2 + (number_of_processors - 1) * heap_size < heap_size {
+                1
+            } else {
+                2
+            };
         com2_println!("heap_size = {:#x?}", heap_size);
         let controllers: Vec<Controller> = processors
             .into_iter()
@@ -240,11 +234,16 @@ impl Manager {
             kernel_read_only_pages,
             paging,
         };
-        unsafe {
-            MANAGER.set(manager)
-        }.unwrap();
-        Controller::get_all()
-            .for_each(|processor| processor.boot(Argument::get().processor_boot_loader_mut(), local_apic_registers, hpet, local_apic_id, Argument::get().heap_start()));
+        unsafe { MANAGER.set(manager) }.unwrap();
+        Controller::get_all().for_each(|processor| {
+            processor.boot(
+                Argument::get().processor_boot_loader_mut(),
+                local_apic_registers,
+                hpet,
+                local_apic_id,
+                Argument::get().heap_start(),
+            )
+        });
     }
 
     pub fn finalize() {
@@ -260,4 +259,3 @@ impl Manager {
             });
     }
 }
-

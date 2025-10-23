@@ -1,7 +1,4 @@
-use super::super::{
-    super::record,
-    Table,
-};
+use super::super::{super::record, Table};
 
 /// # Firmware Basic Boot Performance Table Pointer Record
 /// ## References
@@ -20,4 +17,3 @@ impl Record<'_> {
         self.header.length()
     }
 }
-

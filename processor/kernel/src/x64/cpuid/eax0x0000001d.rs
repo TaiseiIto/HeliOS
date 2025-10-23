@@ -5,11 +5,7 @@
 mod ecx0x00000000;
 mod ecx0x00000001;
 
-use {
-    super::Eax0x00000000,
-    ecx0x00000000::Ecx0x00000000,
-    ecx0x00000001::Ecx0x00000001,
-};
+use {super::Eax0x00000000, ecx0x00000000::Ecx0x00000000, ecx0x00000001::Ecx0x00000001};
 
 #[derive(Debug)]
 pub struct Eax0x0000001d {
@@ -32,4 +28,3 @@ impl Eax0x0000001d {
         })
     }
 }
-

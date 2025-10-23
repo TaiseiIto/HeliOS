@@ -11,4 +11,3 @@ pub struct Register {
     #[bits(60)]
     event_ring_deque_pointer: u64,
 }
-

@@ -25,15 +25,11 @@ pub mod processor_local_apic;
 pub mod processor_local_x2apic;
 
 use {
+    super::system_description,
+    crate::interrupt,
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
-    crate::interrupt,
-    super::system_description,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # MADT
@@ -53,15 +49,10 @@ impl Table {
         while bytes[index] != 0x01 {
             index += bytes[index + 1] as usize;
         }
-        let io_apic: &mut u8 = self
-            .bytes_mut()
-            .get_mut(index)
-            .unwrap();
+        let io_apic: &mut u8 = self.bytes_mut().get_mut(index).unwrap();
         let io_apic: *mut u8 = io_apic as *mut u8;
         let io_apic: *mut io_apic::Structure = io_apic as *mut io_apic::Structure;
-        unsafe {
-            &mut *io_apic
-        }
+        unsafe { &mut *io_apic }
     }
 
     pub fn is_correct(&self) -> bool {
@@ -71,7 +62,9 @@ impl Table {
     pub fn processor_local_apic_structures(&self) -> Vec<processor_local_apic::Structure> {
         self.iter()
             .filter_map(|structure| match structure {
-                InterruptControllerStructure::ProcessorLocalApic(structure) => Some(structure.clone()),
+                InterruptControllerStructure::ProcessorLocalApic(structure) => {
+                    Some(structure.clone())
+                }
                 _ => None,
             })
             .collect()
@@ -79,26 +72,18 @@ impl Table {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: *const Self = unsafe {
-            table.add(1)
-        };
+        let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(table, size)
-        }
+        unsafe { slice::from_raw_parts(table, size) }
     }
 
     fn bytes_mut(&mut self) -> &mut [u8] {
         let table: *mut Self = self as *mut Self;
-        let table: *mut Self = unsafe {
-            table.add(1)
-        };
+        let table: *mut Self = unsafe { table.add(1) };
         let table: *mut u8 = table as *mut u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts_mut(table, size)
-        }
+        unsafe { slice::from_raw_parts_mut(table, size) }
     }
 
     fn iter(&self) -> InterruptControllerStructures<'_> {
@@ -108,10 +93,9 @@ impl Table {
     fn local_interrupt_controller(&self) -> &interrupt::apic::local::Registers {
         let local_interrupt_controller: u32 = self.local_interrupt_controller_address;
         let local_interrupt_controller: usize = local_interrupt_controller as usize;
-        let local_interrupt_controller: *const interrupt::apic::local::Registers = local_interrupt_controller as *const interrupt::apic::local::Registers;
-        unsafe {
-            &*local_interrupt_controller
-        }
+        let local_interrupt_controller: *const interrupt::apic::local::Registers =
+            local_interrupt_controller as *const interrupt::apic::local::Registers;
+        unsafe { &*local_interrupt_controller }
     }
 }
 
@@ -119,15 +103,20 @@ impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
         let flags: Flags = self.flags;
-        let interrupt_controller_structures: Vec<InterruptControllerStructure> = self
-            .iter()
-            .collect();
+        let interrupt_controller_structures: Vec<InterruptControllerStructure> =
+            self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
-            .field("local_interrupt_controller_address", self.local_interrupt_controller())
+            .field(
+                "local_interrupt_controller_address",
+                self.local_interrupt_controller(),
+            )
             .field("flags", &flags)
-            .field("interrupt_controller_structures", &interrupt_controller_structures)
+            .field(
+                "interrupt_controller_structures",
+                &interrupt_controller_structures,
+            )
             .finish()
     }
 }
@@ -149,9 +138,7 @@ struct InterruptControllerStructures<'a> {
 impl<'a> From<&'a Table> for InterruptControllerStructures<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -169,24 +156,34 @@ impl<'a> Iterator for InterruptControllerStructures<'a> {
 
 #[derive(Debug)]
 enum InterruptControllerStructure<'a> {
-    BridgeIoProgrammableInterruptController(&'a bridge_io_programmable_interrupt_controller::Structure),
+    BridgeIoProgrammableInterruptController(
+        &'a bridge_io_programmable_interrupt_controller::Structure,
+    ),
     CoreProgrammableInterruptController(&'a core_programmable_interrupt_controller::Structure),
-    ExtendedIoProgrammableInterruptController(&'a extended_io_programmable_interrupt_controller::Structure),
+    ExtendedIoProgrammableInterruptController(
+        &'a extended_io_programmable_interrupt_controller::Structure,
+    ),
     GicCpuInterface(&'a gic_cpu_interface::Structure),
     GicDistributer(&'a gic_distributer::Structure),
     GicInterruptTranslationService(&'a gic_interrupt_translation_service::Structure),
     GicMsiFrame(&'a gic_msi_frame::Structure),
     GicRedistributor(&'a gic_redistributor::Structure),
-    HyperTransportProgrammableInterruptController(&'a hyper_transport_programmable_interrupt_controller::Structure),
+    HyperTransportProgrammableInterruptController(
+        &'a hyper_transport_programmable_interrupt_controller::Structure,
+    ),
     InterruptSourceOverride(&'a interrupt_source_override::Structure),
     IoApic(&'a io_apic::Structure),
     IoSapic(&'a io_sapic::Structure),
-    LegacyIoProgrammableInterruptController(&'a legacy_io_programmable_interrupt_controller::Structure),
+    LegacyIoProgrammableInterruptController(
+        &'a legacy_io_programmable_interrupt_controller::Structure,
+    ),
     LocalApicAddressOverride(&'a local_apic_address_override::Structure),
     LocalApicNmi(&'a local_apic_nmi::Structure),
     LocalSapic(&'a local_sapic::Structure),
     LocalX2apicNmi(&'a local_x2apic_nmi::Structure),
-    LowPinCountProgrammableInterruptController(&'a low_pin_count_programmable_interrupt_controller::Structure),
+    LowPinCountProgrammableInterruptController(
+        &'a low_pin_count_programmable_interrupt_controller::Structure,
+    ),
     MsiProgrammableInterruptController(&'a msi_programmable_interrupt_controller::Structure),
     MultiprocessorWakeup(&'a multiprocessor_wakeup::Structure),
     NonMaskableInterruptSource(&'a non_maskable_interrupt_source::Structure),
@@ -484,4 +481,3 @@ impl<'a> InterruptControllerStructure<'a> {
         }
     }
 }
-

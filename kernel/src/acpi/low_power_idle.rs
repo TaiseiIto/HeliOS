@@ -2,13 +2,9 @@ mod native_c_state_instruction;
 mod other;
 
 use {
-    alloc::vec::Vec,
-    core::{
-        fmt,
-        mem::size_of,
-        slice,
-    },
     super::system_description,
+    alloc::vec::Vec,
+    core::{fmt, mem::size_of, slice},
 };
 
 /// # Low Power Idle Table (LPIT)
@@ -26,14 +22,10 @@ impl Table {
 
     fn bytes(&self) -> &[u8] {
         let table: *const Self = self as *const Self;
-        let table: *const Self = unsafe {
-            table.add(1)
-        };
+        let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
         let size: usize = self.header.table_size() - size_of::<Self>();
-        unsafe {
-            slice::from_raw_parts(table, size)
-        }
+        unsafe { slice::from_raw_parts(table, size) }
     }
 
     fn iter(&self) -> StateStructures<'_> {
@@ -44,9 +36,7 @@ impl Table {
 impl fmt::Debug for Table {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header: system_description::Header = self.header;
-        let state_structures: Vec<StateStructure> = self
-            .iter()
-            .collect();
+        let state_structures: Vec<StateStructure> = self.iter().collect();
         formatter
             .debug_struct("Table")
             .field("header", &header)
@@ -62,9 +52,7 @@ struct StateStructures<'a> {
 impl<'a> From<&'a Table> for StateStructures<'a> {
     fn from(table: &'a Table) -> Self {
         let bytes: &[u8] = table.bytes();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 }
 
@@ -88,38 +76,35 @@ enum StateStructure<'a> {
 
 impl<'a> StateStructure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
-        let (structure_type, structure_type_length): (u32, usize) = bytes
-            .iter()
-            .take(size_of::<u32>())
-            .rev()
-            .fold((0u32, 0usize), |(structure_type, structure_type_length), byte| ((structure_type << u8::BITS) + (*byte as u32), structure_type_length + 1));
-        (structure_type_length == size_of::<u32>())
-            .then(|| match structure_type {
-                0x00000000 => {
-                    let structure: *const u8 = bytes
-                        .first()
-                        .unwrap() as *const u8;
-                    let structure: *const native_c_state_instruction::Structure = structure as *const native_c_state_instruction::Structure;
-                    let structure: &native_c_state_instruction::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::NativeCStateInstruction(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
+        let (structure_type, structure_type_length): (u32, usize) =
+            bytes.iter().take(size_of::<u32>()).rev().fold(
+                (0u32, 0usize),
+                |(structure_type, structure_type_length), byte| {
+                    (
+                        (structure_type << u8::BITS) + (*byte as u32),
+                        structure_type_length + 1,
+                    )
                 },
-                _ => {
-                    let structure: *const u8 = bytes
-                        .first()
-                        .unwrap() as *const u8;
-                    let structure: *const other::Structure = structure as *const other::Structure;
-                    let structure: &other::Structure = unsafe {
-                        &*structure
-                    };
-                    let structure = Self::Other(structure);
-                    let remaining_bytes: &[u8] = &bytes[structure.size()..];
-                    (structure, remaining_bytes)
-                },
-            })
+            );
+        (structure_type_length == size_of::<u32>()).then(|| match structure_type {
+            0x00000000 => {
+                let structure: *const u8 = bytes.first().unwrap() as *const u8;
+                let structure: *const native_c_state_instruction::Structure =
+                    structure as *const native_c_state_instruction::Structure;
+                let structure: &native_c_state_instruction::Structure = unsafe { &*structure };
+                let structure = Self::NativeCStateInstruction(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+            _ => {
+                let structure: *const u8 = bytes.first().unwrap() as *const u8;
+                let structure: *const other::Structure = structure as *const other::Structure;
+                let structure: &other::Structure = unsafe { &*structure };
+                let structure = Self::Other(structure);
+                let remaining_bytes: &[u8] = &bytes[structure.size()..];
+                (structure, remaining_bytes)
+            }
+        })
     }
 
     fn size(&self) -> usize {
@@ -129,4 +114,3 @@ impl<'a> StateStructure<'a> {
         }
     }
 }
-

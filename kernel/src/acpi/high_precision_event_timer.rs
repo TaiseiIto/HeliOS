@@ -1,11 +1,8 @@
 use {
+    super::{generic_address, system_description},
+    crate::timer,
     bitfield_struct::bitfield,
     core::fmt,
-    crate::timer,
-    super::{
-        generic_address,
-        system_description,
-    },
 };
 
 /// # HPET
@@ -41,7 +38,8 @@ impl fmt::Debug for Table {
         let event_timer_block_id: EventTimerBlockId = self.event_timer_block_id;
         let registers: &timer::hpet::Registers = self.registers();
         let hpet_number: u8 = self.hpet_number;
-        let main_counter_minimum_clock_tick_in_periodic_mode: u16 = self.main_counter_minimum_clock_tick_in_periodic_mode;
+        let main_counter_minimum_clock_tick_in_periodic_mode: u16 =
+            self.main_counter_minimum_clock_tick_in_periodic_mode;
         let page_protection_and_oem_attribute: u8 = self.page_protection_and_oem_attribute;
         formatter
             .debug_struct("Table")
@@ -49,8 +47,14 @@ impl fmt::Debug for Table {
             .field("event_timer_block_id", &event_timer_block_id)
             .field("registers", registers)
             .field("hpet_number", &hpet_number)
-            .field("main_counter_minimum_clock_tick_in_periodic_mode", &main_counter_minimum_clock_tick_in_periodic_mode)
-            .field("page_protection_and_oem_attribute", &page_protection_and_oem_attribute)
+            .field(
+                "main_counter_minimum_clock_tick_in_periodic_mode",
+                &main_counter_minimum_clock_tick_in_periodic_mode,
+            )
+            .field(
+                "page_protection_and_oem_attribute",
+                &page_protection_and_oem_attribute,
+            )
             .finish()
     }
 }
@@ -68,4 +72,3 @@ struct EventTimerBlockId {
     legacy_placement_irq_routing_capable: bool,
     pci_vendor_id_of_first_timer_block: u16,
 }
-

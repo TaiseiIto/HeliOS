@@ -1,18 +1,9 @@
 //! # Kernel argumnents.
 
 use {
-    alloc::{
-        collections::BTreeMap,
-        vec::Vec,
-    },
+    crate::{efi, memory, processor, rs232c, x64},
+    alloc::{collections::BTreeMap, vec::Vec},
     core::cell::OnceCell,
-    crate::{
-        efi,
-        memory,
-        processor,
-        rs232c,
-        x64,
-    },
 };
 
 static mut ARGUMENT: OnceCell<&'static mut Argument<'static>> = OnceCell::new();
@@ -51,9 +42,7 @@ impl Argument<'static> {
     }
 
     pub fn get() -> &'static mut Self {
-        unsafe {
-            ARGUMENT.get_mut()
-        }.unwrap()
+        unsafe { ARGUMENT.get_mut() }.unwrap()
     }
 
     pub fn heap_start(&self) -> usize {
@@ -81,10 +70,7 @@ impl Argument<'static> {
     }
 
     pub fn set(&'static mut self) {
-        unsafe {
-            ARGUMENT.set(self)
-        }.unwrap();
+        unsafe { ARGUMENT.set(self) }.unwrap();
         rs232c::set_com2(Self::get().com2_mut());
     }
 }
-

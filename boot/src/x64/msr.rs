@@ -42,4 +42,3 @@ pub fn wrmsr(ecx: u32, value: u64) {
         );
     }
 }
-

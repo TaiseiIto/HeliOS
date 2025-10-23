@@ -3,10 +3,7 @@ pub mod page;
 pub mod paging;
 
 pub use {
-    alloc::alloc::Layout,
-    core::alloc::GlobalAlloc,
-    crate::efi::SystemTable,
-    frame::Frame,
+    crate::efi::SystemTable, alloc::alloc::Layout, core::alloc::GlobalAlloc, frame::Frame,
     paging::Paging,
 };
 
@@ -32,7 +29,9 @@ unsafe impl GlobalAlloc for Allocator {
             SystemTable::get().allocate_pages(pages)
         } else {
             panic!("Can't allocate memory.")
-        }.map(|pointer| pointer.into()).unwrap()
+        }
+        .map(|pointer| pointer.into())
+        .unwrap()
     }
 
     unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
@@ -50,7 +49,7 @@ unsafe impl GlobalAlloc for Allocator {
             SystemTable::get().free_pages(pointer.into(), pages)
         } else {
             panic!("Can't deallocate memory.")
-        }.unwrap()
+        }
+        .unwrap()
     }
 }
-
