@@ -10,9 +10,6 @@ naked-function = "0.1.5"
 [dependencies.acpi_machine_language]
 path = "acpi_machine_language"
 
-[dependencies.repr_packed_struct]
-path = "repr_packed_struct"
-
 [profile.dev]
 panic = "abort"
 
@@ -20,8 +17,5 @@ panic = "abort"
 panic = "abort"
 
 [workspace]
-members = [
-	"acpi_machine_language",
-	"repr_packed_struct"
-]
+members = ["acpi_machine_language"]
 

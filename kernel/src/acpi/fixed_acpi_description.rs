@@ -19,7 +19,6 @@ use {
 /// # FADT
 /// ## References
 /// * [Advanced Configuration and Power Interface (ACPI) Specification](https://uefi.org/sites/default/files/resources/ACPI_Spec_6_5_Aug29.pdf) 5.2.9 Fixed ACPI Description Table (FADT)
-#[derive(repr_packed_struct::OffsetGetter)]
 #[repr(packed)]
 pub struct Table {
     header: system_description::Header,
@@ -206,7 +205,7 @@ impl Table {
     }
 
     fn pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::pm1a_cnt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, pm1a_cnt_blk) < self.header.table_size())
             .then_some(self.pm1a_cnt_blk)
             .filter(|pm1a_cnt_blk| *pm1a_cnt_blk != 0)
             .map(|pm1a_cnt_blk| {
@@ -216,7 +215,7 @@ impl Table {
     }
 
     fn pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::pm1b_cnt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, pm1b_cnt_blk) < self.header.table_size())
             .then_some(self.pm1b_cnt_blk)
             .filter(|pm1b_cnt_blk| *pm1b_cnt_blk != 0)
             .map(|pm1b_cnt_blk| {
@@ -226,7 +225,7 @@ impl Table {
     }
 
     fn pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::pm1a_evt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, pm1a_evt_blk) < self.header.table_size())
             .then_some(self.pm1a_evt_blk)
             .filter(|pm1a_evt_blk| *pm1a_evt_blk != 0)
             .map(|pm1a_evt_blk| {
@@ -236,7 +235,7 @@ impl Table {
     }
 
     fn pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::pm1b_evt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, pm1b_evt_blk) < self.header.table_size())
             .then_some(self.pm1b_evt_blk)
             .filter(|pm1b_evt_blk| *pm1b_evt_blk != 0)
             .map(|pm1b_evt_blk| {
@@ -308,25 +307,25 @@ impl Table {
     }
 
     fn x_pm1a_cnt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::x_pm1a_cnt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, x_pm1a_cnt_blk) < self.header.table_size())
             .then_some(self.x_pm1a_cnt_blk)
             .filter(|x_pm1a_cnt_blk| x_pm1a_cnt_blk.address() != 0)
     }
 
     fn x_pm1b_cnt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::x_pm1b_cnt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, x_pm1b_cnt_blk) < self.header.table_size())
             .then_some(self.x_pm1b_cnt_blk)
             .filter(|x_pm1b_cnt_blk| x_pm1b_cnt_blk.address() != 0)
     }
 
     fn x_pm1a_evt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::x_pm1a_evt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, x_pm1a_evt_blk) < self.header.table_size())
             .then_some(self.x_pm1a_evt_blk)
             .filter(|x_pm1a_evt_blk| x_pm1a_evt_blk.address() != 0)
     }
 
     fn x_pm1b_evt_blk(&self) -> Option<generic_address::Structure> {
-        (Self::x_pm1b_evt_blk_offset() < self.header.table_size())
+        (mem::offset_of!(Self, x_pm1b_evt_blk) < self.header.table_size())
             .then_some(self.x_pm1b_evt_blk)
             .filter(|x_pm1b_evt_blk| x_pm1b_evt_blk.address() != 0)
     }

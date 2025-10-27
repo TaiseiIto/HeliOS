@@ -1,6 +1,7 @@
 //! # The kernel
 
 #![feature(abi_x86_interrupt)]
+#![feature(offset_of)]
 #![no_main]
 #![no_std]
 
