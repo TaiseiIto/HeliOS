@@ -6,7 +6,7 @@
 use {
     super::super::super::{Addr, Half, UnsignedChar, Word, Xword},
     bitfield_struct::bitfield,
-    core::{mem::size_of, slice},
+    core::{mem, slice},
 };
 
 /// # ELF Symbol Table
@@ -27,7 +27,7 @@ impl<'a> IntoIterator for Table<'a> {
 
 impl<'a> From<&'a [u8]> for Table<'a> {
     fn from(bytes: &'a [u8]) -> Self {
-        let len: usize = bytes.len() / size_of::<Entry>();
+        let len: usize = bytes.len() / mem::size_of::<Entry>();
         let entry: &u8 = bytes.first().unwrap();
         let entry: *const u8 = entry as *const u8;
         let entry: *const Entry = entry as *const Entry;

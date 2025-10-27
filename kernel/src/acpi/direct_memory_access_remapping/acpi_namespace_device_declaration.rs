@@ -1,4 +1,4 @@
-use core::{fmt, mem::size_of, slice, str};
+use core::{fmt, mem, slice, str};
 
 /// # ACPI Name-space Device Declaration Structure
 /// ## References
@@ -20,7 +20,7 @@ impl Structure {
         let structure: *const Self = self as *const Self;
         let acpi_object_name: *const Self = unsafe { structure.add(1) };
         let acpi_object_name: *const u8 = acpi_object_name as *const u8;
-        let length: usize = self.length() - size_of::<Self>();
+        let length: usize = self.length() - mem::size_of_val(self);
         let acpi_object_name: &[u8] = unsafe { slice::from_raw_parts(acpi_object_name, length) };
         str::from_utf8(acpi_object_name).unwrap()
     }

@@ -7,7 +7,7 @@ use {
     },
     crate::{bsp_println, memory, x64, Argument},
     alloc::{boxed::Box, vec::Vec},
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 pub use register::Register;
@@ -81,7 +81,7 @@ impl Table {
 
     pub fn limit(&self) -> u16 {
         let length: usize = self.descriptors.len();
-        let size: usize = length * size_of::<Descriptor>();
+        let size: usize = length * mem::size_of::<Descriptor>();
         let limit: usize = size - 1;
         limit as u16
     }

@@ -1,6 +1,6 @@
 use {
     super::super::{super::Descriptor, Table},
-    core::{arch::asm, mem::size_of},
+    core::{arch::asm, mem},
 };
 
 #[derive(Debug, Default)]
@@ -28,7 +28,7 @@ impl Register {
     }
 
     pub fn length(&self) -> usize {
-        (self.limit as usize + 1) / size_of::<Descriptor>()
+        (self.limit as usize + 1) / mem::size_of::<Descriptor>()
     }
 
     #[inline(never)]

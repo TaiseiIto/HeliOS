@@ -308,7 +308,7 @@ impl Value {
                 .ok_or(Some(u8_bits)),
             Self::Char(character) => {
                 let character: u32 = *character as u32;
-                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                let bytes: Vec<u8> = (0..mem::size_of_val(&character))
                     .map(|byte_index| (character >> (byte_index * u8_bits)) as u8)
                     .take_while(|byte| *byte != 0)
                     .collect();
@@ -320,7 +320,7 @@ impl Value {
                     .ok_or(Some(bytes.len() * u8_bits))
             }
             Self::DWord(dword) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u32>())
+                let bytes: Vec<u8> = (0..mem::size_of_val(dword))
                     .map(|byte_index| (dword >> (byte_index * u8_bits)) as u8)
                     .collect();
                 let byte_index: usize = index / u8_bits;
@@ -344,7 +344,7 @@ impl Value {
                 bit_or_remaining_index
             }
             Self::QWord(qword) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u64>())
+                let bytes: Vec<u8> = (0..mem::size_of_val(qword))
                     .map(|byte_index| (qword >> (byte_index * u8_bits)) as u8)
                     .collect();
                 let byte_index: usize = index / u8_bits;
@@ -365,7 +365,7 @@ impl Value {
                     .ok_or(Some(bytes.len() * u8_bits))
             }
             Self::Word(word) => {
-                let bytes: Vec<u8> = (0..mem::size_of::<u16>())
+                let bytes: Vec<u8> = (0..mem::size_of_val(word))
                     .map(|byte_index| (word >> (byte_index * u8_bits)) as u8)
                     .collect();
                 let byte_index: usize = index / u8_bits;
@@ -575,19 +575,19 @@ impl Value {
                 Self::Buffer(buffer)
             }
             Self::Word(word) => {
-                let buffer: Vec<u8> = (0..mem::size_of::<u16>())
+                let buffer: Vec<u8> = (0..mem::size_of_val(word))
                     .map(|offset| (word >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
             }
             Self::DWord(dword) => {
-                let buffer: Vec<u8> = (0..mem::size_of::<u32>())
+                let buffer: Vec<u8> = (0..mem::size_of_val(dword))
                     .map(|offset| (dword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)
             }
             Self::QWord(qword) => {
-                let buffer: Vec<u8> = (0..mem::size_of::<u64>())
+                let buffer: Vec<u8> = (0..mem::size_of_val(qword))
                     .map(|offset| (qword >> (offset * (u8::BITS as usize))) as u8)
                     .collect();
                 Self::Buffer(buffer)

@@ -2,12 +2,7 @@ use {
     super::{message, Controller},
     crate::{com2_println, memory, sync},
     alloc::{string::String, vec::Vec},
-    core::{
-        fmt,
-        mem::{size_of, MaybeUninit},
-        ops::Range,
-        ptr, slice,
-    },
+    core::{fmt, mem, ops::Range, ptr, slice},
 };
 
 pub mod real_mode;
@@ -60,7 +55,7 @@ impl Loader {
     }
 
     fn arguments_mut(&mut self) -> &mut Arguments {
-        let arguments: usize = self.program_address_range.end - size_of::<Arguments>();
+        let arguments: usize = self.program_address_range.end - mem::size_of::<Arguments>();
         let arguments: *mut Arguments = arguments as *mut Arguments;
         unsafe { &mut *arguments }
     }
@@ -98,7 +93,7 @@ impl Loader {
 
     fn temporary_pml4_table_mut(&mut self) -> &mut [u8] {
         let temporary_pml4_table: usize =
-            self.program_address_range.end - size_of::<Arguments>() - memory::page::SIZE;
+            self.program_address_range.end - mem::size_of::<Arguments>() - memory::page::SIZE;
         com2_println!("temporary_pml4_table = {:#x?}", temporary_pml4_table);
         let temporary_pml4_table: *mut u8 = temporary_pml4_table as *mut u8;
         let length: usize = memory::page::SIZE;
@@ -151,7 +146,7 @@ impl Arguments {
         let cr3: u64 = paging.cr3().into();
         let kernel_entry: usize = controller.kernel_entry();
         let kernel_stack_floor: usize = controller.kernel_stack_floor();
-        let heap: &[MaybeUninit<u8>] = controller.heap();
+        let heap: &[mem::MaybeUninit<u8>] = controller.heap();
         let heap_start: usize = heap.as_ptr() as usize;
         let heap_size: usize = heap.len();
         let receiver: &sync::spin::Lock<Option<message::Content>> = controller.receiver();

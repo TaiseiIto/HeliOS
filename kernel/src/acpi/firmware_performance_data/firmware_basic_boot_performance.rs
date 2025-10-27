@@ -4,7 +4,7 @@ pub mod table;
 use {
     super::other,
     alloc::vec::Vec,
-    core::{fmt, mem::size_of, slice, str},
+    core::{fmt, mem, slice, str},
 };
 
 /// # Firmware Basic Boot Performance Table
@@ -21,7 +21,7 @@ impl Table {
         let table: *const Self = self as *const Self;
         let bytes: *const Self = unsafe { table.add(1) };
         let bytes: *const u8 = bytes as *const u8;
-        let length: usize = self.length() - size_of::<Self>();
+        let length: usize = self.length() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(bytes, length) }
     }
 

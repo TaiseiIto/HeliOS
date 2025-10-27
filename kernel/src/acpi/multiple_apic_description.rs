@@ -29,7 +29,7 @@ use {
     crate::interrupt,
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # MADT
@@ -74,7 +74,7 @@ impl Table {
         let table: *const Self = self as *const Self;
         let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - size_of::<Self>();
+        let size: usize = self.header.table_size() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(table, size) }
     }
 
@@ -82,7 +82,7 @@ impl Table {
         let table: *mut Self = self as *mut Self;
         let table: *mut Self = unsafe { table.add(1) };
         let table: *mut u8 = table as *mut u8;
-        let size: usize = self.header.table_size() - size_of::<Self>();
+        let size: usize = self.header.table_size() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts_mut(table, size) }
     }
 

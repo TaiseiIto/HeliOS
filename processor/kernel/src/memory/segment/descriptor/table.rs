@@ -10,7 +10,7 @@ use {
         collections::{BTreeMap, BTreeSet},
         vec::Vec,
     },
-    core::{fmt, mem::size_of, ops::Range, slice},
+    core::{fmt, mem, ops::Range, slice},
 };
 
 mod register;
@@ -192,7 +192,7 @@ impl Table {
 
     pub fn limit(&self) -> u16 {
         let length: usize = self.descriptors.len();
-        let size: usize = length * size_of::<short::Descriptor>();
+        let size: usize = length * mem::size_of::<short::Descriptor>();
         let limit: usize = size - 1;
         limit as u16
     }
@@ -238,7 +238,7 @@ impl Table {
         self.descriptors[*lower_descriptor_index] = lower_descriptor;
         self.descriptors[*higher_descriptor_index] = higher_descriptor;
         let segment_selector: u16 =
-            (lower_descriptor_index * size_of::<short::Descriptor>()) as u16;
+            (lower_descriptor_index * mem::size_of::<short::Descriptor>()) as u16;
         segment_selector.into()
     }
 
@@ -349,10 +349,10 @@ impl From<Register> for Table {
         let descriptors: &[u64] =
             unsafe { slice::from_raw_parts(register.base(), register.length()) };
         let descriptors: Vec<u64> = (u16::MIN..=u16::MAX)
-            .step_by(size_of::<short::Descriptor>())
+            .step_by(mem::size_of::<short::Descriptor>())
             .map(|segment_selector| {
                 *descriptors
-                    .get(segment_selector as usize / size_of::<short::Descriptor>())
+                    .get(segment_selector as usize / mem::size_of::<short::Descriptor>())
                     .unwrap_or(&0)
             })
             .collect();

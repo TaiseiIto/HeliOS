@@ -1,7 +1,7 @@
 use {
     crate::{memory, x64},
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of},
+    core::{fmt, mem},
 };
 
 /// # Interrupt Command Register
@@ -59,7 +59,7 @@ impl Register {
     }
 
     fn high_mut(&mut self) -> &mut u32 {
-        let high: usize = self.address() + size_of::<FatLow>();
+        let high: usize = self.address() + mem::size_of_val(&self.low);
         let high: *mut u32 = high as *mut u32;
         unsafe { &mut *high }
     }

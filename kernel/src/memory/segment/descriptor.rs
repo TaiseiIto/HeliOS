@@ -5,7 +5,7 @@ pub use table::Table;
 use {
     super::{long, short},
     crate::x64,
-    core::mem::size_of,
+    core::mem,
 };
 
 #[derive(Debug)]
@@ -95,7 +95,7 @@ impl From<&x64::task::state::segment::AndIoPermissionBitMap> for Interface {
             segment_and_io_permission_bit_map
                 as *const x64::task::state::segment::AndIoPermissionBitMap;
         let base: usize = base as usize;
-        let size: usize = size_of::<x64::task::state::segment::AndIoPermissionBitMap>();
+        let size: usize = mem::size_of_val(segment_and_io_permission_bit_map);
         let dpl: u8 = 0;
         let avl: bool = false;
         let segment_type = x64::descriptor::Type::available_tss();

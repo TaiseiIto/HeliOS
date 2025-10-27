@@ -127,9 +127,9 @@ impl Address {
     {
         let mut read = T::default();
         let writer: &mut T = &mut read;
+        let size: usize = mem::size_of_val(writer);
         let writer: *mut T = writer as *mut T;
         let writer: *mut u8 = writer as *mut u8;
-        let size: usize = mem::size_of::<T>();
         let writer: &mut [u8] = unsafe { slice::from_raw_parts_mut(writer, size) };
         writer
             .iter_mut()

@@ -3,7 +3,7 @@ mod instruction;
 use {
     super::system_description,
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # Watchdog Action Table (WDAT)
@@ -38,8 +38,8 @@ impl Table {
         let instruction_entries: *const Self = unsafe { table.add(1) };
         let instruction_entries: *const instruction::Entry =
             instruction_entries as *const instruction::Entry;
-        let length: usize =
-            (self.header.table_size() - size_of::<Self>()) / size_of::<instruction::Entry>();
+        let length: usize = (self.header.table_size() - mem::size_of_val(self))
+            / mem::size_of::<instruction::Entry>();
         unsafe { slice::from_raw_parts(instruction_entries, length) }
     }
 }

@@ -6,7 +6,7 @@ mod s3_performance;
 use {
     super::system_description,
     alloc::vec::Vec,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # Firmware Performance Data Table (FPDT)
@@ -26,7 +26,7 @@ impl Table {
         let table: *const Self = self as *const Self;
         let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - size_of::<Self>();
+        let size: usize = self.header.table_size() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(table, size) }
     }
 

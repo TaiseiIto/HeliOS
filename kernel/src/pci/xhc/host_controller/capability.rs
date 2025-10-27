@@ -47,7 +47,7 @@ impl Registers {
         let address: *const Self = self as *const Self;
         let address: usize = address as usize;
         let doorbell_register: usize =
-            address + doorbell_array_offset + (slot - 1) * mem::size_of::<doorbell::Register>();
+            address + doorbell_array_offset + (slot - 1) * mem::size_of_val(&dboff);
         let doorbell_register: *const doorbell::Register =
             doorbell_register as *const doorbell::Register;
         unsafe { &*doorbell_register }

@@ -9,8 +9,7 @@ use {
     crate::task,
     alloc::{alloc::Layout, boxed::Box},
     core::{
-        alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem::size_of, ops::Range,
-        slice,
+        alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem, ops::Range, slice,
     },
 };
 
@@ -84,7 +83,7 @@ struct NodeList();
 
 impl NodeList {
     const MAX_SIZE: usize = page::SIZE;
-    const MIN_SIZE: usize = size_of::<Node>();
+    const MIN_SIZE: usize = mem::size_of::<Node>();
 
     fn alloc(&mut self, layout: Layout) -> Option<*mut u8> {
         let align: usize = layout.align();
@@ -124,7 +123,7 @@ impl NodeList {
     }
 
     fn length(&self) -> usize {
-        self.size() / size_of::<Node>()
+        self.size() / mem::size_of::<Node>()
     }
 
     fn mut_node(&mut self, index: usize) -> &mut Node {

@@ -9,13 +9,13 @@ use {
         collections::{btree_map, BTreeMap},
     },
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of, ops::Range, slice},
+    core::{fmt, mem, ops::Range, slice},
 };
 
-const PML4T_LENGTH: usize = memory::page::SIZE / size_of::<Pml4te>();
-const PDPT_LENGTH: usize = memory::page::SIZE / size_of::<Pdpte>();
-const PDT_LENGTH: usize = memory::page::SIZE / size_of::<Pdte>();
-const PT_LENGTH: usize = memory::page::SIZE / size_of::<Pte>();
+const PML4T_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pml4te>();
+const PDPT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdpte>();
+const PDT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdte>();
+const PT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pte>();
 
 pub struct Controller {
     cr3: x64::control::Register3,

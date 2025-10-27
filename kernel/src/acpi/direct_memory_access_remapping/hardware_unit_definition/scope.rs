@@ -1,6 +1,6 @@
 use {
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # Device Scope Structure
@@ -35,7 +35,7 @@ impl Structure {
         let structure: *const Self = self as *const Self;
         let path: *const Self = unsafe { structure.add(1) };
         let path: *const u16 = path as *const u16;
-        let length: usize = (self.length() - size_of::<Self>()) / size_of::<u16>();
+        let length: usize = (self.length() - mem::size_of_val(self)) / mem::size_of::<u16>();
         unsafe { slice::from_raw_parts(path, length) }
     }
 }

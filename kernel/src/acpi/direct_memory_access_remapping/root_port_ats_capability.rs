@@ -2,7 +2,7 @@ use {
     super::hardware_unit_definition,
     alloc::vec::Vec,
     bitfield_struct::bitfield,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # Root Port ATS Capability Reporting Structure
@@ -22,7 +22,7 @@ impl Structure {
         let structure: *const Self = self as *const Self;
         let first_byte: *const Self = unsafe { structure.add(1) };
         let first_byte: *const u8 = first_byte as *const u8;
-        let size: usize = self.length() - size_of::<Self>();
+        let size: usize = self.length() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(first_byte, size) }
     }
 

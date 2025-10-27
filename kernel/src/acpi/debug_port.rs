@@ -1,7 +1,7 @@
 use {
     super::{generic_address, system_description},
     alloc::vec::Vec,
-    core::{fmt, mem::size_of, slice, str},
+    core::{fmt, mem, slice, str},
 };
 
 /// # Debug Port Table
@@ -43,7 +43,7 @@ impl Table2 {
         let table: *const Self = self as *const Self;
         let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - size_of::<Self>();
+        let size: usize = self.header.table_size() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(table, size) }
     }
 
@@ -116,10 +116,10 @@ impl DeviceInformation {
         let address_sizes: &u8 = &self.bytes()[offset];
         let address_sizes: *const u8 = address_sizes as *const u8;
         let length: usize = self.number_of_generic_address_registers as usize;
-        let size: usize = size_of::<u32>() * length;
+        let size: usize = mem::size_of::<u32>() * length;
         let address_sizes: &[u8] = unsafe { slice::from_raw_parts(address_sizes, size) };
         address_sizes
-            .chunks(size_of::<u32>())
+            .chunks(mem::size_of::<u32>())
             .map(|chunk| {
                 chunk.iter().rev().fold(0, |address_size, byte| {
                     (address_size << u8::BITS) + (*byte as u32)

@@ -4,7 +4,7 @@ mod other;
 use {
     super::system_description,
     alloc::vec::Vec,
-    core::{fmt, mem::size_of, slice},
+    core::{fmt, mem, slice},
 };
 
 /// # Low Power Idle Table (LPIT)
@@ -24,7 +24,7 @@ impl Table {
         let table: *const Self = self as *const Self;
         let table: *const Self = unsafe { table.add(1) };
         let table: *const u8 = table as *const u8;
-        let size: usize = self.header.table_size() - size_of::<Self>();
+        let size: usize = self.header.table_size() - mem::size_of_val(self);
         unsafe { slice::from_raw_parts(table, size) }
     }
 
@@ -77,7 +77,7 @@ enum StateStructure<'a> {
 impl<'a> StateStructure<'a> {
     fn scan(bytes: &'a [u8]) -> Option<(Self, &'a [u8])> {
         let (structure_type, structure_type_length): (u32, usize) =
-            bytes.iter().take(size_of::<u32>()).rev().fold(
+            bytes.iter().take(mem::size_of::<u32>()).rev().fold(
                 (0u32, 0usize),
                 |(structure_type, structure_type_length), byte| {
                     (
@@ -86,7 +86,7 @@ impl<'a> StateStructure<'a> {
                     )
                 },
             );
-        (structure_type_length == size_of::<u32>()).then(|| match structure_type {
+        (structure_type_length == mem::size_of::<u32>()).then(|| match structure_type {
             0x00000000 => {
                 let structure: *const u8 = bytes.first().unwrap() as *const u8;
                 let structure: *const native_c_state_instruction::Structure =

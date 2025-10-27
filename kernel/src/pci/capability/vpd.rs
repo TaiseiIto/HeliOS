@@ -207,11 +207,11 @@ impl Iterator for ByteIterator<'_> {
             *dword = dword_iterator.next();
         }
         (*dword).map(|current_dword| {
-            let offset_in_byte: usize = ((*address) as usize) % mem::size_of::<u32>();
+            let offset_in_byte: usize = ((*address) as usize) % mem::size_of_val(&current_dword);
             let offset_in_bit: usize = offset_in_byte * (u8::BITS as usize);
             let byte: u8 = ((current_dword >> offset_in_bit) & 0xff) as u8;
             *address += 1;
-            if (*address as usize) % mem::size_of::<u32>() == 0 {
+            if (*address as usize) % mem::size_of_val(&current_dword) == 0 {
                 *dword = None;
             }
             byte
