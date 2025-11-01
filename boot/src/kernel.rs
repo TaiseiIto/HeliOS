@@ -63,7 +63,7 @@ pub struct Loader {
     #[allow(dead_code)]
     elf_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>>,
     #[allow(dead_code)]
-    stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>>,
+    stack_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>>,
     stack_floor: usize,
     heap_start: usize,
 }
@@ -77,11 +77,11 @@ impl Loader {
         let elf: elf::File = directory_tree.get(path).unwrap().read().into();
         let elf_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>> = elf.deploy(paging);
         let stack_pages: usize = 0x200;
-        let stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..stack_pages)
+        let stack_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>> = (0..stack_pages)
             .map(|stack_page_index| {
                 (
                     usize::MAX - (stack_page_index + 1) * memory::page::SIZE + 1,
-                    Box::default(),
+                    Pin::new(Box::default()),
                 )
             })
             .collect();
