@@ -3,23 +3,24 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4.5 4-Level Paging and 5-Level Paging
 
 use {
-    crate::{com2_println, memory, x64},
+    super::{super::page, TopTable},
+    crate::{com2_println, x64},
     alloc::{
         boxed::Box,
         collections::{btree_map, BTreeMap},
     },
     bitfield_struct::bitfield,
-    core::{fmt, mem, ops::Range, slice},
+    core::{fmt, mem, ops::Range, pin::Pin, slice},
 };
 
-const PML4T_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pml4te>();
-const PDPT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdpte>();
-const PDT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pdte>();
-const PT_LENGTH: usize = memory::page::SIZE / mem::size_of::<Pte>();
+const PML4T_LENGTH: usize = page::SIZE / mem::size_of::<Pml4te>();
+const PDPT_LENGTH: usize = page::SIZE / mem::size_of::<Pdpte>();
+const PDT_LENGTH: usize = page::SIZE / mem::size_of::<Pdte>();
+const PT_LENGTH: usize = page::SIZE / mem::size_of::<Pte>();
 
 pub struct Controller {
     cr3: x64::control::Register3,
-    pml4t: Box<Pml4t>,
+    pml4t: Pin<Box<Pml4t>>,
     vaddr2pml4te_controller: BTreeMap<Vaddr, Pml4teController>,
 }
 
@@ -111,7 +112,7 @@ impl Controller {
             }
             entry.insert(pml4te_controller);
         }
-        let pml4te: &mut Pml4te = self.pml4t.as_mut().pml4te_mut(&pml4vaddr);
+        let pml4te: &mut Pml4te = self.pml4t.pml4te_mut(&pml4vaddr);
         self.vaddr2pml4te_controller
             .get_mut(&pml4vaddr)
             .unwrap()
@@ -119,7 +120,7 @@ impl Controller {
     }
 
     pub fn pml4t(&self) -> &[u8] {
-        self.pml4t.as_ref().as_slice()
+        self.pml4t.as_slice()
     }
 
     pub fn vaddr2paddr(&self, vaddr: usize) -> Option<usize> {
@@ -130,11 +131,8 @@ impl Controller {
 
 impl Clone for Controller {
     fn clone(&self) -> Self {
-        let pml4t = Box::<Pml4t>::new(self.pml4t.as_ref().clone());
-        let cr3 = self.cr3.with_paging_structure({
-            let pml4t: Vaddr = pml4t.as_ref().into();
-            pml4t.paddr().unwrap()
-        });
+        let pml4t: Pin<Box<Pml4t>> = Pin::new(Box::new((*self.pml4t).clone()));
+        let cr3 = self.cr3.with_paging_structure(&*pml4t);
         let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
         Self {
             cr3,
@@ -152,7 +150,7 @@ impl fmt::Debug for Controller {
                 self.vaddr2pml4te_controller
                     .iter()
                     .map(|(vaddr, pml4te_controller)| {
-                        let pml4te: &Pml4te = self.pml4t.as_ref().pml4te(vaddr);
+                        let pml4te: &Pml4te = self.pml4t.pml4te(vaddr);
                         (vaddr, (pml4te, pml4te_controller))
                     }),
             )
@@ -174,7 +172,7 @@ impl Pml4t {
         let pml4te: &[Pml4te; PML4T_LENGTH] = &self.pml4te;
         let pml4te: *const [Pml4te; PML4T_LENGTH] = pml4te as *const [Pml4te; PML4T_LENGTH];
         let pml4te: *const u8 = pml4te as *const u8;
-        unsafe { slice::from_raw_parts(pml4te, memory::page::SIZE) }
+        unsafe { slice::from_raw_parts(pml4te, page::SIZE) }
     }
 
     fn debug(&self, vaddr: &Vaddr) {
@@ -207,10 +205,12 @@ impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
     }
 }
 
+impl TopTable for Pml4t {}
+
 /// # Page Map Level 4 Table Entry Controller
 enum Pml4teController {
     Pml4e {
-        pdpt: Box<Pdpt>,
+        pdpt: Pin<Box<Pdpt>>,
         vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController>,
     },
     #[allow(dead_code)]
@@ -228,7 +228,7 @@ impl Pml4teController {
         executable: bool,
     ) {
         if let Self::Pml4teNotPresent = self {
-            let pdpt: Box<Pdpt> = Box::default();
+            let pdpt: Pin<Box<Pdpt>> = Pin::new(Box::default());
             let vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController> = pdpt
                 .as_ref()
                 .pdpte
@@ -254,7 +254,7 @@ impl Pml4teController {
                 .with_a(false)
                 .with_r(false)
                 .with_xd(!executable);
-            pml4te.set_pml4e(pml4e, pdpt.as_ref());
+            pml4te.set_pml4e(pml4e, &pdpt);
             *self = Self::Pml4e {
                 pdpt,
                 vaddr2pdpte_controller,
@@ -270,7 +270,7 @@ impl Pml4teController {
                 .with_p(true)
                 .with_rw(old_pml4e.rw() || writable)
                 .with_xd(old_pml4e.xd() && !executable);
-            pml4te.set_pml4e(new_pml4e, pdpt.as_ref());
+            pml4te.set_pml4e(new_pml4e, pdpt);
             let pdp_vaddr: Vaddr = vaddr.with_pdi(0).with_pi(0).with_offset(0);
             if let btree_map::Entry::Vacant(entry) = vaddr2pdpte_controller.entry(pdp_vaddr) {
                 let pdpi: usize = pdp_vaddr.pdpi() as usize;
@@ -314,7 +314,7 @@ impl Pml4teController {
                 }
                 entry.insert(pdpte_controller);
             }
-            let pdpte: &mut Pdpte = pdpt.as_mut().pdpte_mut(&pdp_vaddr);
+            let pdpte: &mut Pdpte = pdpt.pdpte_mut(&pdp_vaddr);
             vaddr2pdpte_controller
                 .get_mut(&pdp_vaddr)
                 .unwrap()
@@ -337,7 +337,7 @@ impl fmt::Debug for Pml4teController {
                     vaddr2pdpte_controller
                         .iter()
                         .map(|(vaddr, pdpte_controller)| {
-                            let pdpte: &Pdpte = pdpt.as_ref().pdpte(vaddr);
+                            let pdpte: &Pdpte = pdpt.pdpte(vaddr);
                             (vaddr, (pdpte, pdpte_controller))
                         }),
                 )
@@ -352,7 +352,7 @@ impl From<&Pml4te> for Pml4teController {
         match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let pdpt: &Pdpt = pml4e.into();
-                let pdpt = Box::<Pdpt>::new(pdpt.clone());
+                let pdpt: Pin<Box<Pdpt>> = Pin::new(Box::new(pdpt.clone()));
                 let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
                 Self::Pml4e {
                     pdpt,
@@ -544,7 +544,7 @@ enum PdpteController {
     #[allow(dead_code)]
     Pe1Gib,
     Pdpe {
-        pdt: Box<Pdt>,
+        pdt: Pin<Box<Pdt>>,
         vaddr2pdte_controller: BTreeMap<Vaddr, PdteController>,
     },
     PdpteNotPresent,
@@ -564,7 +564,7 @@ impl PdpteController {
             Self::Pe1Gib => {
                 let pe1gib: Pe1Gib = *pdpte.clone().pe1gib().unwrap();
                 let page_1gib_paddr: usize = pe1gib.page_1gib() as usize;
-                let mut pdt: Box<Pdt> = Box::default();
+                let mut pdt: Pin<Box<Pdt>> = Pin::new(Box::default());
                 let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_mut()
                     .pdte
@@ -608,14 +608,14 @@ impl PdpteController {
                     .with_is_page_1gib(false)
                     .with_r(pe1gib.r())
                     .with_xd(pe1gib.xd() && !executable);
-                pdpte.set_pdpe(pdpe, pdt.as_ref());
+                pdpte.set_pdpe(pdpe, &pdt);
                 *self = Self::Pdpe {
                     pdt,
                     vaddr2pdte_controller,
                 };
             }
             Self::PdpteNotPresent => {
-                let pdt: Box<Pdt> = Box::default();
+                let pdt: Pin<Box<Pdt>> = Pin::new(Box::default());
                 let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_ref()
                     .pdte
@@ -638,7 +638,7 @@ impl PdpteController {
                     .with_is_page_1gib(false)
                     .with_r(false)
                     .with_xd(!executable);
-                pdpte.set_pdpe(pdpe, pdt.as_ref());
+                pdpte.set_pdpe(pdpe, &pdt);
                 *self = Self::Pdpe {
                     pdt,
                     vaddr2pdte_controller,
@@ -656,7 +656,7 @@ impl PdpteController {
                 .with_p(true)
                 .with_rw(old_pdpe.rw() || writable)
                 .with_xd(old_pdpe.xd() && !executable);
-            pdpte.set_pdpe(new_pdpe, pdt.as_ref());
+            pdpte.set_pdpe(new_pdpe, pdt);
             let pd_vaddr: Vaddr = vaddr.with_pi(0).with_offset(0);
             if let btree_map::Entry::Vacant(entry) = vaddr2pdte_controller.entry(pd_vaddr) {
                 let pdi: usize = pd_vaddr.pdi() as usize;
@@ -699,7 +699,7 @@ impl PdpteController {
                 }
                 entry.insert(pdte_controller);
             }
-            let pdte: &mut Pdte = pdt.as_mut().pdte_mut(&pd_vaddr);
+            let pdte: &mut Pdte = pdt.pdte_mut(&pd_vaddr);
             vaddr2pdte_controller
                 .get_mut(&pd_vaddr)
                 .unwrap()
@@ -729,7 +729,7 @@ impl fmt::Debug for PdpteController {
                     vaddr2pdte_controller
                         .iter()
                         .map(|(vaddr, pdte_controller)| {
-                            let pdte: &Pdte = pdt.as_ref().pdte(vaddr);
+                            let pdte: &Pdte = pdt.pdte(vaddr);
                             (vaddr, (pdte, pdte_controller))
                         }),
                 )
@@ -745,7 +745,7 @@ impl From<&Pdpte> for PdpteController {
             (Some(_pe1gib), None, None) => Self::Pe1Gib,
             (None, Some(pdpe), None) => {
                 let pdt: &Pdt = pdpe.into();
-                let pdt = Box::<Pdt>::new(pdt.clone());
+                let pdt: Pin<Box<Pdt>> = Pin::new(Box::new(pdt.clone()));
                 let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
                 Self::Pdpe {
                     pdt,
@@ -1020,7 +1020,7 @@ impl<'a> From<&'a Pdpe> for &'a Pdt {
 enum PdteController {
     Pe2Mib,
     Pde {
-        pt: Box<Pt>,
+        pt: Pin<Box<Pt>>,
         vaddr2pte_controller: BTreeMap<Vaddr, PteController>,
     },
     PdteNotPresent,
@@ -1040,7 +1040,7 @@ impl PdteController {
             Self::Pe2Mib => {
                 let pe2mib: Pe2Mib = *pdte.clone().pe2mib().unwrap();
                 let page_2mib_paddr: usize = pe2mib.page_2mib() as usize;
-                let mut pt: Box<Pt> = Box::default();
+                let mut pt: Pin<Box<Pt>> = Pin::new(Box::default());
                 let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_mut()
                     .pte
@@ -1083,14 +1083,14 @@ impl PdteController {
                     .with_is_page_2mib(false)
                     .with_r(false)
                     .with_xd(pe2mib.xd() && !executable);
-                pdte.set_pde(pde, pt.as_ref());
+                pdte.set_pde(pde, &pt);
                 *self = Self::Pde {
                     pt,
                     vaddr2pte_controller,
                 }
             }
             Self::PdteNotPresent => {
-                let pt: Box<Pt> = Box::default();
+                let pt: Pin<Box<Pt>> = Pin::new(Box::default());
                 let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_ref()
                     .pte
@@ -1113,7 +1113,7 @@ impl PdteController {
                     .with_is_page_2mib(false)
                     .with_r(false)
                     .with_xd(!executable);
-                pdte.set_pde(pde, pt.as_ref());
+                pdte.set_pde(pde, &pt);
                 *self = Self::Pde {
                     pt,
                     vaddr2pte_controller,
@@ -1131,7 +1131,7 @@ impl PdteController {
                 .with_p(true)
                 .with_rw(old_pde.rw() || writable)
                 .with_xd(old_pde.xd() && !executable);
-            pdte.set_pde(new_pde, pt.as_ref());
+            pdte.set_pde(new_pde, pt);
             let p_vaddr: Vaddr = vaddr.with_offset(0);
             if let btree_map::Entry::Vacant(entry) = vaddr2pte_controller.entry(p_vaddr) {
                 let pi: usize = p_vaddr.pi() as usize;
@@ -1162,7 +1162,7 @@ impl PdteController {
                 }
                 entry.insert(pte_controller);
             }
-            let pte: &mut Pte = pt.as_mut().pte_mut(&p_vaddr);
+            let pte: &mut Pte = pt.pte_mut(&p_vaddr);
             vaddr2pte_controller
                 .get_mut(&p_vaddr)
                 .unwrap()
@@ -1189,7 +1189,7 @@ impl fmt::Debug for PdteController {
             } => formatter
                 .debug_map()
                 .entries(vaddr2pte_controller.iter().map(|(vaddr, pte_controller)| {
-                    let pte: &Pte = pt.as_ref().pte(vaddr);
+                    let pte: &Pte = pt.pte(vaddr);
                     (vaddr, (pte, pte_controller))
                 }))
                 .finish(),
@@ -1204,7 +1204,7 @@ impl From<&Pdte> for PdteController {
             (Some(_pe2mib), None, None) => Self::Pe2Mib,
             (None, Some(pde), None) => {
                 let pt: &Pt = pde.into();
-                let pt = Box::new(pt.clone());
+                let pt: Pin<Box<Pt>> = Pin::new(Box::new(pt.clone()));
                 let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
                 Self::Pde {
                     pt,

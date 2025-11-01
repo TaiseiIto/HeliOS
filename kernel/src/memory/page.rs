@@ -4,6 +4,7 @@ use {
     core::{
         fmt,
         ops::{Range, RangeInclusive},
+        pin::Pin,
     },
 };
 
@@ -42,15 +43,15 @@ impl ContinuousPages {
 #[derive(Eq, Ord, PartialEq, PartialOrd)]
 pub struct Page {
     #[allow(dead_code)]
-    page: Box<InHeap>,
+    page: Pin<Box<InHeap>>,
     paddr: usize,
     vaddr: usize,
 }
 
 impl Page {
     pub fn new(paging: &mut Paging, vaddr: usize, writable: bool, executable: bool) -> Self {
-        let page: Box<InHeap> = Box::default();
-        let paddr: usize = page.as_ref().paddr(paging);
+        let page: Pin<Box<InHeap>> = Pin::new(Box::default());
+        let paddr: usize = page.paddr(paging);
         let present: bool = true;
         paging.set_page(vaddr, paddr, present, writable, executable);
         Self { page, paddr, vaddr }
