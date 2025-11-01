@@ -3,7 +3,8 @@
 //! * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 4.5 4-Level Paging and 5-Level Paging
 
 use {
-    crate::{com2_println, memory, x64},
+    super::{super::page, TopTable},
+    crate::{com2_println, x64},
     alloc::{
         boxed::Box,
         collections::{btree_map, BTreeMap},
@@ -12,10 +13,10 @@ use {
     core::{fmt, mem::size_of, ops::Range, pin::Pin},
 };
 
-const PML4T_LENGTH: usize = memory::page::SIZE / size_of::<Pml4te>();
-const PDPT_LENGTH: usize = memory::page::SIZE / size_of::<Pdpte>();
-const PDT_LENGTH: usize = memory::page::SIZE / size_of::<Pdte>();
-const PT_LENGTH: usize = memory::page::SIZE / size_of::<Pte>();
+const PML4T_LENGTH: usize = page::SIZE / size_of::<Pml4te>();
+const PDPT_LENGTH: usize = page::SIZE / size_of::<Pdpte>();
+const PDT_LENGTH: usize = page::SIZE / size_of::<Pdte>();
+const PT_LENGTH: usize = page::SIZE / size_of::<Pte>();
 
 pub struct Controller {
     cr3: x64::control::Register3,
@@ -181,6 +182,8 @@ impl<'a> From<&'a x64::control::Register3> for &'a Pml4t {
         cr3.get_paging_structure()
     }
 }
+
+impl TopTable for Pml4t {}
 
 /// # Page Map Level 4 Table Entry Controller
 enum Pml4teController {

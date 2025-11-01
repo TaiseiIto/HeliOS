@@ -89,3 +89,5 @@ impl Paging {
         }
     }
 }
+
+pub trait TopTable {}
