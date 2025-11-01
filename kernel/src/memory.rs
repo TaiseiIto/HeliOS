@@ -13,7 +13,8 @@ use {
     crate::{efi, task},
     alloc::{alloc::Layout, boxed::Box},
     core::{
-        alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem, ops::Range, slice,
+        alloc::GlobalAlloc, borrow::BorrowMut, cell::RefCell, cmp, fmt, mem, ops::Range, pin::Pin,
+        slice,
     },
 };
 
@@ -45,7 +46,7 @@ pub fn initialize(paging: &mut Paging, memory_map: &efi::memory::Map, heap_start
 }
 
 struct Allocator {
-    root_node_list: RefCell<Option<Box<NodeList>>>,
+    root_node_list: RefCell<Option<Pin<Box<NodeList>>>>,
 }
 
 impl Allocator {
@@ -171,10 +172,10 @@ impl NodeList {
         unsafe { slice::from_raw_parts(nodes, length) }
     }
 
-    fn root(available_range: Range<usize>) -> Box<Self> {
+    fn root(available_range: Range<usize>) -> Pin<Box<Self>> {
         let node_list: usize = available_range.end;
         let node_list: *mut Self = node_list as *mut Self;
-        let mut node_list: Box<Self> = unsafe { Box::from_raw(node_list) };
+        let mut node_list: Pin<Box<Self>> = Pin::new(unsafe { Box::from_raw(node_list) });
         let node_list_mut: &mut Self = node_list.borrow_mut();
         node_list_mut.initialize(available_range);
         node_list
