@@ -1,7 +1,7 @@
 use {
     crate::{efi, elf, memory, processor, rs232c, x64},
     alloc::{boxed::Box, collections::BTreeMap, vec::Vec},
-    core::ops::Range,
+    core::{ops::Range, pin::Pin},
 };
 
 #[derive(Debug)]
@@ -61,7 +61,7 @@ impl<'a> Argument<'a> {
 pub struct Loader {
     elf: elf::File,
     #[allow(dead_code)]
-    elf_vaddr2frame: BTreeMap<usize, Box<memory::Frame>>,
+    elf_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>>,
     #[allow(dead_code)]
     stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>>,
     stack_floor: usize,
@@ -75,7 +75,7 @@ impl Loader {
         paging: &mut memory::Paging,
     ) -> Self {
         let elf: elf::File = directory_tree.get(path).unwrap().read().into();
-        let elf_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = elf.deploy(paging);
+        let elf_vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>> = elf.deploy(paging);
         let stack_pages: usize = 0x200;
         let stack_vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = (0..stack_pages)
             .map(|stack_page_index| {

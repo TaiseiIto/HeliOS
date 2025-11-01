@@ -16,7 +16,7 @@ use {
         collections::{BTreeMap, BTreeSet},
         vec::Vec,
     },
-    core::{fmt, str},
+    core::{fmt, pin::Pin, str},
     header::Header,
 };
 
@@ -29,16 +29,16 @@ pub struct File {
 }
 
 impl File {
-    pub fn deploy(&self, paging: &mut memory::Paging) -> BTreeMap<usize, Box<memory::Frame>> {
+    pub fn deploy(&self, paging: &mut memory::Paging) -> BTreeMap<usize, Pin<Box<memory::Frame>>> {
         let pages: BTreeSet<usize> = self
             .program_headers()
             .into_iter()
             .filter(|program_header| program_header.is_loadable_segment())
             .flat_map(|program_header| program_header.pages().into_iter())
             .collect();
-        let vaddr2frame: BTreeMap<usize, Box<memory::Frame>> = pages
+        let vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>> = pages
             .into_iter()
-            .map(|vaddr| (vaddr, Box::default()))
+            .map(|vaddr| (vaddr, Pin::new(Box::default())))
             .collect();
         vaddr2frame.iter().for_each(|(vaddr, frame)| {
             let present: bool = true;
