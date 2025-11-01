@@ -7,7 +7,7 @@ use {
     },
     crate::{com2_println, memory, x64, Argument},
     alloc::{boxed::Box, vec::Vec},
-    core::{fmt, mem, slice},
+    core::{fmt, mem, pin::Pin, slice},
 };
 
 pub use register::Register;
@@ -21,7 +21,7 @@ pub struct Controller {
     task_register: x64::task::Register,
     #[allow(dead_code)]
     task_state_segment_and_io_permission_bit_map:
-        Box<x64::task::state::segment::AndIoPermissionBitMap>,
+        Pin<Box<x64::task::state::segment::AndIoPermissionBitMap>>,
 }
 
 impl Controller {
@@ -39,11 +39,11 @@ impl Controller {
                 memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
             })
             .collect();
-        let task_state_segment_and_io_permission_bit_map: Box<
-            x64::task::state::segment::AndIoPermissionBitMap,
+        let task_state_segment_and_io_permission_bit_map: Pin<
+            Box<x64::task::state::segment::AndIoPermissionBitMap>,
         > = x64::task::state::segment::AndIoPermissionBitMap::new(&stacks);
         let task_state_segment_descriptor: memory::segment::long::Descriptor =
-            (task_state_segment_and_io_permission_bit_map.as_ref()).into();
+            (&*task_state_segment_and_io_permission_bit_map).into();
         let task_state_segment_selector: memory::segment::Selector =
             gdt.set_task_state_segment_descriptor(&task_state_segment_descriptor);
         let task_register: x64::task::Register = task_state_segment_selector.into();
