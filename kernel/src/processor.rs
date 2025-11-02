@@ -3,10 +3,11 @@ pub mod message;
 
 use {
     crate::{acpi, com2_println, elf, interrupt, memory, sync, timer, x64, Argument},
-    alloc::{collections::BTreeMap, string::String, vec::Vec},
+    alloc::{boxed::Box, collections::BTreeMap, string::String, vec::Vec},
     core::{
         cell::OnceCell,
         mem::MaybeUninit,
+        pin::Pin,
         sync::atomic::{AtomicBool, Ordering},
     },
 };
@@ -27,8 +28,8 @@ pub struct Controller {
     local_apic_structure: acpi::multiple_apic_description::processor_local_apic::Structure,
     log: String,
     paging: memory::Paging,
-    receiver: sync::spin::Lock<Option<message::Content>>,
-    sender: sync::spin::Lock<Option<message::Content>>,
+    receiver: Pin<Box<sync::spin::Lock<Option<message::Content>>>>,
+    sender: Pin<Box<sync::spin::Lock<Option<message::Content>>>>,
 }
 
 impl Controller {
@@ -118,8 +119,10 @@ impl Controller {
         let kernel_entry: usize = kernel.entry();
         let kernel_stack_floor: usize = kernel_stack.wrapping_floor();
         let log = String::new();
-        let receiver: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
-        let sender: sync::spin::Lock<Option<message::Content>> = sync::spin::Lock::new(None);
+        let receiver: Pin<Box<sync::spin::Lock<Option<message::Content>>>> =
+            Box::pin(sync::spin::Lock::new(None));
+        let sender: Pin<Box<sync::spin::Lock<Option<message::Content>>>> =
+            Box::pin(sync::spin::Lock::new(None));
         Self {
             boot_completed,
             heap,
