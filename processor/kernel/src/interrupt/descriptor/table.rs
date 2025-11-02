@@ -67,10 +67,13 @@ impl Controller {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 6.10 Interrupt Descriptor Table (IDT)
 pub struct Table {
-    descriptors: Vec<Descriptor>,
+    descriptors: Pin<Box<[Descriptor; Self::LENGTH]>>,
 }
 
 impl Table {
+    const MAX_INDEX: usize = u8::MAX as usize;
+    const LENGTH: usize = Self::MAX_INDEX + 1;
+
     pub fn base(&self) -> u64 {
         self.descriptors.as_slice().as_ptr() as u64
     }
@@ -88,7 +91,9 @@ impl Table {
 
     pub fn new() -> Self {
         let descriptors: Vec<Descriptor> =
-            (u8::MIN..=u8::MAX).map(|_| Descriptor::default()).collect();
+            (0..Self::LENGTH).map(|_| Descriptor::default()).collect();
+        let descriptors: Pin<Box<[Descriptor; Self::LENGTH]>> =
+            Box::pin(descriptors.try_into().unwrap());
         Self { descriptors }
     }
 }
@@ -111,13 +116,15 @@ impl From<Register> for Table {
     fn from(register: Register) -> Self {
         let descriptors: &[Descriptor] =
             unsafe { slice::from_raw_parts(register.base(), register.length()) };
-        let descriptors: Vec<Descriptor> = (u8::MIN..=u8::MAX)
+        let descriptors: Vec<Descriptor> = (0..Self::LENGTH)
             .map(|interrupt_number| {
                 *descriptors
-                    .get(interrupt_number as usize)
+                    .get(interrupt_number)
                     .unwrap_or(&Descriptor::default())
             })
             .collect();
+        let descriptors: Pin<Box<[Descriptor; Self::LENGTH]>> =
+            Box::pin(descriptors.try_into().unwrap());
         Self { descriptors }
     }
 }
