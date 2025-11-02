@@ -1,7 +1,7 @@
 use {
     crate::memory,
     alloc::{boxed::Box, vec::Vec},
-    core::{iter, mem},
+    core::{iter, mem, pin::Pin},
 };
 
 #[derive(Debug)]
@@ -14,13 +14,13 @@ pub struct AndIoPermissionBitMap {
 }
 
 impl AndIoPermissionBitMap {
-    pub fn new(interrupt_stacks: &[memory::Stack]) -> Box<Self> {
+    pub fn new(interrupt_stacks: &[memory::Stack]) -> Pin<Box<Self>> {
         let segment = Segment::new(interrupt_stacks, mem::size_of::<Segment>());
         let io_permission_bit_map = IoPermissionBitMap::default();
-        Box::new(Self {
+        Pin::new(Box::new(Self {
             segment,
             io_permission_bit_map,
-        })
+        }))
     }
 }
 
