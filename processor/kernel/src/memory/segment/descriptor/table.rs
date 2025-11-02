@@ -7,10 +7,11 @@ use {
     },
     crate::{bsp_println, x64},
     alloc::{
+        boxed::Box,
         collections::{BTreeMap, BTreeSet},
         vec::Vec,
     },
-    core::{fmt, mem, ops::Range, slice},
+    core::{fmt, mem, ops::Range, pin::Pin, slice},
 };
 
 mod register;
@@ -130,10 +131,14 @@ impl Controller {
 /// ## References
 /// * [Intel 64 and IA-32 Architectures Software Developer's Manual December 2023](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) Vol.3A 3.5.1 Segment Descriptor Tables
 pub struct Table {
-    descriptors: Vec<u64>,
+    descriptors: Pin<Box<[u64; Self::LENGTH]>>,
 }
 
 impl Table {
+    const LIMIT: usize = u16::MAX as usize;
+    const SIZE: usize = Self::LIMIT + 1;
+    const LENGTH: usize = Self::SIZE / mem::size_of::<short::Descriptor>();
+
     pub fn base(&self) -> u64 {
         self.descriptors.as_slice().as_ptr() as u64
     }
@@ -348,14 +353,10 @@ impl From<Register> for Table {
     fn from(register: Register) -> Self {
         let descriptors: &[u64] =
             unsafe { slice::from_raw_parts(register.base(), register.length()) };
-        let descriptors: Vec<u64> = (u16::MIN..=u16::MAX)
-            .step_by(mem::size_of::<short::Descriptor>())
-            .map(|segment_selector| {
-                *descriptors
-                    .get(segment_selector as usize / mem::size_of::<short::Descriptor>())
-                    .unwrap_or(&0)
-            })
+        let descriptors: Vec<u64> = (0..Self::LENGTH)
+            .map(|index| *descriptors.get(index).unwrap_or(&0))
             .collect();
+        let descriptors: Pin<Box<[u64; Self::LENGTH]>> = Box::pin(descriptors.try_into().unwrap());
         Self { descriptors }
     }
 }
