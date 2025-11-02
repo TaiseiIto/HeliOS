@@ -4,17 +4,17 @@
 
 use {
     crate::{task, x64},
-    core::cell::UnsafeCell,
+    core::cell::RefCell,
 };
 
 pub const DISABLE: u8 = 0x80;
 
-static mut ENABLED: UnsafeCell<bool> = UnsafeCell::new(true);
+static mut ENABLED: RefCell<bool> = RefCell::new(true);
 
 pub fn disable() {
     task::Controller::get_current_mut().unwrap().cli();
     unsafe {
-        *ENABLED.get_mut() = false;
+        *ENABLED.borrow_mut() = false;
     }
     let address: u8 = x64::port::inb(x64::cmos::ADDRESS_PORT);
     let address: u8 = address | DISABLE;
@@ -26,7 +26,7 @@ pub fn disable() {
 pub fn enable() {
     task::Controller::get_current_mut().unwrap().cli();
     unsafe {
-        *ENABLED.get_mut() = true;
+        *ENABLED.borrow_mut() = true;
     }
     let address: u8 = x64::port::inb(x64::cmos::ADDRESS_PORT);
     let address: u8 = address & !DISABLE;
@@ -36,5 +36,5 @@ pub fn enable() {
 }
 
 pub fn is_enabled() -> bool {
-    unsafe { *ENABLED.get() }
+    unsafe { *ENABLED.borrow() }
 }
