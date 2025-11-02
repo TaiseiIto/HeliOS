@@ -36,7 +36,7 @@ impl Controller {
                 let pages: usize = 0x10;
                 let floor_inclusive: usize =
                     Argument::get().heap_start() - (2 * index + 1) * pages * memory::page::SIZE - 1;
-                memory::Stack::new(Argument::get().paging_mut(), floor_inclusive, pages)
+                memory::Stack::new(Argument::get_mut().paging_mut(), floor_inclusive, pages)
             })
             .collect();
         let task_state_segment_and_io_permission_bit_map: Pin<

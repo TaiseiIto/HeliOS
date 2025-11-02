@@ -56,7 +56,7 @@ impl Registers {
     }
 
     pub fn finalize() {
-        let hpet: &mut Self = Argument::get()
+        let hpet: &mut Self = Argument::get_mut()
             .efi_system_table_mut()
             .rsdp_mut()
             .xsdt_mut()
@@ -67,7 +67,7 @@ impl Registers {
     }
 
     pub fn initialize(local_apic_id: u8) -> &'static Self {
-        let hpet: &mut Self = Argument::get()
+        let hpet: &mut Self = Argument::get_mut()
             .efi_system_table_mut()
             .rsdp_mut()
             .xsdt_mut()
@@ -77,7 +77,7 @@ impl Registers {
         let hpet_interrupt_period_milliseconds: usize = 1000;
         let hpet_irq: u8 = hpet.enable_periodic_interrupt(hpet_interrupt_period_milliseconds);
         com2_println!("hpet_irq = {:#x?}", hpet_irq);
-        Argument::get()
+        Argument::get_mut()
             .efi_system_table_mut()
             .rsdp_mut()
             .xsdt_mut()

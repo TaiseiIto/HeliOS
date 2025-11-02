@@ -40,7 +40,7 @@ fn main(argument: &'static mut Argument<'static>) {
     });
     // Initialize heap memory.
     let heap_size: usize = memory::initialize(
-        Argument::get().paging_mut(),
+        Argument::get_mut().paging_mut(),
         Argument::get().memory_map(),
         Argument::get().heap_start(),
     );
@@ -108,7 +108,7 @@ fn main(argument: &'static mut Argument<'static>) {
     processor::Manager::finalize();
     // Shutdown.
     com2_println!("Shutting down.");
-    Argument::get()
+    Argument::get_mut()
         .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()

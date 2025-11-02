@@ -36,7 +36,7 @@ impl Register {
         let tn_int_route_cap: u32 = self.tn_int_route_cap();
         let irq: u8 = (0..u32::BITS)
             .zip(
-                Argument::get()
+                Argument::get_mut()
                     .efi_system_table_mut()
                     .rsdp_mut()
                     .xsdt_mut()

@@ -150,7 +150,7 @@ impl Registers {
     }
 
     pub fn initialize(ia32_apic_base: &mut x64::msr::ia32::ApicBase) -> &mut Self {
-        let io_apic: &mut io::Registers = Argument::get()
+        let io_apic: &mut io::Registers = Argument::get_mut()
             .efi_system_table_mut()
             .rsdp_mut()
             .xsdt_mut()

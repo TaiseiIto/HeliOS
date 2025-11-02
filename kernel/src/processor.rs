@@ -237,7 +237,7 @@ impl Manager {
         unsafe { MANAGER.set(manager) }.unwrap();
         Controller::get_all().for_each(|processor| {
             processor.boot(
-                Argument::get().processor_boot_loader_mut(),
+                Argument::get_mut().processor_boot_loader_mut(),
                 local_apic_registers,
                 hpet,
                 local_apic_id,

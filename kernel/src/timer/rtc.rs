@@ -45,7 +45,7 @@ pub fn initialize(local_apic_id: u8) {
     let rtc_frequency: usize = 0x2; // Hz
     let rtc_irq: u8 = enable_periodic_interrupt(rtc_frequency);
     com2_println!("rtc_irq = {:#x?}", rtc_irq);
-    Argument::get()
+    Argument::get_mut()
         .efi_system_table_mut()
         .rsdp_mut()
         .xsdt_mut()

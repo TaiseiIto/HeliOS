@@ -41,7 +41,11 @@ impl Argument<'static> {
         self.efi_system_table
     }
 
-    pub fn get() -> &'static mut Self {
+    pub fn get() -> &'static Self {
+        unsafe { ARGUMENT.get() }.unwrap()
+    }
+
+    pub fn get_mut() -> &'static mut Self {
         unsafe { ARGUMENT.get_mut() }.unwrap()
     }
 
@@ -71,6 +75,6 @@ impl Argument<'static> {
 
     pub fn set(&'static mut self) {
         unsafe { ARGUMENT.set(self) }.unwrap();
-        rs232c::set_com2(Self::get().com2_mut());
+        rs232c::set_com2(Self::get_mut().com2_mut());
     }
 }
