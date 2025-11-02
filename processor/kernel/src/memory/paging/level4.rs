@@ -38,7 +38,8 @@ impl Controller {
         let source: &Pml4t = cr3.get_paging_structure();
         let pml4t: Pin<Box<Pml4t>> = Pin::new(Box::new(source.clone()));
         let cr3: x64::control::Register3 = cr3.with_paging_structure({
-            let pml4t: Vaddr = (&pml4t).into();
+            let pml4t: &Pml4t = &pml4t;
+            let pml4t: Vaddr = pml4t.into();
             pml4t.paddr().unwrap()
         });
         let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
@@ -147,7 +148,8 @@ impl Clone for Controller {
     fn clone(&self) -> Self {
         let pml4t: Pin<Box<Pml4t>> = Pin::new(Box::new((*self.pml4t).clone()));
         let cr3 = self.cr3.with_paging_structure({
-            let pml4t: Vaddr = (&pml4t).into();
+            let pml4t: &Pml4t = &pml4t;
+            let pml4t: Vaddr = pml4t.into();
             pml4t.paddr().unwrap()
         });
         let vaddr2pml4te_controller = BTreeMap::<Vaddr, Pml4teController>::new();
