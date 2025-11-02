@@ -81,7 +81,7 @@ impl Loader {
             .map(|stack_page_index| {
                 (
                     usize::MAX - (stack_page_index + 1) * memory::page::SIZE + 1,
-                    Pin::new(Box::default()),
+                    Box::pin(memory::Frame::default()),
                 )
             })
             .collect();

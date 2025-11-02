@@ -38,7 +38,7 @@ impl File {
             .collect();
         let vaddr2frame: BTreeMap<usize, Pin<Box<memory::Frame>>> = pages
             .into_iter()
-            .map(|vaddr| (vaddr, Pin::new(Box::default())))
+            .map(|vaddr| (vaddr, Box::pin(memory::Frame::default())))
             .collect();
         vaddr2frame.iter().for_each(|(vaddr, frame)| {
             let present: bool = true;

@@ -50,7 +50,7 @@ pub struct Page {
 
 impl Page {
     pub fn new(paging: &mut Paging, vaddr: usize, writable: bool, executable: bool) -> Self {
-        let page: Pin<Box<InHeap>> = Pin::new(Box::default());
+        let page: Pin<Box<InHeap>> = Box::pin(InHeap::default());
         let paddr: usize = page.as_ref().paddr(paging);
         let present: bool = true;
         paging.set_page(vaddr, paddr, present, writable, executable);

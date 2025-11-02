@@ -36,7 +36,7 @@ impl Controller {
 
     pub fn get(cr3: x64::control::Register3) -> Self {
         let source: &Pml4t = cr3.get_paging_structure();
-        let pml4t: Pin<Box<Pml4t>> = Pin::new(Box::new(source.clone()));
+        let pml4t: Pin<Box<Pml4t>> = Box::pin(source.clone());
         let cr3: x64::control::Register3 = cr3.with_paging_structure({
             let pml4t: &Pml4t = &pml4t;
             let pml4t: Vaddr = pml4t.into();
@@ -146,7 +146,7 @@ impl Controller {
 
 impl Clone for Controller {
     fn clone(&self) -> Self {
-        let pml4t: Pin<Box<Pml4t>> = Pin::new(Box::new((*self.pml4t).clone()));
+        let pml4t: Pin<Box<Pml4t>> = Box::pin((*self.pml4t).clone());
         let cr3 = self.cr3.with_paging_structure({
             let pml4t: &Pml4t = &pml4t;
             let pml4t: Vaddr = pml4t.into();
@@ -245,7 +245,7 @@ impl Pml4teController {
         executable: bool,
     ) {
         if let Self::Pml4teNotPresent = self {
-            let pdpt: Pin<Box<Pdpt>> = Pin::new(Box::default());
+            let pdpt: Pin<Box<Pdpt>> = Box::pin(Pdpt::default());
             let vaddr2pdpte_controller: BTreeMap<Vaddr, PdpteController> = pdpt
                 .as_ref()
                 .pdpte
@@ -369,7 +369,7 @@ impl From<&Pml4te> for Pml4teController {
         match (pml4te.pml4e(), pml4te.pml4te_not_present()) {
             (Some(pml4e), None) => {
                 let pdpt: &Pdpt = pml4e.into();
-                let pdpt: Pin<Box<Pdpt>> = Pin::new(Box::new(pdpt.clone()));
+                let pdpt: Pin<Box<Pdpt>> = Box::pin(pdpt.clone());
                 let vaddr2pdpte_controller = BTreeMap::<Vaddr, PdpteController>::new();
                 Self::Pml4e {
                     pdpt,
@@ -581,7 +581,7 @@ impl PdpteController {
             Self::Pe1Gib => {
                 let pe1gib: Pe1Gib = *pdpte.clone().pe1gib().unwrap();
                 let page_1gib_paddr: usize = pe1gib.page_1gib() as usize;
-                let mut pdt: Pin<Box<Pdt>> = Pin::new(Box::default());
+                let mut pdt: Pin<Box<Pdt>> = Box::pin(Pdt::default());
                 let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_mut()
                     .pdte
@@ -632,7 +632,7 @@ impl PdpteController {
                 };
             }
             Self::PdpteNotPresent => {
-                let pdt: Pin<Box<Pdt>> = Pin::new(Box::default());
+                let pdt: Pin<Box<Pdt>> = Box::pin(Pdt::default());
                 let vaddr2pdte_controller: BTreeMap<Vaddr, PdteController> = pdt
                     .as_ref()
                     .pdte
@@ -762,7 +762,7 @@ impl From<&Pdpte> for PdpteController {
             (Some(_pe1gib), None, None) => Self::Pe1Gib,
             (None, Some(pdpe), None) => {
                 let pdt: &Pdt = pdpe.into();
-                let pdt: Pin<Box<Pdt>> = Pin::new(Box::new(pdt.clone()));
+                let pdt: Pin<Box<Pdt>> = Box::pin(pdt.clone());
                 let vaddr2pdte_controller = BTreeMap::<Vaddr, PdteController>::new();
                 Self::Pdpe {
                     pdt,
@@ -1057,7 +1057,7 @@ impl PdteController {
             Self::Pe2Mib => {
                 let pe2mib: Pe2Mib = *pdte.clone().pe2mib().unwrap();
                 let page_2mib_paddr: usize = pe2mib.page_2mib() as usize;
-                let mut pt: Pin<Box<Pt>> = Pin::new(Box::default());
+                let mut pt: Pin<Box<Pt>> = Box::pin(Pt::default());
                 let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_mut()
                     .pte
@@ -1107,7 +1107,7 @@ impl PdteController {
                 }
             }
             Self::PdteNotPresent => {
-                let pt: Pin<Box<Pt>> = Pin::new(Box::default());
+                let pt: Pin<Box<Pt>> = Box::pin(Pt::default());
                 let vaddr2pte_controller: BTreeMap<Vaddr, PteController> = pt
                     .as_ref()
                     .pte
@@ -1221,7 +1221,7 @@ impl From<&Pdte> for PdteController {
             (Some(_pe2mib), None, None) => Self::Pe2Mib,
             (None, Some(pde), None) => {
                 let pt: &Pt = pde.into();
-                let pt = Pin::new(Box::new(pt.clone()));
+                let pt = Box::pin(pt.clone());
                 let vaddr2pte_controller = BTreeMap::<Vaddr, PteController>::new();
                 Self::Pde {
                     pt,

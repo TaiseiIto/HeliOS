@@ -17,10 +17,10 @@ impl AndIoPermissionBitMap {
     pub fn new(interrupt_stacks: &[memory::Stack]) -> Pin<Box<Self>> {
         let segment = Segment::new(interrupt_stacks, mem::size_of::<Segment>());
         let io_permission_bit_map = IoPermissionBitMap::default();
-        Pin::new(Box::new(Self {
+        Box::pin(Self {
             segment,
             io_permission_bit_map,
-        }))
+        })
     }
 }
 
